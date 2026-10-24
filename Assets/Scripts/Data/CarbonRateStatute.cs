@@ -157,6 +157,24 @@ namespace PoliSim.Data
         /// so it has no date and nothing to carry.</summary>
         public static bool StatuteMoves(CountryId id) => RuleFor(id) != CarbonRateRule.NominalFixed;
 
+        /// <summary>K47 (Elias's ruling of 2026-10-23: "a carried bill is priced as the change it prevents"): the figure the statute's step would set for a line
+        /// standing at <paramref name="figure"/> at a boundary in <paramref name="boundaryYear"/> - the rules of `AdvanceYear`, read and never
+        /// written, at the year's price ratio as it stands today (`YearRatio`; DECLARED: the ratio the boundary will read is not known before it).
+        /// A passed figure is the law's figure in force there, so past the schedule it is carried by the ratio. The figure itself where the statute writes no move.</summary>
+        public static float StepOf(Country country, float figure, int boundaryYear)
+        {
+            float ratio = YearRatio(country);
+            switch (RuleFor(country.Id))
+            {
+                case CarbonRateRule.PriceLevelIndexed:
+                    return figure * (float)Math.Round(ratio, JamforelsetalDecimals);
+                case CarbonRateRule.LegislatedSchedule:
+                    return BehgFor(boundaryYear) ?? figure * ratio;
+                default:
+                    return figure;
+            }
+        }
+
         /// <summary>AF-36: whether the line's figure is a passed one still standing - stamped (`TaxLine.PassedForYear`) for a year no boundary has gone
         /// past. <paramref name="lastBoundaryYear"/> is the calendar year of the last boundary crossed, 0 before the first; it reads a stamp an older
         /// save left after its year as the statute's figure (since AF-36 the stamp is cleared where the statute takes the figure back).</summary>

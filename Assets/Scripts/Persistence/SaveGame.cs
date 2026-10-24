@@ -75,6 +75,11 @@ namespace PoliSim.Persistence
         /// <summary>FORK-2 (the fix review's M2): the families whose world failed, with the reason (`PolicyImpactLedger.CarryUnavailable`), so a load keeps their
         /// line unavailable rather than forking them afresh from the load. Null where none failed, and in every save before it. Additive under ruling A.</summary>
         public Dictionary<string, string> ImpactLedgerUnavailable;
+        /// <summary>K46 (Elias's ruling of 2026-10-23: "a save carries worlds only for families whose ledger line is non-zero; autosaves carry none and rebuild on
+        /// load"): the families whose world this save names and does not carry, which the load forks again from the loaded game (`PolicyImpactLedger.Rebuild`) -
+        /// a manual save's families whose world was the played world (`PolicyImpactLedger.Carry`), an autosave's every family. Null in every save before K46, which
+        /// rebuilds nothing (each line then counts from its next touch, as before). Additive under ruling A (no format step): a null is what those saves mean.</summary>
+        public List<string> ImpactLedgerRebuild;
         /// <summary>GA-0-14 / GA-0-40 (§825): the retired challenge scenario whose progress this save carried, read from the raw file by
         /// `SaveGameService.Deserialize` so the load can name it - null for every other save, and never written.</summary>
         [Newtonsoft.Json.JsonIgnore] public string RetiredScenarioId;

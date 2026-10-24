@@ -248,7 +248,7 @@ namespace PoliSim.Simulation
             if (contribution != 0f) { direction -= contribution; }
             if (dissolved != 0f) { direction += dissolved; }
 
-            return direction;
+            return direction + CarryDirection(country, bill);   // K47: a carry read as the move it prevents - always summed, exactly + 0 for a bill that carries nothing (the IL-shape rule, EN-7b)
         }
 
         /// <summary>
@@ -564,6 +564,7 @@ namespace PoliSim.Simulation
                 if (governmentBears) { TaxTerm.Shock(country, -BillFailedApprovalCost); }   // PS-6 US-22: the government pays for its own budget only (Congress.GovernmentBears)
                 return;
             }
+            float carryImpulse = CarryImpulse(country, bill, passedYear);   // K47: what the bill's carries cost, read on the book as the bill finds it (CarryMoves)
 
             // A-LOOP q37 (2026-10-19, `docs/specs/A_LOOP_PLAN.md` §2 (2)): every rate move the bill makes - a line's rate, its sub-rows - is the
             // government's move where it bears the bill, and books the tax term's impulse P(net after) − P(net before) against the fiscal year's opening
@@ -639,6 +640,58 @@ namespace PoliSim.Simulation
             // government bears the bill, what lands booked into T (`TaxTerm.ChargeApproval`, review 878's M-2); every caller records the bill's approval
             // move around this call (`ApprovalLedgerRecorder.RecordEvent`), the impulse with it
             if (governmentBears) { TaxTerm.ChargeApproval(country, taxTermImpulse); }
+            if (governmentBears && carryImpulse != 0f) { TaxTerm.ChargeApproval(country, carryImpulse); }   // K47: a carry charged as the move it keeps from happening - a call of its own, so a bill with no carry charges as it did to the bit
+        }
+
+        /// <summary>
+        /// K47 (Elias's ruling of 2026-10-23, `docs/RULINGS_2026-10-23.md`: "a carried bill is priced as the change it prevents"; AF-36's ask, §873): <b>the moves
+        /// a bill's carries keep from happening</b> - for each carried per-tonne line the bill really carries (the condition `ApplyBillResult` carries on: a
+        /// passed figure, the bill's own or one standing, under a statute that moves the line, whose stamp the carry extends), the figure the bill leaves on the
+        /// line (<c>Keeps</c>) and the figure the statute's step would set at the first boundary that would take it back (<c>Statute</c>,
+        /// `CarbonRateStatute.StepOf`). Read on the book as the bill FINDS it - before it applies, as the vote reads it.
+        /// <para>⚠ <b>DECLARED readings</b> (K47 leaves them open): "priced as the change it prevents" is read as the counter-move - keeping the figure against the
+        /// statute's step is the move from the step's figure to the kept one, so the vote weighs it as that rise or cut (`GetBillDirection`,
+        /// `GetBudgetBillConcern`) and approval is charged its impulse from a standing of nothing, P(kept − statute) (`CarryImpulse`):
+        /// the move falls at a later boundary, so it is booked to no fiscal year's net (`TaxTerm.Move`), and it fades with the tax term like any charge. The step
+        /// priced is the FIRST boundary's (one boundary a calendar year: the year after the figure's stamp), at today's price ratio.</para>
+        /// </summary>
+        private static List<(TaxLine Line, float Keeps, float Statute)> CarryMoves(Country country, BudgetBill bill, int passageYear)
+        {
+            var moves = new List<(TaxLine Line, float Keeps, float Statute)>();
+            if (country == null || bill?.CarriedTaxLines == null || bill.CarriedTaxLines.Count == 0 || !CarbonRateStatute.StatuteMoves(country.Id)) { return moves; }
+            foreach (TaxType carried in bill.CarriedTaxLines)
+            {
+                TaxLine line = FindTaxLine(country, carried);
+                if (line == null || !line.IsImplemented || !line.IsPerTonne) { continue; }
+                float keeps = line.Rate;
+                int stamp = line.PassedForYear;
+                if (bill.TaxLines != null && bill.TaxLines.TryGetValue(carried, out float figure))
+                {
+                    keeps = Mathf.Clamp(figure, line.MinRate, line.MaxRate);
+                    if (!Mathf.Approximately(keeps, line.Rate)) { stamp = passageYear; }   // GA-8-1: the bill's own move stamps its year, as ApplyBillResult stamps it
+                }
+                if (stamp <= 0 || passageYear + 1 <= stamp) { continue; }   // the statute's own figure carries nothing (AF-36's L1); a stamp the carry does not extend prevents nothing
+                moves.Add((line, keeps, CarbonRateStatute.StepOf(country, keeps, stamp + 1)));
+            }
+            return moves;
+        }
+
+        /// <summary>K47: the vote's reading of a bill's carries - each the move from the statute's figure to the kept one in the political scale (EN-4c, the
+        /// per cent of the dial), signed as a rate move is (`CarryMoves`); exactly 0 for a bill that carries nothing.</summary>
+        private static float CarryDirection(Country country, BudgetBill bill)
+        {
+            float direction = 0f;
+            foreach ((TaxLine line, float keeps, float statute) in CarryMoves(country, bill, country != null ? country.CalendarYear : 0)) { direction += line.PointsOf(keeps - statute); }
+            return direction;
+        }
+
+        /// <summary>K47: approval's price of a bill's carries - each the tax term's charge of the move from the statute's figure to the kept one, in the term's
+        /// one unit (`TaxLevelPoints`), from a standing of nothing (`CarryMoves`); exactly 0 for a bill that carries nothing.</summary>
+        private static float CarryImpulse(Country country, BudgetBill bill, int passedYear)
+        {
+            float impulse = 0f;
+            foreach ((TaxLine line, float keeps, float statute) in CarryMoves(country, bill, passedYear)) { impulse += TaxTerm.Charge(line.PointsOf(keeps) - line.PointsOf(statute)); }
+            return impulse;
         }
 
         /// <summary>
@@ -1104,6 +1157,8 @@ namespace PoliSim.Simulation
             (float fundContribution, float fundDissolved) = FundTermsOf(country, bill);
             concern.Add(StanceAxis.SpendVsTax, fundContribution);
             concern.Add(StanceAxis.SpendVsTax, -fundDissolved);
+            // K47: a carry loads the axis a rate move loads, as the move it prevents (CarryMoves) - from the statute's figure to the kept one
+            foreach ((TaxLine line, float keeps, float statute) in CarryMoves(country, bill, country.CalendarYear)) { concern.Add(StanceAxis.Redistribution, -line.PointsOf(keeps - statute)); }
             if (bill.ContinuingResolution) { concern.WithheldBy = country.ContinuingResolutionWithheldBy; }   // PS-6 US-22 (Ask 2's (P), PROVISIONAL): a continuing resolution is asked nothing unless the player's party withholds it
             if (SpatialBudgetVote.Applies(country))
             {

@@ -59,7 +59,7 @@ namespace PoliSim.EditorTools
                 var probe = new PolicyImpactLedger(probeShadow);
                 probeShadow.Dispose();
                 probe.Dispose();
-                sb.Append("    1. the partition   OK - every PolicyDecision field belongs to exactly one family.\n");
+                sb.Append("    1. the partition   OK - every PolicyDecision field belongs to exactly one family, every lever to one, and every bill kind (K51) to a family of its own.\n");
             }
             catch (Exception e)
             {

@@ -1372,7 +1372,7 @@ namespace PoliSim.Simulation
         {
             System.Func<BudgetBill> copy = CopiesForLedger(bill);   // FORK-2: the alternative as tabled, a fresh copy for each except-world
             string why = null;
-            bool acted = Answered(new PlayerAnswer("an alternative budget", countryId, sim => copy != null && sim.TableShadowBudget(countryId, copy(), out _)), () => TableShadowBudgetNow(countryId, bill, out why));
+            bool acted = Answered(new PlayerAnswer("an alternative budget", countryId, sim => copy != null && sim.TableShadowBudget(countryId, copy(), out _), answersAWait: false, bill: Congress.Kind.Budget), () => TableShadowBudgetNow(countryId, bill, out why));
             refusedBecause = why;
             return acted;
         }
@@ -1968,7 +1968,7 @@ namespace PoliSim.Simulation
         public bool IntroduceBudgetBill(CountryId countryId, BudgetBill bill)
         {
             System.Func<BudgetBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
-            return Answered(new PlayerAnswer("a budget bill", countryId, sim => copy != null && sim.IntroduceBudgetBill(countryId, copy())), () => IntroduceBudgetBillNow(countryId, bill));
+            return Answered(new PlayerAnswer("a budget bill", countryId, sim => copy != null && sim.IntroduceBudgetBill(countryId, copy()), answersAWait: false, bill: Congress.Kind.Budget), () => IntroduceBudgetBillNow(countryId, bill));
         }
 
         /// <summary>FORK-2: <see cref="IntroduceBudgetBill"/>'s act.</summary>
@@ -2428,7 +2428,7 @@ namespace PoliSim.Simulation
 
         /// <summary>Submits a new standalone TaxProgramBill - a no-op (returns false) if one is already pending for this SAME TaxType (different TaxTypes may all have their own bill pending at once - see _pendingTaxProgramBillsByCountry's own doc comment). No mandatory pause to close - unlike IntroduceBudgetBill, this tier never blocks time in the first place.</summary>
         public bool IntroduceTaxProgramBill(CountryId countryId, TaxType type, bool isAdd) =>
-            Answered(new PlayerAnswer("a tax programme bill", countryId, sim => sim.IntroduceTaxProgramBill(countryId, type, isAdd)), () => IntroduceTaxProgramBillNow(countryId, type, isAdd));   // FORK-2
+            Answered(new PlayerAnswer("a tax programme bill", countryId, sim => sim.IntroduceTaxProgramBill(countryId, type, isAdd), answersAWait: false, bill: Congress.Kind.TaxProgram), () => IntroduceTaxProgramBillNow(countryId, type, isAdd));   // FORK-2
 
         /// <summary>FORK-2: <see cref="IntroduceTaxProgramBill"/>'s act.</summary>
         private bool IntroduceTaxProgramBillNow(CountryId countryId, TaxType type, bool isAdd)
@@ -2502,7 +2502,7 @@ namespace PoliSim.Simulation
 
         /// <summary>WelfareProgramType equivalent of IntroduceTaxProgramBill - see that method's own doc comment, same pattern.</summary>
         public bool IntroduceWelfareProgramBill(CountryId countryId, WelfareProgramType type, bool isAdd) =>
-            Answered(new PlayerAnswer("a welfare programme bill", countryId, sim => sim.IntroduceWelfareProgramBill(countryId, type, isAdd)), () => IntroduceWelfareProgramBillNow(countryId, type, isAdd));   // FORK-2
+            Answered(new PlayerAnswer("a welfare programme bill", countryId, sim => sim.IntroduceWelfareProgramBill(countryId, type, isAdd), answersAWait: false, bill: Congress.Kind.WelfareProgram), () => IntroduceWelfareProgramBillNow(countryId, type, isAdd));   // FORK-2
 
         /// <summary>FORK-2: <see cref="IntroduceWelfareProgramBill"/>'s act.</summary>
         private bool IntroduceWelfareProgramBillNow(CountryId countryId, WelfareProgramType type, bool isAdd)
@@ -2576,7 +2576,7 @@ namespace PoliSim.Simulation
         public bool IntroduceLaborBill(CountryId countryId, LaborPolicyBill bill)
         {
             System.Func<LaborPolicyBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
-            return Answered(new PlayerAnswer("a labour bill", countryId, sim => copy != null && sim.IntroduceLaborBill(countryId, copy())), () => IntroduceLaborBillNow(countryId, bill));
+            return Answered(new PlayerAnswer("a labour bill", countryId, sim => copy != null && sim.IntroduceLaborBill(countryId, copy()), answersAWait: false, bill: Congress.Kind.Labor), () => IntroduceLaborBillNow(countryId, bill));
         }
 
         /// <summary>FORK-2: <see cref="IntroduceLaborBill"/>'s act.</summary>
@@ -2681,7 +2681,7 @@ namespace PoliSim.Simulation
         public bool IntroduceCrimeJusticeBill(CountryId countryId, CrimeJusticePolicyBill bill)
         {
             System.Func<CrimeJusticePolicyBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
-            return Answered(new PlayerAnswer("a crime and justice bill", countryId, sim => copy != null && sim.IntroduceCrimeJusticeBill(countryId, copy())), () => IntroduceCrimeJusticeBillNow(countryId, bill));
+            return Answered(new PlayerAnswer("a crime and justice bill", countryId, sim => copy != null && sim.IntroduceCrimeJusticeBill(countryId, copy()), answersAWait: false, bill: Congress.Kind.CrimeJustice), () => IntroduceCrimeJusticeBillNow(countryId, bill));
         }
 
         /// <summary>FORK-2: <see cref="IntroduceCrimeJusticeBill"/>'s act.</summary>
@@ -2750,7 +2750,7 @@ namespace PoliSim.Simulation
         public bool IntroduceLawBill(CountryId countryId, LawBill bill)
         {
             System.Func<LawBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
-            return Answered(new PlayerAnswer("a law bill", countryId, sim => copy != null && sim.IntroduceLawBill(countryId, copy())), () => IntroduceLawBillNow(countryId, bill));
+            return Answered(new PlayerAnswer("a law bill", countryId, sim => copy != null && sim.IntroduceLawBill(countryId, copy()), answersAWait: false, bill: Congress.Kind.Law), () => IntroduceLawBillNow(countryId, bill));
         }
 
         /// <summary>FORK-2: <see cref="IntroduceLawBill"/>'s act.</summary>
@@ -3082,7 +3082,7 @@ namespace PoliSim.Simulation
         public bool IntroduceSectorBill(CountryId countryId, SectorPolicyBill bill)
         {
             System.Func<SectorPolicyBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
-            return Answered(new PlayerAnswer("a sector bill", countryId, sim => copy != null && sim.IntroduceSectorBill(countryId, copy())), () => IntroduceSectorBillNow(countryId, bill));
+            return Answered(new PlayerAnswer("a sector bill", countryId, sim => copy != null && sim.IntroduceSectorBill(countryId, copy()), answersAWait: false, bill: Congress.Kind.Sector), () => IntroduceSectorBillNow(countryId, bill));
         }
 
         /// <summary>FORK-2: <see cref="IntroduceSectorBill"/>'s act.</summary>
@@ -3162,7 +3162,7 @@ namespace PoliSim.Simulation
         public bool IntroduceSwfDrawdownBill(CountryId countryId, SwfDrawdownBill bill)
         {
             System.Func<SwfDrawdownBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
-            return Answered(new PlayerAnswer("a fund drawdown bill", countryId, sim => copy != null && sim.IntroduceSwfDrawdownBill(countryId, copy())), () => IntroduceSwfDrawdownBillNow(countryId, bill));
+            return Answered(new PlayerAnswer("a fund drawdown bill", countryId, sim => copy != null && sim.IntroduceSwfDrawdownBill(countryId, copy()), answersAWait: false, bill: Congress.Kind.SwfDrawdown), () => IntroduceSwfDrawdownBillNow(countryId, bill));
         }
 
         /// <summary>FORK-2: <see cref="IntroduceSwfDrawdownBill"/>'s act.</summary>
@@ -3276,7 +3276,7 @@ namespace PoliSim.Simulation
         public bool IntroduceTradeBill(CountryId countryId, TradePolicyBill bill)
         {
             System.Func<TradePolicyBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
-            return Answered(new PlayerAnswer("a trade bill", countryId, sim => copy != null && sim.IntroduceTradeBill(countryId, copy())), () => IntroduceTradeBillNow(countryId, bill));
+            return Answered(new PlayerAnswer("a trade bill", countryId, sim => copy != null && sim.IntroduceTradeBill(countryId, copy()), answersAWait: false, bill: Congress.Kind.Trade), () => IntroduceTradeBillNow(countryId, bill));
         }
 
         /// <summary>FORK-2: <see cref="IntroduceTradeBill"/>'s act.</summary>
@@ -3791,16 +3791,21 @@ namespace PoliSim.Simulation
         /// FORK-2 (D-45's remainder; the s871 review's M2): the player's NON-LEVER answer <paramref name="answer"/>, given by <paramref name="act"/> (the verb's
         /// own body). Where it acted, the impact ledger watching this game is told after the act (<see cref="PolicyImpactLedger.AfterAnswer"/>), and every
         /// except-world gives the same answer on the same day - so a fork with no policy difference stays the played world. A counterfactual's manager has no
-        /// ledger, so a replay is never told again.
+        /// ledger, so a replay is never told again. K51 (Elias's ruling of 2026-10-23: "each kind of bill is its own ledger family"): an answer that lays a bill
+        /// (`PlayerAnswer.Bill`) is shown to the ledger BEFORE the act too, as a lever is (`Pull`) - a kind first laid forks its family's world from the state
+        /// the bill finds, and a bill the chamber's gate refuses leaves no family behind.
         /// </summary>
         private bool Answered(PlayerAnswer answer, System.Func<bool> act)
         {
             if (ImpactLedger == null || _answering > 0) { return act(); }
+            PolicyImpactLedger ledger = ImpactLedger;
+            bool forked = ledger.BeforeAnswer(this, answer);   // K51: false for an answer that lays no bill, and for a kind already forked
             _answering++;
             bool acted;
             try { acted = act(); }
             finally { _answering--; }
-            if (acted) { ImpactLedger.AfterAnswer(this, answer); }
+            if (acted) { ledger.AfterAnswer(this, answer); }
+            else if (forked) { ledger.ForgetUnlaid(answer); }   // K51: the bill was refused - its kind was never laid, and a world forked for it would count from a touch that never came
             return acted;
         }
 

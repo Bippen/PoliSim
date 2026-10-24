@@ -487,3 +487,8 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 - **The average minister's leaks, measured (K58).** Under political pressure an average cabinet of seven rolls a leak or a resignation in 17.4 % of years (0.10 leaks and 0.09 resignations a year); without pressure none. Over the no-policy century that comes to 0.02 (Italy) to 0.09 (the USA) leaks a year. Say if that cadence is too much or too little.
 - **The no-policy trajectory moved** (the family `form`): with a neutral candidate on every shortlist (K56), every AI central-bank head now leans 0, from the Fed at turn 5.
 - **A note, not wired:** C's and MP's own pages after the 2026 election (C on 15 and 19 October, MP on 15 October) lie past the record's date.
+
+### The impact ledger (§911): for your information
+
+- **K46 in real play.** A manual save drops a world only when it still equals the game; every family you have touched has a non-zero line, so a manual save still carries it (your ruling's own consequence). The saving is for families never touched, and for autosaves, which carry no world and rebuild them at the load (each line then measured from the load, K96).
+- **No family:** the Docket's sign/veto answers and the debt-limit verbs answer a bill already passed or a wait, so they stay answers of no family. The omnibus budget is one family, not split by its parts.

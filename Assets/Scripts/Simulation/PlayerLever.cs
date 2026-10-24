@@ -59,12 +59,18 @@ namespace PoliSim.Simulation
     /// proposal or an offer's answer, a campaign decision or a story's answer. Its REPLAY is the verb itself, called again on a counterfactual world's manager
     /// with that world's own objects (the meeting's option by its place in the meeting, a docket bill by its place on the docket, a bill as a fresh copy of
     /// the one the player wrote): the impact ledger replays it in every except-world on the day it was given (<see cref="PolicyImpactLedger.AfterAnswer"/>).
-    /// An answer is no dial and no lever - it belongs to no family, so no except-world leaves it out (DECLARED, FORK-2).
+    /// An answer is no dial and no lever - it belongs to no family, so no except-world leaves it out (DECLARED, FORK-2). K51 (Elias's ruling of 2026-10-23:
+    /// "each kind of bill is its own ledger family"): a BILL the player lays is the exception - it carries its kind (`Bill`), and the ledger reads it as a
+    /// lever of that kind's family (`PolicyImpactLedger.BeforeAnswer`): its family's world never lays it, and every other world lays it again.
     /// </summary>
     public sealed class PlayerAnswer
     {
         public string What { get; }
         public CountryId? CountryId { get; }
+
+        /// <summary>K51: the kind of bill this answer lays (`Congress.Kind`) - null for every answer that lays none (a meeting, the docket, a motion, a formation,
+        /// the campaign, the debt limit's verbs: DECLARED, they stay answers of no family).</summary>
+        public Congress.Kind? Bill { get; }
 
         /// <summary>The replay: the verb on a counterfactual's manager; true where it acted.</summary>
         private readonly Func<SimulationManager, bool> _replay;
@@ -75,11 +81,18 @@ namespace PoliSim.Simulation
         public bool AnswersAWait { get; }
 
         internal PlayerAnswer(string what, CountryId? countryId, Func<SimulationManager, bool> replay, bool answersAWait = false)
+            : this(what, countryId, replay, answersAWait, null)
+        {
+        }
+
+        /// <summary>K51: an answer that lays a bill of <paramref name="bill"/>'s kind.</summary>
+        internal PlayerAnswer(string what, CountryId? countryId, Func<SimulationManager, bool> replay, bool answersAWait, Congress.Kind? bill)
         {
             What = what;
             CountryId = countryId;
             _replay = replay;
             AnswersAWait = answersAWait;
+            Bill = bill;
         }
 
         /// <summary>The answer given again on <paramref name="sim"/>, a counterfactual world's manager; true where it acted - false where the world holds

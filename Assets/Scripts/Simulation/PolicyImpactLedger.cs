@@ -110,8 +110,42 @@ namespace PoliSim.Simulation
                     "SwfBondsWeightOverride", "SwfInfrastructureWeightOverride", "SwfRealEstateWeightOverride"
                 }
             },
-            { "Demographics", new[] { "FamilyPolicyOverride", "ImmigrationPolicyOverride" } }
+            { "Demographics", new[] { "FamilyPolicyOverride", "ImmigrationPolicyOverride" } },
+            // K51 (Elias's ruling of 2026-10-23: "each kind of bill is its own ledger family"): no PolicyDecision field belongs to these - each is touched by the
+            // player's bills of its kind alone (BillFamilies), as the lever families are by their levers
+            { "Budget bill", new string[0] },
+            { "Tax programme bill", new string[0] },
+            { "Welfare programme bill", new string[0] },
+            { "Labour bill", new string[0] },
+            { "Crime and justice bill", new string[0] },
+            { "Law bill", new string[0] },
+            { "Sector bill", new string[0] },
+            { "Trade bill", new string[0] },
+            { "Fund drawdown bill", new string[0] }
         };
+
+        /// <summary>
+        /// K51 (Elias's ruling of 2026-10-23, `docs/RULINGS_2026-10-23.md`; FORK-2's ask, §890): <b>each kind of bill is its own ledger family</b> - the family of
+        /// every bill kind the game votes (`Congress.Kind`). Since FORK-2 a bill was an answer of no family, replayed in every world, so its effect landed on the
+        /// interaction line; and because a player's dials reach the game through bills, no dial family was ever forked in a real game. A bill is now read as a
+        /// lever is (`BeforeAnswer`, `AfterAnswer`): its family's world never lays it, every other world lays it on the same day. An alternative budget is the
+        /// budget's kind. Completeness is checked (`AssertPartitionCovers`): a kind with no family throws.
+        /// </summary>
+        private static readonly Dictionary<Congress.Kind, string> BillFamilies = new Dictionary<Congress.Kind, string>
+        {
+            { Congress.Kind.Budget, "Budget bill" },
+            { Congress.Kind.TaxProgram, "Tax programme bill" },
+            { Congress.Kind.WelfareProgram, "Welfare programme bill" },
+            { Congress.Kind.Labor, "Labour bill" },
+            { Congress.Kind.CrimeJustice, "Crime and justice bill" },
+            { Congress.Kind.Law, "Law bill" },
+            { Congress.Kind.Sector, "Sector bill" },
+            { Congress.Kind.Trade, "Trade bill" },
+            { Congress.Kind.SwfDrawdown, "Fund drawdown bill" },
+        };
+
+        /// <summary>K51: the family an answer belongs to - its bill kind's (`BillFamilies`), or null for an answer that lays no bill (it belongs to no family).</summary>
+        private static string FamilyOf(PlayerAnswer answer) => answer?.Bill != null && BillFamilies.TryGetValue(answer.Bill.Value, out string family) ? family : null;
 
         /// <summary>
         /// AF-11 (Elias's ruling q11 of 2026-10-18): **the family each lever belongs to** - the levers a player pulls outside the turn's decision,
@@ -202,6 +236,7 @@ namespace PoliSim.Simulation
 
                 if (!_except.TryGetValue(family.Key, out ShadowBaseline world)) { continue; }
 
+                if (touched) { _withheld.Add(family.Key); }   // K46: the family's own dials stripped from this world's turn
                 world.AdvanceTurn(Strip(decisions, family.Value));   // FORK-2 (M3): a world that throws marks itself failed and returns
                 RetireIfFailed(family.Key);
             }
@@ -230,8 +265,39 @@ namespace PoliSim.Simulation
         public void AfterAnswer(SimulationManager realSim, PlayerAnswer answer)
         {
             int day = realSim.DaysIntoTurn;
-            foreach (KeyValuePair<string, ShadowBaseline> pair in _except) { pair.Value.Schedule(day, answer); }
+            string own = FamilyOf(answer);   // K51: a bill's family's world never lays it
+            foreach (KeyValuePair<string, ShadowBaseline> pair in _except)
+            {
+                if (pair.Key == own) { _withheld.Add(own); continue; }   // K46: the bill left unlaid in its own kind's world
+                pair.Value.Schedule(day, answer);
+            }
             RetireTheFailed();   // FORK-2 (M3): a replay that threw sets its world aside; the played world has acted and stays as it is
+        }
+
+        /// <summary>
+        /// K51 (Elias's ruling of 2026-10-23: "each kind of bill is its own ledger family"): <b>the player is about to lay a bill</b> (`SimulationManager`'s
+        /// answer path calls this before the act). A kind first laid forks its family's world NOW, from the state the bill finds - the lazy fork's reasoning at a
+        /// lever's moment (`BeforeLever`): every earlier act of another family is in that state, and no bill of its kind came before. True where this call forked
+        /// the world (the caller drops it again where the bill is refused, `ForgetUnlaid`); false for an answer that lays no bill, or a kind forked already.
+        /// </summary>
+        internal bool BeforeAnswer(SimulationManager realSim, PlayerAnswer answer)
+        {
+            string family = FamilyOf(answer);
+            if (family == null || _except.ContainsKey(family) || _unavailable.ContainsKey(family)) { return false; }
+            CountryId? seat = realSim.PlayerCountryId ?? answer.CountryId;
+            if (!seat.HasValue) { return false; }
+            Fork(family, () => new ShadowBaseline(realSim, realSim.World, seat.Value, insideTurn: true, dayTick: true, seatAsPlayed: true));   // as a lever's fork (BeforeLever)
+            return _except.ContainsKey(family);
+        }
+
+        /// <summary>K51: a bill whose kind's world `BeforeAnswer` forked was refused (no slot, the gate) - the kind was never laid, so its world is dropped
+        /// and the family stays untouched, as a lever that acts on nothing forks nothing it keeps.</summary>
+        internal void ForgetUnlaid(PlayerAnswer answer)
+        {
+            string family = FamilyOf(answer);
+            if (family == null || !_except.TryGetValue(family, out ShadowBaseline world)) { return; }
+            _except.Remove(family);
+            world.Dispose();
         }
 
         /// <summary>
@@ -240,19 +306,100 @@ namespace PoliSim.Simulation
         /// touched, or a world with no player seat). So after a load each family's line keeps its span from the family's first touch, as the divergence keeps
         /// its span from the start - before FORK-2 the ledger restarted empty at a load and every line counted from it.
         /// </summary>
-        public Dictionary<string, string> Carry(SimulationManager realSim)
+        public Dictionary<string, string> Carry(SimulationManager realSim) => Carry(realSim, out _);
+
+        /// <summary>
+        /// K46 (Elias's ruling of 2026-10-23: "a save carries worlds only for families whose ledger line is non-zero; autosaves carry none and rebuild on load"):
+        /// the worlds a MANUAL save carries - only the families whose line is non-zero, or may become so; each family whose world is still the played world is
+        /// named in <paramref name="rebuilt"/> instead, and the load forks it again from the loaded game (`Rebuild`). Exact: such a world is the very world a fork
+        /// of the loaded game is, so its line keeps its span (zero so far, and every later act still counted).
+        /// <para>DECLARED reading of "non-zero": a family's world is still the played world where the ledger has withheld nothing from it since its fork - no
+        /// dial of its family stripped from a turn's decision, no lever or bill of its family left undone in it (`_withheld`), and the world has answered
+        /// nothing the played world did not (`ShadowBaseline.AnsweredAlone`: a replay that missed, a wait answered by the AI's rule) - AND, brought to the played
+        /// world's day, every country's economic state reads alike to the bit (so all its lines are zero). A world whose line reads zero but which has had an act
+        /// withheld (a bill of its kind still before the chamber) is carried: its line can move without another touch. The text of the two worlds is not
+        /// compared: a snapshot numbers its objects in the order it writes them, and a world restored from one (every fork) can list a table's entries in
+        /// another order than the world it was taken from.</para>
+        /// </summary>
+        public Dictionary<string, string> Carry(SimulationManager realSim, out List<string> rebuilt)
         {
+            rebuilt = null;
             if (_except.Count == 0) { return null; }
             var carried = new Dictionary<string, string>();
             foreach (KeyValuePair<string, ShadowBaseline> pair in new List<KeyValuePair<string, ShadowBaseline>>(_except))
             {
                 if (pair.Value.Faulted != null) { RetireIfFailed(pair.Key); continue; }   // FORK-2 (M3): a failed world is not carried
+                if (!_withheld.Contains(pair.Key) && !pair.Value.AnsweredAlone)
+                {
+                    pair.Value.CatchUp(realSim.DaysIntoTurn);   // K46: read on the played world's day - the boundary's days run sooner, exactly (FORK-2)
+                    if (pair.Value.Faulted != null) { RetireIfFailed(pair.Key); continue; }
+                    if (!pair.Value.AnsweredAlone && StatesAlike(realSim.World, pair.Value.World)) { (rebuilt = rebuilt ?? new List<string>()).Add(pair.Key); continue; }   // K46: still the played world - rebuilt at the load
+                }
                 string world = pair.Value.Carry(realSim.DaysIntoTurn);
                 if (pair.Value.Faulted != null) { RetireIfFailed(pair.Key); continue; }   // a catch-up that threw
-                if (world == null) { return null; }
+                if (world == null) { rebuilt = null; return null; }
                 carried[pair.Key] = world;
             }
             return carried;
+        }
+
+        /// <summary>K46: the families whose world the ledger has withheld an act from since its fork - a dial of the family stripped from a turn's decision
+        /// (`AdvanceTurn`), a lever of it left undone (`AfterLever`), a bill of its kind left unlaid (`AfterAnswer`); a world carried by a save counts as one
+        /// (it was carried because it had). A family not here holds a world that is still the played world.</summary>
+        private readonly HashSet<string> _withheld = new HashSet<string>();
+
+        /// <summary>K46: the families an AUTOSAVE names for the load to rebuild - every family whose world stands, none carried (null where there is none). Its
+        /// load forks each from the loaded game, so each line counts from that load (DECLARED: an autosave carries no world, so a line the family had opened before
+        /// it is not kept).</summary>
+        public List<string> FamiliesToRebuild() => _except.Count == 0 ? null : new List<string>(_except.Keys);
+
+        /// <summary>K46: the families the last `Rebuild` forked at a load, in the order named - read by the load's log and the checks.</summary>
+        public IReadOnlyList<string> Rebuilt => _rebuilt;
+        private readonly List<string> _rebuilt = new List<string>();
+
+        /// <summary>
+        /// K46: <b>the load rebuilds the worlds a save named and did not carry</b> (`SaveGame.ImpactLedgerRebuild`) - each forked from the loaded game as it stands
+        /// (C-C10's fork: a save round trip of the loaded world, on the played world's day, seating what it seats), deterministic: the fork reads the loaded
+        /// state and draws nothing from the played world's streams (`ShadowBaseline`'s swap). A family the build does not have, one carried, or one set aside as
+        /// unavailable is not forked. Triggered by the game's own load (`GameController.RestoreFromSave`), after the played world and the no-policy world stand.
+        /// </summary>
+        public void Rebuild(SimulationManager realSim, IEnumerable<string> families)
+        {
+            _rebuilt.Clear();
+            if (realSim == null || families == null || !realSim.PlayerCountryId.HasValue) { return; }
+            CountryId seat = realSim.PlayerCountryId.Value;
+            foreach (string family in families)
+            {
+                if (family == null || !Families.ContainsKey(family) || _except.ContainsKey(family) || _unavailable.ContainsKey(family)) { continue; }
+                Fork(family, () => new ShadowBaseline(realSim, realSim.World, seat, insideTurn: true, dayTick: true, seatAsPlayed: true));   // the load's fork (insideTurn: an inactive host)
+                if (_except.ContainsKey(family)) { _rebuilt.Add(family); }
+            }
+        }
+
+        /// <summary>K46: every country's economic state alike in two worlds (each public float compared exactly) - `Carry`'s last test, after the bookkeeping
+        /// (nothing withheld, nothing answered alone) that the world is still the played world.</summary>
+        private static bool StatesAlike(World a, World b)
+        {
+            if (a == null || b == null) { return false; }
+            foreach (Country c in a.Countries)
+            {
+                Country d = b.GetCountry(c.Id);
+                if (d == null) { return false; }
+                foreach (FieldInfo f in StateFloats)
+                {
+                    if (((float)f.GetValue(c.State)).CompareTo((float)f.GetValue(d.State)) != 0) { return false; }
+                }
+            }
+            return true;
+        }
+
+        private static readonly List<FieldInfo> StateFloats = FloatsOf(typeof(EconomyState));
+
+        private static List<FieldInfo> FloatsOf(Type type)
+        {
+            var floats = new List<FieldInfo>();
+            foreach (FieldInfo f in type.GetFields(BindingFlags.Public | BindingFlags.Instance)) { if (f.FieldType == typeof(float)) { floats.Add(f); } }
+            return floats;
         }
 
         /// <summary>
@@ -281,6 +428,7 @@ namespace PoliSim.Simulation
                 catch (Exception e) { refusedBecause = $"the {pair.Key} world did not restore - {e.Message}"; ledger.Dispose(); return null; }
                 world.AnswersWaitsAsTheAi = true;   // the fix review's H1 (and M2: the mode needs no carrying - every ledger world has it)
                 ledger._except[pair.Key] = world;
+                ledger._withheld.Add(pair.Key);   // K46: carried because it had an act withheld - never read as the played world again
                 if (world.PlayerCountryId != noPolicy?.PlayerCountryId || world.CurrentDate > savedOn || world.CurrentTurn != noPolicy?.CurrentTurn)
                 {
                     refusedBecause = $"the {pair.Key} world stands on {world.CurrentDate:yyyy-MM-dd} seating {world.PlayerCountryId?.ToString() ?? "no country"} - not the saved game's turn and seat";
@@ -303,7 +451,7 @@ namespace PoliSim.Simulation
             int day = realSim.DaysIntoTurn;
             foreach (KeyValuePair<string, ShadowBaseline> pair in _except)
             {
-                if (pair.Key == family) { continue; }
+                if (pair.Key == family) { _withheld.Add(family); continue; }   // K46: the lever left undone in its own family's world
                 pair.Value.Schedule(day, lever);
             }
             RetireTheFailed();
@@ -461,12 +609,30 @@ namespace PoliSim.Simulation
                         $"PolicyImpactLedger: the lever {kind} names the family '{family}', which the family table does not hold.");
                 }
             }
+
+            // K51: every bill kind the game votes in a family of its own the table holds - a kind with none would land on the interaction line again
+            var billFamilies = new HashSet<string>();
+            foreach (Congress.Kind kind in Enum.GetValues(typeof(Congress.Kind)))
+            {
+                if (!BillFamilies.TryGetValue(kind, out string family) || !Families.ContainsKey(family))
+                {
+                    throw new InvalidOperationException(
+                        $"PolicyImpactLedger: the bill kind {kind} has no family the family table holds, so its bills would land on the interaction line. Add it to BillFamilies.");
+                }
+
+                if (!billFamilies.Add(family) || Families[family].Length > 0 || new List<string>(LeverFamilies.Values).Contains(family))
+                {
+                    throw new InvalidOperationException(
+                        $"PolicyImpactLedger: the bill kind {kind}'s family '{family}' is not its own - another kind, a dial or a lever shares it.");
+                }
+            }
         }
 
         public void Dispose()
         {
             foreach (KeyValuePair<string, ShadowBaseline> pair in _except) { pair.Value.Dispose(); }
             _except.Clear();
+            _withheld.Clear();
         }
     }
 }

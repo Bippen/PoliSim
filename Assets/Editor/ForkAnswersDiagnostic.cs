@@ -45,10 +45,16 @@ namespace PoliSim.EditorTools
     /// is one higher, and the signature still lands there. <b>A REPLAY THAT MISSES</b> (case 8) is said in one line and answers nothing; <b>A FORK THAT
     /// FAILS</b> (case 9) is set aside as unavailable, the played world untouched beside a twin.</description></item>
     /// <item><description><b>THE COST, MEASURED</b> (the fix review's M5): every one of the ledger's families forked, a save cut inside a turn - the catch-up's
-    /// time, the carry's, and the save's bytes with every family's world against without. Reported, for Elias's ruling.</description></item>
+    /// time, the carry's, and the save's bytes with every family's world against without. K46 (Elias's ruling of 2026-10-23): the save carries only the worlds
+    /// that differ from the played world and names the rest for the load to rebuild; an autosave carries none, and its load rebuilds every family, the same
+    /// worlds on a second load of the same save.</description></item>
+    /// <item><description><b>K50</b> (case 1, confirmed 2026-10-23): the no-policy world holds its own election on the polling day, and keeps the standing
+    /// budget. <b>K51</b> (case 10): a bill the player lays is its kind's family - that family's world is the played world as the bill found it, and every other
+    /// world lays the bill on its day.</description></item>
     /// </list>
     /// <para>⚠ <b>What it does not claim.</b> The no-policy world is compared with the played world only where nothing was answered (case 2, up to the polling
-    /// day); the bills' families are not claimed (an answer belongs to no family, DECLARED and asked). Times and bytes are one measurement each.</para>
+    /// day); one bill kind's family is exercised (the budget's) - that every kind's verb carries its kind is `PolicyImpactLedgerCheck`'s. Times and bytes are one
+    /// measurement each.</para>
     /// </summary>
     public static class ForkAnswersDiagnostic
     {
@@ -66,6 +72,9 @@ namespace PoliSim.EditorTools
         private static readonly string[] Stats = { "GDP", "Inflation", "Unemployment", "ApprovalRating", "Budget", "GovernmentDebt" };
 
         private static readonly FieldInfo ExceptField = typeof(PolicyImpactLedger).GetField("_except", BindingFlags.Instance | BindingFlags.NonPublic);
+        /// <summary>K46: the ledger's record of the worlds an act was withheld from (planted cases 5 and 11).</summary>
+        private static readonly FieldInfo WithheldField = typeof(PolicyImpactLedger).GetField("_withheld", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly PropertyInfo AnsweredAloneProperty = typeof(ShadowBaseline).GetProperty("AnsweredAlone", BindingFlags.Instance | BindingFlags.Public);
         private static readonly FieldInfo FamiliesField = typeof(PolicyImpactLedger).GetField("Families", BindingFlags.Static | BindingFlags.NonPublic);
         private static readonly FieldInfo ForkSimField = typeof(ShadowBaseline).GetField("_sim", BindingFlags.Instance | BindingFlags.NonPublic);
         private static readonly FieldInfo ForkOwnField = typeof(ShadowBaseline).GetField("_own", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -83,7 +92,15 @@ namespace PoliSim.EditorTools
             public bool MeetingsAroundLedger, FormationAroundLedger, DialAtBoundary;
             public int Meetings, Bills, Formations, PollingDays;
             public bool Boundary, PlayerAskedFirst;
+            /// <summary>K50: the player's country's standing figures at the start - every rate line's rate (the carbon line's is the statute's to move) and every
+            /// welfare programme's generosity - which the no-policy world keeps.</summary>
+            public string StandingAtStart;
         }
+
+        /// <summary>K50 (Elias's ruling of 2026-10-23: "the no-policy world ... keeps the standing budget"): the standing figures a budget sets in the player's
+        /// country, one per '|' - the rate lines' rates (not the carbon line, whose figure the statute moves at a boundary) and the welfare programmes' generosity.</summary>
+        private static string Standing(Country c) =>
+            string.Join("|", c.TaxLines.Where(t => !t.IsPerTonne).Select(t => t.Type + "=" + R(t.Rate)).Concat(c.WelfarePrograms.Select(w => w.Type + "=" + R(w.GenerosityLevel))));
 
         public static void Run()
         {
@@ -97,7 +114,7 @@ namespace PoliSim.EditorTools
             Dictionary<SimulationRandom.Stream, int> drawsWas = SimulationRandom.CaptureDrawCounts();
             try
             {
-                bool reached = ExceptField != null && FamiliesField != null && ForkSimField != null && ForkOwnField != null && LeverCtor != null && Stats.All(s => typeof(EconomyState).GetField(s)?.FieldType == typeof(float));
+                bool reached = ExceptField != null && FamiliesField != null && WithheldField != null && AnsweredAloneProperty?.GetSetMethod(true) != null && ForkSimField != null && ForkOwnField != null && LeverCtor != null && Stats.All(s => typeof(EconomyState).GetField(s)?.FieldType == typeof(float));
                 Check(reached, "the harness's reach: the ledger's worlds and families, a fork's manager and generator, the lever's constructor, the stats as EconomyState floats");
                 if (!reached) { throw new InvalidOperationException("a member the harness reads moved - VERIFIED NOTHING"); }
 
@@ -120,6 +137,11 @@ namespace PoliSim.EditorTools
                         Check(m.Fork != m.Real, "1. the control handed no MEETING answer (the bills still replayed) differs from the played world" + (m.Fork != m.Real ? FirstDifference(m.Real, m.Fork) : " - IT DOES NOT: a broken meeting replay would pass"));
                         sb.Append(F("    report    1. the no-policy world (handed no answer, its waits answered by the AI's rule): its meeting slot {0}; its ForeignPolicy draws {1} against the played world's {2}\n",
                             t.NoneMeetingPending ? "HOLDS a meeting" : "is empty", t.NoneForeignDraws, t.RealForeignDraws));
+                        // K50 (Elias's ruling of 2026-10-23, confirmed): "the no-policy world holds its own elections and keeps the standing budget"
+                        Check(t.NoneElectionHeld, F("1. K50 - the NO-POLICY world held its own election on the polling day {0}: its last election {1}", t.PollingDay, t.NoneElection));
+                        Check(t.NoneStanding == t.StartStanding && t.Bills > 0,
+                            F("1. K50 - the NO-POLICY world keeps the standing budget: with the player's party governing it laid none, and every rate line's rate and welfare programme's generosity stands as at the start, where the played world laid {0} budget bill(s){1}",
+                                t.Bills, t.NoneStanding == t.StartStanding ? string.Empty : FirstDifference(t.StartStanding, t.NoneStanding)));
 
                         // ============================================================ 2. the Speaker's question
                         // the precondition planted, not assumed of the seed: the player's party is the one the Speaker asks first after the count - case 1's run
@@ -170,6 +192,15 @@ namespace PoliSim.EditorTools
 
                         // ============================================================ 8. a replay that misses; 9. a fork that fails
                         failures += MissAndFault(hosts, cleanup, sb);
+
+                        // ============================================================ 10. K51: a bill is its kind's family
+                        failures += BillsHaveTheirFamily(hosts, cleanup, sb);
+
+                        // ============================================================ 11. the review's M2: K46's guards and the refused bill, with teeth
+                        failures += GuardsHaveTeeth(hosts, cleanup, sb);
+
+                        // ============================================================ 12. a campaign on a ledger game replays (the merged film real911)
+                        failures += CampaignReplaysOnALedgerGame(hosts, cleanup, sb);
                     }
                     finally { EnergyMarket.ResetTurnState(); }
                 }
@@ -199,6 +230,9 @@ namespace PoliSim.EditorTools
             public bool Governs, ElectionHeld, ForkHeld, NoneMeetingPending, PlayerAskedFirst, NoneFormed, ForkFormed, Planted, NonePlanted;
             public string NoneFirstAsked;
             public int PollingDays, Meetings, Bills, Formations, NoneForeignDraws, RealForeignDraws;
+            /// <summary>K50: the no-policy world's own election (its last record's day and whether it counted the chamber) and its standing figures against the start's.</summary>
+            public string NoneElection = "none", NoneStanding, StartStanding;
+            public bool NoneElectionHeld;
         }
 
         // ------------------------------------------------------------------ 1 and 2
@@ -310,7 +344,13 @@ namespace PoliSim.EditorTools
             o.NoneForeignDraws = noneDraws.TryGetValue(SimulationRandom.Stream.ForeignPolicy, out int nf) ? nf : 0;
             SimulationManager noneSim = ForkSim(g.None);
             o.NoneMeetingPending = noneSim.GetPendingForeignPolicyMeeting(Player) != null;
-            GovernmentRecord noneGov = g.None.World.GetCountry(Player)?.Government;
+            Country noneMe = g.None.World.GetCountry(Player);
+            ElectionRecord noneHeld = noneMe?.ElectionHistory.LastOrDefault();
+            o.NoneElectionHeld = noneHeld != null && Day(noneHeld.Date) == o.PollingDay && NationalElection.CountsParliament(noneHeld.Method);   // K50: the no-policy world held the player's election on its own polling day
+            o.NoneElection = noneHeld == null ? "none" : Day(noneHeld.Date) + " (" + noneHeld.Method + ")";
+            o.NoneStanding = noneMe == null ? "no country" : Standing(noneMe);
+            o.StartStanding = g.StandingAtStart;
+            GovernmentRecord noneGov = noneMe?.Government;
             o.NoneFormed = noneGov != null && !noneGov.Caretaker && noneGov.Cabinet.Count > 0 && noneSim.RoundOf(Player) == null && g.None.Faulted == null;
             if (fork != null)
             {
@@ -352,17 +392,24 @@ namespace PoliSim.EditorTools
                 var clock = System.Diagnostics.Stopwatch.StartNew();
                 SaveGame save = SaveGameService.CreateSaveGame(g.Sim, g.World, Player, null);
                 save.NoPolicyShadow = g.None.Carry(g.Sim.DaysIntoTurn);
-                save.ImpactLedgerWorlds = save.NoPolicyShadow != null ? g.Ledger.Carry(g.Sim) : null;
+                List<string> rebuild = null;
+                save.ImpactLedgerWorlds = save.NoPolicyShadow != null ? g.Ledger.Carry(g.Sim, out rebuild) : null;
+                save.ImpactLedgerRebuild = rebuild;   // K46: as GameController.SaveToPath names them
                 double carryMs = clock.Elapsed.TotalMilliseconds;
                 string with = SaveGameService.Serialize(save);
                 save.ImpactLedgerWorlds = null;
+                save.ImpactLedgerRebuild = null;
                 string without = SaveGameService.Serialize(save);
                 g.Live = SimulationRandom.CaptureLive();
                 var families = new List<string>(((Dictionary<string, ShadowBaseline>)ExceptField.GetValue(g.Ledger)).Keys);
                 families.Sort(StringComparer.Ordinal);
-                Check(families.Count == 2 && families.Contains("Monetary") && families.Contains("Trade") && SaveGameService.Deserialize(with).ImpactLedgerWorlds?.Count == 2,
-                    F("4. the save cut on day {0} of turn {1} carries the ledger's {2} world(s) [{3}] beside the no-policy world: {4:0} ms to carry, {5:N0} bytes against {6:N0} without them",
-                        g.Sim.DaysIntoTurn, g.Sim.CurrentTurn, families.Count, string.Join(", ", families), carryMs, Encoding.UTF8.GetByteCount(with), Encoding.UTF8.GetByteCount(without)));
+                SaveGame reread = SaveGameService.Deserialize(with);
+                var named = new HashSet<string>((reread.ImpactLedgerWorlds?.Keys ?? Enumerable.Empty<string>()).Concat(reread.ImpactLedgerRebuild ?? Enumerable.Empty<string>()));
+                // K51: the budget bills the player laid fork the Budget bill family beside the two levers' - every family the save carries or names for the load
+                Check(families.Contains("Monetary") && families.Contains("Trade") && reread.ImpactLedgerWorlds != null && reread.ImpactLedgerWorlds.ContainsKey("Monetary") && reread.ImpactLedgerWorlds.ContainsKey("Trade") && named.SetEquals(families),
+                    F("4. the save cut on day {0} of turn {1} carries the ledger's worlds [{2}] and names [{3}] for the load to rebuild, of its {4} famil(ies) [{5}], beside the no-policy world: {6:0} ms to carry, {7:N0} bytes against {8:N0} without them",
+                        g.Sim.DaysIntoTurn, g.Sim.CurrentTurn, string.Join(", ", (reread.ImpactLedgerWorlds?.Keys ?? Enumerable.Empty<string>()).OrderBy(k => k, StringComparer.Ordinal)), string.Join(", ", reread.ImpactLedgerRebuild ?? new List<string>()),
+                        families.Count, string.Join(", ", families), carryMs, Encoding.UTF8.GetByteCount(with), Encoding.UTF8.GetByteCount(without)));
 
                 loaded = Adopt(SaveGameService.Deserialize(with), hosts, out string whyLoaded);
                 bare = Adopt(SaveGameService.Deserialize(without), hosts, out string whyBare);
@@ -455,19 +502,26 @@ namespace PoliSim.EditorTools
 
         // ------------------------------------------------------------------ 5
 
-        /// <summary>(the fix review's M5) Every family the ledger has forked - as the ledger forks a family a lever first touches (`PolicyImpactLedger`'s fork,
-        /// reached here by its table), on day <see cref="HeadDay"/> - and a save cut on day <see cref="CutDay"/> of the next turn: the catch-up's time, the carry's,
-        /// the bytes. Reported, not asserted, but that the carry carries them all.</summary>
+        /// <summary>(the fix review's M5; K46, Elias's ruling of 2026-10-23) Every family the ledger has - each world planted on day `HeadDay` as the ledger forks
+        /// a family a lever first touches (`PolicyImpactLedger`'s fork, reached here by its table) - and a save cut on day `CutDay` of the next turn: the catch-up's
+        /// time, the carry's, the bytes. K46: the save carries only the worlds that differ from the played world - every planted world that saw no act of its own
+        /// since (each but the Budget bill family's, whose bills the player kept laying) is the played world, and is NAMED for the load to rebuild, not carried;
+        /// the bytes are printed with every world carried (before K46), as K46 carries them, and as an autosave writes them (no world, every family named). An
+        /// autosave's load rebuilds every family from the loaded game, twice over the same save to the same worlds, each the loaded game itself.</summary>
         private static int MeasureTheCost(List<GameObject> hosts, List<Action> cleanup, StringBuilder sb)
         {
+            int failures = 0;
+            void Check(bool ok, string what) { if (!ok) { failures++; } sb.Append(ok ? "    ok        " : "    FAIL      ").Append(what).Append('\n'); }
             Game g = OpenSweden(hosts, cleanup, "ForkAnswersDiagnostic.cost", Governing, null, out _);
             var except = (Dictionary<string, ShadowBaseline>)ExceptField.GetValue(g.Ledger);
             var families = new List<string>(((System.Collections.IDictionary)FamiliesField.GetValue(null)).Keys.Cast<string>());
             SimulationRandom.Reinstate(g.Live);
             double catchUpMs, carryMs;
-            int cutDay = 0, cutTurn = 0;
-            int carried;
-            long with, without;
+            int cutDay = 0, cutTurn = 0, billsAtFork = -1;
+            List<string> rebuilt;
+            Dictionary<string, string> carriedWorlds;
+            long every, k46, autosave, without;
+            SaveGame autosaved;
             try
             {
                 while (g.Sim.CurrentTurn == 0 || g.Sim.DaysIntoTurn < CutDay)
@@ -475,7 +529,13 @@ namespace PoliSim.EditorTools
                     Day(g);
                     if (g.Sim.CurrentTurn == 0 && g.Sim.DaysIntoTurn == HeadDay)
                     {
-                        foreach (string family in families) { except[family] = new ShadowBaseline(g.Sim, g.World, Player, insideTurn: true, dayTick: true, seatAsPlayed: true) { AnswersWaitsAsTheAi = true }; }
+                        foreach (string family in families)
+                        {
+                            if (except.TryGetValue(family, out ShadowBaseline earlier)) { earlier.Dispose(); }   // K51: a budget bill laid before the day forked its family already
+                            except[family] = new ShadowBaseline(g.Sim, g.World, Player, insideTurn: true, dayTick: true, seatAsPlayed: true) { AnswersWaitsAsTheAi = true };
+                        }
+                        ((HashSet<string>)WithheldField.GetValue(g.Ledger)).Clear();   // the review's L6: a bill laid before the day marked its earlier, disposed world - the planted worlds start with nothing withheld
+                        billsAtFork = g.Bills;
                     }
                     Answer(g);
                     if (g.Sim.CurrentTurn > 2) { break; }
@@ -488,19 +548,81 @@ namespace PoliSim.EditorTools
                 clock.Restart();
                 SaveGame save = SaveGameService.CreateSaveGame(g.Sim, g.World, Player, null);
                 save.NoPolicyShadow = g.None.Carry(g.Sim.DaysIntoTurn);
-                save.ImpactLedgerWorlds = g.Ledger.Carry(g.Sim);
+                carriedWorlds = g.Ledger.Carry(g.Sim, out rebuilt);
                 carryMs = clock.Elapsed.TotalMilliseconds;
-                carried = save.ImpactLedgerWorlds?.Count ?? 0;
-                with = Encoding.UTF8.GetByteCount(SaveGameService.Serialize(save));
+                rebuilt = rebuilt ?? new List<string>();
+                save.ImpactLedgerWorlds = carriedWorlds;
+                save.ImpactLedgerRebuild = rebuilt;
+                k46 = Encoding.UTF8.GetByteCount(SaveGameService.Serialize(save));
+                save.ImpactLedgerWorlds = except.ToDictionary(kv => kv.Key, kv => kv.Value.Carry(g.Sim.DaysIntoTurn));   // before K46: every world carried
+                save.ImpactLedgerRebuild = null;
+                every = Encoding.UTF8.GetByteCount(SaveGameService.Serialize(save));
                 save.ImpactLedgerWorlds = null;
                 without = Encoding.UTF8.GetByteCount(SaveGameService.Serialize(save));
+                save.ImpactLedgerRebuild = g.Ledger.FamiliesToRebuild();   // as GameController.SaveToPath writes an autosave
+                string autosaveText = SaveGameService.Serialize(save);
+                autosave = Encoding.UTF8.GetByteCount(autosaveText);
+                autosaved = SaveGameService.Deserialize(autosaveText);
             }
             finally { g.Live = SimulationRandom.CaptureLive(); }
-            bool ok = carried == families.Count;
-            sb.Append(ok ? "    ok        " : "    FAIL      ").Append(F(
-                "5. THE COST, every family forked ({0} of {1} carried), a save cut on day {2} of turn {3}: the catch-up of every world to the cut (the most a save pays) {4:0} ms, the carry {5:0} ms; the save {6:N0} bytes with every family's world against {7:N0} without ({8:N0} a family)\n",
-                carried, families.Count, cutDay, cutTurn, catchUpMs, carryMs, with, without, carried > 0 ? (with - without) / carried : 0));
-            return ok ? 0 : 1;
+
+            var laid = new HashSet<string>(g.Bills > billsAtFork ? new[] { "Budget bill" } : new string[0]);   // the families an act of their own reached since the planting
+            var carriedNames = new HashSet<string>(carriedWorlds?.Keys ?? Enumerable.Empty<string>());
+            var expectRebuilt = new HashSet<string>(families.Where(f => !laid.Contains(f)));
+            bool rebuiltAsExpected = new HashSet<string>(rebuilt).SetEquals(expectRebuilt);
+            Check(billsAtFork >= 0 && carriedNames.SetEquals(laid) && rebuiltAsExpected,
+                F("5. K46 - A SAVE CARRIES ONLY THE WORLDS THAT DIFFER: every family planted on day {0} ({1}), {2} budget bill(s) laid since; the save cut on day {3} of turn {4} carries [{5}] (the families an act of their own reached: [{6}]) and names the other {7} for the load to rebuild{8}",
+                    HeadDay, families.Count, Math.Max(0, g.Bills - billsAtFork), cutDay, cutTurn, string.Join(", ", carriedNames.OrderBy(k => k, StringComparer.Ordinal)), string.Join(", ", laid),
+                    rebuilt.Count, rebuiltAsExpected ? string.Empty : " - NOT AS EXPECTED: carried as well " + string.Join(", ", expectRebuilt.Where(f => !rebuilt.Contains(f)))));
+            sb.Append(F("    report    5. THE COST: the catch-up of every world to the cut (the most a save pays) {0:0} ms, the carry {1:0} ms; the save, the worlds PLANTED (none withheld, an upper bound on the saving), {2:N0} bytes with every family's world (before K46), {3:N0} as K46 carries them, {4:N0} as an autosave writes it, {5:N0} with no family named ({6:N0} a family carried)\n",
+                catchUpMs, carryMs, every, k46, autosave, without, families.Count > 0 ? (every - without) / families.Count : 0));
+
+            // K46: an autosave's load rebuilds every family from the loaded game - the game's own load, twice over the same save
+            Game a = null, b = null;
+            try
+            {
+                var clock = System.Diagnostics.Stopwatch.StartNew();
+                a = Adopt(autosaved, hosts, out string whyA);
+                double loadMs = clock.Elapsed.TotalMilliseconds;
+                b = Adopt(SaveGameService.Deserialize(SaveGameService.Serialize(autosaved)), hosts, out string whyB);
+                if (a == null || b == null) { Check(false, "5. K46 - the game's own load adopts the autosave - " + (whyA ?? whyB)); return failures; }
+                var worldsA = (Dictionary<string, ShadowBaseline>)ExceptField.GetValue(a.Ledger);
+                var worldsB = (Dictionary<string, ShadowBaseline>)ExceptField.GetValue(b.Ledger);
+                string playedA = PlayedOf(a);
+                string Print(ShadowBaseline w) => Fingerprint(ForkSim(w), w.World, DrawsOf(w));
+                var unlike = families.Where(f => !worldsA.ContainsKey(f) || !worldsB.ContainsKey(f) || Print(worldsA[f]) != Print(worldsB[f]) || Print(worldsA[f]) != playedA).ToList();
+                Check(new HashSet<string>(a.Ledger.Rebuilt).SetEquals(families) && unlike.Count == 0 && a.Ledger.HasAnything,
+                    F("5. K46 - AN AUTOSAVE CARRIES NONE AND THE LOAD REBUILDS THEM: the autosave names {0} famil(ies) and carries no world; its load ({1:0} ms) rebuilt {2}, every one the loaded game itself and the same world on a second load of the same save (deterministic){3}",
+                        autosaved.ImpactLedgerRebuild?.Count ?? 0, loadMs, a.Ledger.Rebuilt.Count, unlike.Count == 0 ? string.Empty : " - NOT SO for " + string.Join(", ", unlike)));
+            }
+            finally
+            {
+                foreach (Game adopted in new[] { a, b }) { if (adopted != null) { cleanup.Add(() => { adopted.Ledger.Dispose(); adopted.None.Dispose(); }); } }
+            }
+
+            // the review's M1: the same measurement on a game whose families the LEDGER forked (two levers through their verbs, the budget bills the player
+            // lays), not planted - every family a real game touches has had an act withheld, so a manual save carries it: K46's saving in play, reported
+            Game p = OpenSweden(hosts, cleanup, "ForkAnswersDiagnostic.cost.played", Governing, null, out _);
+            string refusedP = PlayToTheCut(p);
+            SimulationRandom.Reinstate(p.Live);
+            try
+            {
+                var worldsP = (Dictionary<string, ShadowBaseline>)ExceptField.GetValue(p.Ledger);
+                SaveGame saveP = SaveGameService.CreateSaveGame(p.Sim, p.World, Player, null);
+                saveP.NoPolicyShadow = p.None.Carry(p.Sim.DaysIntoTurn);
+                Dictionary<string, string> carriedP = p.Ledger.Carry(p.Sim, out List<string> rebuiltP);
+                saveP.ImpactLedgerWorlds = carriedP;
+                saveP.ImpactLedgerRebuild = rebuiltP;
+                long k46P = Encoding.UTF8.GetByteCount(SaveGameService.Serialize(saveP));
+                saveP.ImpactLedgerWorlds = worldsP.ToDictionary(kv => kv.Key, kv => kv.Value.Carry(p.Sim.DaysIntoTurn));
+                saveP.ImpactLedgerRebuild = null;
+                long everyP = Encoding.UTF8.GetByteCount(SaveGameService.Serialize(saveP));
+                sb.Append(F("    report    5. K46 IN PLAY (the ledger's own forks{0}): the save cut on day {1} of turn {2} carries {3} of the {4} touched families' worlds [{5}], names {6} for the load to rebuild; {7:N0} bytes as K46 carries them against {8:N0} with every world - the planted figures above are an upper bound on the saving, not a game's\n",
+                    refusedP == null ? string.Empty : " - a lever refused: " + refusedP, p.Sim.DaysIntoTurn, p.Sim.CurrentTurn, carriedP?.Count ?? 0, worldsP.Count,
+                    string.Join(", ", (carriedP?.Keys ?? Enumerable.Empty<string>()).OrderBy(k => k, StringComparer.Ordinal)), rebuiltP?.Count ?? 0, k46P, everyP));
+            }
+            finally { p.Live = SimulationRandom.CaptureLive(); }
+            return failures;
         }
 
         // ------------------------------------------------------------------ 7
@@ -597,6 +719,189 @@ namespace PoliSim.EditorTools
             return failures;
         }
 
+        // ------------------------------------------------------------------ 10
+
+        /// <summary>K51 (Elias's ruling of 2026-10-23: "each kind of bill is its own ledger family"): the player lays a budget bill through the manager's verb the
+        /// day the budget process opens. The Budget bill family's world is forked at that moment and is the played world AS THE BILL FOUND IT - the bill left out
+        /// - while the played world holds the bill; the Trade lever's world, forked earlier, lays the same bill on the same day and stays the played world; and
+        /// the ledger reads a Budget bill line of its own (where before K51 the bill sat in every world and its effect on the interaction line). Read again at the
+        /// next boundary.</summary>
+        private static int BillsHaveTheirFamily(List<GameObject> hosts, List<Action> cleanup, StringBuilder sb)
+        {
+            int failures = 0;
+            void Check(bool ok, string what) { if (!ok) { failures++; } sb.Append(ok ? "    ok        " : "    FAIL      ").Append(what).Append('\n'); }
+            Game g = OpenSweden(hosts, cleanup, "ForkAnswersDiagnostic.bill", Governing, null, out _);
+            var except = (Dictionary<string, ShadowBaseline>)ExceptField.GetValue(g.Ledger);
+            SimulationRandom.Reinstate(g.Live);
+            string pre = null, after = null, family = null, laidOn = "never";
+            bool laid = false;
+            try
+            {
+                Day(g);
+                var noAct = (PlayerLever)LeverCtor.Invoke(new object[] { PlayerLeverKind.PartnerTariffOverride, Player, (Func<World, Country, bool, bool>)((w, c, r) => false) });
+                g.Ledger.BeforeLever(g.Sim, noAct);   // the Trade family's world, forked with nothing done - a world of another family than the bill's
+                for (int d = 0; d < MaxDays && !laid; d++)
+                {
+                    if (g.Sim.GetPendingBudgetProcess(Player) && !except.ContainsKey("Budget bill"))
+                    {
+                        pre = Fingerprint(g.Sim, g.World, SimulationRandom.CaptureDrawCounts());
+                        laid = g.Sim.IntroduceBudgetBill(Player, new BudgetBill());
+                        if (laid)
+                        {
+                            laidOn = Day(g.Sim.CurrentDate);
+                            after = Fingerprint(g.Sim, g.World, SimulationRandom.CaptureDrawCounts());
+                            family = except.TryGetValue("Budget bill", out ShadowBaseline w) ? Fingerprint(ForkSim(w), w.World, DrawsOf(w)) : "NO BUDGET BILL WORLD";
+                            break;
+                        }
+                    }
+                    Answer(g);
+                    Day(g);
+                }
+                ShadowBaseline trade = TheFork(g);
+                trade?.CatchUp(g.Sim.DaysIntoTurn);
+                string tradeNow = trade == null ? "NO TRADE WORLD" : Fingerprint(ForkSim(trade), trade.World, DrawsOf(trade));
+                Check(laid && family == pre && after != pre && tradeNow == after,
+                    F("10. K51 - A BILL IS ITS KIND'S FAMILY: the player laid a budget bill on {0}; the Budget bill family's world is the played world as the bill found it, the bill left out{1}; the played world holds the bill{2}; the Trade lever's world laid it on the same day and is the played world{3}",
+                        laidOn, family == pre ? string.Empty : (family == null ? " - NOT LAID" : FirstDifference(pre ?? string.Empty, family)), after != pre ? string.Empty : " - IT DOES NOT: the case has no teeth",
+                        tradeNow == after ? string.Empty : FirstDifference(after ?? string.Empty, tradeNow)));
+                while (laid && g.Sim.CurrentTurn == 0) { Answer(g); Day(g); if (g.Boundary) { break; } }
+                Country me = g.World.GetCountry(Player);
+                var line = new List<string>();
+                bool hasLine = true;
+                foreach (string stat in Stats)
+                {
+                    ImpactLine budget = g.Ledger.LinesFor(me, stat, out float _).FirstOrDefault(l => l.Family == "Budget bill");
+                    hasLine &= budget.Family != null;
+                    line.Add(stat + " " + (budget.Family != null ? R(budget.Contribution) : "none"));
+                }
+                Check(laid && hasLine, F("10. K51 - the ledger reads a Budget bill line of its own at {0}: {1}", Day(g.Sim.CurrentDate), string.Join(", ", line)));
+            }
+            finally { g.Live = SimulationRandom.CaptureLive(); }
+            return failures;
+        }
+
+        // ------------------------------------------------------------------ 11
+
+        /// <summary>The review's M2 - K46's guards and K51's refused bill, each with teeth: four family worlds planted on one day of a Sweden game, the same
+        /// world as the played one, then (a) one marked withheld - its state alike, it must be CARRIED; (b) one marked as having answered alone - alike, it must be
+        /// CARRIED; (c) one neither, its GDP moved - `StatesAlike` must catch it and CARRY it; (d) one left alone - it is the played world and is NAMED for the
+        /// load to rebuild. And a budget bill laid on a day the budget process is not open - the chamber's gate refuses it - leaves no Budget bill world.</summary>
+        private static int GuardsHaveTeeth(List<GameObject> hosts, List<Action> cleanup, StringBuilder sb)
+        {
+            int failures = 0;
+            void Check(bool ok, string what) { if (!ok) { failures++; } sb.Append(ok ? "    ok        " : "    FAIL      ").Append(what).Append('\n'); }
+            Game g = OpenSweden(hosts, cleanup, "ForkAnswersDiagnostic.teeth", Governing, null, out _);
+            var except = (Dictionary<string, ShadowBaseline>)ExceptField.GetValue(g.Ledger);
+            var withheld = (HashSet<string>)WithheldField.GetValue(g.Ledger);
+            SimulationRandom.Reinstate(g.Live);
+            try
+            {
+                Day(g);
+                for (int d = 0; d < MaxDays && g.Sim.GetPendingBudgetProcess(Player); d++) { Answer(g); Day(g); }
+                bool closed = !g.Sim.GetPendingBudgetProcess(Player);
+                // the precondition planted (n911: the bill the player LAID while the process was open had forked its family, a fork kept by right): the
+                // family set back to untouched, so the world the check looks for can only be one the refused bill left
+                bool laidBefore = except.TryGetValue("Budget bill", out ShadowBaseline earlier);
+                if (laidBefore) { except.Remove("Budget bill"); withheld.Remove("Budget bill"); earlier.Dispose(); }
+                bool refused = closed && !g.Sim.IntroduceBudgetBill(Player, new BudgetBill());
+                Check(closed && refused && !except.ContainsKey("Budget bill"),
+                    F("11. K51 - A REFUSED BILL LEAVES NO FAMILY: a budget bill laid on {0} with the budget process {1} was {2}, and the ledger holds {3} Budget bill world (the family set back to untouched first: {4})",
+                        Day(g.Sim.CurrentDate), closed ? "closed" : "STILL OPEN - the case has no teeth", refused ? "refused" : "ACCEPTED", except.ContainsKey("Budget bill") ? "A" : "no",
+                        laidBefore ? "a bill laid while the process was open had forked it" : "it had none"));
+
+                ShadowBaseline Plant(string family) => except[family] = new ShadowBaseline(g.Sim, g.World, Player, insideTurn: true, dayTick: true, seatAsPlayed: true) { AnswersWaitsAsTheAi = true };
+                Plant("Labour bill");
+                withheld.Add("Labour bill");                                                   // (a) withheld, alike
+                AnsweredAloneProperty.SetValue(Plant("Law bill"), true);                       // (b) answered alone, alike
+                Plant("Sector bill").World.GetCountry(Player).State.GDP += 1f;                 // (c) neither, not alike
+                Plant("Trade bill");                                                           // (d) the played world
+                Dictionary<string, string> carried = g.Ledger.Carry(g.Sim, out List<string> rebuilt);
+                rebuilt = rebuilt ?? new List<string>();
+                bool Carried(string f) => carried != null && carried.ContainsKey(f) && !rebuilt.Contains(f);
+                Check(Carried("Labour bill") && Carried("Law bill") && Carried("Sector bill") && rebuilt.Count == 1 && rebuilt[0] == "Trade bill",
+                    F("11. K46 - THE GUARDS: carried [{0}], named for the rebuild [{1}] - (a) a withheld world alike {2}, (b) a world that answered alone alike {3}, (c) a world neither whose state differs {4}, (d) the played world itself {5}",
+                        string.Join(", ", (carried?.Keys ?? Enumerable.Empty<string>()).OrderBy(k => k, StringComparer.Ordinal)), string.Join(", ", rebuilt),
+                        Carried("Labour bill") ? "carried" : "DROPPED", Carried("Law bill") ? "carried" : "DROPPED", Carried("Sector bill") ? "carried" : "DROPPED - StatesAlike missed it",
+                        rebuilt.Contains("Trade bill") ? "named" : "NOT NAMED"));
+            }
+            finally { g.Live = SimulationRandom.CaptureLive(); }
+            return failures;
+        }
+
+        // ------------------------------------------------------------------ 12
+
+        /// <summary>The merged film real911 (K51's forks in a campaign): a Sweden game whose player's campaign is running lays a bill of a kind first, so the ledger
+        /// forks that family's world in mid-campaign (the fork's own restore replays the campaign from its record); a few campaign days on, the game is saved as
+        /// `GameController.SaveToPath` saves it and loaded through the game's own load. Every campaign stream must land where the save recorded it - in the fork,
+        /// at the load of the played world, and at the load of every world the save carries - with no CAMPAIGN REPLAY error logged anywhere, and the loaded
+        /// game's own draw counts equal to the save's.</summary>
+        private static int CampaignReplaysOnALedgerGame(List<GameObject> hosts, List<Action> cleanup, StringBuilder sb)
+        {
+            int failures = 0;
+            void Check(bool ok, string what) { if (!ok) { failures++; } sb.Append(ok ? "    ok        " : "    FAIL      ").Append(what).Append('\n'); }
+            var replayErrors = new List<string>();
+            void Listen(string text, string stack, LogType type) { if ((type == LogType.Error || type == LogType.Exception) && text.StartsWith("CAMPAIGN REPLAY: stream", StringComparison.Ordinal)) { replayErrors.Add(text); } }
+            Game g = OpenSweden(hosts, cleanup, "ForkAnswersDiagnostic.campaign", Governing, null, out _);
+            var except = (Dictionary<string, ShadowBaseline>)ExceptField.GetValue(g.Ledger);
+            Game loaded = null;
+            string forkedFamily = null, cutOn = "never";
+            int campaignDay = -1;
+            Dictionary<SimulationRandom.Stream, int> saved = null, afterLoad = null;
+            Application.logMessageReceived += Listen;
+            SimulationRandom.Reinstate(g.Live);
+            try
+            {
+                for (int d = 0; d < MaxDays && !(g.Sim.PlayerCampaign != null && !g.Sim.PlayerCampaign.Finished && g.Sim.PlayerCampaign.Day >= 5); d++) { Day(g); Answer(g); }
+                if (g.Sim.PlayerCampaign != null && !g.Sim.PlayerCampaign.Finished)
+                {
+                    // a kind the game has not forked yet, laid through its verb - the first one the gate accepts
+                    var tries = new (string Family, Func<bool> Lay)[]
+                    {
+                        ("Labour bill", () => g.Sim.IntroduceLaborBill(Player, new LaborPolicyBill { MinimumWage = 12f })),
+                        ("Crime and justice bill", () => g.Sim.IntroduceCrimeJusticeBill(Player, new CrimeJusticePolicyBill { PoliceFunding = 55f })),
+                        ("Trade bill", () => g.Sim.IntroduceTradeBill(Player, new TradePolicyBill { NewBaseTariffRate = g.World.GetCountry(Player).BaseTariffRate + 2f })),
+                    };
+                    foreach ((string family, Func<bool> lay) in tries)
+                    {
+                        if (except.ContainsKey(family)) { continue; }
+                        if (lay() && except.ContainsKey(family)) { forkedFamily = family; break; }
+                    }
+                    for (int d = 0; d < 3; d++) { Day(g); Answer(g); }
+                    campaignDay = g.Sim.PlayerCampaign?.Day ?? -1;
+                    cutOn = Day(g.Sim.CurrentDate);
+                    SaveGame save = SaveGameService.CreateSaveGame(g.Sim, g.World, Player, null);
+                    save.NoPolicyShadow = g.None.Carry(g.Sim.DaysIntoTurn);
+                    save.ImpactLedgerWorlds = save.NoPolicyShadow != null ? g.Ledger.Carry(g.Sim, out List<string> rebuild) : null;
+                    save.ImpactLedgerRebuild = null;
+                    saved = new Dictionary<SimulationRandom.Stream, int>(save.RngDrawCounts);
+                    g.Live = SimulationRandom.CaptureLive();
+                    loaded = Adopt(SaveGameService.Deserialize(SaveGameService.Serialize(save)), hosts, out string why);
+                    if (loaded != null)
+                    {
+                        SimulationRandom.LiveState was = SimulationRandom.CaptureLive();
+                        try { SimulationRandom.Reinstate(loaded.Live); afterLoad = SimulationRandom.CaptureDrawCounts(); }
+                        finally { SimulationRandom.Reinstate(was); }
+                    }
+                    else { replayErrors.Add("the game's own load refused the save - " + why); }
+                }
+            }
+            finally
+            {
+                Application.logMessageReceived -= Listen;
+                g.Live = SimulationRandom.CaptureLive();
+                if (loaded != null) { Game l = loaded; cleanup.Add(() => { l.Ledger.Dispose(); l.None.Dispose(); }); }
+            }
+            int Count(Dictionary<SimulationRandom.Stream, int> counts, SimulationRandom.Stream s) => counts != null && counts.TryGetValue(s, out int n) ? n : 0;
+            var streams = new[] { SimulationRandom.Stream.CampaignAi, SimulationRandom.Stream.Debate, SimulationRandom.Stream.Scandal };
+            bool same = saved != null && afterLoad != null && streams.All(s => Count(saved, s) == Count(afterLoad, s));
+            Check(forkedFamily != null && campaignDay > 0 && replayErrors.Count == 0 && same,
+                F("12. A CAMPAIGN ON A LEDGER GAME REPLAYS: the {0} family forked on campaign day {1}; the save cut on {2} (campaign day {3}) loads through the game's own load with {4} replay error(s){5}; the campaign streams after the load {6} the save's ({7})",
+                    forkedFamily ?? "NO - no bill kind was accepted, the case has no teeth", campaignDay - 3, cutOn, campaignDay, replayErrors.Count,
+                    replayErrors.Count == 0 ? string.Empty : " - first: " + replayErrors[0], same ? "equal" : "DO NOT EQUAL",
+                    string.Join(", ", streams.Select(s => s + " " + Count(saved, s) + "/" + Count(afterLoad, s)))));
+            return failures;
+        }
+
         /// <summary>Cases 8 and 9: a game from Sweden's start, the player's party leading, a Trade lever-fork after the first day (and <paramref name="atFork"/>
         /// then), <paramref name="secondDay"/> after the second day, answered as the clock holds - to its first boundary, read before the next answer.</summary>
         private static Game RunToFirstBoundary(List<GameObject> hosts, List<Action> cleanup, string name, Action<Game, ShadowBaseline> secondDay, out ShadowBaseline fork, Action<Game> atFork = null)
@@ -651,7 +956,7 @@ namespace PoliSim.EditorTools
             var ledger = new PolicyImpactLedger(none);
             cleanup.Add(() => { ledger.Dispose(); none.Dispose(); });
             sim.ImpactLedger = ledger;
-            return new Game { Sim = sim, World = world, None = none, Ledger = ledger, Live = SimulationRandom.CaptureLive() };
+            return new Game { Sim = sim, World = world, None = none, Ledger = ledger, Live = SimulationRandom.CaptureLive(), StandingAtStart = Standing(me) };
         }
 
         /// <summary>One day in `GameController.Update`'s order: the day, the player's day tick; on the boundary `GameController.AdvanceTurn`'s - the ledger's
@@ -737,10 +1042,12 @@ namespace PoliSim.EditorTools
 
         // ------------------------------------------------------------------ reading
 
+        /// <summary>The case's own fork, by its family's name - the Trade lever's, or the Monetary dial's (case 3). K51: since each bill kind is a family, the
+        /// budget bills the player lays fork the Budget bill family beside it, so the fork is no longer the ledger's only world.</summary>
         private static ShadowBaseline TheFork(Game g)
         {
             var except = (Dictionary<string, ShadowBaseline>)ExceptField.GetValue(g.Ledger);
-            return except.Count == 1 ? except.Values.First() : null;
+            return except.TryGetValue("Trade", out ShadowBaseline trade) ? trade : except.TryGetValue("Monetary", out ShadowBaseline monetary) ? monetary : null;
         }
 
         private static SimulationManager ForkSim(ShadowBaseline w) => (SimulationManager)ForkSimField.GetValue(w);

@@ -30,7 +30,8 @@ namespace PoliSim.EditorTools
     /// tax factor rises above one; every ceiling carries the level; Poland's unimplemented line stays 0. The raise in (5) is applied once, in
     /// year 1, and indexes thereafter as the law indexes it - the factor is read in REAL dollars. (8) AF-36 (q36, 2026-10-18): the date the slip and
     /// the Desk show for a passed figure is the boundary the statute moves it at, its stamp cleared there; a bill carries a passed figure into the year
-    /// after its own passage - the figure it passes, or one standing - and a carry of the statute's own figure carries nothing.
+    /// after its own passage - the figure it passes, or one standing - and a carry of the statute's own figure carries nothing. (9) K47 (2026-10-23): a carry
+    /// is voted and priced as the move it prevents - the move from the statute's figure to the kept one - and a carry that prevents nothing costs nothing.
     /// </summary>
     public static class CarbonTaxUnitDiagnostic
     {
@@ -300,9 +301,99 @@ namespace PoliSim.EditorTools
                 if (!parts.TaxActPart().CarriedTaxLines.Contains(TaxType.CarbonTax) || parts.WithoutRateChanges().CarriedTaxLines.Count != 0) { ok = false; Debug.LogError("CARBON TAX UNIT (AF-36): the carry does not travel with the rates - the tax act must carry it and the act without the rates must not."); }
             }
 
+            // (9) K47 (Elias's ruling of 2026-10-23: "a carried bill is priced as the change it prevents")
+            if (!CarryPricedAsItsMove(sb)) { ok = false; }
+
             sb.Append(ok ? "\n=== CarbonTaxUnitDiagnostic: ALL ASSERTIONS PASS ===\n" : "\n=== CarbonTaxUnitDiagnostic: FAILED (see above) ===\n");
             if (ok) { Debug.Log(sb.ToString()); } else { Debug.LogError(sb.ToString()); }
             CheckExit.Finish(ok ? 0 : 1);
+        }
+
+        /// <summary>
+        /// (9) K47 (Elias's ruling of 2026-10-23, `docs/RULINGS_2026-10-23.md`: "a carried bill is priced as the change it prevents"; AF-36's ask, §873). Germany,
+        /// a passed 80 standing for 2025: the statute would take it to the BEHG's 2026 figure, 55, at the next boundary, and a bill carrying it keeps 80 there.
+        /// <list type="bullet">
+        /// <item>THE VOTE sees the carry as that move: its direction and its load on the redistribution axis equal a bill raising a standing 55 to 80.</item>
+        /// <item>THE PRICE: the carry's approval cost equals that bill's - the tax term's charge of the move from 55 to 80 - and is above zero; the stamp extends to 2026.</item>
+        /// <item>NOTHING TO PREVENT, NOTHING PRICED: a carry whose stamp already covers the next year, and a carry of the statute's own figure, cost nothing and move no vote.</item>
+        /// <item>SWEDEN'S INDEXATION: a carry keeps the figure against a rise (the year's price ratio 1.02 so far), so it is weighed as that cut and earns the cut's
+        /// smaller mirror.</item>
+        /// </list>
+        /// The figures are set on the seeded countries directly (approval at 50, no tax term standing), so every charge lands unclamped.
+        /// </summary>
+        private static bool CarryPricedAsItsMove(StringBuilder sb)
+        {
+            bool ok = true;
+            sb.Append("\n    9. K47 - A CARRY IS VOTED AND PRICED AS THE MOVE IT PREVENTS\n");
+            using IDisposable epochScope = SimulationManager.EpochScope();
+            SimulationManager.SetEpoch(SimulationManager.DefaultEpoch);
+            SimulationRandom.Seed(777);
+            EnergyMarket.ResetCalibration();
+            World world = WorldFactory.CreateDefault();
+            const int Year = 2025;
+            const float Kept = 80f, Behg2026 = 55f;   // the passed figure; BEHG § 10 Abs. 2's 2026 corridor floor (55-65), the figure the model's statute sets at a 2026 boundary
+            const float RatioSoFar = 1.02f;
+            void Stand(Country c, TaxLine l, float rate, int stamp) { l.Rate = rate; l.PassedForYear = stamp; c.CalendarYear = Year; c.TaxTermNet = null; c.TaxTermStock = 0f; c.State.ApprovalRating = 50f; }
+            BudgetBill Carry() { var b = new BudgetBill(); b.CarriedTaxLines.Add(TaxType.CarbonTax); return b; }
+            float Load(BillConcern c) => c.Moves.TryGetValue(StanceAxis.Redistribution, out float v) ? v : 0f;
+            float Drop(Country c, BudgetBill b) { float before = c.State.ApprovalRating; ParliamentSystem.ApplyBillResult(c, b, true, (x, y) => { }, Year); return before - c.State.ApprovalRating; }
+            float Direction(Country c, BudgetBill b) => ParliamentSystem.GetBillDirection(c, b) - ParliamentSystem.GetBillDirection(c, new BudgetBill());
+            bool Near(float a, float b) => Math.Abs(a - b) <= 1e-4f * Math.Max(1f, Math.Abs(b));
+
+            Country de = world.GetCountry(CountryId.Germany);
+            TaxLine line = Find(de);
+            if (line == null || !line.IsImplemented) { Debug.LogError("CARBON TAX UNIT (K47): Germany has no levied carbon line - VERIFIED NOTHING"); return false; }
+            var hike = new BudgetBill();
+            hike.TaxLines[TaxType.CarbonTax] = Kept;
+            float points = line.PointsOf(Kept - Behg2026);
+
+            Stand(de, line, Kept, Year);
+            float carryDirection = Direction(de, Carry()), carryLoad = Load(ParliamentSystem.GetBudgetBillConcern(de, Carry()));
+            float carryDrop = Drop(de, Carry());
+            int stampAfter = line.PassedForYear;
+            Stand(de, line, Behg2026, 0);
+            float hikeDirection = Direction(de, hike), hikeLoad = Load(ParliamentSystem.GetBudgetBillConcern(de, hike));
+            float hikeDrop = Drop(de, hike);
+            if (!(points > 0f) || !Near(carryDirection, points) || !Near(carryDirection, hikeDirection) || !Near(carryLoad, hikeLoad) || !Near(carryLoad, -points))
+            {
+                ok = false;
+                Debug.LogError($"CARBON TAX UNIT (K47): the vote does not see Germany's carry of {Kept} as the move from {Behg2026} it prevents - its direction {carryDirection:G6} against the raise's {hikeDirection:G6} ({points:G6} points), its redistribution load {carryLoad:G6} against {hikeLoad:G6}.");
+            }
+            if (!(carryDrop > 0f) || !Near(carryDrop, hikeDrop) || !Near(carryDrop, TaxTerm.Charge(points)) || stampAfter != Year + 1)
+            {
+                ok = false;
+                Debug.LogError($"CARBON TAX UNIT (K47): Germany's carry costs {carryDrop:G6} approval points against the raise from {Behg2026} to {Kept}'s {hikeDrop:G6} (the tax term's charge {TaxTerm.Charge(points):G6}); its stamp {stampAfter} ({Year + 1}).");
+            }
+            sb.Append(F("    Germany, {0} passed for {1}: the carry is voted as the move from {2} it prevents (direction {3:F3}, the raise's {4:F3}; load {5:F3}, the raise's {6:F3}) and costs {7:F4} approval points (the raise's {8:F4}); the stamp {9}\n",
+                Kept, Year, Behg2026, carryDirection, hikeDirection, carryLoad, hikeLoad, carryDrop, hikeDrop, stampAfter));
+
+            Stand(de, line, Kept, Year + 1);
+            float coveredDirection = Direction(de, Carry()), coveredDrop = Drop(de, Carry());
+            Stand(de, line, Behg2026, 0);
+            float statuteDirection = Direction(de, Carry()), statuteDrop = Drop(de, Carry());
+            if (coveredDirection != 0f || coveredDrop != 0f || statuteDirection != 0f || statuteDrop != 0f)
+            {
+                ok = false;
+                Debug.LogError($"CARBON TAX UNIT (K47): a carry that prevents nothing is priced - a stamp already covering {Year + 1}: direction {coveredDirection:G6}, cost {coveredDrop:G6}; the statute's own figure: direction {statuteDirection:G6}, cost {statuteDrop:G6} (all 0).");
+            }
+            sb.Append(F("    Nothing to prevent, nothing priced: a stamp already covering {0} - direction {1}, cost {2}; the statute's own figure - direction {3}, cost {4}\n", Year + 1, coveredDirection, coveredDrop, statuteDirection, statuteDrop));
+
+            Country se = world.GetCountry(CountryId.Sweden);
+            TaxLine sl = Find(se);
+            if (sl == null || !sl.IsImplemented) { Debug.LogError("CARBON TAX UNIT (K47): Sweden has no levied carbon line - VERIFIED NOTHING"); return false; }
+            float seKept = sl.Rate;
+            Stand(se, sl, seKept, Year);
+            se.PriceLevelAtLastIndex = se.State.PriceLevel / RatioSoFar;
+            float seIndexed = seKept * (float)Math.Round(CarbonRateStatute.YearRatio(se), CarbonRateStatute.JamforelsetalDecimals);   // 2 kap. 1 b §: the amount times the jämförelsetal, to four decimals
+            float seCut = sl.PointsOf(seKept) - sl.PointsOf(seIndexed);
+            float seDirection = Direction(se, Carry()), seDrop = Drop(se, Carry());
+            if (!(seCut < 0f) || !Near(seDirection, sl.PointsOf(seKept - seIndexed)) || !Near(seDrop, TaxTerm.Charge(seCut)) || !(seDrop < 0f) || !Near(seDrop, TaxTerm.MirrorFraction * MacroSystem.TaxHikeApprovalSensitivity * seCut))
+            {
+                ok = false;
+                Debug.LogError($"CARBON TAX UNIT (K47): Sweden's carry of {seKept:G6} against the indexation to {seIndexed:G6} is weighed {seDirection:G6} (the cut's {sl.PointsOf(seKept - seIndexed):G6}) and costs {seDrop:G6} (the cut's mirror {TaxTerm.Charge(seCut):G6}, negative).");
+            }
+            sb.Append(F("    Sweden, {0:F1} standing, the year's ratio {1} so far: the carry keeps it against the indexation to {2:F1} - weighed as that cut ({3:F4}) and earning its mirror ({4:F4} approval points)\n", seKept, RatioSoFar, seIndexed, seDirection, -seDrop));
+            return ok;
         }
 
         private sealed class Outcome { public double Rate, Revenue, Transport, TransportTarget, Power, RealRate, RealDollarsAboveSeed, TaxFactor, PriceLevelAtRaise; public float PointsCharged; }

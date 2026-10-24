@@ -324,3 +324,6 @@ file	Assets/Scripts/Simulation/SimulationManager.Sejm.cs	2f16858790383208f835c64
 baseline	777	941c2ef9c92fbb8ea4d2eb22872f3d7b60249e0a397171d6d29fb8728f63d6c8	reviewed	2026-10-24	s909	Reviews/2026-10-24_form_integrator_delta.md	-
 baseline	424242	cb42f088e9c18ced3c4dda78f044a22b22eb6019cc8006eb14b84c958eb1a7e0	reviewed	2026-10-24	s909	Reviews/2026-10-24_form_integrator_delta.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	2a48d139a4813c7ca04ce3b71282768bde1d93d6a3e0f9e536413035b4c39407	reviewed	2026-10-24	s910	Reviews/2026-10-24_sal_review.md	-
+file	Assets/Scripts/Data/CarbonRateStatute.cs	f5dac03d257341ac4a8e9f45c1aea91e0d5074469bc7cb4ac41a82e3d9e181a6	reviewed	2026-10-24	s911	Reviews/2026-10-24_ledg_review.md	-
+file	Assets/Scripts/Simulation/PolicyImpactLedger.cs	be2e42af0535c540df67849c9395b9ed3681dae017a961ba55953041c171602c	reviewed	2026-10-24	s911	Reviews/2026-10-24_ledg_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	875df4d21b036aa4db6652194cb73876c47fb4ae46ccd0f13b7b53f025ef161d	reviewed	2026-10-24	s911	Reviews/2026-10-24_ledg_review.md	-

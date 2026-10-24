@@ -33,7 +33,7 @@ namespace PoliSim.EditorTools
     /// done-when, and the reason the counterfactual can be called a baseline at all.</description></item>
     /// <item><description><b>AN EXCEPTION MUST NOT LEAVE THE REAL GENERATOR SHIFTED.</b> The restore is
     /// in a `finally`; this proves the `finally` by throwing inside a shadow turn and checking the real
-    /// state came back anyway.</description></item>
+    /// state came back anyway - and, since FORK-2, that the throw is contained: the world marks itself failed and nothing escapes.</description></item>
     /// <item><description><b>A HELD STREAM SURVIVES THE SHADOW</b> (GA-1-3, 2026-10-14). A stream object the real game holds - the campaign's,
     /// the run-up's - is still the table's after a shadow turn and a fork, so its draws reach the table and a save. Counts cannot see this;
     /// the object's identity can.</description></item>
@@ -357,9 +357,17 @@ namespace PoliSim.EditorTools
 
             simField.SetValue(shadow, null);
 
-            bool threw = false;
+            // FORK-2 (the review's M3, §890): a counterfactual's step never throws into the played game - the exception is caught inside the swap, the world
+            // marks itself failed (ShadowBaseline.Faulted) and logs one error line. That error line is this case's EXPECTATION, so it is kept out of the log
+            // (filed since §890: it reached CheckExit and failed the run while the guard held); the containment is asserted from the world itself instead
+            bool escaped = false;
+            bool logged = Debug.unityLogger.logEnabled;
+            Debug.unityLogger.logEnabled = false;
             try { shadow.AdvanceTurn(); }
-            catch { threw = true; }
+            catch { escaped = true; }
+            finally { Debug.unityLogger.logEnabled = logged; }
+            string faulted = shadow.Faulted;
+            shadow.Dispose();
 
             Dictionary<SimulationRandom.Stream, int> after = SimulationRandom.CaptureDrawCounts();
             int moved = 0;
@@ -371,20 +379,23 @@ namespace PoliSim.EditorTools
 
             if (SimulationRandom.MasterSeed != seedBefore) { moved++; }
 
-            if (!threw)
+            if (escaped || faulted == null)
             {
-                sb.Append("    5. the finally     (no exception was raised by the forced failure - the guard is untested this run, and says so rather than claiming a pass)\n");
-                return 0;
+                Debug.LogError(escaped
+                    ? "C-C9: the forced failure ESCAPED the shadow's step - a counterfactual must contain its own exception (FORK-2's M3) and mark itself failed."
+                    : "C-C9: the forced failure did not fail the shadow - the case has no teeth (nulling the manager no longer breaks a step).");
+                sb.Append("    5. the finally     ⚠ FAILED - the planted fault was not contained as a failed world (see the error above).\n");
+                return 1;
             }
 
             if (moved > 0)
             {
-                Debug.LogError("C-C9: a shadow turn that THREW left the real generator shifted - the restore is not in a finally, or the finally does not cover the swap.");
+                Debug.LogError("C-C9: a shadow turn that FAILED left the real generator shifted - the restore is not in a finally, or the finally does not cover the swap.");
                 sb.Append("    5. the finally     ⚠ FAILED - an exception mid-shadow leaked generator state.\n");
                 return 1;
             }
 
-            sb.Append("    5. the finally     OK - a shadow turn that threw left the real seed and every draw count untouched.\n");
+            sb.Append(F("    5. the finally     OK - a shadow turn forced to fail was contained (the world marked failed: \"{0}\") and left the real seed and every draw count untouched.\n", faulted));
             return 0;
         }
 

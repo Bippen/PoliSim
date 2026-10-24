@@ -2376,6 +2376,8 @@ namespace PoliSim.Testing
 
             // PS-3c (§630): the bills staged here are the GOVERNMENT'S - seat the record's prime-minister party for them, else the role gate refuses every one (the sweep seats the largest party, which may be in opposition).
             string seatedBefore = player.PlayerPartyAbbrev;
+            PolicyImpactLedger stagingLedger = sim.ImpactLedger;   // K51 (the merged film real911): the staged bills are the re-seated government's, not the player's - the impact ledger does not read them, or each kind forks a world whose campaign replays under the borrowed party and fails its draw check
+            sim.ImpactLedger = null;
             if (player.Government != null && player.Government.PmParty != null && player.PlayerPartyAbbrev != player.Government.PmParty) { Debug.Log($"SHOT: bills staged - re-seating {player.Government.PmParty}, the prime minister's party, in place of {player.PlayerPartyAbbrev} so the bills are the government's (§630)"); player.PlayerPartyAbbrev = player.Government.PmParty; }
             TaxType? taxPick = null;
             foreach (TaxLine line in player.TaxLines) { if (!line.IsImplemented) { taxPick = line.Type; break; } }
@@ -2398,6 +2400,7 @@ namespace PoliSim.Testing
             sim.IntroduceLawBill(_countryId, new LawBill { LawId = "skilled_worker_immigration_act", IsRepeal = false });
             sim.IntroduceTradeBill(_countryId, new TradePolicyBill { NewBaseTariffRate = player.BaseTariffRate + 2f });
             if (player.PlayerPartyAbbrev != seatedBefore) { Debug.Log($"SHOT: bills staged - {seatedBefore} re-seated; the pending bills stay before the chamber (their countdown is the chamber's, §630)"); player.PlayerPartyAbbrev = seatedBefore; }
+            sim.ImpactLedger = stagingLedger;   // K51: the ledger watches the player's own verbs again
 
             Debug.Log($"SHOT: dense state - budget pause {sim.GetPendingBudgetProcess(_countryId)}, cabinet decisions {sim.GetPendingCabinetDecisions(_countryId).Count}, meeting {(sim.GetPendingForeignPolicyMeeting(_countryId) != null)}, enacted laws {player.EnactedLaws.Count}, turn {sim.CurrentTurn}.");
             SetEnumField(controller, "_consolidatedTab", "Decisions");
@@ -4349,6 +4352,8 @@ namespace PoliSim.Testing
 
             // PS-3c (§630): the bills staged here are the GOVERNMENT'S - seat the record's prime-minister party for them, else the role gate refuses every one (the sweep seats the largest party, which may be in opposition).
             string seatedBefore = player.PlayerPartyAbbrev;
+            PolicyImpactLedger stagingLedger = sim.ImpactLedger;   // K51 (the merged film real911): the staged bills are the re-seated government's, not the player's - the impact ledger does not read them, or each kind forks a world whose campaign replays under the borrowed party and fails its draw check
+            sim.ImpactLedger = null;
             if (player.Government != null && player.Government.PmParty != null && player.PlayerPartyAbbrev != player.Government.PmParty) { Debug.Log($"SHOT: bills staged - re-seating {player.Government.PmParty}, the prime minister's party, in place of {player.PlayerPartyAbbrev} so the bills are the government's (§630)"); player.PlayerPartyAbbrev = player.Government.PmParty; }
             // --- D. PENDING BILLS, one of every type — LAST, so no day ever ticks their countdowns. ---
             TaxType? taxPick = null;
@@ -4430,6 +4435,7 @@ namespace PoliSim.Testing
             // pending now all exist in BOTH categories in one capture.
             bool lawOk3 = sim.IntroduceLawBill(_countryId, new LawBill { LawId = "skilled_worker_immigration_act", IsRepeal = false });
             if (player.PlayerPartyAbbrev != seatedBefore) { Debug.Log($"SHOT: bills staged - {seatedBefore} re-seated; the pending bills stay before the chamber (their countdown is the chamber's, §630)"); player.PlayerPartyAbbrev = seatedBefore; }
+            sim.ImpactLedger = stagingLedger;   // K51: the ledger watches the player's own verbs again
 
             var sectorBill = new SectorPolicyBill();
             foreach (Sector sector in player.Sectors)

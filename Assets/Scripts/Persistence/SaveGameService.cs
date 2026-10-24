@@ -62,6 +62,11 @@ namespace PoliSim.Persistence
         // a carbon stamp (`TaxLine.PassedForYear`) left standing after the statute took its figure back, which the statute's step now clears - the
         // slip, the Desk and the player's draft read it as the statute's figure (`CarbonRateStatute.PassedFigureStands`, so no carry of it is
         // drafted), and the next boundary that moves the line clears it.
+        // Nor for K46, K47 and K51 (Elias's rulings of 2026-10-23) under ruling A: `SaveGame.ImpactLedgerRebuild` is additive - null in an older save, which
+        // names nothing to rebuild. What such a save keeps, not migrated: a pending budget bill carrying a carbon figure is now voted and charged as the move
+        // its carry prevents (K47), where the build that cut it voted and charged nothing for the carry; a family world an older save carried under a name
+        // this build still has restores as before, and the bills it laid before the save stay inside every world it carried (each kind's own family counts
+        // from the next bill of its kind - K51).
         // Nor for GA-11-1 (§817, 2026-10-14) - no field changes: an older save carries the stale Gini anchor (`Country.BaselineIncomeTaxRate` at the
         // income line's literal - France and Germany 45, Poland 32, the USA 37, Sweden 32.38), nothing re-takes it on load, and that game's Gini goes
         // on drifting toward the displaced target.

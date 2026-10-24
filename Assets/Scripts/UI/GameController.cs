@@ -844,8 +844,10 @@ namespace PoliSim.UI
             {
                 SaveGame save = SaveGameService.CreateSaveGame(_simulationManager, _world, PlayerCountryId, CaptureUiDrafts());
                 save.NoPolicyShadow = CarryTheShadow();   // AF-12 (q12): the counterfactual from the start travels with the game
-                save.ImpactLedgerWorlds = save.NoPolicyShadow != null && !_savingAutomatically ? CarryTheLedger() : null;   // FORK-2 (M1): and the ledger's family worlds - with the world they are read against, or not at all; not by an autosave (M5)
+                System.Collections.Generic.List<string> rebuild = null;
+                save.ImpactLedgerWorlds = save.NoPolicyShadow != null && !_savingAutomatically ? CarryTheLedger(out rebuild) : null;   // FORK-2 (M1): and the ledger's family worlds - with the world they are read against, or not at all; not by an autosave (M5); K46: only those that differ from the played world
                 save.ImpactLedgerUnavailable = save.NoPolicyShadow != null && !_savingAutomatically ? _impactLedger?.CarryUnavailable() : null;   // the fix review's M2: and the families set aside
+                save.ImpactLedgerRebuild = save.NoPolicyShadow == null ? null : _savingAutomatically ? _impactLedger?.FamiliesToRebuild() : rebuild;   // K46: the families the load forks again - an autosave's every one, a save's those it did not carry
                 bool overwrote = System.IO.File.Exists(path);
                 SaveGameService.SaveToFile(path, save);
                 _lastPersistenceDate = _simulationManager.CurrentDate;
@@ -877,11 +879,13 @@ namespace PoliSim.UI
 
         /// <summary>FORK-2 (the s871 review's M1): the impact ledger's family worlds as the save carries them (`PolicyImpactLedger.Carry`). Worlds that cannot be
         /// carried leave the save without them - the save still lands, and its load starts the ledger empty, saying so.</summary>
-        private System.Collections.Generic.Dictionary<string, string> CarryTheLedger()
+        private System.Collections.Generic.Dictionary<string, string> CarryTheLedger(out System.Collections.Generic.List<string> rebuild)
         {
-            try { return _impactLedger?.Carry(_simulationManager); }
+            rebuild = null;
+            try { return _impactLedger?.Carry(_simulationManager, out rebuild); }   // K46: the worlds that differ from the played world; the rest named for the load to rebuild
             catch (System.Exception e)
             {
+                rebuild = null;   // the review's L3: a carry that threw names nothing for the load either - the log below is then true
                 Debug.LogError($"SAVE: the impact ledger's worlds could not be carried - {e.Message}; a load of this save counts each line from the load.");
                 return null;
             }
@@ -902,11 +906,23 @@ namespace PoliSim.UI
             {
                 Debug.LogWarning("LOAD: the impact ledger's carried worlds are set aside with the no-policy world they are read against - each line counts from this load.");   // the review's L5
             }
-            else if (save.ImpactLedgerWorlds == null && shadowCarried)
+            else if (save.ImpactLedgerWorlds == null && shadowCarried && (save.ImpactLedgerRebuild == null || save.ImpactLedgerRebuild.Count == 0))
             {
-                Debug.Log("LOAD: this save carries no impact ledger world - no family was touched before it was saved, or it is an autosave or was written by an earlier build (then each line counts from this load).");
+                Debug.Log("LOAD: this save carries no impact ledger world - no family was touched before it was saved, or it was written by an earlier build (then each line counts from this load).");
             }
             return new PolicyImpactLedger(_shadowBaseline);
+        }
+
+        /// <summary>K46 (Elias's ruling of 2026-10-23: "autosaves carry none and rebuild on load"): the ledger after a load, with the worlds the save named and
+        /// did not carry forked again from the loaded game (`PolicyImpactLedger.Rebuild`) - a save's families whose world was the played world (exact), an
+        /// autosave's every family (each line then counts from this load).</summary>
+        private PolicyImpactLedger LoadedLedger(SaveGame save, bool shadowCarried)
+        {
+            PolicyImpactLedger ledger = CarriedOrEmptyLedger(save, shadowCarried);
+            if (save.ImpactLedgerRebuild == null || save.ImpactLedgerRebuild.Count == 0) { return ledger; }
+            ledger.Rebuild(_simulationManager, save.ImpactLedgerRebuild);
+            Debug.Log($"LOAD: the impact ledger rebuilt {ledger.Rebuilt.Count} of the {save.ImpactLedgerRebuild.Count} families the save named from the loaded game ({string.Join(", ", ledger.Rebuilt)}) - where the save carried no world for a family that had moved, its line counts from this load.");
+            return ledger;
         }
 
         /// <summary>
@@ -1007,7 +1023,7 @@ namespace PoliSim.UI
             _shadowBaseline?.Dispose();
             _shadowBaseline = CarriedOrForkedShadow(save, out bool shadowCarried);
             _impactLedger?.Dispose();
-            _impactLedger = CarriedOrEmptyLedger(save, shadowCarried);   // FORK-2 (M1): the family worlds the save carried, every line's span kept
+            _impactLedger = LoadedLedger(save, shadowCarried);   // FORK-2 (M1): the family worlds the save carried, every line's span kept; K46: and those it named rebuilt
             _simulationManager.ImpactLedger = _impactLedger;   // AF-11: the ledger reads the levers the manager's verbs pull
 
             // The preview cache indexes into the OLD world's figures; the signing queue's entries

@@ -267,6 +267,7 @@ namespace PoliSim.Simulation
         private void Replay(PlayerAnswer answer)
         {
             if (answer.ReplayOn(_sim)) { return; }
+            AnsweredAlone = true;   // K46: this world now parts from the played one with no act withheld
             Debug.LogWarning($"SHADOW: {answer.What} found no match in a counterfactual world on {_sim.CurrentDate:yyyy-MM-dd}{(answer.AnswersAWait && AnswersWaitsAsTheAi ? " - its wait is answered by the AI's rule the next day" : " - nothing was answered there")}");
         }
 
@@ -274,8 +275,13 @@ namespace PoliSim.Simulation
         /// them so (<see cref="AnswersWaitsAsTheAi"/>) - after every answer the player gave that day has been replayed.</summary>
         private void AnswerTheWaits()
         {
-            if (AnswersWaitsAsTheAi && _dayTickFor.HasValue) { _sim.AnswerWaitsAsTheAi(_dayTickFor.Value); }
+            if (AnswersWaitsAsTheAi && _dayTickFor.HasValue && _sim.AnswerWaitsAsTheAi(_dayTickFor.Value)) { AnsweredAlone = true; }   // K46: answered here and not in the played world
         }
+
+        /// <summary>K46 (Elias's ruling of 2026-10-23): true once this world has answered something the played world did not - a replay that found no match, or a
+        /// wait answered by the AI's rule - so it may part from the played world with no act withheld from it; the impact ledger then never reads it as the played
+        /// world (`PolicyImpactLedger.Carry`). Not carried: a world a save carried is never read so again.</summary>
+        public bool AnsweredAlone { get; private set; }
 
         /// <summary>Does every scheduled lever and answer whose day this world has reached (<paramref name="reached"/>, by default the days run), in the order
         /// given. ⚠ Called with this world's generator in (<see cref="AdvanceTurn"/>, <see cref="CatchUp"/>).</summary>
