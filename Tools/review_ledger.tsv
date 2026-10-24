@@ -323,3 +323,4 @@ file	Assets/Scripts/Simulation/SimulationManager.PlayerPresident.cs	6d422e07de6f
 file	Assets/Scripts/Simulation/SimulationManager.Sejm.cs	2f16858790383208f835c64a0c6d56e0594b3c062058875b5ad5c4ccc56fd155	reviewed	2026-10-24	s909	Reviews/2026-10-24_form_integrator_delta.md	-
 baseline	777	941c2ef9c92fbb8ea4d2eb22872f3d7b60249e0a397171d6d29fb8728f63d6c8	reviewed	2026-10-24	s909	Reviews/2026-10-24_form_integrator_delta.md	-
 baseline	424242	cb42f088e9c18ced3c4dda78f044a22b22eb6019cc8006eb14b84c958eb1a7e0	reviewed	2026-10-24	s909	Reviews/2026-10-24_form_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	2a48d139a4813c7ca04ce3b71282768bde1d93d6a3e0f9e536413035b4c39407	reviewed	2026-10-24	s910	Reviews/2026-10-24_sal_review.md	-

@@ -52,7 +52,7 @@ namespace PoliSim.EditorTools
             {
                 if (e.Tag != EventTag.Crime && e.Tag != EventTag.Security && e.Tag != EventTag.Migration && e.Tag != EventTag.War
                     && (e.Analogue == null || e.Analogue.IndexOf("salience", System.StringComparison.OrdinalIgnoreCase) < 0)) { continue; }
-                bool inert = !EventSalience.TryClassOf(e.Tag, out SalienceClass c) || !(EventSalience.JumpOf(c) > 0f) || !EventSalience.Moves(e);
+                bool inert = !(EventSalience.JumpFor(e) > 0f);   // K68: an event moves salience where its severity times its class's jump is positive (an inert class, a favourable event or one without an anchor to scale against moves none)
                 bool says = e.Analogue != null && e.Analogue.Contains("It moves no salience");
                 if (inert != says) { Debug.LogError($"EVENTPOOL: {e.Name} ({e.Tag}) {(inert ? "moves no salience - its class is inert - and its analogue does not say so" : "moves salience, and its analogue says it moves none")}."); failures++; }
             }

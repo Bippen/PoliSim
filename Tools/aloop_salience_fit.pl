@@ -56,7 +56,8 @@
 #     interval: with two or more units the jackknife over units again; with one unit, none.
 #   - THE JUMP THE GAME LANDS is the SURVEY jump J, HELD flat for the class's hold - the units' mean days from their event to their post-wave
 #     (EventToSurveyDays, rounded to whole days: DERIVED) - and decaying at lambda after it. So the game reads J on the survey's own date and
-#     the fitted curve after it, and never a level the series did not show.
+#     the fitted curve after it, and never a level the series did not show. (Since amendment (6) below, J, the hold and the decay are read
+#     at the excess's peak wave; the lines above describe the case where the peak is the post-wave.)
 #   - Reported only, never generated: the jump BACK-CAST to the event's day, J0 = the mean over the units of (share(post) - share(pre)) x
 #     exp(lambda x the days from the unit's event to its post-wave), with its jackknife interval (the one-unit interval scales the sampling
 #     interval and carries no uncertainty in lambda; a leave-one-out whose decay sits at the grid's edge back-casts with a factor of 1, so its
@@ -84,6 +85,35 @@
 #   ⚠ AMENDED a third time after review 882b (2026-10-19): (5) the back-cast is no longer landed - it put a level on the event's day the series
 #     never showed - and the game lands the survey jump held flat until the survey's date (the hold, above); the generate rule reads the survey
 #     jump's interval. The same classes are generated (Economy, Migration) and the same are inert.
+#   ⚠ AMENDED a fourth time by Elias's ruling K69 (2026-10-23, docs/RULINGS_2026-10-23.md), the units, waves and items untouched again: (6) the
+#     jump is read at the excess's PEAK - the step (the post-wave or a decay wave) whose mean excess over the pre-wave is the largest, the
+#     earliest on a tie - not at the post-wave: J is that step's mean excess, its interval the jackknife over units with the peak step held at
+#     the full sample's (one unit: the sampling interval of that wave against the pre-wave), the hold the units' mean days from their event to
+#     the peak's wave, and the decay is fitted on the steps after the peak with their times counted from it. Where the peak is the post-wave
+#     (Economy, Migration, Security, Crime) every figure is the earlier design's to the bit; Health (the peak at EB94) and Natural (EB91) are
+#     generated under it. (7) The USA's conversion (K69): the bases section below the fit. (8) K94 (Elias, 2026-10-24): where the peak is
+#     later than the post-wave, the game lands the post-wave's measured level (FirstWaveJump), holds it from the event to the post-wave
+#     (FirstHoldDays, the units' mean days, rounded half up) and ramps it LINEARLY to the peak's level over the measured interval to the
+#     peak's wave (RampDays = HoldDays - FirstHoldDays), then decays at lambda - DECLARED: linear between the two measured waves, the
+#     series having nothing between them. Where the peak is the post-wave, RampDays is 0 and the hold is the earlier design's.
+#   ⚠ K102 (Elias, 2026-10-24): THE OUT-OF-SAMPLE TEST OF THE USA'S CONVERSION - its criterion DECLARED here and committed BEFORE any of
+#     its figures was computed (the review's M-2). The data: Gallup's own "most important problem" trend table, from the same source family
+#     as the stored 2024 CSV (the Datawrapper chart vEKjO's published datasets, and the trends page's archived replays), fetched byte-exact
+#     into ElectionsData/usa/raw/salience/k102/ (SHA256SUMS.txt, fetch_log.md); a year whose table is not on any such page as text is
+#     BILLED, never read off an image. Per tested year:
+#       (i) the BASE: the mean of the year's Total row over the year's columns (each column's Total / 100);
+#       (ii) the SURGING ISSUE's observed US rise: the item's share at its largest over the columns fielded after the event, less its share in
+#            the last column fielded wholly before it - 2020: "Coronavirus/Diseases" against the Health class (event 11 March 2020; the last
+#            column before it February 2020); 2022: "High cost of living/Inflation" against the Economy class (event 24 February 2022; the last
+#            column before it February 2022, fielded 1-17 February); 2015: "Immigration" against the Migration class (event 5 September 2015);
+#       (iii) the share ratio: the observed US rise over the class's fitted Eurobarometer jump (EventSalienceFit's SurveyJump), set beside
+#            the conversion.
+#     THE CRITERION: (a) the base is instrument-stable when every tested year's base lies within +-15 % of the stored 2024 base (GallupBase);
+#     (b) the conversion is preferred over no conversion when, in a majority of the tested years, the observed US rise is nearer - in
+#     |ln(observed / predicted)| - to the Eurobarometer jump times UsConversion than to the Eurobarometer jump times 1. The conversion
+#     (0.7134) FAILS, and is put back to Elias, if (a) fails or (b) fails; otherwise it is KEPT. Stated limit: the US and the EU rises are
+#     different populations' responses to different events of a class, so (b) tests the scale against the only US rises on record, not
+#     an identity.
 # The t quantile: the two-sided 95 % point of Student's t, by bisection on its exact distribution function for integer degrees of freedom
 # (Abramowitz & Stegun 26.7.3-4), DERIVED - SalienceFitCheck evaluates the same.
 # Writes docs/generated/EB_QA3_SERIES.tsv (every share the fit read, unit by unit, each wave's date and each source's digest) and
@@ -500,17 +530,21 @@ sub decay {
     return ($l, $j * exp(-$l * $first) < $Resolution ? 1 : 0);
 }
 
-# one class's jump at the survey, its decay, and the jump BACK-CAST to the event's day (each unit's rise times exp(lambda x the days from its
-# event to its post-wave), averaged; lambda taken as 0 where the decay is unresolved, so the back-cast is the measured rise)
+# one class's jump at the survey's PEAK, its decay after the peak, and the jump BACK-CAST to the event's day (each unit's rise at the peak wave
+# times exp(lambda x the days from its event to that wave), averaged; lambda taken as 0 where the decay is unresolved, so the back-cast is the
+# measured rise). K69 (Elias, 2026-10-23, docs/RULINGS_2026-10-23.md): the jump is read at the excess's peak - the step (0 the post-wave, k the
+# k-th decay wave) whose mean excess over the pre-wave is the largest, the earliest on a tie - and the decay is fitted on the steps after it,
+# their times counted from it. A leave-one-out refit keeps the full sample's peak step ($peak), so the jackknife is a smooth function of the
+# data (a peak that hopped between steps would make the interval a mixture of two estimands).
 sub fit_rows {
-    my ($rows) = @_;
+    my ($rows, $peak) = @_;
     my (%pre, %post, %at);
     for my $r (@$rows) {
         my ($class, $unit, $step, $w, $date, $s, $n, $event) = @$r;
-        if ($step == -1) { $pre{$unit} = [$s, $n, $date]; } elsif ($step == 0) { $post{$unit} = [$s, $n, $date, $event]; } else { $at{$step}{$unit} = [$s, $date]; }
+        if ($step == -1) { $pre{$unit} = [$s, $n, $date]; } elsif ($step == 0) { $post{$unit} = [$s, $n, $date, $event]; } else { $at{$step}{$unit} = [$s, $date, $n]; }
     }
     my @units = sort grep { exists $post{$_} } keys %pre;
-    my $jump = 0; $jump += $post{$_}[0] - $pre{$_}[0] for @units; $jump /= @units;
+    my $first = 0; $first += $post{$_}[0] - $pre{$_}[0] for @units; $first /= @units;
     my @steps;
     for my $k (sort { $a <=> $b } keys %at) {
         my @in = grep { exists $at{$k}{$_} } @units;
@@ -519,12 +553,21 @@ sub fit_rows {
         for (@in) { $e += $at{$k}{$_}[0] - $pre{$_}[0]; $dt += $at{$k}{$_}[1] - $post{$_}[2]; }
         push @steps, [$k, $e / @in, $dt / @in, scalar @in];
     }
-    my ($lambda, $edge) = decay($jump, \@steps);
+    unless (defined $peak) { $peak = 0; my $best = $first; for (@steps) { ($peak, $best) = ($_->[0], $_->[1]) if $_->[1] > $best; } }
+    # the peak's own wave per unit: [share, date, n] (the post-wave at step 0)
+    my %atpeak = $peak == 0 ? (map { $_ => [$post{$_}[0], $post{$_}[2], $post{$_}[1]] } @units) : (map { $_ => $at{$peak}{$_} } grep { exists $at{$peak}{$_} } @units);
+    my @inpeak = grep { exists $atpeak{$_} } @units;
+    my ($jump, $dtp) = ($first, 0);
+    if ($peak != 0) { my ($s) = grep { $_->[0] == $peak } @steps; ($jump, $dtp) = ($s->[1], $s->[2]); }
+    my @after = map { [$_->[0], $_->[1], $_->[2] - $dtp, $_->[3]] } grep { $_->[0] > $peak } @steps;
+    my ($lambda, $edge) = decay($jump, \@after);
     my $lb = $edge == 0 ? $lambda : 0;
     my ($j0, $lag) = (0, 0);
-    for (@units) { my $d = $post{$_}[2] - $post{$_}[3]; $j0 += ($post{$_}[0] - $pre{$_}[0]) * exp($lb * $d); $lag += $d; }
-    $j0 /= @units; $lag /= @units;
-    return { units => \@units, jump => $jump, steps => \@steps, lambda => $lambda, edge => $edge, j0 => $j0, lag => $lag, lb => $lb, pre => \%pre, post => \%post };
+    for (@inpeak) { my $d = $atpeak{$_}[1] - $post{$_}[3]; $j0 += ($atpeak{$_}[0] - $pre{$_}[0]) * exp($lb * $d); $lag += $d; }
+    $j0 /= @inpeak; $lag /= @inpeak;
+    my $firstlag = 0; $firstlag += $post{$_}[2] - $post{$_}[3] for @units; $firstlag /= @units;   # K94: the event to the first wave after it, where the ramp starts
+    return { units => \@units, jump => $jump, first => $first, firstlag => $firstlag, peak => $peak, steps => \@steps, after => \@after, lambda => $lambda, edge => $edge, j0 => $j0, lag => $lag, lb => $lb,
+             pre => \%pre, post => \%post, atpeak => \%atpeak };
 }
 
 my @out;
@@ -537,7 +580,7 @@ for my $c (@classes) {
     my ($jlo, $jhi, $llo, $lhi, $j0lo, $j0hi);
     if ($n >= 2) {
         my (@jj, @ll, @j0);
-        for my $drop (@{$f->{units}}) { my $g = fit_rows([grep { $_->[1] ne $drop } @mine]); push @jj, $g->{jump}; push @ll, $g->{lambda}; push @j0, $g->{j0}; }
+        for my $drop (@{$f->{units}}) { my $g = fit_rows([grep { $_->[1] ne $drop } @mine], $f->{peak}); push @jj, $g->{jump}; push @ll, $g->{lambda}; push @j0, $g->{j0}; }
         my $se = sub { my ($v) = @_; my $m = 0; $m += $_ for @$v; $m /= @$v; my $ss = 0; $ss += ($_ - $m) ** 2 for @$v; return sqrt(($n - 1) / $n * $ss); };
         my $t = tq($n - 1);
         ($jlo, $jhi) = ($f->{jump} - $t * $se->(\@jj), $f->{jump} + $t * $se->(\@jj));
@@ -545,7 +588,7 @@ for my $c (@classes) {
         ($j0lo, $j0hi) = ($f->{j0} - $t * $se->(\@j0), $f->{j0} + $t * $se->(\@j0));
     } else {
         my $u = $f->{units}[0];
-        my ($p0, $n0) = @{$f->{pre}{$u}}; my ($p1, $n1) = @{$f->{post}{$u}};
+        my ($p0, $n0) = @{$f->{pre}{$u}}; my ($p1, $n1) = ($f->{atpeak}{$u}[0], $f->{atpeak}{$u}[2]);   # the peak's wave against the pre-wave
         my $se = sqrt($p1 * (1 - $p1) / $n1 + $p0 * (1 - $p0) / $n0);
         ($jlo, $jhi) = ($f->{jump} - $Z * $se, $f->{jump} + $Z * $se);
         my $k = exp($f->{lb} * $f->{lag});
@@ -558,17 +601,126 @@ for my $c (@classes) {
         $class, $slot, $n, $f->{jump}, $jlo, $jhi, $f->{lambda}, ($f->{edge} < 0 ? ' [the grid\'s low end: no decay resolved]' : $f->{edge} > 0 ? ' [the grid\'s high end: gone before the first decay wave]' : ''),
         defined $llo ? sprintf('%.6f', $llo) : 'none', defined $lhi ? sprintf('%.6f', $lhi) : 'none',
         defined $hl ? sprintf('%.1f', $hl) : 'none', (defined $lhi && $lhi > 0 ? sprintf('%.1f', log(2) / $lhi) : 'none'), (defined $llo ? ($llo > 0 ? sprintf('%.1f', log(2) / $llo) : 'unbounded') : 'none');
-    $line .= sprintf "            held %d days (the event to the post-wave, %.1f days on the units' mean); reported only, the back-cast to the event's day: %+.4f (95%% %+.4f .. %+.4f)\n", int($f->{lag} + 0.5), $f->{lag}, $f->{j0}, $j0lo, $j0hi;
-    $line .= sprintf "            units: %s\n", join(' ', map { sprintf '%s %+.2f', $_, $f->{post}{$_}[0] - $f->{pre}{$_}[0] } @{$f->{units}});
-    $line .= sprintf "            excess by step: E0 %+.4f; %s\n", $f->{jump}, join('; ', map { sprintf 'step %d: E %+.4f at %.1f days (%d units)', @$_[0 .. 3] } @{$f->{steps}});
-    # a reading printed for the record, never generated: the excess at its largest over the post-wave and the decay steps
-    my ($pk, $pe) = (0, $f->{jump}); for (@{$f->{steps}}) { ($pk, $pe) = ($_->[0], $_->[1]) if $_->[1] > $pe; }
-    $line .= sprintf "            the excess at its largest: step %d, %+.4f (a reading only; the design reads the jump at the post-wave)\n", $pk, $pe;
+    $line .= sprintf "            read at the excess's peak: step %d (%s), %+.4f; the post-wave's own rise %+.4f; decay fitted on %d step(s) after the peak\n",
+        $f->{peak}, (@{$c->[3]} == 1 ? 'EB' . $c->[3][0][3 + $f->{peak}] : 'each unit\'s own wave'), $f->{jump}, $f->{first}, scalar @{$f->{after}};
+    $line .= sprintf "            held %d days (the event to the peak's wave, %.1f days on the units' mean); reported only, the back-cast to the event's day: %+.4f (95%% %+.4f .. %+.4f)\n", int($f->{lag} + 0.5), $f->{lag}, $f->{j0}, $j0lo, $j0hi;
+    $line .= sprintf "            units' rise at the peak: %s\n", join(' ', map { sprintf '%s %+.2f', $_, $f->{atpeak}{$_}[0] - $f->{pre}{$_}[0] } grep { exists $f->{atpeak}{$_} } @{$f->{units}});
+    $line .= sprintf "            excess by step: E0 %+.4f; %s\n", $f->{first}, join('; ', map { sprintf 'step %d: E %+.4f at %.1f days (%d units)', @$_[0 .. 3] } @{$f->{steps}});
     $line .= "            NOT GENERATED: $why - the class stays inert\n" unless $generate;
     $report .= $line;
     push @out, { class => $class, slot => $slot, n => $n, jump => $f->{jump}, jlo => $jlo, jhi => $jhi, lambda => $f->{lambda}, llo => $llo, lhi => $lhi,
-                 j0 => $f->{j0}, j0lo => $j0lo, j0hi => $j0hi, lag => $f->{lag}, edge => $f->{edge}, generate => $generate, why => $why };
+                 j0 => $f->{j0}, j0lo => $j0lo, j0hi => $j0hi, lag => $f->{lag}, edge => $f->{edge}, generate => $generate, why => $why, peak => $f->{peak}, first => $f->{first}, firstlag => $f->{firstlag} };
 }
+
+# ---------------------------------------------------------------- K69's USA: the two instruments' bases
+# A share on either instrument is the respondents naming the issue; its BASE is the mentions a respondent gives on the instrument, the sum of
+# every response category the table prints (each instrument's "no opinion" / "don't know" among them). Gallup's table prints that sum itself
+# (its "Total" row: the question is open-ended and a respondent may name more than one problem, so it exceeds 100 %); Eurobarometer's QA3
+# allows two answers, and its sum is read here off every stored sheet, per member and wave (the French duplicate of the Cyprus item on the
+# newer sheets, "La question chypriote", is left out: it repeats "Cyprus issue"). THE CONVERSION (DECLARED): a jump fitted on Eurobarometer's
+# shares lands on a Gallup seed scaled by Gallup's base over Eurobarometer's - for an issue holding a given part of the mentions, its share
+# scales with the mentions a respondent gives.
+my $G = 'ElectionsData/usa/raw/salience/';
+my $gallupFile = 'gallup_mip_vEKjO_47_dataset.csv';
+my %gsums;
+for (split /\n/, slurp($G . 'SHA256SUMS.txt')) { s/\r$//; $gsums{$2} = $1 if /^([0-9a-f]{64}) \*?(\S+)$/; }
+my $gallupDigest = sha256_hex(slurp($G . $gallupFile));
+die "$gallupFile: its SHA-256 $gallupDigest is not the one its SHA256SUMS.txt lists\n" unless ($gsums{$gallupFile} // '') eq $gallupDigest;
+my (@gmonths, @gtotals);
+for (split /\n/, slurp($G . $gallupFile)) {
+    s/\r$//; my @f = split /\t/;
+    @gmonths = @f[1 .. $#f] if !@gmonths && @f > 1 && $f[0] eq '' && $f[1] =~ /^[A-Z][a-z]{2}-\d\d$/;
+    if (@f > 1 && $f[0] eq 'Total') { @gtotals = map { my $v = $_; $v =~ s/%$//; die "Gallup's Total '$_' unread\n" unless $v =~ /^\d+$/; $v / 100 } @f[1 .. $#f]; }
+}
+die "Gallup's table: " . scalar(@gmonths) . " months, " . scalar(@gtotals) . " totals\n" unless @gmonths && @gmonths == @gtotals;
+my $gallupBase = 0; $gallupBase += $_ for @gtotals; $gallupBase /= @gtotals;
+my (@base, $ebBase);
+for my $w (sort { $a <=> $b } keys %wavefile) {
+    my $q = wave($w);
+    for my $country (grep { member($_, $w) } @eu) {
+        my ($sum, $items) = (0, 0);
+        for my $label (sort keys %{$q->{share}}) {
+            next if $label =~ /^La question chypriote$/;
+            my $v = $q->{share}{$label}{$country};
+            next unless defined $v;
+            $sum += $v; $items++;
+        }
+        next unless $items;
+        push @base, [$w, $country, $sum, $items];
+    }
+}
+$ebBase = 0; $ebBase += $_->[2] for @base; $ebBase /= @base;
+my ($ebLo, $ebHi) = (9, 0); for (@base) { $ebLo = $_->[2] if $_->[2] < $ebLo; $ebHi = $_->[2] if $_->[2] > $ebHi; }
+my $usConversion = $gallupBase / $ebBase;
+$report .= sprintf "K69 the USA: Gallup's base %.4f mentions a respondent (the mean of its Total row over %d months, %s .. %s); Eurobarometer's QA3 base %.4f (%d member-waves, %.2f .. %.2f); K69's conversion x %.4f (dropped by K103: the USA lands at scale one)\n",
+    $gallupBase, scalar @gtotals, $gmonths[-1], $gmonths[0], $ebBase, scalar @base, $ebLo, $ebHi, $usConversion;
+
+# ---------------------------------------------------------------- K102: the conversion out of sample (the header's declared criterion)
+my $K = 'ElectionsData/usa/raw/salience/k102/';
+my %ksums;
+for (split /\n/, slurp($K . 'SHA256SUMS.txt')) { s/\r$//; $ksums{$2} = $1 if /^([0-9a-f]{64}) \*?(\S+)$/; }
+my %kdigest;
+sub kbytes { my ($n) = @_; my $b = slurp($K . $n); my $d = sha256_hex($b); die "$n: its SHA-256 $d is not the one k102/SHA256SUMS.txt lists\n" unless ($ksums{$n} // '') eq $d; $kdigest{$n} = $d; return $b; }
+# a cell as a share (0..1): a whole per cent, or undef for "*" (under half a per cent) and "--" (not mentioned)
+sub kval { my ($v) = @_; $v = trim($v); $v =~ s/%$//; return $v =~ /^\d+$/ ? $v / 100 : undef; }
+# a table: [ [months...], { label => [shares...] } ] - the Datawrapper dataset (tab-separated) or the trends page's FIRST table (its months in
+# the header's scope="col" cells, each row's label in its scope="row" cell)
+sub ktable {
+    my ($n) = @_;
+    my $b = kbytes($n);
+    my (@m, %r);
+    if ($n =~ /\.csv$/) {
+        for (split /\n/, $b) {
+            s/\r$//; my @f = split /\t/; next unless @f > 1;
+            if (!@m && $f[0] eq '' && $f[1] =~ /^[A-Z][a-z]{2}[- ]\d/) { @m = @f[1 .. $#f]; next; }
+            my $l = $f[0]; $l =~ s/<[^>]+>//g; $l = trim($l); next if $l eq '';
+            $r{$l} = [map { kval($_) } @f[1 .. $#f]];
+        }
+    } else {
+        my ($t) = $b =~ /(<table.*?<\/table>)/s or die "$n: no table\n";
+        @m = map { trim($_) } $t =~ /<th colspan="1" scope="col">(.*?)<\/th>/gs;
+        while ($t =~ /<tr>(.*?)<\/tr>/gs) {
+            my $tr = $1; my ($l) = $tr =~ /<th scope="row">(.*?)<\/th>/s or next;
+            $l =~ s/<[^>]+>//g; $l = xml_text(trim($l));
+            $r{$l} = [map { kval($_) } $tr =~ /<td[^>]*>(.*?)<\/td>/gs];
+        }
+    }
+    return [\@m, \%r];
+}
+# the tested years (the header's design): the item, the class, the pre column, the post columns, the tables they are read from
+my @k102 = (
+    { year => 2020, item => 'Coronavirus/Diseases', class => 'Health', pre => 'Feb 2020', post => ['Apr 2020', 'May 2020', 'Jun 2020', 'Jul 2020', 'Aug 2020', 'Sep 2020'],
+      files => ['wayback_gallup_mip_page_20201028085700.html'], months => qr/ 2020$/ },
+    { year => 2022, item => 'High cost of living/Inflation', class => 'Economy', pre => 'Feb 2022', post => ['Mar 2022', 'Apr 2022', 'May 2022', 'Jun 2022', 'Jul 2022', 'Aug 2022'],
+      files => ['wayback_gallup_mip_page_20220425021115.html', 'gallup_mip_vEKjO_1_dataset.csv'], months => qr/ 2022$/ },
+);
+# 2015: the trends page of the time prints its table as an image, so the year is BILLED - held here: the stored page carries no text table
+{ my $b = kbytes('wayback_gallup_mip_page_20150915083712.html'); die "2015: the stored page carries a text table - read it, do not bill it\n" if $b =~ /<table/i; }
+my $surveyJump = { map { $_->{class} => $_->{jump} } @out };
+my @krows; my ($kNear, $kBaseOk) = (0, 1);
+for my $y (@k102) {
+    my (%total, %item);
+    for my $f (@{$y->{files}}) {
+        my ($m, $r) = @{ktable($f)};
+        die "$f: no Total row or no '$y->{item}' row\n" unless $r->{Total} && $r->{$y->{item}};
+        for my $i (0 .. $#$m) { next unless $m->[$i] =~ $y->{months}; $total{$m->[$i]} //= $r->{Total}[$i]; $item{$m->[$i]} //= $r->{$y->{item}}[$i]; }
+    }
+    my @cols = sort keys %total;
+    my $base = 0; $base += $total{$_} for @cols; $base /= @cols;
+    die "$y->{year}: no '$y->{pre}' column\n" unless defined $item{$y->{pre}};
+    my ($peak, $at) = (undef, ''); for (@{$y->{post}}) { die "$y->{year}: no '$_' column\n" unless exists $item{$_}; my $v = $item{$_} // 0; ($peak, $at) = ($v, $_) if !defined $peak || $v > $peak; }
+    my $rise = $peak - $item{$y->{pre}};
+    my $eb = $surveyJump->{$y->{class}};
+    my ($dConv, $dNone) = (abs(log($rise / ($eb * $usConversion))), abs(log($rise / $eb)));
+    my $baseOk = abs($base / $gallupBase - 1) <= 0.15;
+    $kBaseOk &&= $baseOk; $kNear++ if $dConv < $dNone;
+    push @krows, [$y->{year}, scalar @cols, $base, $y->{item}, $y->{pre}, $item{$y->{pre}}, $at, $peak, $rise, $y->{class}, $eb, $rise / $eb];
+    $report .= sprintf "K102 %d: Gallup's base %.4f over %d columns (%s the 2024 base's +-15 %%); '%s' %s %.2f -> %s %.2f, a rise of %+.4f against the %s class's EB jump %+.4f: the share ratio %.4f (the conversion %.4f); |ln| to the converted %.3f, to the unconverted %.3f\n",
+        $y->{year}, $base, scalar @cols, $baseOk ? 'inside' : 'OUTSIDE', $y->{item}, $y->{pre}, $item{$y->{pre}}, $at, $peak, $rise, $y->{class}, $eb, $rise / $eb, $usConversion, $dConv, $dNone;
+}
+my $kKeep = $kBaseOk && $kNear * 2 > @k102;
+$report .= sprintf "K102 verdict: (a) the base %s; (b) the converted jump nearer in %d of %d years - the conversion %s; 2015 BILLED (its table is an image)\n",
+    $kBaseOk ? 'is instrument-stable' : 'FAILS', $kNear, scalar @k102, $kKeep ? 'is KEPT' : 'FAILS and goes back to Elias';
 print $report;
 exit 0 if $dry;
 
@@ -581,6 +733,9 @@ my $tsv = "# GENERATED by Tools/aloop_salience_fit.pl - never hand-edited. A-LOO
         . "# row rows: class, unit (the country), step (-1 the pre-wave, 0 the post-wave, k the k-th decay wave), wave, the wave's date, the share\n"
         . "# (0..1, the sheet's figure; the larger of the class's items where it reads two), the weighted total the sheet prints for the country,\n"
         . "# the unit's event date (days since 1970-01-01).\n"
+        . "# base rows (K69, the USA's conversion): wave, member, the sum of every QA3 share its sheet prints for the member (the mentions a\n"
+        . "# respondent gives; the French duplicate of the Cyprus item left out), the count of items summed.\n"
+        . "# gallupsource row: the stored Gallup table (ElectionsData/usa/raw/salience/), its SHA-256; gallup rows: a month, its Total row (0..).\n"
         . "# SalienceFitCheck refits from these rows; regenerate with: perl Tools/aloop_salience_fit.pl\n";
 my %used; $used{$_->[3]} = 1 for @rows;
 for my $w (sort { $a <=> $b } keys %used) {
@@ -588,6 +743,9 @@ for my $w (sort { $a <=> $b } keys %used) {
     $tsv .= join("\t", 'source', $w, $wavefile{$w}[0], $digest{$w}, $fw, wave($w)->{sheet}, g17(wave($w)->{date})) . "\n";
 }
 for my $r (@rows) { $tsv .= join("\t", 'row', $r->[0], $r->[1], $r->[2], $r->[3], g17($r->[4]), g17($r->[5]), $r->[6] eq '' ? '' : g17($r->[6]), g17($r->[7])) . "\n"; }
+for my $b (@base) { $tsv .= join("\t", 'base', $b->[0], $b->[1], g17($b->[2]), $b->[3]) . "\n"; }
+$tsv .= join("\t", 'gallupsource', $G . $gallupFile, $gallupDigest) . "\n";
+for my $i (0 .. $#gmonths) { $tsv .= join("\t", 'gallup', $gmonths[$i], g17($gtotals[$i])) . "\n"; }
 # the series' digest, over its text with LF line ends (a checkout's CRLF does not change it); SalienceFitCheck takes it the same way
 my $seriesDigest = sha256_hex($tsv);
 
@@ -600,16 +758,38 @@ my $cs = "// GENERATED by Tools/aloop_salience_fit.pl. DO NOT EDIT BY HAND.\n//\
        . "    /// <summary>A-LOOP q5 (`docs/specs/A_LOOP_PLAN.md` section 6 (3)): the jump an event of each class gives the issue it names, and the rate it\n"
        . "    /// decays at, FITTED on Eurobarometer's QA3 (\"the two most important issues facing (OUR COUNTRY)\") around dated real events - the design,\n"
        . "    /// the units and the estimator are `Tools/aloop_salience_fit.pl`'s header. A jump is in share units (0..1, the survey's two-mention\n"
-       . "    /// share) measured at the survey (the post-wave), which the game lands held flat for the class's hold (the event to the survey) and then\n"
-       . "    /// decays; the back-cast to the event's day is reported only. A rate is a day's; an interval is 95 %. A class is generated where its decay\n"
-       . "    /// is resolved and its jump's interval excludes zero; otherwise its\n"
-       . "    /// jump is zero (inert) and its measured figures stand beside it for the record. Generated, never hand-edited.</summary>\n"
+       . "    /// share) read at the excess's PEAK (K69: the post-wave or a later wave, the class's PeakStep), which the game lands held flat for the\n"
+       . "    /// class's hold (the event to the peak's wave) and then decays at the rate fitted on the waves after the peak; the back-cast to the event's\n"
+       . "    /// day is reported only. A rate is a day's; an interval is 95 %. A class is generated where its decay is resolved and its jump's interval\n"
+       . "    /// excludes zero; otherwise its jump is zero (inert) and its measured figures stand beside it for the record. The USA's conversion\n"
+       . "    /// (K69) is Gallup's base over Eurobarometer's, each the mentions a respondent gives on its instrument. Generated, never hand-edited.</summary>\n"
        . "    public static class EventSalienceFit\n    {\n"
        . "        /// <summary>DERIVED: the series' digest (its text with LF line ends), the decay search's range (a day) and grid, and the series' resolution\n"
        . "        /// (half the sheets' whole per cent) - the tool's.</summary>\n"
        . "        public const string SeriesDigest = \"$seriesDigest\";\n"
        . "        public const double LambdaLow = " . g17($LambdaLow) . ", LambdaHigh = " . g17($LambdaHigh) . ", Resolution = " . g17($Resolution) . ";\n"
-       . "        public const int GridPoints = $GridPoints;\n        public const int SeriesRows = " . scalar(@rows) . ";\n";
+       . "        public const int GridPoints = $GridPoints;\n        public const int SeriesRows = " . scalar(@rows) . ";\n"
+       . "\n        /// <summary>DERIVED from SOURCED tables (K69, the USA's conversion): Gallup's base - the mean of its Total row over the stored months\n"
+       . "        /// (`$G$gallupFile`, SHA-256 below) - and Eurobarometer's QA3 base - the mean over the series' base rows of a member's summed shares in a\n"
+       . "        /// wave - each the mentions a respondent gives on its instrument; their ratio was K69's conversion for the USA, which failed its K102 test; since K103 the game applies none (the record).</summary>\n"
+       . "        public const string GallupDigest = \"$gallupDigest\";\n"
+       . "        public const int GallupMonths = " . scalar(@gtotals) . ", BaseRows = " . scalar(@base) . ";\n"
+       . "        public const double GallupBase = " . g17($gallupBase) . ", EurobarometerBase = " . g17($ebBase) . ";\n"
+       . "        public const double UsConversion = GallupBase / EurobarometerBase;\n";
+$cs .= "\n        /// <summary>DERIVED from SOURCED tables (K102, the conversion out of sample; the criterion is the tool's header, declared before the\n"
+     . "        /// figures): per tested year, Gallup's base (its Total row's mean), the surging item's rise from the last column before the event to its\n"
+     . "        /// largest after, the class's Eurobarometer jump, and the share ratio (rise over jump) - read from `ElectionsData/usa/raw/salience/k102/`.\n"
+     . "        /// 2015 is BILLED (the trends page printed its table as an image). The verdict: BaseStable (every base within 15 % of GallupBase),\n"
+     . "        /// ConvertedNearer (the years the converted jump is nearer the rise in |ln|) and Kept. Not read by the game: the test failed and K103 (Elias,\n"
+     . "        /// 2026-10-24) dropped the conversion - the USA lands the jump at scale one; these figures are the record of why.</summary>\n";
+for my $k (@krows) {
+    my ($yr, $ncol, $base, $item, $pre, $preS, $at, $peak, $rise, $class, $eb, $ratio) = @$k;
+    $cs .= "        public const int K102Columns$yr = $ncol;\n"
+         . "        public const double K102Base$yr = " . g17($base) . ", K102Pre$yr = " . g17($preS) . ", K102Peak$yr = " . g17($peak) . ", K102Rise$yr = " . g17($rise)
+         . ", K102EbJump$yr = " . g17($eb) . ", K102Ratio$yr = " . g17($ratio) . ";   // '$item' $pre -> $at, the $class class\n";
+}
+$cs .= "        public const bool K102BaseStable = " . ($kBaseOk ? 'true' : 'false') . ", K102Kept = " . ($kKeep ? 'true' : 'false') . ";\n"
+     . "        public const int K102ConvertedNearer = $kNear, K102Years = " . scalar(@k102) . ";\n";
 for my $o (@out) {
     my $k = $o->{class};
     $cs .= "\n        /// <summary>FITTED: $k (the $o->{slot} slot) - $o->{n} unit(s); " . ($o->{generate} ? 'generated' : "NOT generated: $o->{why} - inert") . ".</summary>\n";
@@ -621,6 +801,15 @@ for my $o (@out) {
     $cs .= "        public const double ${k}MeasuredLambda = " . g17($o->{lambda}) . ", ${k}LambdaLower = " . g17($o->{llo}) . ", ${k}LambdaUpper = " . g17($o->{lhi}) . ";\n";
     $cs .= "        public const double ${k}Jump = " . ($o->{generate} ? "${k}SurveyJump" : '0.0') . ", ${k}LambdaPerDay = " . ($o->{generate} ? "${k}MeasuredLambda" : '0.0') . ";\n";
     $cs .= "        public const int ${k}HoldDays = " . ($o->{generate} ? int($o->{lag} + 0.5) : 0) . ";\n";
+    $cs .= "        public const int ${k}PeakStep = $o->{peak};\n";
+    $cs .= "        public const double ${k}FirstWaveJump = " . g17($o->{first}) . ";\n";
+    # K94 (Elias, 2026-10-24): the ramp - the first wave's level held from the event to the first wave, then rising linearly to the peak by the
+    # peak's wave (no ramp where the peak is the first wave); both day counts the units' mean, rounded half up, as the hold is
+    {
+        my $hold = $o->{generate} ? int($o->{lag} + 0.5) : 0;
+        my $fh = !$o->{generate} ? 0 : $o->{peak} == 0 ? $hold : int($o->{firstlag} + 0.5);
+        $cs .= "        public const int ${k}FirstHoldDays = $fh, ${k}RampDays = " . ($hold - $fh) . ";\n";
+    }
 }
 $cs .= "    }\n}\n";
 

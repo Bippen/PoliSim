@@ -548,6 +548,11 @@ namespace PoliSim.Data
         /// preview's clone.</summary>
         public int[] SalienceHoldDays;
 
+        /// <summary>K94 (Elias, 2026-10-24): the step each issue's shift still RAMPS by a day toward its event's peak (indexed by `IssueId`, share units),
+        /// set by `EventSalience.Land` for a class whose peak is later than its first wave and applied by `EventSalience.AdvanceDay` in the hold's last
+        /// days; zero once the hold ends; null while no ramp has been stored. Saved (format 61); copied on the preview's clone.</summary>
+        public float[] SalienceRampPerDay;
+
         /// <summary>P-I2 stage 1: the country's FIVE-YEAR AGE PYRAMID, 21 bands in millions of persons,
         /// seeded from `PopulationPyramids` (Eurostat demo_pjan 1 Jan 2024 for the EU five, US Census PEP
         /// vintage 2024 for the USA).

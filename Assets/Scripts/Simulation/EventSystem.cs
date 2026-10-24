@@ -461,6 +461,14 @@ namespace PoliSim.Simulation
         /// Off, no event rolls and the event stream's dice are not drawn; the other streams are untouched.</summary>
         public static bool Enabled = true;
 
+        /// <summary>The pool's event of this name, or null - K68's severity reads its anchors' sizes from the pool itself (`EventSalience.SeverityOf`), so
+        /// the reference is the event as the pool carries it, never a transcribed figure.</summary>
+        public static EconomicEvent PoolEvent(string name)
+        {
+            foreach (EconomicEvent e in EventPool) { if (e.Name == name) { return e; } }
+            return null;
+        }
+
         public static EconomicEvent TryRollEvent()
         {
             if (!Enabled) { return null; }

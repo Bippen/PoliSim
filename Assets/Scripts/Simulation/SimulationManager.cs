@@ -7356,6 +7356,7 @@ namespace PoliSim.Simulation
                 VoteApprovalMarks = country.VoteApprovalMarks == null ? null : new List<ApprovalMark>(country.VoteApprovalMarks),   // A-LOOP q15: the approval term's references, the clone's own list
                 FiscalVoteRecord = country.FiscalVoteRecord?.Copy(),   // A-LOOP q13: the vote's fiscal book, the clone's own copy (the preview runs no day and closes no year, so it stands)
                 SalienceShift = country.SalienceShift == null ? null : (float[])country.SalienceShift.Clone(),   // A-LOOP q5: what events hold of salience - the stance model's opinion cost reads it; the clone's own copy
+                SalienceRampPerDay = country.SalienceRampPerDay == null ? null : (float[])country.SalienceRampPerDay.Clone(),   // K94: each issue's ramp step to its peak, the clone's own copy
                 SalienceHoldDays = country.SalienceHoldDays == null ? null : (int[])country.SalienceHoldDays.Clone(),   // A-LOOP q5: the days each issue's jump is still held, the clone's own copy
 
                 // P-I2 stage 1: the pyramid, CLONED. Nothing reads it on the preview path yet, so this line

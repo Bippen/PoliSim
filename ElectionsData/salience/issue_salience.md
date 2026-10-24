@@ -118,5 +118,23 @@ webgate.ec.europa.eu), fetched byte-exact with curl by `Tools/aloop_eb_fetch.sh`
 bytes (the older waves are BIFF8 .xls inside zips, the newer .xlsx) into `docs/generated/EB_QA3_SERIES.tsv`.
 
 **What this does not change:** the W-F3 gaps above stand - an event cannot give "threats to democracy" a slot, and the series
-is Eurobarometer's two-mention shares, not SOM's. The USA's row (Gallup's single-mention "most important problem") is
-not moved by events: no Gallup analogue is fitted, and a two-mention jump on a one-mention seed would have no coefficient behind it.
+is Eurobarometer's two-mention shares, not SOM's.
+
+**Elias's rulings of 2026-10-23 (K68-K70, `docs/RULINGS_2026-10-23.md`):** an adverse event's jump scales by its severity, read off the
+pool's own figures against the pool's entry for the fit's dated event (`EventSalience.SeverityOf`); the jump is read at the excess's
+peak wave, not the first wave after the event (the tool's amendment (6)); crime and security stay inert. **The USA's row moves too**,
+converted by the two instruments' bases: Gallup's question is open-ended and a respondent may name more than one problem (its table's
+Total row, `ElectionsData/usa/raw/salience/gallup_mip_vEKjO_47_dataset.csv`, exceeds 100 %), Eurobarometer's QA3 takes two answers at
+most, and a jump fitted on Eurobarometer lands on the Gallup seed scaled by the mentions a respondent gives on each - both bases read
+off the stored tables by `Tools/aloop_salience_fit.pl` into `EventSalienceFit.UsConversion` (DECLARED reading: an issue holding a
+given part of the mentions has a share in proportion to the mentions a respondent gives).
+
+**K102 (Elias, 2026-10-24): the conversion tested out of sample.** Gallup's own trend tables for 2020 and 2022 were fetched
+byte-exact into `ElectionsData/usa/raw/salience/k102/` (2015 BILLED: the page of the time printed its table as an image), and the
+conversion was tested by the criterion `Tools/aloop_salience_fit.pl`'s header declared before the figures were computed. It FAILED;
+the per-year bases, the surging items' share ratios and the verdict are generated into `EventSalienceFit` (the K102 constants) and
+re-derived by `SalienceFitCheck`.
+
+**K103 (Elias, 2026-10-24): the conversion is dropped.** The USA's events move its salience at scale one: the Eurobarometer jump
+lands on the Gallup seed as measured (`EventSalience.InstrumentScale`). The bases and the K102 test stay generated and checked, as
+the record of why the conversion was dropped.

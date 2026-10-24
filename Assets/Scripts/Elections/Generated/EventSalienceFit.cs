@@ -2,7 +2,7 @@
 //
 // Source : docs/generated/EB_QA3_SERIES.tsv (the shares read out of the stored Eurobarometer Volume A workbooks,
 //          docs/reference/raw/aloop/eb/, each workbook's SHA-256 on its source row and in that folder's SHA256SUMS.txt)
-// SHA-256: c19c793c216c38186ac2eb503c132a321146250d48cb979aa4c0d16bded7a951 (its text with LF line ends)
+// SHA-256: 4706fcaea491d1bf0e8a62ee6c6a4e08774aa3717e26f1d6dc9bc90bd7000b51 (its text with LF line ends)
 //
 // SalienceFitCheck re-reads the series, holds it and every workbook against its digest and refits every figure.
 
@@ -11,18 +11,40 @@ namespace PoliSim.Elections.Generated
     /// <summary>A-LOOP q5 (`docs/specs/A_LOOP_PLAN.md` section 6 (3)): the jump an event of each class gives the issue it names, and the rate it
     /// decays at, FITTED on Eurobarometer's QA3 ("the two most important issues facing (OUR COUNTRY)") around dated real events - the design,
     /// the units and the estimator are `Tools/aloop_salience_fit.pl`'s header. A jump is in share units (0..1, the survey's two-mention
-    /// share) measured at the survey (the post-wave), which the game lands held flat for the class's hold (the event to the survey) and then
-    /// decays; the back-cast to the event's day is reported only. A rate is a day's; an interval is 95 %. A class is generated where its decay
-    /// is resolved and its jump's interval excludes zero; otherwise its
-    /// jump is zero (inert) and its measured figures stand beside it for the record. Generated, never hand-edited.</summary>
+    /// share) read at the excess's PEAK (K69: the post-wave or a later wave, the class's PeakStep), which the game lands held flat for the
+    /// class's hold (the event to the peak's wave) and then decays at the rate fitted on the waves after the peak; the back-cast to the event's
+    /// day is reported only. A rate is a day's; an interval is 95 %. A class is generated where its decay is resolved and its jump's interval
+    /// excludes zero; otherwise its jump is zero (inert) and its measured figures stand beside it for the record. The USA's conversion
+    /// (K69) is Gallup's base over Eurobarometer's, each the mentions a respondent gives on its instrument. Generated, never hand-edited.</summary>
     public static class EventSalienceFit
     {
         /// <summary>DERIVED: the series' digest (its text with LF line ends), the decay search's range (a day) and grid, and the series' resolution
         /// (half the sheets' whole per cent) - the tool's.</summary>
-        public const string SeriesDigest = "c19c793c216c38186ac2eb503c132a321146250d48cb979aa4c0d16bded7a951";
+        public const string SeriesDigest = "4706fcaea491d1bf0e8a62ee6c6a4e08774aa3717e26f1d6dc9bc90bd7000b51";
         public const double LambdaLow = 9.9999999999999995e-07, LambdaHigh = 1.0, Resolution = 0.0050000000000000001;
         public const int GridPoints = 2000;
         public const int SeriesRows = 494;
+
+        /// <summary>DERIVED from SOURCED tables (K69, the USA's conversion): Gallup's base - the mean of its Total row over the stored months
+        /// (`ElectionsData/usa/raw/salience/gallup_mip_vEKjO_47_dataset.csv`, SHA-256 below) - and Eurobarometer's QA3 base - the mean over the series' base rows of a member's summed shares in a
+        /// wave - each the mentions a respondent gives on its instrument; their ratio was K69's conversion for the USA, which failed its K102 test; since K103 the game applies none (the record).</summary>
+        public const string GallupDigest = "60cf66a47839c73b5557b8423dad7ba55b902327a91cee1fde3c9c1d9a73453d";
+        public const int GallupMonths = 7, BaseRows = 577;
+        public const double GallupBase = 1.3671428571428572, EurobarometerBase = 1.9163951473136942;
+        public const double UsConversion = GallupBase / EurobarometerBase;
+
+        /// <summary>DERIVED from SOURCED tables (K102, the conversion out of sample; the criterion is the tool's header, declared before the
+        /// figures): per tested year, Gallup's base (its Total row's mean), the surging item's rise from the last column before the event to its
+        /// largest after, the class's Eurobarometer jump, and the share ratio (rise over jump) - read from `ElectionsData/usa/raw/salience/k102/`.
+        /// 2015 is BILLED (the trends page printed its table as an image). The verdict: BaseStable (every base within 15 % of GallupBase),
+        /// ConvertedNearer (the years the converted jump is nearer the rise in |ln|) and Kept. Not read by the game: the test failed and K103 (Elias,
+        /// 2026-10-24) dropped the conversion - the USA lands the jump at scale one; these figures are the record of why.</summary>
+        public const int K102Columns2020 = 7;
+        public const double K102Base2020 = 1.1357142857142857, K102Pre2020 = 0.13, K102Peak2020 = 0.45000000000000001, K102Rise2020 = 0.32000000000000001, K102EbJump2020 = 0.18333333333333335, K102Ratio2020 = 1.7454545454545454;   // 'Coronavirus/Diseases' Feb 2020 -> Apr 2020, the Health class
+        public const int K102Columns2022 = 8;
+        public const double K102Base2022 = 1.2087499999999998, K102Pre2022 = 0.10000000000000001, K102Peak2022 = 0.17999999999999999, K102Rise2022 = 0.079999999999999988, K102EbJump2022 = 0.10259259259259264, K102Ratio2022 = 0.77978339350180459;   // 'High cost of living/Inflation' Feb 2022 -> May 2022, the Economy class
+        public const bool K102BaseStable = false, K102Kept = false;
+        public const int K102ConvertedNearer = 1, K102Years = 2;
 
         /// <summary>FITTED: Economy (the Economy slot) - 27 unit(s); generated.</summary>
         public const bool EconomyGenerated = true;
@@ -33,16 +55,22 @@ namespace PoliSim.Elections.Generated
         public const double EconomyMeasuredLambda = 0.0044248426613012898, EconomyLambdaLower = 0.0017311192795606686, EconomyLambdaUpper = 0.007118566043041911;
         public const double EconomyJump = EconomySurveyJump, EconomyLambdaPerDay = EconomyMeasuredLambda;
         public const int EconomyHoldDays = 128;
+        public const int EconomyPeakStep = 0;
+        public const double EconomyFirstWaveJump = 0.10259259259259264;
+        public const int EconomyFirstHoldDays = 128, EconomyRampDays = 0;
 
-        /// <summary>FITTED: Health (the Healthcare slot) - 27 unit(s); NOT generated: no decay the series resolves - inert.</summary>
-        public const bool HealthGenerated = false;
+        /// <summary>FITTED: Health (the Healthcare slot) - 27 unit(s); generated.</summary>
+        public const bool HealthGenerated = true;
         public const int HealthUnits = 27;
-        public const double HealthSurveyJump = 0.062962962962962957, HealthSurveyJumpLower = 0.0045159704724683641, HealthSurveyJumpUpper = 0.12140995545345755;
-        public const double HealthEventToSurveyDays = 144.5;
-        public const double HealthEventDayJump = 0.062962962962962957, HealthEventDayJumpLower = 0.0045159704724683641, HealthEventDayJumpUpper = 0.12140995545345755;
-        public const double HealthMeasuredLambda = 9.9999999999999995e-07, HealthLambdaLower = 9.9999999999999551e-07, HealthLambdaUpper = 1.0000000000000044e-06;
-        public const double HealthJump = 0.0, HealthLambdaPerDay = 0.0;
-        public const int HealthHoldDays = 0;
+        public const double HealthSurveyJump = 0.18333333333333335, HealthSurveyJumpLower = 0.11981162816270345, HealthSurveyJumpUpper = 0.24685503850396323;
+        public const double HealthEventToSurveyDays = 351.5;
+        public const double HealthEventDayJump = 2.272458864217727, HealthEventDayJumpLower = -6.6194112304535491, HealthEventDayJumpUpper = 11.164328958889003;
+        public const double HealthMeasuredLambda = 0.0071616265569702329, HealthLambdaLower = -0.0027971752128976932, HealthLambdaUpper = 0.017120428326838161;
+        public const double HealthJump = HealthSurveyJump, HealthLambdaPerDay = HealthMeasuredLambda;
+        public const int HealthHoldDays = 352;
+        public const int HealthPeakStep = 1;
+        public const double HealthFirstWaveJump = 0.062962962962962957;
+        public const int HealthFirstHoldDays = 145, HealthRampDays = 207;
 
         /// <summary>FITTED: Migration (the Immigration slot) - 28 unit(s); generated.</summary>
         public const bool MigrationGenerated = true;
@@ -53,6 +81,9 @@ namespace PoliSim.Elections.Generated
         public const double MigrationMeasuredLambda = 0.0041965877729334706, MigrationLambdaLower = 0.0017101311533931204, MigrationLambdaUpper = 0.0066830443924738208;
         public const double MigrationJump = MigrationSurveyJump, MigrationLambdaPerDay = MigrationMeasuredLambda;
         public const int MigrationHoldDays = 68;
+        public const int MigrationPeakStep = 0;
+        public const double MigrationFirstWaveJump = 0.14642857142857149;
+        public const int MigrationFirstHoldDays = 68, MigrationRampDays = 0;
 
         /// <summary>FITTED: Security (the Defense slot) - 5 unit(s); NOT generated: its jump's interval does not exclude zero - inert.</summary>
         public const bool SecurityGenerated = false;
@@ -63,6 +94,9 @@ namespace PoliSim.Elections.Generated
         public const double SecurityMeasuredLambda = 0.0080797600844939518, SecurityLambdaLower = -0.43557957888865734, SecurityLambdaUpper = 0.45173909905764525;
         public const double SecurityJump = 0.0, SecurityLambdaPerDay = 0.0;
         public const int SecurityHoldDays = 0;
+        public const int SecurityPeakStep = 0;
+        public const double SecurityFirstWaveJump = 0.05800000000000001;
+        public const int SecurityFirstHoldDays = 0, SecurityRampDays = 0;
 
         /// <summary>FITTED: Crime (the Crime slot) - 1 unit(s); NOT generated: its excess was gone before the first decay wave - inert.</summary>
         public const bool CrimeGenerated = false;
@@ -73,15 +107,21 @@ namespace PoliSim.Elections.Generated
         public const double CrimeMeasuredLambda = 0.195884467350599, CrimeLambdaLower = double.NaN, CrimeLambdaUpper = double.NaN;
         public const double CrimeJump = 0.0, CrimeLambdaPerDay = 0.0;
         public const int CrimeHoldDays = 0;
+        public const int CrimePeakStep = 0;
+        public const double CrimeFirstWaveJump = 0.040000000000000036;
+        public const int CrimeFirstHoldDays = 0, CrimeRampDays = 0;
 
-        /// <summary>FITTED: Natural (the Climate slot) - 1 unit(s); NOT generated: no decay the series resolves - inert.</summary>
-        public const bool NaturalGenerated = false;
+        /// <summary>FITTED: Natural (the Climate slot) - 1 unit(s); generated.</summary>
+        public const bool NaturalGenerated = true;
         public const int NaturalUnits = 1;
-        public const double NaturalSurveyJump = 0.15000000000000002, NaturalSurveyJumpLower = 0.11003034274718318, NaturalSurveyJumpUpper = 0.18996965725281686;
-        public const double NaturalEventToSurveyDays = 123.0;
-        public const double NaturalEventDayJump = 0.15000000000000002, NaturalEventDayJumpLower = 0.11003034274718318, NaturalEventDayJumpUpper = 0.18996965725281686;
-        public const double NaturalMeasuredLambda = 9.9999999999999995e-07, NaturalLambdaLower = double.NaN, NaturalLambdaUpper = double.NaN;
-        public const double NaturalJump = 0.0, NaturalLambdaPerDay = 0.0;
-        public const int NaturalHoldDays = 0;
+        public const double NaturalSurveyJump = 0.20000000000000001, NaturalSurveyJumpLower = 0.1596299200756221, NaturalSurveyJumpUpper = 0.24037007992437792;
+        public const double NaturalEventToSurveyDays = 339.0;
+        public const double NaturalEventDayJump = 0.51155332221397631, NaturalEventDayJumpLower = 0.40829607969717996, NaturalEventDayJumpUpper = 0.61481056473077267;
+        public const double NaturalMeasuredLambda = 0.002770308142073661, NaturalLambdaLower = double.NaN, NaturalLambdaUpper = double.NaN;
+        public const double NaturalJump = NaturalSurveyJump, NaturalLambdaPerDay = NaturalMeasuredLambda;
+        public const int NaturalHoldDays = 339;
+        public const int NaturalPeakStep = 1;
+        public const double NaturalFirstWaveJump = 0.15000000000000002;
+        public const int NaturalFirstHoldDays = 123, NaturalRampDays = 216;
     }
 }
