@@ -334,7 +334,7 @@ namespace PoliSim.Simulation
                 foreach (string abbrev in cabinet)
                 {
                     int held = country.ParliamentSeats.TryGetValue(abbrev, out int cs) ? cs : 0;
-                    if (held > largest) { largest = held; governmentBloc = NationalElection.BlocOf(country.Id, abbrev); }
+                    if (held > largest) { largest = held; governmentBloc = NationalElection.BlocOf(country, abbrev); }
                 }
             }
 
@@ -398,7 +398,7 @@ namespace PoliSim.Simulation
                             inCabinet ? "cabinet" : "support", pull, distance, alignment - before));
                         if (distance > 0.5f) { reasons.Add("far from its own position - the pull is small and it may refuse"); }
                     }
-                    else if (governmentBloc >= 0 && governmentBloc <= 1 && NationalElection.BlocOf(country.Id, party.Abbrev) == governmentBloc)
+                    else if (governmentBloc >= 0 && governmentBloc <= 1 && NationalElection.BlocOf(country, party.Abbrev) == governmentBloc)
                     {
                         // P4-A3 term 2b: the government's own bloc outside the cabinet - the bloc's line, a weaker pull
                         // than a partner's cohesion, scaled by nearness so a far party refuses as a far partner does.

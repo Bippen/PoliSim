@@ -163,7 +163,9 @@ namespace PoliSim.Simulation
             formed.Executive = g.Executive;
             formed.Sejm = f;
             g.Sejm = null;
+            HashSet<CabinetPortfolio> chairsBefore = CabinetSystem.PlayersChairs(country);   // K59
             country.Government = formed;
+            CabinetSystem.SeatOnEntry(country, chairsBefore);   // K59: the Sejm's cabinet seats the chairs it hands the player
             ResetArrivalBudgetWindow(country.Id);
             CloseBudgetWindowIfNotGoverning(country);   // §698 (the review's defect 2): a window the player no longer governs is closed
             Debug.Log($"SEJM: {country.Id} - installed {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)} on {CurrentDate:yyyy-MM-dd}");

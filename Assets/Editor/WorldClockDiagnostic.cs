@@ -156,6 +156,30 @@ namespace PoliSim.EditorTools
                 }
                 sb.Append("    France's window 2024-06-09..2024-07-18 holds no other country's start.\n");
 
+                // K33 (ruled 2026-10-23; G1): France's 2022 polling days in France's calendar - the stored FE page held to its folder's SHA256SUMS, its dateline
+                // read off the page (the two days and the year), the XVIe's chamber of record dated by the second of them (as 2024's row is by its second
+                // round) with both days on its basis, and no chamber of record anywhere left undated
+                {
+                    string feFolder = System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath, "..", "ElectionsData", "france", "raw", "legislatives2022"));
+                    List<string> feFaults = ItalySeatingDiagnostic.DigestFaults(feFolder, out int feHeld);
+                    string dateline = feFaults.Count == 0 ? ItalySeatingDiagnostic.FrancePageDateline(System.IO.Path.Combine(feFolder, "wayback_interieur_FE_20220705224641.html.gz")) : null;
+                    System.Text.RegularExpressions.Match days = System.Text.RegularExpressions.Regex.Match(dateline ?? string.Empty, @"^(\d{1,2}) et (\d{1,2}) juin (\d{4})$");
+                    DateTime firstRound = days.Success ? new DateTime(int.Parse(days.Groups[3].Value, CultureInfo.InvariantCulture), 6, int.Parse(days.Groups[1].Value, CultureInfo.InvariantCulture)) : DateTime.MinValue;
+                    DateTime secondRound = days.Success ? new DateTime(firstRound.Year, 6, int.Parse(days.Groups[2].Value, CultureInfo.InvariantCulture)) : DateTime.MinValue;
+                    WorldClock.ChamberOfRecord xvi = default;
+                    foreach (WorldClock.ChamberOfRecord c in WorldClock.Chambers(CountryId.France)) { if (c.Vintage == ElectionVintage.France2022) { xvi = c; } }
+                    var undated = new List<string>();
+                    foreach (CountryId id in All) { foreach (WorldClock.ChamberOfRecord c in WorldClock.Chambers(id)) { if (c.ElectionDay == DateTime.MinValue) { undated.Add(id + " " + c.Vintage); } } }
+                    bool k33 = feHeld > 0 && feFaults.Count == 0 && days.Success && xvi.Vintage == ElectionVintage.France2022 && xvi.ElectionDay == secondRound
+                               && WorldClock.ElectionDayOf(CountryId.France, ElectionVintage.France2022) == secondRound && xvi.ElectionDay < xvi.Convened
+                               && xvi.Basis.Contains(firstRound.Day.ToString(CultureInfo.InvariantCulture) + " and " + secondRound.Day.ToString(CultureInfo.InvariantCulture) + " June " + firstRound.Year.ToString(CultureInfo.InvariantCulture))
+                               && undated.Count == 0;
+                    if (!k33) { failures++; }
+                    sb.Append(F("    {0} K33: the FE page ({1} file(s) held to SHA256SUMS{2}) reads \"{3}\"; the XVIe's chamber of record polled {4:yyyy-MM-dd} (the second round; the first {5:yyyy-MM-dd} on its basis), convened {6:yyyy-MM-dd}; chambers of record undated: {7}\n",
+                        k33 ? "ok  " : "FAIL", feHeld, feFaults.Count == 0 ? string.Empty : " - " + string.Join("; ", feFaults), dateline ?? "no dateline", xvi.ElectionDay, firstRound, xvi.Convened,
+                        undated.Count == 0 ? "none" : string.Join(", ", undated)));
+                }
+
                 // SP-7b (Elias's ruling I14, ask 4 (4b)): Poland's presidential start follows its own ruled rule - the Marshal's order, a deviation for presidential
                 // starts alone - while the country's start (above) keeps §618's standard run-up; the picker's view at its date reads the 10th Sejm and Tusk's
                 // KO+TD+NL government, where the country's default start reads the 2019 chamber

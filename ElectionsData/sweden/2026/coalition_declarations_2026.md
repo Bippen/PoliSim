@@ -833,3 +833,63 @@ in the 2022 file and is not wired.
   [C-I2] `e6c88790…`; [MSD-I3] `a3d06d4d…`; [MSD-I4] `c61df453…`; [V-I2] `e0f06123…`; [V-I3] `ede9452d…`;
   [V-P2] `e28f250b…`; [S-I1] `e16ce64a…`; [S-I2] `0387bb70…`; [S-I3] `1ae20eef…`; [S-I4] `79cf1117…`;
   [C-I9] `7519459e…`; [KD-I3] `a3939eba…`; [MSD-I2] `c8f80391…`.
+
+## THE BLOCS FOR 2026 AND LATER (K53, ruled 2026-10-23)
+
+Elias's ruling K53 (`docs/RULINGS_2026-10-23.md`), answering GA-0-45 premise 6 (`docs/specs/POLITICAL_SYSTEM_SPEC.md` §5.4a): *"Sweden's
+blocs for 2026 and later are sourced from 2026's dated declarations (MP's paraphrase declared)."* A party's **bloc** is the side it
+declared: the government it goes to the election to form or back. It is dated by §621's rules (the party's own record; a leader's words
+quoted verbatim on a broadcaster's own page, F2) and stands until a later dated one replaces it. 2022's sides (D-10 (a), the two sides of
+the Riksdag after the 2022 election) stand until each party's 2026 date. The code's table is `NationalElection.SwedenSides`; the election's
+tactical layer reads the sides standing on its polling day. `SwedenBlocsDiagnostic` holds the sources, the timeline and the reading.
+
+| party | 2026 side | dated | source | class |
+|---|---|---|---|---|
+| **M** | the Tidö side | 2026-04-01 | [MSD-P1] | own record |
+| **SD** | the Tidö side | 2026-04-01 | [MSD-I4], Åkesson's own words on TV4's page: *"den här överenskommelsen som vi har med Moderaterna, den ligger fast"* | F2 (SD's own record silent on the side: a GAP) |
+| **KD** | the Tidö side | 2026-04-17 | [KD-P1]: *"Därför vill vi se fyra år till för vårt samarbete."*; restated [KD-I4] 2026-08-30 | own record |
+| **L** | the Tidö side | 2026-03-13 | [L-P1]; restated [L-P3] 2026-06-02 with Kristersson as PM | own record |
+| **S** | the side of its own candidacy | 2026-05-01 | [S-P2], [S-P1] | own record; S names no partner, so the side is read as its candidacy's (DECLARED) |
+| **V** | the side of S's candidacy | 2026-04-18 | [V-P1]: *"Sverige behöver en rödgrön regering där Vänsterpartiet ingår efter valet 2026."* and S and MP *"i första hand"* | own record (the congress decision) |
+| **MP** | the side of S's candidacy | 2026-01-22 | [MP-I3], Helldén's own words on SVT's page (below); TT's paraphrase [MP-I4], 2026-04-04, beside it | F2; the reading is DECLARED; see below |
+| **C** | **neither**, from 2025-11-13; **the side of S's candidacy from 2026-06-09** | 2025-11-13; 2026-06-09 | [C-P6]: ready to negotiate with Andersson or Kristersson; then [C-I11], Thand Ringqvist's own words on SVT's page (below) | own record; then F2 (**K80**) |
+
+**C: neither, then S's side (K80, Elias, 2026-10-23).** The 2025-11-13 installation speech [C-P6], on Centerpartiet's own page, offers
+to negotiate with two of the three candidates, Andersson and Kristersson, so it declares neither side. ⚠ **Corrected 2026-10-23 (the
+review of wave/form, H1):** an earlier version of this paragraph said SVT's page of 2026-06-09 [C-I11] carried only the leader's refusal of
+Kristersson, and that the Andersson line was DN's report [C-I2]. That was wrong. SVT's own stored page
+(`raw/declarations/svt_20260609_c_andersson_mest_sannolika.html`) carries the leader's words verbatim, at the party's press conference:
+*"– Därför är Magdalena Andersson och Socialdemokraterna den mest sannolika samarbetspartnern för oss i Centerpartiet, säger Thand
+Ringqvist."* That is a dated declaration under F2. Elias, shown the quote, ruled K80: **C is on S's side from 9 June 2026**, everywhere.
+
+C's own pages in the last week of the campaign (fetched 2026-10-23 into `ElectionsData/sweden/raw/declarations2026/`, held to its
+SHA256SUMS.txt, the fetch in its fetch_log.txt) declare a government in the middle, without V and SD. They name no prime minister and
+withdraw nothing, so they do not replace the June declaration:
+- 2026-09-07, *"Vad är en mittenregering? Centerpartiet förklarar"*: *"Det finns de som påstår att det bara finns två alternativ i svensk
+  politik. Det stämmer inte."*
+- 2026-09-09, *"Centerpartiet: Därför behövs en regering i mitten"*: *"Det finns mer än två alternativ"* and *"Tidösamarbetet finns inte
+  efter valet"*.
+- 2026-09-12, the leader at the campaign's close: *"Centerpartiet går till val på en regering i mitten av svensk politik, utan
+  ytterkantspartierna."*
+
+*gloss:* "Therefore Magdalena Andersson and the Social Democrats are the most likely partner for us in the Centre Party." / "There are
+those who claim there are only two alternatives in Swedish politics. That is not true." / "There are more than two alternatives." / "C goes
+to the election on a government in the middle of Swedish politics, without the parties at the edges."
+
+**MP: Helldén's own words.** On SVT's page of 2026-01-22 [MP-I3], asked whether MP's refusal of new nuclear power in an S-led government
+means a crisis before that government takes office, Helldén answers: *"– Det tror jag inte. Jag hoppas att Socialdemokraterna ändrar sin
+analys."* *gloss:* "I don't think so. I hope the Social Democrats change their analysis." He accepts the premise of governing with S. That
+is the DECLARED reading, put to Elias. TT's paraphrase [MP-I4] (2026-04-04: *"den tilltänkta regeringspartnern är
+Socialdemokraterna"*) says the same in the newsroom's words. MP's own pages of the campaign name no partner and no prime minister: the
+summer speech [MP-P1], and those fetched for K53 (the manifesto of 2026-08-10, Helldén's Almedalen speech of 2026-06-26 and Lind's
+Järvaveckan speech of 2026-05-28; a GAP). MP's page of 2026-08-24, *"Miljöpartiet säger nej till ”högervriden” regering"*, refuses the
+right-leaning government without naming a partner.
+
+**What reads the blocs (K79 and K80, Elias, 2026-10-23: everywhere).**
+- The election's tactical lending reads the sides standing on its polling day.
+- The seat map's order and legend, the inks' bloc fence and the stance model's bloc pull (`NationalElection.BlocOf`) read them on the
+  day of the world that asks. For a country, that is its own world's day (`Country.CalendarDay`); for an id alone, the played world's
+  day (`SimulationManager.PlayedDay`); before any clock has run, the world's opening date.
+- On the record, the sides differ from 2022's only for C, between 2025-11-13 and 2026-06-08. A game opened on Sweden's own start reads
+  C in no bloc until 9 June 2026, and on S's side after. No ink moves either way: the fence skips a party in no bloc, and it never moved
+  C, or another ink against C, inside the left bloc either.

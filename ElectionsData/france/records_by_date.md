@@ -704,3 +704,11 @@ NUP (the NUPES joint candidacy, unsplit by the Ministry, as UG in 2024) and DSV 
 
 **A finding for G1, not acted on:** the page's own header reads "12 et 19 juin 2022" - the XVIe's two polling days are on a fetched
 page now. The chamber of record's election day stays unset in code (`WorldClock.Chambers`) until that is ruled or re-read.
+
+**Ruled K33 (Elias, 2026-10-23, `docs/RULINGS_2026-10-23.md`):** "France's 2022 polling days (12 and 19 June) go into France's calendar." The XVIe's
+chamber of record is dated by its second round, 19 June 2022, as the XVIIe's is by 7 July 2024 (DECLARED), with both days on its basis;
+`WorldClockDiagnostic` re-reads the page's dateline and fails while the row differs. G1 is closed for the XVIe.
+**Declared with K33 (the reviews of wave/form, 2026-10-23/24, L1/L4):** with the XVIe now dated, France's pre-start window opens on 19 June 2022
+in a world opened inside it (Italy's and Poland's Sejm starts), so `PublicationSystem` seeds France's published pre-start figures from then, and the
+economic vote's and `WorldClock.VintageOfElection`'s readers see the 2022 day. France holds no election, so this is display and save content only,
+not the trajectory; the family diff for those two starts confirms it.

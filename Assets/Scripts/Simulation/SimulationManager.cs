@@ -284,6 +284,11 @@ namespace PoliSim.Simulation
 
         public static System.DateTime EpochDate { get; private set; } = DefaultEpoch;
 
+        /// <summary>K80 (2026-10-23): the day of the PLAYED world (the last manager that is not a counterfactual to commit its clock), for a reader that has
+        /// a country's id and no country - the seat map's order and legend and the inks' fence (`NationalElection.BlocOf`). MinValue after the epoch changes
+        /// until a manager commits its clock; the reader then takes the epoch. A counterfactual reads its own countries' day (`Country.CalendarDay`).</summary>
+        public static System.DateTime PlayedDay { get; private set; } = System.DateTime.MinValue;
+
         /// <summary>
         /// PS-1 (§618): sets the world's epoch. ⚠ Called before a world is created and never while one lives - `TurnBoundary`, the day-of-turn
         /// arithmetic and the cohort substrate's year all read it statically, so a manager built on one epoch and advanced under another would
@@ -291,7 +296,8 @@ namespace PoliSim.Simulation
         /// </summary>
         public static void SetEpoch(System.DateTime epoch)
         {
-            if (epoch == EpochDate) { return; }
+            if (epoch == EpochDate) { return; }   // K80 (the review of 2026-10-24, M1): an unchanged epoch keeps the played day - a counterfactual's restore sets the save's own epoch, the played world's
+            PlayedDay = System.DateTime.MinValue;   // K80: a new epoch opens a new world; the last played world's day is not this one's (a played world's own SetWorld or restore commits its day at once)
             UnityEngine.Debug.Log($"EPOCH: {EpochDate:yyyy-MM-dd} -> {epoch:yyyy-MM-dd}");
             EpochDate = epoch;
         }
@@ -3458,7 +3464,8 @@ namespace PoliSim.Simulation
         {
             if (_world == null) { return; }
             int year = CurrentDate.Year;
-            foreach (Country c in _world.Countries) { c.CalendarYear = year; }
+            foreach (Country c in _world.Countries) { c.CalendarYear = year; c.CalendarDay = CurrentDate.Date; }   // K80: the day too, for the dated sides
+            if (!IsCounterfactual) { PlayedDay = CurrentDate.Date; }   // K80: the played world's day, for a reader that has a country's id and no country (the seat map)
         }
 
         /// <summary>
@@ -4471,7 +4478,9 @@ namespace PoliSim.Simulation
                 g.Kind, g.Executive, g.StandingRefusals, _world);
             formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Bundestag elected {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} candidate chancellor by the constructive vote, {vote.For} of {vote.Members} members; {PoliSim.Wording.EnglishText.Possessive(g.PmParty, false, true)} chancellor dismissed (Art. 67 GG)");
             if (vote.SeatedByGroup) { formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} sits in {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }   // §754
+            HashSet<CabinetPortfolio> chairsBefore = CabinetSystem.PlayersChairs(country);   // K59
             country.Government = formed;
+            CabinetSystem.SeatOnEntry(country, chairsBefore);   // K59: the chairs the vote hands the player are seated at the average
             ResetArrivalBudgetWindow(country.Id);
             CloseBudgetWindowIfNotGoverning(country);
             Debug.Log($"CONFIDENCE: {country.Id} - the constructive vote carried: {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)} takes office");
@@ -5446,7 +5455,9 @@ namespace PoliSim.Simulation
         /// none open, the arrival reset. The open window is saved (format 39), so a loaded game takes the oath exactly as the continuous one.</summary>
         private void TakeOffice(Country country, Elections.GovernmentRecord formed, Elections.UsPresidentialElection.Contest oath = null)
         {
+            HashSet<CabinetPortfolio> chairsBefore = CabinetSystem.PlayersChairs(country);   // K59
             country.Government = formed;
+            CabinetSystem.SeatOnEntry(country, chairsBefore);   // K59: a term taken of record or by an oath seats the chairs it hands the player
             CloseBudgetWindowIfNotGoverning(country);
             if (!IsIncomingGovernmentBudgetWindow(country.Id)) { ResetArrivalBudgetWindow(country.Id); }
             Debug.Log(oath == null
@@ -5471,7 +5482,9 @@ namespace PoliSim.Simulation
             round.Log.Add(bundestag
                 ? $"{CurrentDate:yyyy-MM-dd}: the Bundestag elects {CandidateOf(country, round, proposal.Formateur)}; the Bundespräsident appoints, and {string.Join("+", formed.Cabinet)} takes office"
                 : $"{CurrentDate:yyyy-MM-dd}: the Riksdag approves {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} proposal; {string.Join("+", formed.Cabinet)} takes office");
+            HashSet<CabinetPortfolio> chairsBefore = CabinetSystem.PlayersChairs(country);   // K59
             country.Government = formed;
+            CabinetSystem.SeatOnEntry(country, chairsBefore);   // K59: the round's government seats the chairs it hands the player
             ResetArrivalBudgetWindow(country.Id);
             CloseBudgetWindowIfNotGoverning(country);   // §698 (the review's defect 2, the same gap here)
             Debug.Log($"SPEAKER: {country.Id} - installed {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)}");
@@ -7495,6 +7508,7 @@ namespace PoliSim.Simulation
                 IncomeTaxSeedAer = country.IncomeTaxSeedAer,
                 RealWageIndexAtLastIndex = country.RealWageIndexAtLastIndex,
                 CalendarYear = country.CalendarYear,   // PN-1's driver (§520): the year the pension line's driver reads - the clone audit names it the day it is dropped
+                CalendarDay = country.CalendarDay,   // K80: the day the dated sides are read on
                 PensionAgeOverride = country.PensionAgeOverride,   // PN-1's dial (§590): a passed bill's pension age - the preview's line reads it as the turn's does
                 PensionParticipationApplied = country.PensionParticipationApplied,   // §596 review D1: the response the state's rate already carries
                 DebtRatioSeed = country.DebtRatioSeed,

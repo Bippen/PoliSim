@@ -121,7 +121,7 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// The AI's appointment at a term's end: from the drawn shortlist, the candidate whose lean is nearest the rule (the smallest |RateBias|, the
-        /// first on a tie) - the no-lean choice the seed's heads already are (DECLARED: the AI's appointer has no sourced preference over the lean), seated
+        /// first on a tie; since K56 every shortlist carries a no-lean candidate, so this is it) - the no-lean choice the seed's heads already are (DECLARED: the AI's appointer has no sourced preference over the lean), seated
         /// for a full term from <paramref name="today"/>.
         /// </summary>
         public static FedChair AiAppointment(Statute statute, FedChair outgoing, DateTime today) => Seat(AiNominee(statute, outgoing, today), statute, today);

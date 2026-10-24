@@ -8946,7 +8946,7 @@ namespace PoliSim.UI
                 Rect plate = GUILayoutUtility.GetRect(plateWidth, plateHeight, GUILayout.Width(plateWidth));
                 if (canEstimate)
                 {
-                    var arrows = CabinetOptionArrows(option);
+                    var arrows = CabinetOptionArrows(option, portfolio);
                     if (arrows.Count == 0) { GUI.Label(plate, "No modelled shock beyond the budget.", _labelStyle); }
                     else { EffectArrowsRenderer.Draw(plate, arrows, _labelStyle); }
                 }
@@ -8980,8 +8980,8 @@ namespace PoliSim.UI
             DrawColoredLabel(text, _labelStyle, !hasCost ? PoliSimTheme.TextSecondary : budgetDeltaBillions < 0f ? PoliSimTheme.Bad : PoliSimTheme.Good);
         }
 
-        /// <summary>P2-4.3's arrows for one option, the renderer's own (5c) - the shocks the option carries, each with its unit.</summary>
-        private List<EffectArrow> CabinetOptionArrows(CabinetDecisionOption option)
+        /// <summary>P2-4.3's arrows for one option, the renderer's own (5c) - the shocks the option carries, each with its unit; the approval as the seated minister lands it (K58).</summary>
+        private List<EffectArrow> CabinetOptionArrows(CabinetDecisionOption option, CabinetPortfolio portfolio)
         {
             var arrows = new List<EffectArrow>();
             void Add(string name, float value, bool? higherIsBetter, string unit)
@@ -8990,7 +8990,9 @@ namespace PoliSim.UI
             }
             Add("Crime index", option.CrimeIndexShock, higherIsBetter: false, "");
             Add("Poverty rate", option.PovertyRateShock, higherIsBetter: false, " pts");
-            Add("Approval", option.ApprovalEffect, higherIsBetter: true, " pts");
+            // K58 (the review of wave/form, M2): the approval the option LANDS - scaled by the seated minister's popularity as CabinetSystem.ApplyDecisionOption scales it
+            // (the average minister's is the pool's mean, so x0.6), not the authored figure
+            Add("Approval", option.ApprovalEffect * CabinetSystem.DecisionApprovalFactor(_playerCountry, portfolio), higherIsBetter: true, " pts");
             Add("Trade balance", option.TradeBalanceShock, higherIsBetter: null, "");   // §725 (V35 rule 5): a mix - direction only, neutral ink
             Add("Youth unemployment", option.YouthUnemploymentShock, higherIsBetter: false, " pts");
             return arrows;

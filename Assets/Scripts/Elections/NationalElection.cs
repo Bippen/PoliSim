@@ -268,14 +268,24 @@ namespace PoliSim.Elections
         /// staged exactly this table since W-A4 and reads it from here now.
         /// </summary>
         /// <summary>
-        /// P2-3.1 (2026-09-02): a party's bloc for the hemicycle's ordering and legend - the same 2022 table
-        /// the tactical model reads for Sweden (0 the left bloc, 1 the right bloc); -1 where no bloc is
-        /// sourced, which is every other chamber and any party outside the table.
+        /// P2-3.1 (2026-09-02): a party's bloc for the hemicycle's ordering and legend, the inks' bloc fence and the stance model's bloc pull
+        /// (0 the left bloc, 1 the right bloc); -1 where no bloc is sourced, which is every other chamber and any party outside the table.
+        /// K79/K80 (Elias, 2026-10-23: the dated sides EVERYWHERE): the sides the election's tactical layer reads (`SwedenBlocsOn`), on the day of the
+        /// world that asks. Given a country, its own world's day (`Country.CalendarDay`, committed by that world's clock); given only an id, the played
+        /// world's day (`SimulationManager.PlayedDay`), else - before any clock has run in the epoch - the world's opening date.
         /// </summary>
-        public static int BlocOf(CountryId country, string abbrev)
+        public static int BlocOf(CountryId country, string abbrev) =>
+            BlocOf(country, abbrev, Simulation.SimulationManager.PlayedDay != System.DateTime.MinValue ? Simulation.SimulationManager.PlayedDay : Simulation.SimulationManager.EpochDate);
+
+        /// <summary>K80: the same for a country of a world - on that world's own day (a counterfactual's day, not the played world's).</summary>
+        public static int BlocOf(Country country, string abbrev) =>
+            country == null ? -1 : country.CalendarDay != System.DateTime.MinValue ? BlocOf(country.Id, abbrev, country.CalendarDay) : BlocOf(country.Id, abbrev);
+
+        /// <summary>K79: the same, on a given date - the sides standing that day.</summary>
+        public static int BlocOf(CountryId country, string abbrev, System.DateTime on)
         {
             if (country != CountryId.Sweden) { return -1; }
-            return SwedenBlocs2022(new[] { abbrev })[0];
+            return SwedenBlocsOn(new[] { abbrev }, on)[0];
         }
 
         /// <summary>The bloc's name, as the election night film names it; "unaffiliated" for the rest.</summary>
@@ -292,6 +302,78 @@ namespace PoliSim.Elections
                     case "S": case "V": case "C": case "MP": bloc[i] = 0; break;
                     default: bloc[i] = -1; break;
                 }
+            }
+            return bloc;
+        }
+
+        // -----------------------------------------------------------------------------------------------------------------------------
+        // K53 (Elias, 2026-10-23, on GA-0-45 premise 6): "Sweden's blocs for 2026 and later are sourced from 2026's dated declarations (MP's
+        // paraphrase declared)". A party's BLOC is the side it declared - the government it goes to the election to form or back - dated by
+        // §621's rules (the party's own record; a leader's words quoted verbatim on a broadcaster's own page, F2) and standing until a later
+        // dated one replaces it. 2022's sides (the table above, D-10 (a)) stand from the start of the record until each party's 2026 date.
+        // The sources: `ElectionsData/sweden/2026/coalition_declarations_2026.md` (the register; pages under `2026/raw/declarations/`) and
+        // the pages K53's pass fetched (`ElectionsData/sweden/raw/declarations2026/`, its fetch_log.txt). The election's tactical layer reads
+        // the sides standing on its polling day (`SharesFromCampaign`); since K79 every other bloc reader too (`BlocOf`, on the world's date).
+        // -----------------------------------------------------------------------------------------------------------------------------
+
+        /// <summary>K53: one party's declared side - 0 the side of S's candidacy, 1 the Tidö side, -1 neither - from <c>From</c> until <c>Until</c> (exclusive).</summary>
+        public readonly struct DatedSide
+        {
+            public readonly string Party;
+            public readonly int Bloc;
+            public readonly System.DateTime From;
+            public readonly System.DateTime Until;
+            public readonly string Basis;
+
+            public DatedSide(string party, int bloc, System.DateTime from, System.DateTime until, string basis)
+            {
+                Party = party; Bloc = bloc; From = from; Until = until; Basis = basis;
+            }
+
+            public bool StandsOn(System.DateTime date) => date.Date >= From && date.Date < Until;
+        }
+
+        private const string SidesOf2022 = "D-10 (a): the two sides of the Riksdag that formed after the 2022 election (M, KD, L and SD at 176 seats against S, V, C and MP at 173; Valmyndigheten's returns, the Tido agreement's four)";
+
+        /// <summary>K53: Sweden's sides by date - 2022's until each party's 2026 declaration, then the 2026 side with its citation.</summary>
+        public static IReadOnlyList<DatedSide> SwedenSides { get; } = new[]
+        {
+            new DatedSide("M", 1, System.DateTime.MinValue, new System.DateTime(2026, 4, 1), SidesOf2022),
+            new DatedSide("M", 1, new System.DateTime(2026, 4, 1), System.DateTime.MaxValue,
+                "DECLARED 2026-04-01: Kristersson leads a four-party majority government with SD - Moderaterna's own page [MSD-P1]"),
+            new DatedSide("SD", 1, System.DateTime.MinValue, new System.DateTime(2026, 4, 1), SidesOf2022),
+            new DatedSide("SD", 1, new System.DateTime(2026, 4, 1), System.DateTime.MaxValue,
+                "DECLARED 2026-04-01: the agreement with M stands, Kristersson the PM - Akesson's own words on TV4's page [MSD-I4] (F2; SD's own record silent on the side, a GAP)"),
+            new DatedSide("KD", 1, System.DateTime.MinValue, new System.DateTime(2026, 4, 17), SidesOf2022),
+            new DatedSide("KD", 1, new System.DateTime(2026, 4, 17), System.DateTime.MaxValue,
+                "DECLARED 2026-04-17: four more years of the cooperation under Kristersson - Busch's speech on Kristdemokraterna's own page [KD-P1]; restated 2026-08-30 on SVT's page [KD-I4]"),
+            new DatedSide("L", 1, System.DateTime.MinValue, new System.DateTime(2026, 3, 13), SidesOf2022),
+            new DatedSide("L", 1, new System.DateTime(2026, 3, 13), System.DateTime.MaxValue,
+                "DECLARED 2026-03-13: all four Tido parties in the government if they win - Liberalerna's own page [L-P1]; restated 2026-06-02 with Kristersson as PM [L-P3]"),
+            new DatedSide("S", 0, System.DateTime.MinValue, new System.DateTime(2026, 5, 1), SidesOf2022),
+            new DatedSide("S", 0, new System.DateTime(2026, 5, 1), System.DateTime.MaxValue,
+                "DECLARED 2026-05-01: Andersson seeks the mandate to be prime minister - the party's own pages [S-P2], [S-P1]; the side of the other candidacy (K-1f's pair), S naming no partner (DECLARED reading)"),
+            new DatedSide("V", 0, System.DateTime.MinValue, new System.DateTime(2026, 4, 18), SidesOf2022),
+            new DatedSide("V", 0, new System.DateTime(2026, 4, 18), System.DateTime.MaxValue,
+                "DECLARED 2026-04-18 (the congress decision): a red-green government V sits in, with S and MP first - Vansterpartiet's platform [V-P1]"),
+            new DatedSide("MP", 0, System.DateTime.MinValue, new System.DateTime(2026, 1, 22), SidesOf2022),
+            new DatedSide("MP", 0, new System.DateTime(2026, 1, 22), System.DateTime.MaxValue,
+                "DECLARED 2026-01-22: S the government partner - Hellden's own words on SVT's page [MP-I3] (F2): asked whether MP's nuclear line in an S-led government means a crisis before it takes office, he answers he thinks not and hopes S changes its analysis (the premise of governing with S accepted - a DECLARED reading); TT's paraphrase on Nyheter24 [MP-I4], 2026-04-04, names S the intended partner; MP's own pages name no partner (a GAP: raw/declarations2026/), and its page of 2026-08-24 refuses a right-leaning government"),
+            new DatedSide("C", 0, System.DateTime.MinValue, new System.DateTime(2025, 11, 13), SidesOf2022),
+            new DatedSide("C", -1, new System.DateTime(2025, 11, 13), new System.DateTime(2026, 6, 9),
+                "DECLARED 2025-11-13: ready to negotiate with Andersson or Kristersson - Thand Ringqvist's installation speech on Centerpartiet's own page [C-P6] - neither side until a later declaration replaces it"),
+            new DatedSide("C", 0, new System.DateTime(2026, 6, 9), System.DateTime.MaxValue,
+                "DECLARED 2026-06-09 (K80, Elias, 2026-10-23): Andersson and S the most likely partner - Thand Ringqvist's own words on SVT's page [C-I11] (F2), at the party's press conference; C's own pages of 2026-09-07, 09-09 and 09-12 (raw/declarations2026/) declare a government in the middle without V or SD and name no prime minister, so they replace nothing"),
+        };
+
+        /// <summary>K53: the sides standing on <paramref name="on"/>, mapped by key as <c>SwedenBlocs2022</c> is; a key with no dated side is in no bloc (-1).</summary>
+        public static int[] SwedenBlocsOn(IReadOnlyList<string> keys, System.DateTime on)
+        {
+            var bloc = new int[keys.Count];
+            for (int i = 0; i < keys.Count; i++)
+            {
+                bloc[i] = -1;
+                foreach (DatedSide side in SwedenSides) { if (side.Party == keys[i] && side.StandsOn(on)) { bloc[i] = side.Bloc; break; } }
             }
             return bloc;
         }
@@ -321,7 +403,8 @@ namespace PoliSim.Elections
                     position[i] = 5.0;   // no published lrgen: the bloc's centre, so affinity neither favours nor shuns the party
                     foreach (PoliticalParty party in parties) { if (party.Abbrev == keys[i] && !float.IsNaN(party.LrGen)) { position[i] = party.LrGen; break; } }
                 }
-                var spec = new TacticalSpec(SeatConversion.NationalThreshold, TacticalAwareness, SwedenBlocs2022(keys), position);
+                // K53: the sides standing on the polling day (an undated call reads 2022's, as before)
+                var spec = new TacticalSpec(SeatConversion.NationalThreshold, TacticalAwareness, on.HasValue ? SwedenBlocsOn(keys, on.Value) : SwedenBlocs2022(keys), position);
                 tactical = TacticalVoting.Apply(finalShares, polled, moe, spec);
                 counted = tactical.Preference;
             }

@@ -471,6 +471,22 @@ namespace PoliSim.Simulation
         /// <summary>The pool's floor - its least efficient candidate's figure. Derived from the table.</summary>
         public static readonly float PoolFloorEfficiency = PoolFloor();
 
+        /// <summary>K58 (ruled 2026-10-23): the pool's mean LOYALTY - the average minister's. Derived from the table, never typed.</summary>
+        public static readonly float PoolMeanLoyalty = PoolMeanOf(a => a.Loyalty);
+
+        /// <summary>K58: the pool's mean KNOWLEDGE - the average minister's. Derived from the table.</summary>
+        public static readonly float PoolMeanKnowledge = PoolMeanOf(a => a.Knowledge);
+
+        /// <summary>K58: the pool's mean POPULARITY - the average minister's. Derived from the table.</summary>
+        public static readonly float PoolMeanPopularity = PoolMeanOf(a => a.Popularity);
+
+        private static float PoolMeanOf(System.Func<(float Loyalty, float Knowledge, float Efficiency, float Popularity), float> pick)
+        {
+            float sum = 0f;
+            foreach ((float Loyalty, float Knowledge, float Efficiency, float Popularity) a in Attributes.Values) { sum += pick(a); }
+            return sum / Attributes.Count;
+        }
+
         private static float PoolMean()
         {
             float sum = 0f;
@@ -537,23 +553,22 @@ namespace PoliSim.Simulation
         /// personal name would be Elias's to sign with its collision search, as the R4-4 nine were).</summary>
         public const string AverageMinisterName = "An average minister";
 
-        /// <summary>AF-30b: the neutral point of LOYALTY, KNOWLEDGE and POPULARITY - "as written" (<see cref="CabinetMinister"/>: 100 moves nothing, rolls
-        /// nothing and hides nothing): no leak or resignation is rolled, every estimate is disclosed, an option's approval lands as written. CONVENTION: the readers' own neutral point, not a measured figure (J5's "at the average" read as neutral per q30; asked).</summary>
-        public const float NeutralAttribute = 100f;
-
-        /// <summary>AF-30b (J5: "at the average", read with q30's "an average minister is neutral", §862 - the review's M2): a fictional minister NEUTRAL on
-        /// every term a reader turns into an effect - efficiency the pool's mean (<see cref="PoolMeanEfficiency"/> itself, so <see cref="EfficiencyScale"/>
-        /// reads exactly ×1), loyalty, knowledge and popularity <see cref="NeutralAttribute"/>, the competence bias 0 (every pool's mean is positive - read by
-        /// the poverty, youth-unemployment and crime targets, it would lower them from day one against an unmodelled cabinet). The philosophy the middle of
-        /// the three [DECLARED: Pragmatic, so its decisions draw from the pragmatic cards].</summary>
+        /// <summary>AF-30b (J5: "at the average"), as K58 rules it (2026-10-23: "the average minister's loyalty, knowledge and popularity are the pool's means,
+        /// not 100"): a fictional minister at the POOL'S MEAN on all four attributes - efficiency `PoolMeanEfficiency` (so `EfficiencyScale`
+        /// reads exactly ×1), loyalty, knowledge and popularity `PoolMeanLoyalty`, `PoolMeanKnowledge` and `PoolMeanPopularity`,
+        /// each read off the candidates' table. So under pressure the average minister rolls leaks and resignations at the mean's disloyalty, an option's
+        /// approval lands scaled by the mean's popularity, and knowledge discloses where the mean clears the floor - where 100 (until K58) moved, rolled and hid
+        /// nothing. The competence bias stays 0 (every pool's mean is positive - read by the poverty, youth-unemployment and crime targets, it would lower
+        /// them from day one against an unmodelled cabinet; K58 names the three attributes only). The philosophy the middle of the three [DECLARED:
+        /// Pragmatic, so its decisions draw from the pragmatic cards].</summary>
         public static CabinetMinister AverageMinister(CabinetPortfolio portfolio) =>
             new CabinetMinister(AverageMinisterName, portfolio, CabinetMinisterPhilosophy.Pragmatic,
-                "A fictional career minister at the pool's average efficiency, neutral on every term - reshuffle to choose your own.", 0f)
+                "A fictional career minister at the pool's average on every attribute - reshuffle to choose your own.", 0f)
             {
-                Loyalty = NeutralAttribute,
-                Knowledge = NeutralAttribute,
+                Loyalty = PoolMeanLoyalty,
+                Knowledge = PoolMeanKnowledge,
                 Efficiency = PoolMeanEfficiency,
-                Popularity = NeutralAttribute,
+                Popularity = PoolMeanPopularity,
             };
 
         /// <summary>AF-6 (the review's M1): whether a portfolio has authored candidates. One without (the economy portfolio, whose names are Elias's to sign
@@ -561,8 +576,8 @@ namespace PoliSim.Simulation
         public static bool HasAuthoredPool(CabinetPortfolio portfolio) => CandidatePool.ContainsKey(portfolio);
 
         /// <summary>AF-30b (J5): seats the average minister in every chair that is the player's to fill (<see cref="ChairIsThePlayers"/>) and stands
-        /// vacant - once, when a new game's start is chosen (<c>GameController.SelectPlayerCountry</c>); a loaded game keeps the save's chairs, and a chair
-        /// the player comes to hold later (a government formed in play) is not seated by this. Returns how many were seated.</summary>
+        /// vacant - once, when a new game's start is chosen (<c>GameController.SelectPlayerCountry</c>); a loaded game keeps the save's chairs. A chair
+        /// the player comes to hold later (a government formed in play) is seated by `SeatOnEntry` (K59). Returns how many were seated.</summary>
         public static int SeatAverageCabinet(Country country)
         {
             if (country == null) { return 0; }
@@ -577,9 +592,48 @@ namespace PoliSim.Simulation
             return seated;
         }
 
-        /// <summary>POPULARITY's term: the factor on an option's approval figure and on the dismissal cost - 1 as written, 1 for a vacant portfolio.</summary>
+        /// <summary>K59 (ruled 2026-10-23): the chairs that are the player's to fill now (`ChairIsThePlayers`) - read just before a government
+        /// changes, so `SeatOnEntry` can tell the chairs the change hands the player.</summary>
+        public static HashSet<CabinetPortfolio> PlayersChairs(Country country)
+        {
+            var chairs = new HashSet<CabinetPortfolio>();
+            foreach (CabinetPortfolio portfolio in (CabinetPortfolio[])System.Enum.GetValues(typeof(CabinetPortfolio)))
+            {
+                if (ChairIsThePlayers(country, portfolio)) { chairs.Add(portfolio); }
+            }
+            return chairs;
+        }
+
+        /// <summary>K59 ("the average cabinet is also seated when the player enters government later"): after a government change, the average minister
+        /// in every chair the change made the player's - one not in <paramref name="before"/> - that stands vacant. A chair the player already held keeps its
+        /// minister or its vacancy (a resignation's empty chair stays the player's to fill), and a newly held chair where a minister the player once seated
+        /// still sits keeps that minister [DECLARED: the change seats only empty chairs, as the start does]. Called wherever the manager installs a
+        /// government (the election's install, the Speaker's round, the constructive vote, the Sejm's steps, a term taken of record or by an oath).
+        /// Draws nothing. Returns how many were seated.</summary>
+        public static int SeatOnEntry(Country country, HashSet<CabinetPortfolio> before)
+        {
+            if (country == null) { return 0; }
+            if (country.CabinetMinisters == null) { country.CabinetMinisters = new Dictionary<CabinetPortfolio, CabinetMinister>(); }
+            int seated = 0;
+            foreach (CabinetPortfolio portfolio in (CabinetPortfolio[])System.Enum.GetValues(typeof(CabinetPortfolio)))
+            {
+                if (before != null && before.Contains(portfolio)) { continue; }
+                if (!IsVacantChair(country, portfolio)) { continue; }
+                country.CabinetMinisters[portfolio] = AverageMinister(portfolio);
+                seated++;
+            }
+            return seated;
+        }
+
+        /// <summary>POPULARITY's term: the factor on the dismissal cost - the seated minister's popularity over 100, 1 for a vacant portfolio.</summary>
         public static float PopularityFactor(Country country, CabinetPortfolio portfolio) =>
             country.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister m) ? Mathf.Clamp01(m.Popularity / 100f) : 1f;
+
+        /// <summary>K87 (Elias, 2026-10-23: "an empty chair lands a decision card's approval at x0.6 like the average minister, so leaving chairs empty is
+        /// no trick"): the factor on a decision option's approval figure - the seated minister's popularity factor, and for a chair with no minister the
+        /// average minister's, the pool's mean popularity over 100 (`PoolMeanPopularity`, read off the table, never typed). The card draws what this lands.</summary>
+        public static float DecisionApprovalFactor(Country country, CabinetPortfolio portfolio) =>
+            country.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister m) && m != null ? Mathf.Clamp01(m.Popularity / 100f) : Mathf.Clamp01(PoolMeanPopularity / 100f);
 
         /// <summary>KNOWLEDGE's term is disclosure (the P2-5.1 page): below this floor the ministry cannot estimate an option's shocks and says so. [AUTHORED-DRAFT].</summary>
         public const float KnowledgeDisclosureFloor = 70f;
@@ -708,11 +762,11 @@ namespace PoliSim.Simulation
         /// <summary>Applies a chosen CabinetDecisionOption's one-time, bounded effect immediately - see CabinetDecisionOption's own doc comment for why each field lands where it does.</summary>
         /// <summary>
         /// P2-5.2: the option applied with POPULARITY's term - the approval figure scaled by the seated minister's
-        /// popularity (1 as written, 0.5 at 50; a vacant portfolio applies it as written). Everything else as written.
+        /// popularity (1 as written, 0.5 at 50; since K87 a vacant portfolio at the average minister's, `DecisionApprovalFactor`). Everything else as written.
         /// </summary>
         public static void ApplyDecisionOption(Country country, CabinetPortfolio portfolio, CabinetDecisionOption option)
         {
-            float factor = PopularityFactor(country, portfolio);
+            float factor = DecisionApprovalFactor(country, portfolio);   // K87
             var scaled = new CabinetDecisionOption(option.Label, option.CrimeIndexShock, option.PovertyRateShock, option.BudgetImpact,
                 option.ApprovalEffect * factor, option.TradeBalanceShock, option.YouthUnemploymentShock);
             ApplyDecisionOption(country, scaled);

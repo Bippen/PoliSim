@@ -82,9 +82,10 @@ namespace PoliSim.Simulation
         };
 
         /// <summary>
-        /// Draws 2-3 candidates from CandidatePool with distinct philosophies (never all the same
+        /// Draws 2-3 candidates from CandidatePool with distinct philosophies, then appends the no-lean one where none was drawn (K56: 2-4 in all; never all the same
         /// lean), for the player to choose the country's next central-bank head from at an election
-        /// boundary - see GameController's central-bank panel.
+        /// boundary - see GameController's central-bank panel. Since K56 one of them always has no lean
+        /// (the pool's no-lean candidate is appended to a draw that holds none - a list may then hold four, and nothing drawn is removed).
         ///
         /// <para>⚠ S-15 (2026-09-02): the pool's prose is written against a `{bank}` placeholder and
         /// resolved HERE, per country, into a fresh <see cref="FedChair"/>. Until this the pool said
@@ -112,6 +113,21 @@ namespace PoliSim.Simulation
                 FedChair template = withPhilosophy[rng.Next(withPhilosophy.Count)];
                 candidates.Add(new FedChair(template.Name, template.Philosophy,
                     template.Description.Replace("{bank}", bank), template.RateBias));
+            }
+
+            // K56 (ruled 2026-10-23): "every central-bank shortlist carries a no-lean candidate" - so an AI appointer, which seats the smallest lean
+            // (`CentralBankTerms.AiNominee`), can always seat a neutral head, and so can the player. Where the draw holds none, the pool's no-lean candidate
+            // is APPENDED - never in a drawn candidate's place (the review's M1: replacing the moderate took a mild lean from a third of the player's lists),
+            // so a full draw becomes four [DECLARED: MaxCandidateCount bounds the DRAW, a presentation convention, and the join sits beyond it; the
+            // draws above are taken unchanged, so neither generator's sequence moves].
+            if (!candidates.Exists(c => c.RateBias == 0f))
+            {
+                FedChair neutral = CandidatePool.Find(c => c.RateBias == 0f);
+                if (neutral != null)
+                {
+                    var joined = new FedChair(neutral.Name, neutral.Philosophy, neutral.Description.Replace("{bank}", bank), neutral.RateBias);
+                    candidates.Add(joined);
+                }
             }
 
             return candidates;

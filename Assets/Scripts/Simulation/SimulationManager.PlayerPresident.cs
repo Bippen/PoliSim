@@ -51,7 +51,9 @@ namespace PoliSim.Simulation
             if (country == null || (!country.PlayerHoldsPresidency && string.IsNullOrEmpty(country.PlayerCandidate))) { return; }
             bool holds = Elections.PresidentialElection.PlayerHoldsOffice(country, CurrentDate, out string president);
             if (holds == country.PlayerHoldsPresidency) { return; }
+            HashSet<CabinetPortfolio> chairsBefore = CabinetSystem.PlayersChairs(country);   // K59 (the review of wave/form, L2): none while the office is held
             country.PlayerHoldsPresidency = holds;
+            CabinetSystem.SeatOnEntry(country, chairsBefore);   // K59: the office ends and the party's chairs are the player's again - every one standing vacant is seated at the average (DECLARED: an entry, as at an install)
             if (holds) { CloseBudgetWindowIfNotGoverning(country); }   // the review's M3, §698's class: a window open at the oath is the party's, which no longer governs for the player - closed, so the AI government tables the next budget
             Debug.Log(holds
                 ? $"PRESIDENTIAL: {country.Id} - the oath, {CurrentDate:yyyy-MM-dd}: you are the President ({president}); your party, {country.PlayerPartyAbbrev}, is the AI's while you hold the office (Art. 132, READING)"

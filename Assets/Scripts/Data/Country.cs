@@ -165,6 +165,10 @@ namespace PoliSim.Data
         /// (SpendingDrivers.Level, StatutoryPensionAge) counts the cohorts at or above the age the statute has IN FORCE this year
         /// (PensionAgeStatute.AgeInForce). The seed year until the clock runs. The preview's clone carries it - the R4-1 hand-list, audited by field (§506).</summary>
         public int CalendarYear = PensionAgeStatute.SeedYear;
+        /// <summary>K80 (2026-10-23): the DAY the model is on - committed with CalendarYear by SimulationManager from its clock (SetWorld, a restore, every day),
+        /// so a reader with no clock reads the sides each party had declared that day (`NationalElection.BlocOf`). Not saved: every restore commits it again.
+        /// MinValue until a clock runs - the reader then takes the world's opening date. The preview's clone carries it.</summary>
+        [Newtonsoft.Json.JsonIgnore] public System.DateTime CalendarDay;
         /// <summary>PN-1's DIAL (2026-09-23, §590; DS-3: "a passed bill's figure wins"): the pension age a PASSED budget bill set, in years - negative while the
         /// statute's own figure stands, which is every country at the seed and every AI government (nothing in the AI's rule sets it). Read through
         /// <see cref="PensionAgeStatute.AgeInForce(Country, int)"/>, so the pension line's driver, the payment readout and the row all read one figure. It

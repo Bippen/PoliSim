@@ -44,7 +44,9 @@ namespace PoliSim.EditorTools
         /// board 11a - closed both pairs INSIDE §256: `PoliSimTheme`'s bloc fence moves the smaller party of a hue-crowded pair outward in
         /// lightness by the deficit, so V goes down 0.030 and M up 0.030 and nothing that cleared before stops clearing. A floor is raised
         /// to what was measured, never to what is hoped for; this one was set to 12 as Design's prediction and the run below is what
-        /// judged it.</summary>
+        /// judged it. (K79 put C in no bloc and re-pinned this to 9 for one commit; K80, the same day, put C back on S's side from 2026-06-09, so on the
+        /// default epoch this check reads (1 October 2026) the twelve pairs and the 12 stand; a desk inside 13 Nov 2025 - 8 Jun 2026 (Sweden's own start) reads C in
+        /// no bloc, and its inks are the same, since the fence never moved C or another ink against C either way.)</summary>
         private const int PairsClearingRatchet = 12;
 
         /// <summary>⚠ The two blocs, written here AND read by `PoliSimTheme`'s bloc fence from
@@ -63,10 +65,10 @@ namespace PoliSim.EditorTools
             // ---- the two blocs, asserted against the grouping the ladder actually reads ------------------------
             foreach (string[] bloc in new[] { LeftBloc, RightBloc })
             {
-                int expected = PoliSim.Elections.NationalElection.BlocOf(CountryId.Sweden, bloc[0]);
+                int expected = PoliSim.Elections.NationalElection.BlocOf(CountryId.Sweden, bloc[0], PoliSim.Simulation.SimulationManager.EpochDate);   // the dated overload on the epoch, so a played day a previous check left cannot decide this check (the review of 2026-10-24, L2)
                 foreach (string abbrev in bloc)
                 {
-                    int actual = PoliSim.Elections.NationalElection.BlocOf(CountryId.Sweden, abbrev);
+                    int actual = PoliSim.Elections.NationalElection.BlocOf(CountryId.Sweden, abbrev, PoliSim.Simulation.SimulationManager.EpochDate);
                     if (actual == expected) { continue; }
                     Debug.LogError($"D16BARS: this check groups {abbrev} with {bloc[0]} and NationalElection.BlocOf does not "
                                    + $"({actual} against {expected}). The fence would be measured over one grouping and enforced over another.");

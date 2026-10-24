@@ -37,6 +37,8 @@ namespace PoliSim.EditorTools
             public float Population;
             public float NetMigrationRate;
             public float LifeExpectancy;
+            /// <summary>K58: approval after the year's turn - the pressure floor's reading for an idle governing year (`AverageMinisterLeakMeasure`).</summary>
+            public float ApprovalRating;
         }
 
         private static readonly Dictionary<CountryId, Year[]> Runs = new Dictionary<CountryId, Year[]>();
@@ -85,6 +87,7 @@ namespace PoliSim.EditorTools
                         Population = c.State.Population,
                         NetMigrationRate = c.State.NetMigrationRate,
                         LifeExpectancy = c.State.LifeExpectancy,
+                        ApprovalRating = c.State.ApprovalRating,
                     };
                 }
 

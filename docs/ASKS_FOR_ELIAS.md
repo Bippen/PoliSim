@@ -481,3 +481,9 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 - **K91 corrected.** The share-aware absorption I offered was impossible: where every party stands everywhere, your two rules (equal effort moves nothing; a lone campaigner moves exactly its sourced size) force every other party to absorb equally. You kept the equal losses. In Sweden's staged campaign V, C and MP lose about 0.10-0.14 points each.
 - **Fundraising loses money** at the sourced figures (K88): 100,000 letters lose about 58,000 in Germany and 42,000 in the USA; Sweden's postal tariff refused the fetch, so the verb is unavailable there.
 - **Owed:** the run-up HQ's lines are sized for today's floor; when the HQ is redrawn at the 14 px floor they need re-laying (the review's L9).
+
+### Formation, the cabinet and the banks (§909): for your information
+
+- **The average minister's leaks, measured (K58).** Under political pressure an average cabinet of seven rolls a leak or a resignation in 17.4 % of years (0.10 leaks and 0.09 resignations a year); without pressure none. Over the no-policy century that comes to 0.02 (Italy) to 0.09 (the USA) leaks a year. Say if that cadence is too much or too little.
+- **The no-policy trajectory moved** (the family `form`): with a neutral candidate on every shortlist (K56), every AI central-bank head now leans 0, from the Fed at turn 5.
+- **A note, not wired:** C's and MP's own pages after the 2026 election (C on 15 and 19 October, MP on 15 October) lie past the record's date.

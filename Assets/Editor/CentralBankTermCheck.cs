@@ -25,6 +25,8 @@ namespace PoliSim.EditorTools
     /// the player's pick through the manager's verb is seated for the Riksbank's term from that day and the hold ends.</item>
     /// <item>(e) a counterfactual with the player seated - the fork `ShadowBaseline` builds - seats the AI's keyed pick for the player's bank on the term's day,
     /// while the played world it was forked from holds (the review's M1).</item>
+    /// <item>(f) K56 (ruled 2026-10-23): every shortlist - each bank's keyed AI list and the player's own - carries a no-lean candidate, and the AI's nominee
+    /// is that candidate.</item>
     /// </list>
     /// The preview's damping (q10) is `PreviewParityDiagnostic`'s.
     /// </summary>
@@ -145,6 +147,42 @@ namespace PoliSim.EditorTools
                     && now.TermEnds == psim.CurrentDate.Date.AddYears(CentralBankTerms.Riksbank.TermYears) && !psim.CentralBankHeadAwaitsPlayer(CountryId.Sweden);
                 Check(seated, F("(d) the player's pick through AppointCentralBankHead seated {0} to {1} ({2} years) and the hold ends{3}", Day(now?.TermBegan ?? DateTime.MinValue),
                     Day(now?.TermEnds ?? DateTime.MinValue), CentralBankTerms.Riksbank.TermYears, appointed ? string.Empty : " - REFUSED: " + refused));
+            }
+
+            // ---- (f) K56 (ruled 2026-10-23): "every central-bank shortlist carries a no-lean candidate" - every bank's keyed AI shortlist on each of 400 days,
+            // and the player's own shortlist drawn 400 times on the counted stream for each own-currency bank: each carries a candidate with no lean, never
+            // more than four (a full draw with the no-lean candidate appended) and never a name twice, and the AI's nominee is that candidate. The lists holding two moderates (the no-lean candidate
+            // appended beside a leaning one) are counted and printed ----
+            {
+                int shortlists = 0, missing = 0, oversize = 0, fours = 0, twice = 0, twoModerates = 0, leaning = 0;
+                var neutralNames = new HashSet<string>();
+                void Read(List<FedChair> list)
+                {
+                    shortlists++;
+                    if (!list.Exists(c => c.RateBias == 0f)) { missing++; }
+                    if (list.Count > 4) { oversize++; } if (list.Count == 4) { fours++; }
+                    var names = new HashSet<string>();
+                    foreach (FedChair c in list) { if (!names.Add(c.Name)) { twice++; } if (c.RateBias == 0f) { neutralNames.Add(c.Name); } }
+                    if (list.FindAll(c => c.Philosophy == FedChairPhilosophy.Moderate).Count > 1) { twoModerates++; }
+                }
+                DateTime fromDay = new DateTime(2026, 1, 1);
+                foreach (CentralBankTerms.Statute s in CentralBankTerms.All)
+                {
+                    for (int d = 0; d < 400; d++)
+                    {
+                        Read(CentralBankTerms.AiShortlist(s, fromDay.AddDays(d)));
+                        FedChair nominee = CentralBankTerms.AiNominee(s, null, fromDay.AddDays(d));
+                        if (nominee == null || nominee.RateBias != 0f) { leaning++; }
+                    }
+                }
+                SimulationRandom.Seed(Seed);
+                foreach (CountryId id in new[] { CountryId.USA, CountryId.Sweden, CountryId.Poland })
+                {
+                    for (int d = 0; d < 400; d++) { Read(FederalReserveSystem.GenerateCandidates(id)); }
+                }
+                Check(shortlists > 0 && missing == 0 && oversize == 0 && twice == 0 && leaning == 0 && neutralNames.Count == 1,
+                    F("(f) K56: {0} shortlists (each bank's keyed AI list on 400 days, the player's three banks 400 draws each) - {1} without a no-lean candidate, {2} over four, {3} of four (the no-lean candidate appended to a full draw, nothing removed - the review's M1), {4} with a name twice, {5} with two moderates; the AI's nominee leans on {6} of the days; the no-lean candidate is {7}",
+                        shortlists, missing, oversize, fours, twice, twoModerates, leaning, string.Join(", ", neutralNames)));
             }
 
             // ---- (e) a counterfactual with the player seated (the review's M1): the fork `ShadowBaseline` builds - the impact ledger's except-world, the

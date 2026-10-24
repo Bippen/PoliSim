@@ -1176,13 +1176,17 @@ namespace PoliSim.Data
         /// <summary>
         /// PS-1 (§618, ruled): WHO IS PLAYABLE - a party seated in the chamber of record at the start, a party that won seats at the latest election,
         /// or any party that contested the latest election and holds a sourced CHES position (Germany's BSW at its 2024 start). Never narrower than the roster
-        /// was before: a seated unit without a position (Poland's TD, France's nuances) stays playable by its seats.
+        /// was before: a seated unit without a position (Poland's TD, France's nuances) stays playable by its seats - except a group's remainder,
+        /// seated but not playable (K31).
         /// </summary>
         public static bool IsPlayable(Country country, in PoliticalParty party) => IsPlayable(country?.ParliamentSeats, party);
 
         /// <summary>The same rule against a seat table - the picker's, which reads the chamber at the country's START rather than the selector's world.</summary>
         public static bool IsPlayable(Dictionary<string, int> seated, in PoliticalParty party)
         {
+            // K31 (ruled 2026-10-23): "the member in no component (MIS) is seated but not playable" - a group's remainder keeps its seat (the formation, the
+            // votes and the seat map count it) and is never offered; the remainder's key is Italy's alone, so the seat table needs no country
+            if (IsGroupRemainder(CountryId.Italy, party.Abbrev)) { return false; }
             if (seated != null && seated.TryGetValue(party.Abbrev, out int held) && held > 0) { return true; }
             return party.SeedSeats > 0 || party.HasPosition;
         }

@@ -226,7 +226,13 @@ namespace PoliSim.Simulation
             // AF-8 (q8): Poland's government changes by Art. 162 and 154's steps, not tonight
             if (SejmStepsApply(id)) { sejm = OpenSejmFormation(country, latest.Date); return true; }
             // No government formed: the previous record stands - the verdict's own words, "you stay in office until one can" - so the AI does not take a book nobody was given.
-            if (formedView != null && formedView.HasGovernment) { country.Government = GovernmentRecord.FromView(country, formedView, latest.Date, world: _world); ResetArrivalBudgetWindow(id); }   // PS-3e (§632): a new government gets its arrival budget
+            if (formedView != null && formedView.HasGovernment)
+            {
+                HashSet<CabinetPortfolio> chairsBefore = CabinetSystem.PlayersChairs(country);   // K59
+                country.Government = GovernmentRecord.FromView(country, formedView, latest.Date, world: _world);
+                CabinetSystem.SeatOnEntry(country, chairsBefore);   // K59: the night's government seats the chairs it hands the player
+                ResetArrivalBudgetWindow(id);   // PS-3e (§632): a new government gets its arrival budget
+            }
             return true;
         }
     }

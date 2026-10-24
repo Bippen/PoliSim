@@ -208,6 +208,19 @@ namespace PoliSim.EditorTools
                     Check(view.Vintage == ElectionVintage.Italy2018 && view.TotalSeats == 630 && view.Deviation == null && PartySystems.SeatingTag(view.Vintage) == "BY ITS GROUPS OF 20 APR 2018"
                           && PartySystems.SeatingTag(ElectionVintage.Italy2022) == null,
                         F("Italy's card reads the XVIII Camera ({0} seats), its caption tagged \"{1}\"", view.TotalSeats, PartySystems.SeatingTag(view.Vintage)));
+                    // K31 (ruled 2026-10-23): "the member in no component (MIS) is seated but not playable" - the picker's own rule on the card's chamber: the
+                    // remainder keeps its seat in the chamber and the world, and is the one seated unit the picker does not offer
+                    var offered = new List<string>();
+                    var seatedNotOffered = new List<string>();
+                    foreach (PoliticalParty p in PoliSim.UI.CountrySelectorScreen.PartiesBySeats(CountryId.Italy, view.Seats))
+                    {
+                        bool seatedThere = view.Seats.TryGetValue(p.Abbrev, out int n) && n > 0;
+                        if (PartySystems.IsPlayable(view.Seats, p)) { offered.Add(p.Abbrev); } else if (seatedThere) { seatedNotOffered.Add(p.Abbrev); }
+                    }
+                    bool mistoSeated = view.Seats.TryGetValue("Misto", out int misto) && misto > 0 && italy.ParliamentSeats.TryGetValue("Misto", out int mistoWorld) && mistoWorld == misto;
+                    Check(mistoSeated && !offered.Contains("Misto") && seatedNotOffered.Count == 1 && seatedNotOffered[0] == "Misto" && offered.Count > 0,
+                        F("K31: on Italy's start the remainder MIS (key Misto) sits with {0} seat(s) in the card's chamber and the world's, and is not offered; the picker offers {1} unit(s) ({2}); seated and not offered: {3}",
+                            misto, offered.Count, string.Join(" ", offered), seatedNotOffered.Count == 0 ? "none" : string.Join(" ", seatedNotOffered)));
                     // M2: the declared size is the SEATED vintage's, never the count's - the XVIII's 630 past the XIX's first sitting (nothing re-seats Italy by date),
                     // the 20th Bundestag's 736 in this world, the USA's House by its own dates (the 117th's 434 at its election, the 118th's 435)
                     Country de = world.GetCountry(CountryId.Germany), us = world.GetCountry(CountryId.USA);
@@ -405,6 +418,21 @@ namespace PoliSim.EditorTools
                 result[f[2]] = row;
             }
             return result;
+        }
+
+        /// <summary>K33: the FE page's own dateline - the "span12" line naming the polling days ("12 et 19 juin 2022") - from the stored gzip body (Latin-1); null where the page carries none.</summary>
+        internal static string FrancePageDateline(string gzPath)
+        {
+            using (var gz = new GZipStream(File.OpenRead(gzPath), CompressionMode.Decompress))
+            using (var buffer = new MemoryStream())
+            {
+                gz.CopyTo(buffer);
+                byte[] bytes = buffer.ToArray();
+                var chars = new char[bytes.Length];
+                for (int i = 0; i < bytes.Length; i++) { chars[i] = (char)bytes[i]; }   // Latin-1: each byte is its code point
+                Match line = Regex.Match(new string(chars), "<div class=\"span12\">([^<]*juin[^<]*)</div>");
+                return line.Success ? line.Groups[1].Value.Trim() : null;
+            }
         }
 
         /// <summary>The files a folder's SHA256SUMS.txt holds whose bytes differ (or are missing); <paramref name="held"/> the lines read.</summary>

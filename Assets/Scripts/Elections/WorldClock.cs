@@ -386,9 +386,10 @@ namespace PoliSim.Elections
                 case CountryId.France:
                     return new[]
                     {
-                        // ⚠ The XVIe's polling days are on no fetched page (france records, G1) - the election day is left UNSET rather than typed; it ends with the
-                        // dissolution of 2024-06-09 [EL-DIS], and from that evening to the XVIIe's first sitting there is NO chamber of record (the record's own row).
-                        new ChamberOfRecord(ElectionVintage.France2022, DateTime.MinValue, D(2022, 6, 28), D(2024, 6, 9), "[AN-S28] [AN-CAL16]; polling days billed (G1); seats by nuance from the Ministry's FE page (SEAT-1, E-47 (b): PartySystems.FranceAssembly2022); dissolved 2024-06-09 [EL-DIS]"),
+                        // K33 (ruled 2026-10-23; G1): the XVIe's two polling days, 12 and 19 June 2022, from the header of the Ministry's FE page SEAT-1 fetched
+                        // [MI-FE22] ("12 et 19 juin 2022", `france/raw/legislatives2022/`) - the election day the second round's, as 2024's row is (DECLARED); it ends
+                        // with the dissolution of 2024-06-09 [EL-DIS], and from that evening to the XVIIe's first sitting there is NO chamber of record (the record's own row).
+                        new ChamberOfRecord(ElectionVintage.France2022, D(2022, 6, 19), D(2022, 6, 28), D(2024, 6, 9), "[AN-S28] [AN-CAL16]; polled 12 and 19 June 2022, the FE page's header [MI-FE22] (K33); seats by nuance from the same page (SEAT-1, E-47 (b): PartySystems.FranceAssembly2022); dissolved 2024-06-09 [EL-DIS]"),
                         new ChamberOfRecord(ElectionVintage.France2024, D(2024, 7, 7), D(2024, 7, 18), Open, "returns_2024.md; [EL-DIS]; the first sitting 2024-07-18 [AN-S18] [AN-CAL17]"),
                     };
                 default:
@@ -435,7 +436,7 @@ namespace PoliSim.Elections
                 // PS-6 US-2: no later election day named - the row stands for every chamber elected after the record's date; J3: the latest table on disk only here
                 return $"the chamber of record on {date:yyyy-MM-dd} was elected after the record's date ({RecordDate:yyyy-MM-dd}) - not on record, its table not on disk; the latest on disk, the {LatestSourced(id)} table, stands in its place";
             }
-            string elected = c.ElectionDay == DateTime.MinValue ? "elected in June 2022 (its polling days billed, G1)" : $"elected {c.ElectionDay:yyyy-MM-dd}";
+            string elected = $"elected {c.ElectionDay:yyyy-MM-dd}";
             return $"the chamber of record on {date:yyyy-MM-dd} is the one {elected}, whose seats per list are not yet sourced (E-47); the {LatestSourced(id)} table is seated in its place";
         }
 
@@ -599,7 +600,7 @@ namespace PoliSim.Elections
         /// <summary>§714 [AUTHORED-DRAFT]: a cabinet that took office more than this many days after an election is not that election's formation.</summary>
         public const int FormationWindowDays = 365;
 
-        /// <summary>The polling day of the election a vintage names, or MinValue where the record bills it (France's XVIe).</summary>
+        /// <summary>The polling day of the election a vintage names; MinValue for a vintage no chamber of record names.</summary>
         public static DateTime ElectionDayOf(CountryId id, ElectionVintage vintage)
         {
             foreach (ChamberOfRecord c in Chambers(id)) { if (c.Vintage == vintage) { return c.ElectionDay; } }

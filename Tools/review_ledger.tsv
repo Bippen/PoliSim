@@ -317,3 +317,9 @@ file	Assets/Scripts/Simulation/SimulationManager.DebtLimit.cs	a5e76519e65508e115
 file	Assets/Scripts/Simulation/UsDebtLimit.cs	057ce3374d7c80badcb4d2522d2f7ac54fa023982288080a3488945cd255c69f	reviewed	2026-10-24	s907	Reviews/2026-10-24_usm_integrator_delta.md	-
 file	Assets/Scripts/Simulation/UsBudgetProcedure.cs	aba4717758614992e25b58746964b6ef90f11bb77c0ff4e7a60cbd46d1185878	reviewed	2026-10-24	s907	Reviews/2026-10-24_usm_integrator_delta.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	5eaedd5f6f261b04e5d84d9e2eadec9213336ee17f4d64149aac32436a30f059	reviewed	2026-10-24	s908	Reviews/2026-10-24_camp_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	96398f13d820ab828dacdb7f5d8ca06fe70c41f9e906c5d6a8db011f5b15da3d	reviewed	2026-10-24	s909	Reviews/2026-10-24_form_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	ac144d0cd26f58252a24fe4fe8c349eb929ef7fbbf3e1521cf71b83a197d55cf	reviewed	2026-10-24	s909	Reviews/2026-10-24_form_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.PlayerPresident.cs	6d422e07de6fc4c79e9db3f8ade94253f88ffe324e5a905386d5fc896a37d527	reviewed	2026-10-24	s909	Reviews/2026-10-24_form_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.Sejm.cs	2f16858790383208f835c64a0c6d56e0594b3c062058875b5ad5c4ccc56fd155	reviewed	2026-10-24	s909	Reviews/2026-10-24_form_integrator_delta.md	-
+baseline	777	941c2ef9c92fbb8ea4d2eb22872f3d7b60249e0a397171d6d29fb8728f63d6c8	reviewed	2026-10-24	s909	Reviews/2026-10-24_form_integrator_delta.md	-
+baseline	424242	cb42f088e9c18ced3c4dda78f044a22b22eb6019cc8006eb14b84c958eb1a7e0	reviewed	2026-10-24	s909	Reviews/2026-10-24_form_integrator_delta.md	-
