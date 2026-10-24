@@ -729,12 +729,12 @@ The 4 largest 2020 audiences: CA, TX, FL, NY. The 4 closest 2020 states: GA, AZ,
 | both Professional | REP Professional, DEM Professional | 0 | - | - | - | 0 | - | 6 (6) | REP past the ceiling (100), DEM 98.15 |
 | both Populist | REP Populist, DEM Populist | 0 | - | - | - | 0 | - | 8 (8) | REP past the ceiling (100), DEM 98.15 |
 | both Establishment | REP Establishment, DEM Establishment | 0 | - | - | - | 0 | - | 4 (4) | REP past the ceiling (100), DEM 98.15 |
-| both Grassroots | REP Grassroots, DEM Grassroots | 1 | 100.0 % | 0.0 % | 0.0 % | 1 | CA 1 | 12 (8) | REP past the ceiling (100), DEM 98.15 |
-| both Chaotic | REP Chaotic, DEM Chaotic | 134 | 100.0 % | 0.0 % | 43.3 % | 4 | NY 39, CA 37, FL 31, TX 27 | 2 (2) | REP past the ceiling (100), DEM 98.15 |
+| both Grassroots | REP Grassroots, DEM Grassroots | 0 | - | - | - | 0 | - | 12 (8) | REP past the ceiling (100), DEM 98.15 |
+| both Chaotic | REP Chaotic, DEM Chaotic | 133 | 100.0 % | 0.0 % | 46.6 % | 4 | FL 40, CA 39, NY 32, TX 22 | 2 (2) | REP past the ceiling (100), DEM 98.15 |
 
 **R-US16 (b)'s targeting rule** (DECLARED for this measurement: a jurisdiction's electors × §25's swing index - `SwingRegions.Index`, [AUTHORED-DRAFT] full scale - of its margin derived from the last published poll's national shares, by E1's construction and R-US14 (a)):
 
-On the rule's-cast run's last published poll (REP 54.67 %, DEM 45.33 %) the rule's 4 are IL (19 electors, index 77), NY (28 electors, index 46), VA (13 electors, index 89), NJ (14 electors, index 82) - 31.6 % of the rule's whole weight over 25 jurisdictions with any.
+On the rule's-cast run's last published poll (REP 53.33 %, DEM 46.67 %) the rule's 4 are VA (13 electors, index 98), IL (19 electors, index 64), PA (19 electors, index 57), FL (30 electors, index 35) - 27.7 % of the rule's whole weight over 28 jurisdictions with any.
 
 ### (b) A local act reaches a state only through the national total
 
@@ -742,14 +742,14 @@ A scripted party - the player's stand-in, W-C2's seam - works one jurisdiction: 
 
 | party | works | acts made | its mobilisation there (50 untouched) | its nominee nationally (pp) | that jurisdiction's derived move (pp) | largest departure of any jurisdiction's move from the national (pp) | its margin R − D, (a)'s count: idle → program | (b)'s count: idle → program (of which turnout) | electors R − D, (a): idle → program | (b): idle → program |
 |---|---|---:|---:|---:|---:|---:|---|---|---|---|
-| REP | GA | 109 | 54.274 | +1.07e-2 | +1.07e-2 | 1.7e-14 | +5.314 → +5.335 | +5.314 → +6.125 (+0.789) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
-| REP | CA | 109 | 51.326 | -1.30e-2 | -1.30e-2 | 1.7e-14 | -23.615 → -23.641 | -23.626 → -23.410 (+0.231) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
-| DEM | GA | 112 | 54.380 | +2.90e-2 | +2.90e-2 | 1.7e-14 | +6.017 → +5.959 | +6.017 → +5.156 (-0.803) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
-| DEM | CA | 112 | 51.359 | +4.88e-3 | +4.88e-3 | 1.7e-14 | -22.912 → -22.922 | -22.897 → -23.159 (-0.237) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
+| REP | GA | 112 | 54.380 | +2.52e-2 | +2.52e-2 | 2.2e-14 | +5.231 → +5.282 | +5.231 → +6.092 (+0.810) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
+| REP | CA | 112 | 51.359 | +6.88e-4 | +6.88e-4 | 1.1e-14 | -23.697 → -23.696 | -23.709 → -23.459 (+0.237) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
+| DEM | GA | 112 | 54.380 | +2.57e-2 | +2.57e-2 | 1.7e-14 | +6.181 → +6.129 | +6.181 → +5.326 (-0.803) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
+| DEM | CA | 112 | 51.359 | +6.89e-4 | +6.89e-4 | 1.7e-14 | -22.748 → -22.749 | -22.733 → -22.987 (-0.237) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
 
-Under the count as built ((a)'s columns) the worked jurisdiction moved by what the nation moved to within 5.6e-15 points, and every jurisdiction to within 1.7e-14: the derivation is a function of the national shares and the prior alone (R-US14 (a)'s uniform swing gives every jurisdiction one move, re-solved only where a floor binds), so working a state moves it as much as every state it was not worked in. Under the count US-9 measured, the ground game's turnout - the mobilisation the program built - reached no count at all: W-D1's per-region count, its one reader, was wired to nothing. (b)'s columns are that count, the derived shares as its preferences (below) - since US-31 the count the game makes where a campaign ran (R-US16 (b)), here without its regional noise.
+Under the count as built ((a)'s columns) the worked jurisdiction moved by what the nation moved to within 1.7e-14 points, and every jurisdiction to within 2.2e-14: the derivation is a function of the national shares and the prior alone (R-US14 (a)'s uniform swing gives every jurisdiction one move, re-solved only where a floor binds), so working a state moves it as much as every state it was not worked in. Under the count US-9 measured, the ground game's turnout - the mobilisation the program built - reached no count at all: W-D1's per-region count, its one reader, was wired to nothing. (b)'s columns are that count, the derived shares as its preferences (below) - since US-31 the count the game makes where a campaign ran (R-US16 (b)), here without its regional noise.
 
-The national move itself is at most 2.90e-2 points. Since A-LOOP q24 5a the campaign moves the shares by the sourced effects (`CampaignPersuasion`: Kalla & Broockman's CACEs per contact class times each class's coverage of the electorate) and writes no compatibility, so no clamp decides it: the widest campaign effect on any party in the 6 runs of this table is 0.234 points, every one inside its sourced bound. The compatibility entering the preference model is the staging's own; in 0 of the 6 runs both parties' sat at the scale's ceiling (`ElectionScales.Max` 100; the least 98.15).
+The national move itself is at most 2.57e-2 points. Since A-LOOP q24 5a the campaign moves the shares by the sourced effects (`CampaignPersuasion`: Kalla & Broockman's CACEs per contact class times each class's coverage of the electorate) and writes no compatibility, so no clamp decides it: the widest campaign effect on any party in the 6 runs of this table is 0.249 points, every one inside its sourced bound. The compatibility entering the preference model is the staging's own; in 0 of the 6 runs both parties' sat at the scale's ceiling (`ElectionScales.Max` 100; the least 98.15).
 
 ### (c) W-D1's per-state count under a maximal ground game
 
@@ -757,9 +757,9 @@ The count (`ElectionDay.Count`, no noise): each jurisdiction's preferences its d
 
 **The ceiling moves one jurisdiction's margin by 2.90 to 9.00 points** (R − D, either party's, over every jurisdiction), and could flip 13 of the idle map's calls - 139 electors: AZ, CO, GA, ME, MI, MN, NV, NH, NM, NC, PA, VA, WI. The 4 closest 2024 states of record: WI +0.86 (the ceiling's move for the trailing party -8.95), MI +1.41 (the ceiling's move for the trailing party -8.97), PA +1.70 (the ceiling's move for the trailing party -8.98), GA +2.19 (the ceiling's move for the trailing party -8.99).
 
-**The staged ground game** (the scripted programs above, the model's one price table): its turnout move in the jurisdiction it worked - REP in GA +0.789; REP in CA +0.231; DEM in GA -0.803; DEM in CA -0.237.
+**The staged ground game** (the scripted programs above, the model's one price table): its turnout move in the jurisdiction it worked - REP in GA +0.810; REP in CA +0.237; DEM in GA -0.803; DEM in CA -0.237.
 
-**The AI's own ground game** (the rule's-cast run): its national result REP 51.37 %, DEM 48.63 % - D 48.35 %, R 49.77 % by E1's construction; under the per-state count its widest turnout move is IL's, -0.035 points of margin; electors R − D 312 – 226 under (a)'s count, 312 – 226 under (b)'s.
+**The AI's own ground game** (the rule's-cast run): its national result REP 51.41 %, DEM 48.59 % - D 48.31 %, R 49.81 % by E1's construction; under the per-state count its widest turnout move is IL's, -0.035 points of margin; electors R − D 312 – 226 under (a)'s count, 312 – 226 under (b)'s.
 
 **W-D1's declared regional noise** (σ 1.2 points a party a jurisdiction, `RegionalAggregation.RegionalNoiseSigmaPp`; 400 replays on the idle map, seed 777, no ground game): 8 jurisdictions change hands in at least one replay; the map's 4 closest - MN (margin -1.18) 23.3 %, NH (margin -1.42) 18.3 %, ME (margin -3.14) 4.3 %, MI (margin +3.14) 5.3 %; the presidency changes hands in 0 of 400, no majority in 0.
 
@@ -825,8 +825,8 @@ Every country `LiveCampaignSetup.TryFor` stages, on the vote model at its own st
 
 | country | regions | the ground game: largest party move (pp) | seats changing hands | W-D1's frame alone: largest party move (pp) | seats changing hands | parties past the compatibility ceiling at the close |
 |---|---:|---:|---:|---:|---:|---|
-| Sweden | 29 | 0.050 | 0 | 0.062 | 0 | 1 of 8 |
-| Germany | 16 | 0.006 | 0 | 0.299 | 2 | 1 of 9 |
+| Sweden | 29 | 0.055 | 0 | 0.062 | 0 | 1 of 8 |
+| Germany | 16 | 0.005 | 0 | 0.302 | 2 | 1 of 9 |
 <!-- END GENERATED -->
 
 ## The count - US-8
