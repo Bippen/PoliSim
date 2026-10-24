@@ -475,3 +475,9 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 - **K89 as built.** Your option said the AI releases "2 days before the X-date". In the model every raise is voted on the deadline or later, so that release would never stop a vote, which contradicts the bite you chose. It is built to hold through the deadline and release 2 days after it (the record's largest lead): a raise voted on the deadline or the day after falls, and the cut binds for those days. Say if you meant otherwise; it is a one-line change.
 - **K90's rule.** Once the President lets the limit bind, the hold does not return in that episode until something changes: a raise falls or its veto stands, the AI releases its withhold, or the episode closes.
 - **A finding, no ask:** the AI never withholds the continuing resolution; only a player's party can (K75).
+
+### The q4 campaign (§908): for your information
+
+- **K91 corrected.** The share-aware absorption I offered was impossible: where every party stands everywhere, your two rules (equal effort moves nothing; a lone campaigner moves exactly its sourced size) force every other party to absorb equally. You kept the equal losses. In Sweden's staged campaign V, C and MP lose about 0.10-0.14 points each.
+- **Fundraising loses money** at the sourced figures (K88): 100,000 letters lose about 58,000 in Germany and 42,000 in the USA; Sweden's postal tariff refused the fetch, so the verb is unavailable there.
+- **Owed:** the run-up HQ's lines are sized for today's floor; when the HQ is redrawn at the 14 px floor they need re-laying (the review's L9).

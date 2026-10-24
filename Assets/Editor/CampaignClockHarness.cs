@@ -98,10 +98,15 @@ namespace PoliSim.EditorTools
                 !CampaignLegality.IsLegal(CampaignActionKind.Rally, dayBefore), $"phase {dayBefore}");
             failures += Assert(sb, "4b. a rally is legal on the day it opens",
                 CampaignLegality.IsLegal(CampaignActionKind.Rally, firstDay), $"phase {firstDay}");
-            failures += Assert(sb, "4c. candidate training is a pre-campaign verb only",
-                CampaignLegality.IsLegal(CampaignActionKind.TrainCandidate, CampaignPhase.PreCampaign)
-                && !CampaignLegality.IsLegal(CampaignActionKind.TrainCandidate, CampaignPhase.Campaign),
-                "legal in pre-campaign, not in campaign");
+            // K1 and K6 (2026-10-23): q4 cut candidate training, policy development and the player's strategy - legal in no phase
+            bool cutNowhere = true;
+            foreach (CampaignPhase ph in new[] { CampaignPhase.Dormant, CampaignPhase.PreCampaign, CampaignPhase.Campaign, CampaignPhase.ElectionDay, CampaignPhase.Concluded })
+            {
+                foreach (CampaignActionKind cut in new[] { CampaignActionKind.TrainCandidate, CampaignActionKind.DevelopPolicy, CampaignActionKind.SetStrategy }) { if (CampaignLegality.IsLegal(cut, ph)) { cutNowhere = false; } }
+            }
+            failures += Assert(sb, "4c. the verbs q4 cut (training, policy, strategy) are legal in no phase; recruiting staff stays a pre-campaign verb",
+                cutNowhere && CampaignLegality.IsLegal(CampaignActionKind.RecruitStaff, CampaignPhase.PreCampaign),
+                "cut everywhere");
             failures += Assert(sb, "4d. election day leaves only the ground game",
                 CampaignLegality.IsLegal(CampaignActionKind.GetOutTheVote, CampaignPhase.ElectionDay)
                 && !CampaignLegality.IsLegal(CampaignActionKind.TelevisionAd, CampaignPhase.ElectionDay),

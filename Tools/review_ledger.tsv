@@ -316,3 +316,4 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	d780e8911d26ce8b099e5b0849f8
 file	Assets/Scripts/Simulation/SimulationManager.DebtLimit.cs	a5e76519e65508e115edc796ba840400f309bfa21ab385099a9a953e6c173c52	reviewed	2026-10-24	s907	Reviews/2026-10-24_usm_integrator_delta.md	-
 file	Assets/Scripts/Simulation/UsDebtLimit.cs	057ce3374d7c80badcb4d2522d2f7ac54fa023982288080a3488945cd255c69f	reviewed	2026-10-24	s907	Reviews/2026-10-24_usm_integrator_delta.md	-
 file	Assets/Scripts/Simulation/UsBudgetProcedure.cs	aba4717758614992e25b58746964b6ef90f11bb77c0ff4e7a60cbd46d1185878	reviewed	2026-10-24	s907	Reviews/2026-10-24_usm_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	5eaedd5f6f261b04e5d84d9e2eadec9213336ee17f4d64149aac32436a30f059	reviewed	2026-10-24	s908	Reviews/2026-10-24_camp_integrator_delta.md	-

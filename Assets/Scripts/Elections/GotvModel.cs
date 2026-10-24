@@ -78,7 +78,10 @@ namespace PoliSim.Elections
             switch (operation)
             {
                 //                                                         kr    hours  weight
-                case GotvOperation.PhoneBanking: return new GotvSpec(operation, 3.0, 0.10, 0.5);
+                // K82 (2026-10-23): a completed call's hours are SOURCED [GG14] p. 17 - "callers, who can forge through fifty or so completed calls
+                // per hour" - 1/50 of an hour (DECLARED: the commercial callers' pace read for the party's volunteers; the volunteer figure is BILLED,
+                // the book). Its price and its W-B11 weight stay [AUTHORED-DRAFT].
+                case GotvOperation.PhoneBanking: return new GotvSpec(operation, 3.0, 1.0 / GotvTurnout.CompletedCallsPerVolunteerHour, 0.5);
                 case GotvOperation.DoorKnocking: return new GotvSpec(operation, 5.0, 0.25, 1.0);
                 case GotvOperation.Transport: return new GotvSpec(operation, 60.0, 0.50, 3.0);
                 case GotvOperation.ElectionDayReminders: return new GotvSpec(operation, 1.0, 0.02, 0.25);
@@ -117,6 +120,7 @@ namespace PoliSim.Elections
     {
         private readonly double[][] _weightedContacts;   // [region][party]
         private readonly double[][] _doors;   // [region][party] - A-LOOP q24 5b: the door contacts (opened doors) alone, which the turnout CACE reads (`GotvTurnout`)
+        private readonly double[][] _calls;   // [region][party] - K82: the completed calls alone, which the phone CACE reads (`GotvTurnout`)
         private readonly double[] _eligible;
 
         public RegionalMobilization(double[] eligiblePerRegion, int partyCount)
@@ -125,7 +129,8 @@ namespace PoliSim.Elections
             _eligible = eligiblePerRegion;
             _weightedContacts = new double[eligiblePerRegion.Length][];
             _doors = new double[eligiblePerRegion.Length][];
-            for (int r = 0; r < eligiblePerRegion.Length; r++) { _weightedContacts[r] = new double[partyCount]; _doors[r] = new double[partyCount]; }
+            _calls = new double[eligiblePerRegion.Length][];
+            for (int r = 0; r < eligiblePerRegion.Length; r++) { _weightedContacts[r] = new double[partyCount]; _doors[r] = new double[partyCount]; _calls[r] = new double[partyCount]; }
         }
 
         public int RegionCount => _eligible.Length;
@@ -136,6 +141,12 @@ namespace PoliSim.Elections
         /// <summary>A-LOOP q24 5b: the doors a party's operation has opened in a region (door contacts, not knocks) - the contacts the turnout CACE reads on polling day.</summary>
         public double DoorContacts(int region, int party) => _doors[region][party];
 
+        /// <summary>K82: the completed calls a party's phone bank has made to its supporters in a region - what the phone CACE reads on polling day.</summary>
+        public double PhoneContacts(int region, int party) => _calls[region][party];
+
+        /// <summary>K82: calls carried in as a campaign's mobilization holds them (the parliamentary count's columns) - no operation is run.</summary>
+        public void CarryCalls(int region, int party, double calls) { _calls[region][party] += calls; }
+
         /// <summary>Run an operation for a party in a region with a budget and volunteer-hours; returns contacts made.</summary>
         public double Operate(int region, int party, GotvOperation operation, double money, double volunteerHours,
             out double moneySpent, out double hoursSpent)
@@ -144,6 +155,7 @@ namespace PoliSim.Elections
             double contacts = GotvModel.Contacts(spec, money, volunteerHours, out moneySpent, out hoursSpent);
             _weightedContacts[region][party] += contacts * spec.Weight;
             if (operation == GotvOperation.DoorKnocking) { _doors[region][party] += contacts; }
+            if (operation == GotvOperation.PhoneBanking) { _calls[region][party] += contacts; }
             return contacts;
         }
 

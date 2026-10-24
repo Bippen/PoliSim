@@ -1,0 +1,2 @@
+2026-10-23T20:16:27Z 403 5584 https://www.postnord.se/priser -> postnord_priser_HTTP403.html
+2026-10-23T20:16:28Z 404 66726 https://www.avropa.se/globalassets/bilagor/1.-aktuella-rao/postformedlingstjanster-2021/brevformedlingstjanster--2-lev/postnord/prisbilaga-brevformedling-2026.pdf -> avropa_prisbilaga-brevformedling-2026_HTTP404.html

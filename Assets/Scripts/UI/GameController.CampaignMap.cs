@@ -260,7 +260,7 @@ namespace PoliSim.UI
         {
             float ux = r.width / 440f;
             float uy = r.height / 576f;
-            float y = DrawCampaignLedgerHead(r, s.Live ? "THE NEXT LOCAL ACT — WHERE IT GOES" : s.MeasuredCount == 0 ? "SWING REGIONS — UNKNOWN" : "SWING REGIONS — BY INDEX, AS POLLED", ux, uy);
+            float y = DrawCampaignLedgerHead(r, s.Siting ? "THE NEXT OFFICE — WHERE IT OPENS" : s.Live ? "THE NEXT LOCAL ACT — WHERE IT GOES" : s.MeasuredCount == 0 ? "SWING REGIONS — UNKNOWN" : "SWING REGIONS — BY INDEX, AS POLLED", ux, uy);
 
             if (s.Live)
             {
@@ -272,7 +272,7 @@ namespace PoliSim.UI
                 float detailHeight = Mathf.Ceil(DeskCaptionHeight(detail));
                 PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, nameHeight), s.Campaign.LocalActsRegion ?? "—", nameStyle);
                 y += nameHeight;
-                PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, detailHeight), "A RALLY, A TOWN HALL OR A DAY OF DOORS QUEUED NOW GOES HERE", detail);
+                PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, detailHeight), s.Siting ? "AN OFFICE QUEUED NOW OPENS HERE ON THE CAMPAIGN'S FIRST DAY" : "A RALLY, A TOWN HALL OR A DAY OF DOORS QUEUED NOW GOES HERE", detail);
                 y += detailHeight + Mathf.Round(6f * uy);
                 PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, detailHeight), s.Campaign.Offices.Length == 0 ? "YOUR OFFICES: NONE" : "YOUR OFFICES · VOLUNTEERS", DeskCaption(8.5f, PoliSimTheme.TextSecondary));
                 y += detailHeight;

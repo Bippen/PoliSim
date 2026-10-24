@@ -110,14 +110,16 @@ namespace PoliSim.Elections
         public readonly int NextLocalActRegion;
         /// <summary>CL-2: per region, the volunteers at the party's office there, −1 where it has none.</summary>
         public readonly int[] OfficeVolunteers;
+        /// <summary>K1 row 5 (S-C2, 2026-10-23): the sheet is over the RUN-UP - a tile sites the next office (`NextLocalActRegion` is where it opens), not a local act.</summary>
+        public readonly bool Siting;
 
         public CampaignMapSnapshot(CampaignSnapshot campaign, MapRegionReading[] regions, string[] partyNames,
             int playerPartyIndex, string pollingBought, int samplePerRegion, DateTime fieldDate, string offerLine,
-            bool live = false, int nextLocalActRegion = -1, int[] officeVolunteers = null)
+            bool live = false, int nextLocalActRegion = -1, int[] officeVolunteers = null, bool siting = false)
         {
             Campaign = campaign; Regions = regions; PartyNames = partyNames; PlayerPartyIndex = playerPartyIndex;
             PollingBought = pollingBought; SamplePerRegion = samplePerRegion; FieldDate = fieldDate; OfferLine = offerLine;
-            Live = live; NextLocalActRegion = nextLocalActRegion; OfficeVolunteers = officeVolunteers;
+            Live = live; NextLocalActRegion = nextLocalActRegion; OfficeVolunteers = officeVolunteers; Siting = siting;
         }
 
         public int MeasuredCount

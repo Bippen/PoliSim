@@ -21,11 +21,11 @@ namespace PoliSim.Elections
     ///
     /// **What moves and what does not.** The true preference is
     /// `PreferenceModel.Preference(compatibility, prior, loyaltyPerParty)` with the campaign's share effects laid on it
-    /// (A-LOOP q24 5a, `CampaignPersuasion.Apply`: sourced CACEs times coverage, never through the compatibility clamp), so the
+    /// (A-LOOP q24 5a, `CampaignPersuasion.ApplyCampaign`: sourced CACEs times coverage, relative to the field since K65, never through the compatibility clamp), so the
     /// shares are always derived; with no actions at all the shares equal the prior by construction (asserted).
     /// Momentum (§22) is shocked by the day's COVERAGE gain (W-B9: `MediaCoverage.CloseDay` ×
     /// `MediaSystem.MomentumPpPerCoverage`, bounded because the gain saturates) and by nothing
-    /// else yet — debates (§15) and events (§18) will add their own shocks. Interviews are
+    /// else yet — events (§18) will add their own shocks; a debate (§15) adds none (K4). Interviews are
     /// BOOKINGS: each day the outlets allocate their slots by media interest (coverage, momentum,
     /// the PUBLISHED race), and a party without a booking has no interview to give. Pre-campaign
     /// days are not simulated: §3's preparation verbs have no
@@ -139,6 +139,28 @@ namespace PoliSim.Elections
                 return all > 0.0 ? where / all : 1.0;
             }
 
+            /// <summary>Review M2 and K81 (2026-10-23): [p][q] the share of the national audience where BOTH parties stand, region by region from the
+            /// candidacies (the diagonal is each party's own reach); null where no candidacy is staged (every party everywhere, every overlap 1).</summary>
+            public double[][] OverlapMatrix()
+            {
+                if (Stands == null || Regions == null || Regions.Length == 0) { return null; }
+                int n = Parties.Length;
+                double all = 0.0;
+                for (int r = 0; r < Regions.Length; r++) { all += Regions[r].Audience; }
+                var o = new double[n][];
+                for (int p = 0; p < n; p++)
+                {
+                    o[p] = new double[n];
+                    for (int q = 0; q < n; q++)
+                    {
+                        double both = 0.0;
+                        for (int r = 0; r < Regions.Length; r++) { if (StandsIn(p, r) && StandsIn(q, r)) { both += Regions[r].Audience; } }
+                        o[p][q] = all > 0.0 ? both / all : 1.0;
+                    }
+                }
+                return o;
+            }
+
             /// <summary>PS-3k (§638): this setup with the government's record applied.</summary>
             public Setup WithRecordShift(double[] shift) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
                 PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping, Positions, Stands, Targeting, DoorCacePp);
@@ -249,6 +271,8 @@ namespace PoliSim.Elections
             public double PersuasionDelivered;
             public double EnthusiasmDelivered;
             public readonly List<DecisionRecord> Log = new List<DecisionRecord>();
+            /// <summary>Review 2's L5: the queued acts the run could not make, by day, with why (a call outside the final week or where the party does not stand) - never silently dropped; the HQ prints yesterday's.</summary>
+            public readonly List<(int Day, CampaignActionKind Kind, string Reason)> Refused = new List<(int Day, CampaignActionKind Kind, string Reason)>();
             /// <summary>Action counts per campaign day (day x TheEight) - how consistent the party's strategy was from one day to the next.</summary>
             public int[][] DailyActionCount;
 
@@ -303,12 +327,14 @@ namespace PoliSim.Elections
             /// <summary>q24 5a: each party's campaign share effect at the close, in points (signed, before the other parties absorb it), and the bound the plan's (4)(b) holds it within (`CampaignPressure.BoundsPp`).</summary>
             public double[] CampaignEffectPp;
             public double[] CampaignBoundPp;
-            /// <summary>W-B7: every debate held - day, the two parties, the margin (positive = the first won), the shocks.</summary>
+            /// <summary>W-B7: every debate held - day, the two parties, the margin (positive = the first won), the shocks APPLIED (zero since K4: a debate moves no poll).</summary>
             public List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)> Debates;
             /// <summary>W-B8: every scandal - day, party, the response chosen, the outcome.</summary>
             public List<(int Day, int Party, ScandalResponse Response, ScandalOutcome Outcome)> Scandals;
             /// <summary>The valkretsar, in the run's order - election day's names.</summary>
             public string[] RegionNames;
+            /// <summary>Review 2's L2: why the run's absorption fell back to the proportional form (the equal-effort balancing could not be met on its shares and candidacies), or null - the game logs it.</summary>
+            public string AbsorptionFallback;
             /// <summary>A deterministic digest of every decision and the final shares — two runs of one seed must print the same one.</summary>
             public string Digest;
         }
@@ -398,7 +424,7 @@ namespace PoliSim.Elections
             double[] prior = Normalised(setup.PriorShares);
             var reach = new double[partyCount];
             for (int p = 0; p < partyCount; p++) { reach[p] = setup.StandingShare(p); }   // q24 5a: coverage over where each party stands (1 everywhere in Sweden)
-            var pressure = new CampaignPressure(partyCount, reach);
+            var pressure = new CampaignPressure(partyCount, reach, setup.OverlapMatrix());   // review M2: an attack lands where its target stands, region by region
             double[] truePreference = CurrentPreference(setup, prior, pressure, null);   // §681: day 0 - awareness at its opening, no coverage yet
             double[] baseline = (double[])truePreference.Clone();
 
@@ -708,23 +734,27 @@ namespace PoliSim.Elections
                     // measurement then feeds the same day's action estimates (a fresh poll is
                     // what you act on, not what you file).
                     AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity, pressure, ruleRegions, gotv);
-                    if (CampaignAi.WantsPoll(view, profiles[p], setup.InternalHouse))
+                    // ⚠ K2 (Elias, 2026-10-23): the campaign poll is PRICED INFORMATION the player buys - a scripted party (the player's, or a
+                    // harness's stand-in) polls only on a day its script queues a poll (below), never on its cast personality's cadence (SD-20:
+                    // the player's party used to buy the AI's polls for it). An AI party polls on its personality's cadence as before.
+                    // A poll moves no vote: its effect is the ± its sample buys (Q7's POLL precedent).
+                    bool BuyPoll()
                     {
-                        if (pools[p].TrySpend(setup.InternalHouse.Cost, CampaignAi.PollingHours, out ResourcePool afterPoll))
-                        {
-                            pools[p] = afterPoll;
-                            reserve[p] -= setup.InternalHouse.Cost;
-                            latestPoll[p] = PollingSystem.Conduct(momentum.Apply(truePreference), staff[p].Improve(setup.InternalHouse), today, random);
-                            issues[p] = CampaignIntelligence.MeasureIssues(setup.TrueSalience, setup.Parties[p].TrueIssueMatch,
-                                staff[p].Improve(setup.InternalHouse).SampleSize, random);
-                            lastOwnPollDay[p] = day;
-                            ledger.PollsBought++;
-                            ledger.PollMoney += setup.InternalHouse.Cost;
-                            ledger.Log.Add(new DecisionRecord(day, CampaignActionKind.CommissionPolling, setup.InternalHouse.Name,
-                                setup.InternalHouse.Cost, 0.0, false));
-                            Append(digest, day, p, CampaignActionKind.CommissionPolling, setup.InternalHouse.Name, setup.InternalHouse.Cost);
-                        }
+                        if (lastOwnPollDay[p] == day || !pools[p].TrySpend(setup.InternalHouse.Cost, CampaignAi.PollingHours, out ResourcePool afterPoll)) { return false; }
+                        pools[p] = afterPoll;
+                        reserve[p] -= setup.InternalHouse.Cost;
+                        latestPoll[p] = PollingSystem.Conduct(momentum.Apply(truePreference), staff[p].Improve(setup.InternalHouse), today, random);
+                        issues[p] = CampaignIntelligence.MeasureIssues(setup.TrueSalience, setup.Parties[p].TrueIssueMatch,
+                            staff[p].Improve(setup.InternalHouse).SampleSize, random);
+                        lastOwnPollDay[p] = day;
+                        ledger.PollsBought++;
+                        ledger.PollMoney += setup.InternalHouse.Cost;
+                        ledger.Log.Add(new DecisionRecord(day, CampaignActionKind.CommissionPolling, setup.InternalHouse.Name,
+                            setup.InternalHouse.Cost, 0.0, false));
+                        Append(digest, day, p, CampaignActionKind.CommissionPolling, setup.InternalHouse.Name, setup.InternalHouse.Cost);
+                        return true;
                     }
+                    if (setup.Parties[p].Script == null && CampaignAi.WantsPoll(view, profiles[p], setup.InternalHouse)) { BuyPoll(); }
 
                     view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity, pressure, ruleRegions, gotv);
 
@@ -816,6 +846,26 @@ namespace PoliSim.Elections
                             if (d.Kind == CampaignActionKind.Interview && bookedReach[p].Count == 0) { continue; }
                             // §697: nor does a local act land where the party does not stand - skipped, the rest of the day's queue stands
                             if (d.Target.RegionIndex >= 0 && !setup.StandsIn(p, d.Target.RegionIndex)) { continue; }
+                            // K2: a queued poll is bought (one a day, if the chest and the hours allow), conducted and filed - no contact, no chain
+                            if (d.Kind == CampaignActionKind.CommissionPolling) { BuyPoll(); continue; }
+                            // K82: a queued phone bank calls the party's supporters in its region - the final week only, paid from the chest, the calls bounded
+                            // by the price per call and the volunteers' hours (headquarters' and the region's office's, as the doors are); no contact, no chain
+                            if (d.Kind == CampaignActionKind.PhoneBank)
+                            {
+                                int callRegion = d.Target.RegionIndex >= 0 ? d.Target.RegionIndex : 0;
+                                if (setup.Calendar.DaysUntilElection(today) > GotvTurnout.PhoneFinalWeekDays) { ledger.Refused.Add((day, d.Kind, "outside the final week")); continue; }
+                                if (callRegion >= setup.Regions.Length || !setup.StandsIn(p, callRegion)) { ledger.Refused.Add((day, d.Kind, "the party has no list there")); continue; }
+                                if (!pools[p].TrySpend(d.Spend, d.Hours, out ResourcePool afterCalls)) { ledger.Refused.Add((day, d.Kind, "the chest or the day's hours cannot pay")); continue; }
+                                pools[p] = afterCalls;
+                                reserve[p] -= d.Spend;
+                                gotv.Operate(callRegion, p, GotvOperation.PhoneBanking, d.Spend, volunteerHoursLeft[p] + officeHoursLeft[p][callRegion], out _, out double callHours);
+                                double callsFromOffice = Math.Min(callHours, officeHoursLeft[p][callRegion]);
+                                officeHoursLeft[p][callRegion] -= callsFromOffice;
+                                volunteerHoursLeft[p] -= callHours - callsFromOffice;
+                                ledger.Log.Add(new DecisionRecord(day, CampaignActionKind.PhoneBank, setup.Regions[callRegion].Name, d.Spend, 0.0, false));
+                                Append(digest, day, p, CampaignActionKind.PhoneBank, setup.Regions[callRegion].Name, d.Spend);
+                                continue;
+                            }
                         }
                         else if (guard < committed.Count)
                         {
@@ -873,29 +923,36 @@ namespace PoliSim.Elections
                         // W-B6: the party's strategy modifies the world's response - the electorate
                         // as one group at its derived loyalty (W-F4's groups make this per group),
                         // the message prioritised when it is on the electorate's most salient issue.
-                        StrategyModifiers modifiers = CampaignStrategyModel.Modifiers(profiles[p].Strategy, setup.ElectorateLoyalty,
-                            d.Target.Issue.HasValue && IsTopSalience(setup, d.Target.Issue.Value));
+                        // ⚠ K6 (Elias, 2026-10-23): the player's choice of strategy is CUT and the AI's five personalities keep theirs. A
+                        // SCRIPTED party (the player's, or a harness's stand-in for it) therefore plays under no strategy - DECLARED reading: the
+                        // player never chose its party's cast personality, and the strategy's sourced parts are the player's own verbs and
+                        // parameters (q4 row 4: the attack, K3; the topic; the targeting), not a modifier the cast laid on its contacts.
+                        // K86 (2026-10-23): an AI's strategy chooses what it does (its attack share), never an act's size - every contact at the sourced size
+                        StrategyModifiers modifiers = CampaignStrategyModel.ChoiceOnly(CampaignStrategyModel.Modifiers(setup.Parties[p].Script != null ? CampaignStrategy.None : profiles[p].Strategy, setup.ElectorateLoyalty,
+                            d.Target.Issue.HasValue && IsTopSalience(setup, d.Target.Issue.Value)));
                         CampaignActions.ChainTrace trace = CampaignStrategyModel.Resolve(spec, audience, salience, match,
                             credibility[p], d.Spend, modifiers);
-                        pressure.Add(p, trace);
-                        if (modifiers.OpponentShare > 0.0)
+                        // K3 and K66: an attack is ONE contact split between the party's own case and its target (`CampaignPressure.AddAttack`),
+                        // sharing the party's coverage. A scripted attack (the player's ATTACK verb, K3; W-C2's stand-in) takes the negative
+                        // campaign's share of the contact; an AI's negative campaign aims its share at the polled leader (chosen from the Poll,
+                        // not the truth). Both at the class effect signed against the target, [AUTHORED-DRAFT] until Lau, Sigelman and Rovner 2007.
+                        int attackTarget = -1;
+                        double attackShare = 0.0, seenAs = 0.0;
+                        if (d.AgainstParty >= 0 && d.AgainstParty != p && d.AgainstParty < partyCount)
                         {
-                            int target = view.PolledLeaderOtherThanSelf;   // chosen from the Poll, not the truth
-                            if (target >= 0)
-                            {
-                                pressure.AddAgainst(target, trace, modifiers.OpponentShare);
-                                activity.ObserveAttack(p, target, modifiers.OpponentShare);
-                                ledgers[target].PersuasionAgainstMe += trace.Persuasion * modifiers.OpponentShare;   // W-D4
-                            }
+                            attackTarget = d.AgainstParty; attackShare = CampaignStrategyModel.NegativeOpponentShare; seenAs = 1.0;
                         }
-
-                        // W-C2: a scripted attack lands as a negative campaign's would, and is seen.
-                        if (d.AgainstParty >= 0 && d.AgainstParty != p)
+                        else if (modifiers.OpponentShare > 0.0 && view.PolledLeaderOtherThanSelf >= 0)
                         {
-                            pressure.AddAgainst(d.AgainstParty, trace, CampaignStrategyModel.NegativeOpponentShare);
-                            activity.ObserveAttack(p, d.AgainstParty, 1.0);
-                            ledgers[d.AgainstParty].PersuasionAgainstMe += trace.Persuasion * CampaignStrategyModel.NegativeOpponentShare;   // W-D4
+                            attackTarget = view.PolledLeaderOtherThanSelf; attackShare = modifiers.OpponentShare; seenAs = modifiers.OpponentShare;
                         }
+                        if (attackTarget >= 0)
+                        {
+                            pressure.AddAttack(p, attackTarget, trace, attackShare);
+                            activity.ObserveAttack(p, attackTarget, seenAs);
+                            ledgers[attackTarget].PersuasionAgainstMe += trace.Persuasion * attackShare;   // W-D4
+                        }
+                        else { pressure.Add(p, trace); }
 
                         // W-C2: a local act is public - the press was there; a rally counts one, the rest half.
                         if (spec.IsLocal && d.Target.RegionIndex >= 0)
@@ -960,7 +1017,12 @@ namespace PoliSim.Elections
 
                 // W-B7: on a debate day the two parties leading the PUBLISHED poll debate - each on its
                 // personality's plan, on its own ground (its most salient true issue), with its candidate's
-                // attributes and a fixed preparation. The result shocks coverage and momentum and nothing else.
+                // attributes and a fixed preparation. ⚠ K4 (Elias, 2026-10-23, `docs/RULINGS_2026-10-23.md`): the debate is held, resolved
+                // and reported, and MOVES NO POLL - SOURCED [LPP22] (Le Pennec and Pons, NBER WP 26572, pp. 42-45: 56 TV debates in 62
+                // elections, "we can reject any impact of debates on vote choice consistency higher than 0.5 percentage point at the 5%
+                // level"). Until K4 the result shocked coverage (which C-N1 carried into persuasion) and momentum (the polls), both
+                // [AUTHORED-DRAFT]; neither is applied now, and the record carries the shocks applied, zero. The debate stream is still
+                // drawn exactly as before, so no other stream moves.
                 if (publicPoll.HasValue && Array.IndexOf(setup.DebateDays, day) >= 0)
                 {
                     int a = -1, b = -1;
@@ -977,13 +1039,9 @@ namespace PoliSim.Elections
                             setup.Parties[b].Candidate, DebatePlanFor(profiles[b].Kind, TopIssue(setup, b)), issue => OwnershipOf(setup, b, issue),
                             DebateExchanges, debateRandom);
                         int winner = debate.Winner == 0 ? a : (debate.Winner == 1 ? b : -1);
-                        int loser = winner == a ? b : a;
-                        coverage.AddShock(a, debate.CoverageShock);
-                        coverage.AddShock(b, debate.CoverageShock);
-                        if (winner >= 0) { momentum.AddShock(winner, debate.MomentumShockPp); momentum.AddShock(loser, -debate.MomentumShockPp); }
                         ledgers[a].DebatesStood++; ledgers[b].DebatesStood++;
                         if (winner >= 0) { ledgers[winner].DebatesWon++; }
-                        debates.Add((day, a, b, debate.Margin, debate.CoverageShock, debate.MomentumShockPp));
+                        debates.Add((day, a, b, debate.Margin, 0.0, 0.0));   // K4: the shocks APPLIED - none
                         Append(digest, day, a, CampaignActionKind.TrainCandidate, "debate v " + setup.Parties[b].Name, debate.Margin);
                     }
                 }
@@ -1064,6 +1122,7 @@ namespace PoliSim.Elections
                 CampaignEffectPp = Array.ConvertAll(pressure.ShareEffects(s.Setup.NationalAudience, CampaignPersuasion.ElectorateMean(s.Setup)), e => 100.0 * e),
                 CampaignBoundPp = pressure.BoundsPp(s.Setup.NationalAudience),
                 RegionNames = names,
+                AbsorptionFallback = CampaignPersuasion.BalancedAbsorption(PreferenceModel.Preference(s.Setup.Compatibility, s.Prior, s.Setup.LoyaltyPerParty), ReachShares(s.Setup), s.Pressure.OverlapMatrix).Fallback,
                 Debates = debates,
                 Scandals = scandals,
                 Digest = Fnv1a64(digest.ToString()),
@@ -1119,7 +1178,7 @@ namespace PoliSim.Elections
                 MediaSystem.PressReach(setup.Outlets),   // C-N7: a public fact about the media, like bestOutletReach
                 setup.StandingShare(party),   // §699: the party's own reach of the national audience - where it stands
                 CampaignPersuasion.ElectorateMean(setup),   // q24 5a: the scale the sourced CACEs are read against, one figure per staging
-                pressure?.OwnExposureByClass(party), pressure?.OwnQualityByClass(party), ruleRegions, ownDoors, setup.DoorCacePp);   // and its pooled quality (review 881b's N3): the AI differences the run's own class effect   // q24 5a (the review's M3): the party's own contacts so far per class - its own books - so it values the next one's MARGINAL coverage
+                pressure?.OwnExposureByClass(party), pressure?.OwnQualityByClass(party), ruleRegions, ownDoors, setup.DoorCacePp, pressure?.OwnAttackExposureByClass(party));   // K66: its attacks share its coverage   // and its pooled quality (review 881b's N3): the AI differences the run's own class effect   // q24 5a (the review's M3): the party's own contacts so far per class - its own books - so it values the next one's MARGINAL coverage
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B8: how each personality answers a scandal, on the evidence as it sees it: the professional explains, the establishment apologises, the grassroots party apologises, the populist attacks the source, the chaotic denies - and every one of them denies when the evidence looks weak enough (below 0.3 as seen), because that is what §17 says a denial is for.</summary>
@@ -1206,10 +1265,20 @@ namespace PoliSim.Elections
         private static double[] CurrentPreference(Setup setup, double[] prior, CampaignPressure pressure, MediaCoverage coverage)
         {
             // A-LOOP q24 5a: compatibility is positioning again - the campaign leaves it alone and moves the shares directly, by the sourced
-            // CACEs times each class's coverage, absorbed by the other parties; nothing it does passes through the clamp at 100.
+            // CACEs times each class's coverage, absorbed by the other parties (K65: each relative to the share-weighted mean of every party's, so equal effort moves nothing); nothing it does passes through the clamp at 100.
             double[] preference = PreferenceModel.Preference(setup.Compatibility, prior, setup.LoyaltyPerParty);
-            preference = CampaignPersuasion.Apply(preference, pressure.ShareEffects(setup.NationalAudience, CampaignPersuasion.ElectorateMean(setup)));
+            double[] effects = pressure.ShareEffects(setup.NationalAudience, CampaignPersuasion.ElectorateMean(setup), null, null, out double[] attackLoss, out double[] attackGain);
+            preference = CampaignPersuasion.ApplyCampaign(preference, effects, ReachShares(setup), pressure.OverlapMatrix, attackLoss, attackGain);   // K65, K81, K91, K92: the share-aware balanced absorption, an attack target to attacker
             return Standing(setup, prior, preference, setup.Families != null ? AwarenessToday(setup, pressure, coverage) : null);
+        }
+
+        /// <summary>K65: each party's share of the electorate where it stands (`CampaignRun.Setup.StandingShare`) - the reach its field-relative effect is read over; null where no candidacy is staged (every reach 1).</summary>
+        private static double[] ReachShares(Setup setup)
+        {
+            if (setup.Stands == null) { return null; }
+            var reach = new double[setup.Parties.Length];
+            for (int p = 0; p < reach.Length; p++) { reach[p] = setup.StandingShare(p); }
+            return reach;
         }
 
         /// <summary>

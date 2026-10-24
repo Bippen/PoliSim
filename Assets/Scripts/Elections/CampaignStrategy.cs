@@ -92,6 +92,15 @@ namespace PoliSim.Elections
         public const double PopulistFocusEnthusiasm = 1.3;
         public const double PopulistOtherPersuasion = 0.6;
 
+        /// <summary>
+        /// K86 (Elias, 2026-10-23, review M3): <b>a strategy chooses WHAT a party does, never how much an act does.</b> The five sets' multipliers
+        /// on reach, persuasion, credibility, enthusiasm, salience and media attention are [AUTHORED-DRAFT] sizes no source gives, so the run lays
+        /// every party's contacts at the sourced size: this keeps a strategy's one CHOICE - the negative campaign's share of each contact spent on
+        /// the polled leader (`OpponentShare`, K3's attack, K66's split) - and sets every multiplier to 1. The personalities still choose by
+        /// their profiles (affinities, costs, risk, cadence); `Modifiers` stays as §11's reference text and the module's harness.
+        /// </summary>
+        public static StrategyModifiers ChoiceOnly(StrategyModifiers m) => new StrategyModifiers(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, m.OpponentShare);
+
         public static readonly CampaignStrategy[] TheFive =
         {
             CampaignStrategy.BroadAppeal, CampaignStrategy.BaseMobilization, CampaignStrategy.SwingVoter,

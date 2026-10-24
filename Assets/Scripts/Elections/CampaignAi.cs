@@ -243,6 +243,8 @@ namespace PoliSim.Elections
         /// <summary>A-LOOP q24 5b: the turnout CACE the staging's count gives an opened door (`GotvTurnout`) - a sourced figure, public; 0 = turnout is
         /// worth nothing on this count.</summary>
         public readonly double DoorCacePp;
+        /// <summary>K66: the party's own attack exposure so far per contact class, over every target - its own books; its attacks share its class coverage, so a contact is valued on the coverage left to its own part. Null = none.</summary>
+        public readonly double[] OwnAttackExposureByClass;
 
         public double AttacksOnMe
         {
@@ -257,8 +259,9 @@ namespace PoliSim.Elections
             double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0, double televisionFund = 0.0,
             double[] regionPressure = null, double[] regionPush = null, double[] attackersOnMe = null, double pressReach = 0.0, double nationalReachShare = 1.0,
             double persuasionNorm = 0.0, double[] ownExposureByClass = null, double[] ownQualityByClass = null, int[] ruleRegions = null,
-            double[] ownDoorContactsByRegion = null, double doorCacePp = 0.0)
+            double[] ownDoorContactsByRegion = null, double doorCacePp = 0.0, double[] ownAttackExposureByClass = null)
         {
+            OwnAttackExposureByClass = ownAttackExposureByClass;
             RuleRegions = ruleRegions;
             OwnDoorContactsByRegion = ownDoorContactsByRegion;
             DoorCacePp = doorCacePp;
@@ -772,8 +775,9 @@ namespace PoliSim.Elections
             // The party's own strategy (W-B6) modifies its own estimate exactly as it will modify
             // the world's response: the electorate as one group at its published loyalty, the
             // message "prioritised" when it is on the most salient issue the party has measured.
-            StrategyModifiers m = CampaignStrategyModel.Modifiers(view.OwnStrategy, view.ElectorateLoyalty,
-                issue.HasValue && topIssue.HasValue && issue.Value == topIssue.Value);
+            // K86 (2026-10-23): the world lays every contact at the sourced size, so the party's own estimate does too - only its attack share is kept
+            StrategyModifiers m = CampaignStrategyModel.ChoiceOnly(CampaignStrategyModel.Modifiers(view.OwnStrategy, view.ElectorateLoyalty,
+                issue.HasValue && topIssue.HasValue && issue.Value == topIssue.Value));
 
             Band(view, spec, audience, view.OwnCredibility, spend, measured, salience, salienceError, match, matchError,
                 profile, m, out double expectedPts, out double spanPts, out double lowPts, out double highPts);
@@ -902,12 +906,24 @@ namespace PoliSim.Elections
             ContactClass c = CampaignPersuasion.ClassOf(trace.Kind);
             double e0 = view.OwnExposureByClass != null && (int)c < view.OwnExposureByClass.Length ? view.OwnExposureByClass[(int)c] : 0.0;
             double q0 = view.OwnQualityByClass != null && (int)c < view.OwnQualityByClass.Length ? view.OwnQualityByClass[(int)c] : 0.0;
+            double a0 = view.OwnAttackExposureByClass != null && (int)c < view.OwnAttackExposureByClass.Length ? view.OwnAttackExposureByClass[(int)c] : 0.0;
+            // K66: a negative campaign's contact is split as the run splits it - the opponent's share into the attack tally, the rest its own,
+            // sharing one class coverage - and the AI values its OWN part (the attack's harm to the target is not in its score, as before K66)
+            double alpha = m.OpponentShare > 0.0 && view.PolledLeaderOtherThanSelf >= 0 ? m.OpponentShare : 0.0;
+            if (alpha > 0.0 || a0 > 0.0)
+            {
+                return CampaignPersuasion.SharedClassEffectPp(c, e0 + exposure * (1.0 - alpha), q0 + quality * (1.0 - alpha), a0 + exposure * alpha, view.NationalAudience, view.PersuasionNorm, view.NationalReachShare)
+                       - CampaignPersuasion.SharedClassEffectPp(c, e0, q0, a0, view.NationalAudience, view.PersuasionNorm, view.NationalReachShare);
+            }
             return CampaignPersuasion.ClassEffectPp(c, e0 + exposure, q0 + quality, view.NationalAudience, view.PersuasionNorm, view.NationalReachShare)
                    - CampaignPersuasion.ClassEffectPp(c, e0, q0, view.NationalAudience, view.PersuasionNorm, view.NationalReachShare);
         }
 
         /// <summary>q24 5a (the review's H1/M5): what the AI values one contact at, in points of share - `Points` as the scorer reads it, for a diagnostic to hold per country.</summary>
         public static double ContactValuePp(AiView view, CampaignActions.ChainTrace trace, PersonalityProfile profile) => Points(view, trace, profile, StrategyModifiers.Identity);
+
+        /// <summary>K66: `ContactValuePp` under a strategy's modifiers - a negative campaign's contact valued on its own part of the coverage it shares with its attack, for a diagnostic to hold against the run.</summary>
+        public static double ContactValuePp(AiView view, CampaignActions.ChainTrace trace, PersonalityProfile profile, StrategyModifiers m) => Points(view, trace, profile, m);
 
         /// <summary>
         /// A-LOOP q24 5b: what <paramref name="doors"/> more opened doors in <paramref name="region"/> add to the party's national share, in points, on the

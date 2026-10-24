@@ -27,6 +27,8 @@ namespace PoliSim.EditorTools
     ///    counterattack loses to it; an attack into silence is wasted);
     /// 4. §22's worked example is in range — a strong debate (a 10-point rout) is about +2 pp of
     ///    momentum, which then decays on the momentum tracker's own half-life.
+    /// ⚠ K4 (2026-10-23): this harness holds the debate MODEL's result; the campaign run applies neither shock since K4 (a debate moves
+    /// no poll, [LPP22]) - `CampaignAiHarness` 1f holds that.
     /// </summary>
     public static class DebateHarness
     {
@@ -105,7 +107,7 @@ namespace PoliSim.EditorTools
             momentum.AddShock(loser, -first.MomentumShockPp);
 
             // A-LOOP q24 5a: the campaign's route to the vote is its share effects; a debate adds no contact to the tally.
-            double[] after = CampaignPersuasion.Apply(PreferenceModel.Preference(compatibility, prior, loyalty), pressure.ShareEffects(100_000.0, 0.5));
+            double[] after = CampaignPersuasion.ApplyCampaign(PreferenceModel.Preference(compatibility, prior, loyalty), pressure.ShareEffects(100_000.0, 0.5));
             bool preferenceUntouched = true;
             for (int i = 0; i < 4; i++) { if (after[i] != before[i]) { preferenceUntouched = false; } }
 

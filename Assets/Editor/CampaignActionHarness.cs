@@ -127,7 +127,7 @@ namespace PoliSim.EditorTools
             // A-LOOP q24 5a: the campaign leaves compatibility alone and moves the shares by the sourced CACEs times coverage
             // (`CampaignPressure.ShareEffects`), over the television buy's 1 500 000 (the widest audience the week addresses), at the chain's own relevance x credibility.
             double[] bonus = pressure.ShareEffects(Electorate, Norm);
-            double[] after = CampaignPersuasion.Apply(before, bonus);
+            double[] after = CampaignPersuasion.ApplyCampaign(before, bonus);
 
             sb.Append("\n  end to end - a week of campaigning, the shares moved by the sourced effects (the preference model untouched):\n");
             sb.Append("  party  compat  effect   before    after     delta\n");
@@ -151,7 +151,7 @@ namespace PoliSim.EditorTools
             AddBurst(deadPressure, 0, CampaignActionKind.TownHall, 2, 0);
             AddBurst(deadPressure, 0, CampaignActionKind.TelevisionAd, 1, 0);
             AddBurst(deadPressure, 0, CampaignActionKind.DoorToDoor, 7, 0);
-            double[] afterDead = CampaignPersuasion.Apply(before, deadPressure.ShareEffects(Electorate, Norm));
+            double[] afterDead = CampaignPersuasion.ApplyCampaign(before, deadPressure.ShareEffects(Electorate, Norm));
 
             bool unchanged = true;
             for (int i = 0; i < 4; i++) { if (Math.Abs(afterDead[i] - before[i]) > 1e-12) { unchanged = false; } }

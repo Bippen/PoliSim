@@ -60,6 +60,8 @@ namespace PoliSim.Elections
 
         // §26 election-day operations
         GetOutTheVote = 40,
+        /// <summary>K82 (2026-10-23): the phone bank - the party's volunteers call its own supporters in a region, the final week only (`GotvTurnout.PhoneFinalWeekDays`); a campaign act, legal in the campaign phase.</summary>
+        PhoneBank = 41,
     }
 
     /// <summary>
@@ -144,6 +146,9 @@ namespace PoliSim.Elections
     {
         public static bool IsLegal(CampaignActionKind action, CampaignPhase phase)
         {
+            // K1 and K6 (2026-10-23): the verbs q4 CUT - developing policy, training candidates, setting a strategy (rows 2-4) - are legal in no phase,
+            // so no screen offers them as open; the run-up still refuses them by name (`PreCampaignRun.Refusal`)
+            if (action == CampaignActionKind.DevelopPolicy || action == CampaignActionKind.TrainCandidate || action == CampaignActionKind.SetStrategy) { return false; }
             switch (phase)
             {
                 case CampaignPhase.PreCampaign:

@@ -46,8 +46,20 @@ namespace PoliSim.Elections
                 // C-R4b step 4b: the player's queue for the next day, as the record holds it.
                 foreach (QueuedDecisionRecord q in record.QueuedFor(s.Day))
                 {
+                    if (q.Kind == CampaignActionKind.CommissionPolling)   // K2: the campaign poll, the party's own house
+                    {
+                        queue.Add(new QueuedAction(q.Kind, setup.InternalHouse.Name, q.Spend, CampaignAi.PollingHours));
+                        continue;
+                    }
+                    if (q.Kind == CampaignActionKind.PhoneBank)   // K82: the phone bank, in its region
+                    {
+                        queue.Add(new QueuedAction(q.Kind, q.RegionIndex >= 0 && q.RegionIndex < setup.Regions.Length ? setup.Regions[q.RegionIndex].Name : "national", q.Spend, GotvTurnout.PhoneBankHours));
+                        continue;
+                    }
                     CampaignActions.ActionSpec spec = CampaignActions.Spec(q.Kind);
                     string label = q.RegionIndex >= 0 && q.RegionIndex < setup.Regions.Length ? setup.Regions[q.RegionIndex].Name : "national";
+                    // K3: an act that attacks names its target, as the authority writes the party
+                    if (q.AgainstParty >= 0 && q.AgainstParty < setup.Parties.Length) { label += " · v " + PartySystems.ShortName(country.Id, setup.Parties[q.AgainstParty].Name); }
                     queue.Add(new QueuedAction(q.Kind, label, q.Spend, spec.Hours));
                 }
             }
@@ -57,8 +69,9 @@ namespace PoliSim.Elections
                 foreach (CampaignRun.DecisionRecord d in s.Ledgers[p].Log)
                 {
                     if (d.Day != shownDay) { continue; }
-                    CampaignActions.ActionSpec spec = CampaignActions.Spec(d.Kind);
-                    queue.Add(new QueuedAction(d.Kind, d.Target, d.Spend, spec.Hours));
+                    // the AI's polls ride the same log (K2's poll queues the same kind): a poll's hours are the poll's
+                    double logHours = d.Kind == CampaignActionKind.CommissionPolling ? CampaignAi.PollingHours : d.Kind == CampaignActionKind.PhoneBank ? GotvTurnout.PhoneBankHours : CampaignActions.Spec(d.Kind).Hours;
+                    queue.Add(new QueuedAction(d.Kind, d.Target, d.Spend, logHours));
                 }
             }
 
@@ -109,6 +122,11 @@ namespace PoliSim.Elections
                     // `Stories` beside `Scandals` in the one place a story resolves
                     string line = when + names[sParty] + " · " + Scandals.KindCaption(s.Stories[i].Scandal.Kind) + " · " + Scandals.PastTense(response) + (outcome.Escalated ? " · THE EVIDENCE SURFACED" : "");
                     if (sParty == p) { notes.Add(line); } else { others.Add(line); }
+                }
+                // review 2's L5: what the player's queue asked for and the run could not make yesterday, with why
+                foreach ((int rDay, CampaignActionKind rKind, string rReason) in s.Ledgers[p].Refused)
+                {
+                    if (rDay == yesterday) { notes.Insert(0, when + SpacedUpper(rKind) + " NOT MADE - " + rReason.ToUpperInvariant()); }
                 }
                 notes.AddRange(others);
             }
@@ -212,7 +230,7 @@ namespace PoliSim.Elections
         /// steps next at each verb's price, the staff hired here beside the staging's, the offices planned beside the
         /// staging's, and yesterday's entries as notes. Null when the state carries no such party.
         /// </summary>
-        public static CampaignSnapshot? BuildPreCampaign(PreCampaignRun.State pre, Country country, double perceivedEconomyIndex, PlayerCampaignRecord record = null)
+        public static CampaignSnapshot? BuildPreCampaign(PreCampaignRun.State pre, Country country, double perceivedEconomyIndex, PlayerCampaignRecord record = null, int pickedRegion = -1)
         {
             if (pre == null || country == null) { return null; }
             CampaignRun.Setup setup = pre.Staged;
@@ -265,18 +283,32 @@ namespace PoliSim.Elections
             }
 
             var notes = new List<string>();
+            // review 2's M2: the party's own currency (the HQ's purse - kr in Sweden, else the country's code), never a Swedish krona abroad
+            string purse = country.Id == CountryId.Sweden ? "KR" : EnergyLayer.CurrencyCode(country.Id);
             if (pre.Day > 0)
             {
                 foreach (PreCampaignRun.Entry e in PreCampaignRun.EntriesOn(pre, pre.Day - 1))
                 {
                     notes.Add(e.Refusal == null
-                        ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "YESTERDAY · {0} {1} · {2:N0} KR", SpacedUpper(e.Kind), e.Target.ToUpperInvariant(), e.Cost)
+                        ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "YESTERDAY · {0} {1} · {2:N0} {4}{3}", SpacedUpper(e.Kind), e.Target.ToUpperInvariant(), e.Cost,
+                            e.Raised > 0.0 ? string.Format(System.Globalization.CultureInfo.InvariantCulture, " · RAISED {0:N0} {1} · NET {2:+#,0;-#,0} {1}", e.Raised, purse, e.Raised - e.Cost) : string.Empty, purse)   // K84: a mailing's revenue
                         : string.Format(System.Globalization.CultureInfo.InvariantCulture, "YESTERDAY · {0} {1} · REFUSED: {2}", SpacedUpper(e.Kind), e.Target.ToUpperInvariant(), e.Refusal.ToUpperInvariant()));
                 }
             }
 
             // A-LOOP q24 5a (Q7): a television buy moves the run-up's polls for its week and never the count - the HQ says so while it shows.
             int televisionUntil = PreCampaignRun.TelevisionShowsUntil(pre, shownDay);
+            // K67 (Elias, 2026-10-23: "the HQ shows its estimated effect beside the poll"): the buy's sourced size on the party's standing today -
+            // [GGGS11]'s 4.73 points per 1 000 GRPs times the buys airing - with its 95 % band (1.96 x the estimate's SE, the poll's own band's
+            // width convention), drawn beside the party's poll figure; DECLARED: the band is the estimate's, not the poll's sampling error
+            string pollNote = null;
+            double televisionPp = CampaignPersuasion.RunUpTelevisionEffectPp(pre.TelevisionAired, shownDay);
+            if (televisionPp > 0.0 && televisionUntil >= 0)
+            {
+                double bandPp = 1.96 * televisionPp * CampaignPersuasion.TelevisionSePer1000Grp / CampaignPersuasion.TelevisionPpPer1000Grp;
+                pollNote = string.Format(System.Globalization.CultureInfo.InvariantCulture, "TV BUY {0:+0.00} ±{1:0.00} PP UNTIL {2}", televisionPp, bandPp,
+                    calendar.PreCampaignStart.AddDays(televisionUntil).ToString("d MMM").ToUpperInvariant());
+            }
             if (televisionUntil >= 0)
             {
                 notes.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture, "TV BUY · ON THE POLLS UNTIL {0} · FADED BY POLLING DAY",
@@ -289,9 +321,46 @@ namespace PoliSim.Elections
                 if (party.Abbrev == setup.Parties[p].Name) { markKey = party.MarkName; break; }
             }
 
+            // K1 row 5 (S-C2): where the next office opens - the region picked on the map, else the largest electorate without one (CL-1's rule)
+            int site = NextOfficeSite(pre, pickedRegion, out bool sitePicked);
+            string siteLine = site < 0 ? null : setup.Regions[site].Name + (sitePicked ? " · PICKED ON THE MAP" : " · THE LARGEST ELECTORATE WITHOUT ONE");
+
             return new CampaignSnapshot(setup.Parties[p].Name, markKey, country.Name, phase, today, calendar,
                 new ResourcePool(pre.Money, 0.0, pre.Volunteers), pre.MoneyAtStart, poll, names, p, new double[setup.Parties.Length],
-                queue.ToArray(), staff.ToArray(), offices.ToArray(), perceivedEconomyIndex, notes.ToArray());
+                queue.ToArray(), staff.ToArray(), offices.ToArray(), perceivedEconomyIndex, notes.ToArray(), localActsRegion: siteLine, playerPollNote: pollNote);
+        }
+
+        /// <summary>K1 row 5 (S-C2): the region the next office opens in - the map's pick where the party stands and has no office planned, else CL-1's rule (`PreCampaignRun.NextOfficeRegion`); −1 when none is left.</summary>
+        public static int NextOfficeSite(PreCampaignRun.State pre, int pickedRegion, out bool picked)
+        {
+            picked = pre != null && pickedRegion >= 0 && pickedRegion < pre.Staged.Regions.Length && pre.Staged.StandsIn(pre.Party, pickedRegion) && !pre.HasOffice(pickedRegion);
+            return picked ? pickedRegion : (pre == null ? -1 : PreCampaignRun.NextOfficeRegion(pre));
+        }
+
+        /// <summary>
+        /// K1 row 5 (S-C2, 2026-10-23): the campaign map over the RUN-UP - board 4a's cartogram as the OFFICE SITING picker. A tile sets where the
+        /// next queued office opens (on the campaign's first day, as CL-1 plans it); the party's offices, staged and planned, are framed; every
+        /// valkrets reads as unknown, as on the campaign's own map (no regional poll is on sale). Null when the state carries no such party.
+        /// </summary>
+        public static CampaignMapSnapshot? BuildPreCampaignMap(PreCampaignRun.State pre, Country country, double perceivedEconomyIndex, PlayerCampaignRecord record, int pickedRegion)
+        {
+            CampaignSnapshot? campaign = BuildPreCampaign(pre, country, perceivedEconomyIndex, record, pickedRegion);
+            if (!campaign.HasValue) { return null; }
+            CampaignRun.Setup setup = pre.Staged;
+            double national = 0.0;
+            foreach (RegionAudience r in setup.Regions) { national += r.Audience; }
+            var regions = new MapRegionReading[setup.Regions.Length];
+            var volunteers = new int[setup.Regions.Length];
+            for (int r = 0; r < regions.Length; r++)
+            {
+                regions[r] = SwingRegions.Unknown(setup.Regions[r].Name, national > 0.0 ? setup.Regions[r].Audience / national : 0.0);
+                volunteers[r] = pre.HasOffice(r) ? 0 : -1;   // an office not yet open has no volunteers of its own
+            }
+            const string offer = "IN THE RUN-UP THE MAP SITES YOUR NEXT OFFICE: A TILE SETS WHERE IT OPENS ON THE CAMPAIGN'S FIRST DAY. " +
+                                 "EVERY VALKRETS READS AS UNKNOWN - NO REGIONAL POLL CAN BE BOUGHT.";
+            int site = NextOfficeSite(pre, pickedRegion, out _);
+            return new CampaignMapSnapshot(campaign.Value, regions, campaign.Value.PartyNames, campaign.Value.PlayerPartyIndex, "", 0, pre.Today, offer,
+                live: true, nextLocalActRegion: site, officeVolunteers: volunteers, siting: true);
         }
 
         private static string SpacedUpper(CampaignActionKind kind)

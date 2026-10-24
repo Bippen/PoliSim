@@ -22,7 +22,7 @@ namespace PoliSim.EditorTools
     ///    `CampaignPressure`), and the winner tabled per cell: no strategy wins every cell.
     /// 3. **a strategy cannot write a vote share** — it returns the same `ChainTrace` every other
     ///    consumer reads, and the negative campaign's only route to an opponent is
-    ///    `CampaignPressure.AddAgainst`, still a compatibility pressure.
+    ///    `CampaignPressure.AddAttack` (K66: one contact split between the own case and the opponent, one coverage between them).
     /// </summary>
     public static class CampaignStrategyHarness
     {
@@ -82,8 +82,7 @@ namespace PoliSim.EditorTools
             StrategyModifiers negative = CampaignStrategyModel.Modifiers(CampaignStrategy.NegativeCampaign, loyalGroup, true);
             CampaignActions.ChainTrace neg = Resolve(CampaignStrategy.NegativeCampaign, loyalGroup, true);
             var pressure = new CampaignPressure(2);
-            pressure.Add(0, neg);
-            pressure.AddAgainst(1, neg, negative.OpponentShare);
+            pressure.AddAttack(0, 1, neg, negative.OpponentShare);   // K66: one contact, split between the own case and the opponent
             failures += Assert(sb, "1d. Negative Campaign: reduces the OPPONENT (negative pressure), costs own credibility, raises media attention",
                 pressure.Persuasion(1) < 0 && neg.Credibility < noneLoyal.Credibility && negative.MediaAttentionMultiplier > 1.0
                 && neg.Persuasion < noneLoyal.Persuasion,
@@ -110,6 +109,19 @@ namespace PoliSim.EditorTools
             failures += Assert(sb, "3. None is the identity (every earlier measurement stands)",
                 noneLoyal.Persuasion == CampaignActions.Resolve(rally, audience, salience, match, credibility, spend).Persuasion,
                 "identical trace");
+
+            // K86 (2026-10-23): the RUN lays every contact at the sourced size - `CampaignStrategyModel.ChoiceOnly` keeps a strategy's one choice (the
+            // negative campaign's share spent on the opponent) and no multiplier; the trade-offs above and the sweep below are the MODULE's, §11's
+            // reference text, which the personalities no longer apply to an act's size
+            bool choiceOnly = true;
+            foreach (CampaignStrategy s in CampaignStrategyModel.TheFive)
+            {
+                StrategyModifiers full = CampaignStrategyModel.Modifiers(s, loyalGroup, true), kept = CampaignStrategyModel.ChoiceOnly(full);
+                CampaignActions.ChainTrace applied = CampaignStrategyModel.Resolve(rally, audience, salience, match, credibility, spend, kept);
+                choiceOnly &= kept.OpponentShare == full.OpponentShare && applied.Persuasion == noneLoyal.Persuasion && applied.Reach == noneLoyal.Reach && applied.Enthusiasm == noneLoyal.Enthusiasm;
+            }
+            failures += Assert(sb, "3b. K86: what the run applies of every strategy is its choice alone - the contact at the sourced size, the negative campaign's attack share kept",
+                choiceOnly, "five of five unscaled");
 
             // ---------- 2. the sweep: no strategy dominates ----------
             sb.Append("\n  the sweep - outcome per electorate (own persuasion minus the opponent's, points of share - A-LOOP q24 5a; turnout not in this sweep - 5b counts doors at the count, enthusiasm buys no turnout):\n");
@@ -139,19 +151,18 @@ namespace PoliSim.EditorTools
             int strategiesThatWin = 0;
             int maxWins = 0;
             for (int s = 1; s <= 5; s++) { if (wins[s] > 0) { strategiesThatWin++; } if (wins[s] > maxWins) { maxWins = wins[s]; } }
-            // ⚠ A-LOOP q24 5a: 2a and 2b are PENDING ON q24 5b AND A RULING OWED TO ELIAS - printed with their measurement, never counted as a
-            // pass or a failure. In points of share enthusiasm buys no turnout (5b, since GATE-18 q2, counts doors alone at the turnout CACE), so Base
-            // Mobilization's trade (persuasion given up for enthusiasm) buys nothing; and a negative campaign's share of each contact lands on the
-            // opponent's own against-tally, which has a coverage of its own, so the attack is not saturated by the attacker's own contacts. The
-            // first run of 83f178ae measured Negative winning all 30 cells. The ruling: do the strategies stay ornamental until 5b's turnout lands,
-            // or does an attack share its coverage with the attacker's own contacts?
-            int pending = 0;
-            pending += Pending(sb, "2a. no strategy wins every electorate (no dominant strategy in the sweep) - PENDING q24 5b and a ruling owed to Elias (the attack's own coverage; turnout worth zero)",
-                $"wins of {cells}: Broad {wins[1]}, Base {wins[2]}, Swing {wins[3]}, Negative {wins[4]}, Populist {wins[5]}", maxWins < cells);
-            pending += Pending(sb, "2b. at least three of the five strategies win somewhere (the trade-offs are real, not ornamental) - PENDING q24 5b and the same ruling",
-                $"{strategiesThatWin} strategies win at least one electorate", strategiesThatWin >= 3);
+            // K66 (Elias, 2026-10-23): "An attack shares coverage with the attacker's own contacts" - the ruling 2a and 2b were PENDING on since
+            // §881, when a negative campaign's share of each contact landed on the opponent's own against-tally with a coverage of its own and
+            // Negative won all 30 cells (83f178ae's first run; 30 again on 140aab81, measured out of engine). With the contact split and one
+            // coverage between its parts (`CampaignPressure.AddAttack`) the sweep measured, out of engine on the K66 build: Swing 21, Populist 6,
+            // Base 3, Broad 0, Negative 0 - so 2a and 2b are counted again. DECLARED: turnout is still not in this sweep (enthusiasm buys none;
+            // 5b's doors are valued on the count, not here), so Base Mobilization wins only where its persuasion cut is small (a loyal electorate).
+            failures += Assert(sb, "2a. no strategy wins every electorate (no dominant strategy in the sweep; K66)",
+                maxWins < cells, $"wins of {cells}: Broad {wins[1]}, Base {wins[2]}, Swing {wins[3]}, Negative {wins[4]}, Populist {wins[5]}");
+            failures += Assert(sb, "2b. at least three of the five strategies win somewhere (the trade-offs are real, not ornamental; K66)",
+                strategiesThatWin >= 3, $"{strategiesThatWin} strategies win at least one electorate");
 
-            sb.Append($"\n=== CampaignStrategyHarness: {(failures == 0 ? "ALL ASSERTIONS PASS" : failures + " FAILED")}; {pending} PENDING on q24 5b and a ruling owed to Elias - printed with their measurements, not counted as passes ===\n");
+            sb.Append($"\n=== CampaignStrategyHarness: {(failures == 0 ? "ALL ASSERTIONS PASS" : failures + " FAILED")} ===\n");
             Debug.Log(sb.ToString());
             CheckExit.Finish(failures == 0 ? 0 : 1);
         }
@@ -220,17 +231,11 @@ namespace PoliSim.EditorTools
                     StrategyModifiers m = CampaignStrategyModel.Modifiers(strategy, loyalty, onFocus && prioritises);
                     double salience = onFocus ? focusSalience : otherSalience;
                     CampaignActions.ChainTrace trace = CampaignStrategyModel.Resolve(spec, audience, salience, 0.6, credibility, spec.MoneyCost, m);
-                    pressure.Add(party, trace);
-                    if (m.OpponentShare > 0.0) { pressure.AddAgainst(1 - party, trace, m.OpponentShare); }   // the negative campaign's share, against the other side
+                    // K66: the negative campaign's share of each contact lands on the other side, the rest is its own, one coverage between them
+                    if (m.OpponentShare > 0.0) { pressure.AddAttack(party, 1 - party, trace, m.OpponentShare); }
+                    else { pressure.Add(party, trace); }
                 }
             }
-        }
-
-        /// <summary>A claim the current model cannot support, printed with its measurement and what unblocks it - counted apart, never as a pass (CampaignAiHarness's form); "holds early" when it already holds.</summary>
-        private static int Pending(StringBuilder sb, string label, string detail, bool holdsAlready)
-        {
-            sb.Append($"  PEND {label}: {detail}{(holdsAlready ? " [holds early]" : "")}\n");
-            return 1;
         }
 
         private static int Assert(StringBuilder sb, string label, bool condition, string detail)

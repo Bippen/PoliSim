@@ -103,13 +103,19 @@ namespace PoliSim.Elections
         /// applied - the coalition value the Shapley sweep is taken over. Everything outside the
         /// subset is simply not there, which is what "this source's contribution" has to mean.
         /// </summary>
-        private static double Value(Inputs input, int party, int subset)
+        private static double Value(Inputs input, int party, int subset, double[] baseShares, CampaignPersuasion.Absorption absorption)
         {
             // A-LOOP q24 5a: compatibility is the campaign's positioning and never moves; the subset's contacts move the shares as the run does.
-            double[] shares = PreferenceModel.Preference(input.BaseCompatibility, input.PriorShares, input.LoyaltyPerParty);
+            double[] shares = baseShares;
             if (input.Pressure != null)
             {
-                shares = CampaignPersuasion.Apply(shares, input.Pressure.ShareEffects(input.Electorate, input.PersuasionNorm, (p, slot) => Admits(subset, party, p, slot)));
+                // K65 with K81: the balanced absorption, as the run (its matrix built once per ledger - the base shares are every coalition's); K66: an attack admitted by its target's received-attacks bit when the target is the party, by its own slot's bit when the attacker is, by the opponents' bit otherwise
+                double[] effects = input.Pressure.ShareEffects(input.Electorate, input.PersuasionNorm, (p, slot) => Admits(subset, party, p, slot),
+                    (attacker, slot, target) => AdmitsAttack(subset, party, attacker, slot, target), out double[] attackLoss, out double[] attackGain);
+                bool any = false;
+                foreach (double e in effects) { if (e != 0.0) { any = true; break; } }
+                foreach (double g in attackGain) { if (g != 0.0) { any = true; break; } }
+                if (any) { shares = CampaignPersuasion.ApplyBalanced(shares, effects, absorption, attackLoss, attackGain); }   // K92: an attack from target to attacker
             }
 
             return (input.Standing != null ? input.Standing(shares) : shares)[party];
@@ -122,6 +128,22 @@ namespace PoliSim.Elections
             if (slot == CampaignPressure.CoverageSlot) { return (subset & (1 << (int)VoteAttributionSource.EarnedCoverage)) != 0; }
             if (slot == CampaignPressure.AgainstSlot) { return (subset & (1 << (int)VoteAttributionSource.AttacksReceived)) != 0; }
             return (subset & (1 << slot)) != 0;
+        }
+
+        /// <summary>K65: each party's reach as the tally holds it - what its field-relative effect is read over, as the run reads it.</summary>
+        private static double[] ReachOf(CampaignPressure pressure)
+        {
+            var reach = new double[pressure.PartyCount];
+            for (int p = 0; p < reach.Length; p++) { reach[p] = pressure.Reach(p); }
+            return reach;
+        }
+
+        /// <summary>K66: whether a coalition admits an attack - (attacker, its slot, target): the party's AttacksReceived bit when it is the target, its own slot's bit when it made the attack, the opponents' bloc for an attack between two other parties.</summary>
+        private static bool AdmitsAttack(int subset, int party, int attacker, int slot, int target)
+        {
+            if (target == party) { return (subset & (1 << (int)VoteAttributionSource.AttacksReceived)) != 0; }
+            if (attacker == party) { return (subset & (1 << slot)) != 0; }
+            return (subset & (1 << (int)VoteAttributionSource.OpponentCampaigns)) != 0;
         }
 
         /// <summary>
@@ -143,7 +165,9 @@ namespace PoliSim.Elections
             // Every coalition's value once - the sweep is 2^n, and each value is one preference
             // computation, so caching them turns n * 2^n evaluations into 2^n.
             var value = new double[all + 1];
-            for (int subset = 0; subset <= all; subset++) { value[subset] = Value(input, party, subset); }
+            double[] baseShares = PreferenceModel.Preference(input.BaseCompatibility, input.PriorShares, input.LoyaltyPerParty);
+            CampaignPersuasion.Absorption absorption = input.Pressure != null ? CampaignPersuasion.BalancedAbsorption(baseShares, ReachOf(input.Pressure), input.Pressure.OverlapMatrix) : null;
+            for (int subset = 0; subset <= all; subset++) { value[subset] = Value(input, party, subset, baseShares, absorption); }
 
             var ledger = new Ledger
             {

@@ -138,6 +138,189 @@ namespace PoliSim.Elections
         public static double BoundPp(ContactClass c, double exposure, double electorate, double reach = 1.0) => UpperOf(c) * Coverage(exposure, electorate, reach);
 
         /// <summary>
+        /// K66 (Elias, 2026-10-23: "An attack shares coverage with the attacker's own contacts"): the attacker's OWN part of one class's effect
+        /// when it has also attacked in that class - its own contacts' per-contact effect times the coverage of ALL its contacts in the class,
+        /// own and attack together, times the own part's share of them. DERIVED (the Poisson arithmetic of the plan's (2), applied to the one
+        /// pool of contacts the party made): a contact spent on the opponent is one the party did not spend on itself, and the voters its attacks
+        /// reach are the voters its own contacts reach. With no attack it is `ClassEffectPp` exactly.
+        /// </summary>
+        public static double SharedClassEffectPp(ContactClass c, double ownExposure, double ownQuality, double attackExposure, double electorate, double norm, double reach = 1.0)
+        {
+            if (attackExposure <= 0.0) { return ClassEffectPp(c, ownExposure, ownQuality, electorate, norm, reach); }
+            if (ownExposure <= 0.0) { return 0.0; }
+            double all = ownExposure + attackExposure;
+            return PerContactPp(c, ownExposure, ownQuality, norm) * Coverage(all, electorate, reach) * (ownExposure / all);
+        }
+
+        /// <summary>
+        /// K3 with K66: what one attacker's attacks in one class take from their target, in points - the class's per-contact effect on those
+        /// contacts (CACE × q, held at the upper limit; K3: "the persuasion class effect signed against the target", [AUTHORED-DRAFT] until Lau,
+        /// Sigelman and Rovner 2007 is read) times the coverage of all the attacker's contacts in the class (<paramref name="attackerAllExposure"/>,
+        /// own and attack: K66) times the attacks' share of them, times <paramref name="targetShareOfReach"/>: the share of the attacker's reach where
+        /// the target is on the ballot - the electorate where BOTH stand over the attacker's (review M2 of 2026-10-23: read from the candidacies,
+        /// region by region, `CampaignPressure.Overlap`; the CDU and the CSU share no voter, so a CDU attack on the CSU takes nothing). DERIVED: a
+        /// contact can move a vote away from a party only where that party is on the ballot. Exactly 1 in Sweden, where every party stands everywhere.
+        /// </summary>
+        public static double AttackEffectPp(ContactClass c, double attackExposure, double attackQuality, double attackerAllExposure, double electorate, double norm,
+            double attackerReach = 1.0, double targetShareOfReach = 1.0)
+        {
+            if (attackExposure <= 0.0 || attackerAllExposure <= 0.0) { return 0.0; }
+            return PerContactPp(c, attackExposure, attackQuality, norm) * Coverage(attackerAllExposure, electorate, attackerReach) * (attackExposure / attackerAllExposure) * Clamp01(targetShareOfReach);
+        }
+
+        /// <summary>
+        /// K65, K81, K91 and K92 (Elias, 2026-10-23 and 10-24; reviews M1 and H1): <b>the share-aware balanced absorption.</b> Each party p's
+        /// share moves by Δ_p = e_p − Σ_q W_pq e_q + g_p − l_p: its own sourced effect whole (W's diagonal is zero), less what it gives up of every
+        /// other party's own effect, plus what its attacks took (g_p) less what attacks took from it (l_p).
+        /// <para><b>W</b> (`BalancedAbsorption`) is the doubly balanced absorption: each column sums to one (q's gain is taken whole from the others,
+        /// the shares still sum to one) and equal effort per voter reached moves nobody (Σ_q W_pq r_q = r_p, r each party's reach). So the field's
+        /// effort is what p's own is read against, and a party campaigning ALONE moves by exactly its sourced effect (S alone at +0.40 moves +0.40).
+        /// ⚠ <b>W cannot be share-weighted</b> (K91, ruled 2026-10-24, measured and PROVED infeasible on this branch - an ask to Elias): with zero
+        /// diagonal, columns summing to one and rows summing to one (equal effort, everyone everywhere), every row's total is one, so if in every
+        /// column the bigger party absorbed more, the smallest party's row would sum below one - unless every column is uniform. The uniform matrix
+        /// is therefore the ONLY one meeting the three conditions in which no smaller party absorbs more than a bigger one: where every party stands
+        /// everywhere (Sweden, the USA) W_pq = 1/(n − 1), each party giving up the same points of a lone campaigner's gain whatever its size; where
+        /// candidacies differ (Germany) it is the balancing of who meets whom. The share-weighted alternative measured - the projection of the
+        /// proportional absorption onto the two conditions - inverts the order (S alone at +0.40: SD loses 0.042, L 0.064), and was not kept.</para>
+        /// <para><b>An attack</b> (K92) moves only its two parties: the target loses what the attack takes, the attacker gains exactly that, and
+        /// every idle party stays where it was - an attack's loss is not the field's to absorb.</para>
+        /// <para><b>A party with no prior share</b> has no voters to lose: it gives up nothing, and its own effect is read against the field's (the
+        /// share-weighted mean of the held parties' effects per voter reached, times its reach), floored at zero, then taken from the held parties
+        /// in proportion to their shares where it stands - so under equal effort it gains nothing (review 2's L3), and campaigning alone it gains its
+        /// sourced effect. Returns <paramref name="shares"/> itself when nothing moved; a share pushed below zero is held at zero and the vector
+        /// renormalised, as in `Apply`.</para>
+        /// </summary>
+        public static double[] ApplyCampaign(double[] shares, double[] effects, double[] reach = null, double[][] overlap = null, double[] attackLoss = null, double[] attackGain = null)
+        {
+            if (shares == null || effects == null || effects.Length != shares.Length) { return shares; }
+            if (!AnyNonZero(effects) && !AnyNonZero(attackLoss) && !AnyNonZero(attackGain)) { return shares; }
+            return ApplyBalanced(shares, effects, BalancedAbsorption(shares, reach, overlap), attackLoss, attackGain);
+        }
+
+        private static bool AnyNonZero(double[] v)
+        {
+            if (v == null) { return false; }
+            foreach (double x in v) { if (x != 0.0) { return true; } }
+            return false;
+        }
+
+        /// <summary>K91: the absorption a campaign's effects are laid on - W[p][q] the share of party q's own effect that party p gives up; which parties hold a share; their reaches; and, where the two conditions could not be met, why (null when they were) - the proportional absorption then stands in, so nothing collapses (review 2's L2).</summary>
+        public sealed class Absorption
+        {
+            public double[][] W;
+            public bool[] Held;
+            public double[] Reach;
+            public string Fallback;
+        }
+
+        /// <summary>
+        /// K91 with K92: <paramref name="effects"/> (each party's own effect less the attacks it received, as `CampaignPressure.ShareEffects`
+        /// returns them) laid on <paramref name="shares"/> through <paramref name="a"/> (`BalancedAbsorption` of the same shares). The attacks'
+        /// <paramref name="attackLoss"/> (received, positive) is added back to find each party's own effect, and moved directly to the attackers'
+        /// <paramref name="attackGain"/>; null for none. A caller laying many vectors on one set of shares (the night's attribution) builds the
+        /// absorption once.
+        /// </summary>
+        public static double[] ApplyBalanced(double[] shares, double[] effects, Absorption a, double[] attackLoss = null, double[] attackGain = null)
+        {
+            int n = shares.Length;
+            var own = new double[n];
+            for (int p = 0; p < n; p++) { own[p] = effects[p] + (attackLoss != null && p < attackLoss.Length ? attackLoss[p] : 0.0); }
+            // a party with no share: its effect read against the held field's, per voter reached, floored at zero (review 2's L3)
+            double mean = 0.0, weight = 0.0;
+            for (int p = 0; p < n; p++) { if (a.Held[p] && a.Reach[p] > 0.0) { mean += shares[p] * own[p] / a.Reach[p]; weight += shares[p]; } }
+            mean = weight > 0.0 ? mean / weight : 0.0;
+            for (int z = 0; z < n; z++) { if (!a.Held[z]) { own[z] = Math.Max(0.0, own[z] - a.Reach[z] * mean); } }
+            var result = (double[])shares.Clone();
+            for (int p = 0; p < n; p++)
+            {
+                double absorbed = 0.0;
+                for (int q = 0; q < n; q++) { if (q != p && own[q] != 0.0) { absorbed += a.W[p][q] * own[q]; } }
+                double moved = own[p] - absorbed;
+                if (attackGain != null && p < attackGain.Length) { moved += attackGain[p]; }
+                if (attackLoss != null && p < attackLoss.Length) { moved -= attackLoss[p]; }
+                result[p] += moved;
+            }
+            double total = 0.0;
+            for (int i = 0; i < n; i++) { if (result[i] < 0.0) { result[i] = 0.0; } total += result[i]; }
+            if (total <= 0.0) { return shares; }
+            for (int i = 0; i < n; i++) { result[i] /= total; }
+            return result;
+        }
+
+        /// <summary>CONVENTION: the alternating scaling's iterations and the residual it must reach to count as balanced - a numerical solver's limits, not a model figure.</summary>
+        private const int BalanceIterations = 5000;
+        private const double BalanceTolerance = 1e-12;
+
+        /// <summary>
+        /// K81 (K91's note above): the absorption for <paramref name="shares"/>. Over the parties holding a share, the seed is who meets whom -
+        /// o_pq, the share of the electorate where both stand (<paramref name="overlap"/>; null, the smaller reach), zero on the diagonal - scaled
+        /// row and column by the alternating (Sinkhorn) iteration until each column sums to one and each row to Σ_q W_pq r_q = r_p (the
+        /// equal-effort condition; the two conditions are consistent, both summing to Σ r). The shares only decide which parties are held: a party
+        /// with no share gives up nothing, and its effect is taken in proportion to the held parties' shares where it stands. DECLARED (review 2's
+        /// L2): where the iteration cannot meet both conditions (two parties of unequal reach, no third), it does NOT stand - the proportional
+        /// absorption (each column in proportion to the shares that meet it, `Apply`'s form) stands in, nothing collapses, and the absorption's
+        /// Fallback says why (the run records it, the game logs it).
+        /// </summary>
+        public static Absorption BalancedAbsorption(double[] shares, double[] reach, double[][] overlap)
+        {
+            int n = shares.Length;
+            var a = new Absorption { W = new double[n][], Held = new bool[n], Reach = new double[n] };
+            for (int p = 0; p < n; p++) { a.W[p] = new double[n]; a.Reach[p] = ReachOf(reach, p); }
+            double O(int p, int q) => overlap != null && p < overlap.Length && overlap[p] != null && q < overlap[p].Length ? overlap[p][q] : Math.Min(a.Reach[p], a.Reach[q]);
+            for (int p = 0; p < n; p++) { a.Held[p] = shares[p] > 0.0 && a.Reach[p] > 0.0; }
+            // the proportional form - what a zero-share column always takes, and the fallback for the held ones
+            var P = new double[n][];
+            for (int p = 0; p < n; p++) { P[p] = new double[n]; }
+            for (int q = 0; q < n; q++)
+            {
+                double den = 0.0;
+                for (int p = 0; p < n; p++) { if (p != q && a.Held[p]) { den += shares[p] * O(p, q); } }
+                for (int p = 0; p < n; p++) { if (p != q && a.Held[p] && den > 0.0) { P[p][q] = shares[p] * O(p, q) / den; } }
+            }
+            var x = new double[n];
+            var y = new double[n];
+            for (int p = 0; p < n; p++) { x[p] = a.Held[p] ? 1.0 : 0.0; y[p] = a.Held[p] ? 1.0 : 0.0; }
+            double worst = double.PositiveInfinity;
+            for (int it = 0; it < BalanceIterations && worst > BalanceTolerance; it++)
+            {
+                for (int p = 0; p < n; p++)
+                {
+                    if (!a.Held[p]) { continue; }
+                    double den = 0.0;
+                    for (int q = 0; q < n; q++) { if (q != p && a.Held[q]) { den += O(p, q) * y[q] * a.Reach[q]; } }
+                    x[p] = den > 0.0 ? a.Reach[p] / den : 0.0;
+                }
+                for (int q = 0; q < n; q++)
+                {
+                    if (!a.Held[q]) { continue; }
+                    double den = 0.0;
+                    for (int p = 0; p < n; p++) { if (p != q && a.Held[p]) { den += x[p] * O(p, q); } }
+                    y[q] = den > 0.0 ? 1.0 / den : 0.0;
+                }
+                worst = 0.0;
+                for (int p = 0; p < n; p++)
+                {
+                    if (!a.Held[p]) { continue; }
+                    double row = 0.0;
+                    for (int q = 0; q < n; q++) { if (q != p && a.Held[q]) { row += x[p] * O(p, q) * y[q] * a.Reach[q]; } }
+                    worst = Math.Max(worst, Math.Abs(row - a.Reach[p]));
+                }
+            }
+            bool balanced = worst <= BalanceTolerance;
+            for (int p = 0; p < n; p++)
+            {
+                for (int q = 0; q < n; q++)
+                {
+                    a.W[p][q] = !a.Held[q] || !balanced ? P[p][q] : (p != q && a.Held[p] ? x[p] * O(p, q) * y[q] : 0.0);
+                }
+            }
+            if (!balanced) { a.Fallback = "the equal-effort balancing cannot be met on these shares and candidacies - the proportional absorption stands in"; }
+            return a;
+        }
+
+        private static double ReachOf(double[] reach, int p) => reach == null || p >= reach.Length ? 1.0 : Clamp01(reach[p]);
+
+        /// <summary>
         /// The electorate-wide mean of relevance × credibility the CACEs are read against (DECLARED, the plan's "[AUTHORED-DRAFT]
         /// normalisation"): each party's general message - the mean true salience times its mean true issue-match over the contested issues,
         /// as `CampaignRun`'s general message reads them - times its opening credibility, weighted by its prior share, so a contact of the
@@ -171,13 +354,11 @@ namespace PoliSim.Elections
         /// sum is preserved exactly. A share pushed below zero is held at zero and the vector renormalised: a guard that CAN bind - a small party
         /// under sustained attack can be pushed past its own share (three classes' upper limits, some 3 points, against a party of 1 %). Null or
         /// all-zero effects return the shares as they came.
-        /// <para>⚠ <b>A RULING OWED TO ELIAS - the equal-effort drift.</b> With two parties equal effort cancels exactly (the sources' setting).
+        /// <para><b>The equal-effort drift, RULED (K65, 2026-10-23).</b> With two parties equal effort cancels exactly (the sources' setting).
         /// With more it does not: every party campaigning equally moves share from the large parties to the small ones, because each gains its
-        /// effect whole and gives up others' in proportion to its share. Its size per party on Sweden's and Germany's priors is printed by
-        /// `CampaignPersuasionDiagnostic` (DECLARED, measured, not asserted). The candidate fixes, for the ruling: (i) scale each effect by
-        /// s(1 − s)/0.25, the logit slope - equal effort then cancels, but every small party's campaign shrinks four- to five-fold and the ruled
-        /// criterion (d), "the sourced size within its SE", fails for a buyer under about 23 % (review 881b's N1: tried in 83f178ae and reverted);
-        /// (ii) read each party's effect relative to the share-weighted mean effect, so only effort above the field moves a share.</para>
+        /// effect whole and gives up others' in proportion to its share. Of §881's two candidates Elias ruled the second: a campaign's effects are
+        /// read relative to the field (K65), through the balanced absorption that holds a lone campaigner at its sourced size (K81, `ApplyCampaign`); this proportional form stays for the run-up's one buyer. (The first, s(1 − s)/0.25
+        /// scaling, shrank every small party's campaign four- to five-fold and broke criterion (d); review 881b's N1, 83f178ae reverted.)</para>
         /// </summary>
         public static double[] Apply(double[] shares, double[] effects)
         {

@@ -50,12 +50,14 @@ namespace PoliSim.Elections
         public readonly PendingScandalView? Scandal;
         /// <summary>CL-2: where a queued local act goes - the region picked on the map, else the party's strongest office's, else the largest electorate - named with which it is; null in the run-up.</summary>
         public readonly string LocalActsRegion;
+        /// <summary>K67 (2026-10-23): a line the race plate draws beside the player's own poll figure - in the run-up, a television buy's estimated effect on the party's standing while it airs; null for none.</summary>
+        public readonly string PlayerPollNote;
 
         public CampaignSnapshot(string partyName, string markKey, string countryName, CampaignPhase phase,
             DateTime today, CampaignCalendar calendar, ResourcePool resources, double moneyAtCampaignStart,
             Poll latestPoll, string[] partyNames, int playerPartyIndex, double[] momentumPp,
             QueuedAction[] queue, StaffMember[] staff, RegionalOffice[] offices, double perceivedEconomyIndex, string[] notes = null,
-            int[] debateDays = null, int nextDebateDay = -1, PendingScandalView? scandal = null, string localActsRegion = null)
+            int[] debateDays = null, int nextDebateDay = -1, PendingScandalView? scandal = null, string localActsRegion = null, string playerPollNote = null)
         {
             PartyName = partyName; MarkKey = markKey; CountryName = countryName; Phase = phase;
             Today = today; Calendar = calendar; Resources = resources;
@@ -65,6 +67,7 @@ namespace PoliSim.Elections
             PerceivedEconomyIndex = perceivedEconomyIndex;
             Notes = notes ?? new string[0];
             DebateDays = debateDays ?? new int[0]; NextDebateDay = nextDebateDay; Scandal = scandal; LocalActsRegion = localActsRegion;
+            PlayerPollNote = playerPollNote;
         }
 
         public int DaysUntilElection => Calendar.DaysUntilElection(Today);

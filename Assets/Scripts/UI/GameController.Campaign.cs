@@ -95,12 +95,90 @@ namespace PoliSim.UI
         private int _campaignPickedRegion = -1;
         private System.DateTime _campaignPickedElection;
 
+        /// <summary>K3 (2026-10-23): the party the next queued campaign acts attack (−1: the party's own case) and the election it was chosen in - the session's, as the map's pick is: a queued act carries its target in the record, a load clears the choice, and a choice from another campaign reads as none (`CampaignAttack`).</summary>
+        private int _campaignAttackTarget = -1;
+        private System.DateTime _campaignAttackElection;
+
+        /// <summary>K3: the attack target for the campaign that is running, or −1 - never the player's own party, a party outside this campaign, or a choice made in another.</summary>
+        private int CampaignAttack()
+        {
+            CampaignRun.State s = _simulationManager?.PlayerCampaign;
+            if (s == null || _campaignAttackTarget < 0 || _campaignAttackTarget >= s.Setup.Parties.Length) { return -1; }
+            if (s.Setup.Calendar.ElectionDate != _campaignAttackElection) { return -1; }
+            return _campaignAttackTarget == LiveCampaignSnapshot.PlayerPartyIndex(s, _playerCountry) ? -1 : _campaignAttackTarget;
+        }
+
+        /// <summary>K3: the AGAINST chip pressed - the next party of the campaign other than the player's own, in the campaign's order, then none again.</summary>
+        private void CycleCampaignAttack()
+        {
+            CampaignRun.State s = _simulationManager?.PlayerCampaign;
+            if (s == null) { return; }
+            int own = LiveCampaignSnapshot.PlayerPartyIndex(s, _playerCountry);
+            int next = CampaignAttack() + 1;
+            // review 2's L6: never the party's own, nor one it shares no voter with (the CDU and the CSU) - an attack there takes nothing and costs its case
+            while (next < s.Setup.Parties.Length && (next == own || (own >= 0 && s.Pressure.TargetShareOfReach(own, next) <= 0.0))) { next++; }
+            _campaignAttackTarget = next < s.Setup.Parties.Length ? next : -1;
+            _campaignAttackElection = s.Setup.Calendar.ElectionDate;
+        }
+
+        /// <summary>
+        /// K1's BUILD rows 9 and 12 (2026-10-23; `docs/specs/A_LOOP_Q4_TABLE.md` R2): the TOPIC the next queued acts carry (an `IssueId`, −1 the
+        /// general message) and their OUTLAY (1, 2 or 3 times the action's own price) - PARAMETERS of 5a's actions: the topic moves only where the
+        /// effect lands (the chain's relevance for the party's contacts, q_p, which since q5 reads the event-moved salience - "respond to events"),
+        /// the outlay only how many it reaches (§35's saturating reach, so a bigger rally or more television is more exposures, which coverage
+        /// saturates); neither touches the class CACE (K5). The session's, keyed by the election as the attack target is.
+        /// </summary>
+        private int _campaignTopic = -1;
+        private int _campaignOutlay = 1;
+        private System.DateTime _campaignTopicElection;
+
+        /// <summary>K1 row 9: the topic for the campaign that is running, or null (the general message) - only an issue contested in it.</summary>
+        private IssueId? CampaignTopic()
+        {
+            CampaignRun.State s = _simulationManager?.PlayerCampaign;
+            if (s == null || _campaignTopic < 0 || s.Setup.Calendar.ElectionDate != _campaignTopicElection) { return null; }
+            if (s.Setup.TrueSalience == null || _campaignTopic >= s.Setup.TrueSalience.Length || double.IsNaN(s.Setup.TrueSalience[_campaignTopic])) { return null; }
+            return (IssueId)_campaignTopic;
+        }
+
+        /// <summary>K1 row 9: the TOPIC chip pressed - the next issue contested in this campaign, then the general message again.</summary>
+        private void CycleCampaignTopic()
+        {
+            CampaignRun.State s = _simulationManager?.PlayerCampaign;
+            if (s == null) { return; }
+            IssueId? current = CampaignTopic();
+            int next = current.HasValue ? (int)current.Value + 1 : 0;
+            while (s.Setup.TrueSalience != null && next < s.Setup.TrueSalience.Length && double.IsNaN(s.Setup.TrueSalience[next])) { next++; }
+            _campaignTopic = s.Setup.TrueSalience != null && next < s.Setup.TrueSalience.Length ? next : -1;
+            if (_campaignTopicElection != s.Setup.Calendar.ElectionDate) { _campaignOutlay = 1; }
+            _campaignTopicElection = s.Setup.Calendar.ElectionDate;
+        }
+
+        /// <summary>K1 row 12: the outlay multiple for the campaign that is running - 1 unless chosen in it.</summary>
+        private int CampaignOutlay()
+        {
+            CampaignRun.State s = _simulationManager?.PlayerCampaign;
+            return s != null && s.Setup.Calendar.ElectionDate == _campaignTopicElection && _campaignOutlay >= 1 && _campaignOutlay <= 3 ? _campaignOutlay : 1;
+        }
+
+        /// <summary>K1 row 12: the SIZE chip pressed - once, twice, three times the action's price, then once again.</summary>
+        private void CycleCampaignOutlay()
+        {
+            CampaignRun.State s = _simulationManager?.PlayerCampaign;
+            if (s == null) { return; }
+            int next = CampaignOutlay() % 3 + 1;
+            if (_campaignTopicElection != s.Setup.Calendar.ElectionDate) { _campaignTopic = -1; }
+            _campaignOutlay = next;
+            _campaignTopicElection = s.Setup.Calendar.ElectionDate;
+        }
+
         /// <summary>CL-2: the map's pick for the campaign that is running, or −1 - never a pick made in another campaign or an index outside this one's regions.</summary>
         private int CampaignPick()
         {
-            CampaignRun.State s = _simulationManager?.PlayerCampaign;
-            if (s == null || _campaignPickedRegion < 0 || _campaignPickedRegion >= s.Setup.Regions.Length) { return -1; }
-            return s.Setup.Calendar.ElectionDate == _campaignPickedElection ? _campaignPickedRegion : -1;
+            // K1 row 5 (S-C2): the run-up's map picks too - the next office's site - keyed by the same election
+            CampaignRun.Setup? setup = _simulationManager?.PlayerCampaign?.Setup ?? _simulationManager?.PlayerPreCampaign?.Staged;
+            if (!setup.HasValue || _campaignPickedRegion < 0 || _campaignPickedRegion >= setup.Value.Regions.Length) { return -1; }
+            return setup.Value.Calendar.ElectionDate == _campaignPickedElection ? _campaignPickedRegion : -1;
         }
         /// <summary>CL-2: the map is open over the live campaign (the HQ's masthead opens it; BACK TO HQ closes it); refreshed from the run once a frame in LateUpdate, with the HQ (GA-1-1).</summary>
         private bool _liveCampaignMapOpen;
@@ -154,7 +232,7 @@ namespace PoliSim.UI
             // CL-1: the run-up fills the same screen from the pre-campaign's state until the campaign opens on its outcome.
             if (_simulationManager.PlayerCampaign == null)
             {
-                return LiveCampaignSnapshot.BuildPreCampaign(_simulationManager.PlayerPreCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord);
+                return LiveCampaignSnapshot.BuildPreCampaign(_simulationManager.PlayerPreCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord, CampaignPick());
             }
             return LiveCampaignSnapshot.Build(_simulationManager.PlayerCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord, CampaignPick());
         }
@@ -170,9 +248,13 @@ namespace PoliSim.UI
         private void OpenLiveCampaignMap()
         {
             // a map left open when its campaign is gone (the run dropped after polling day, a load) closes rather than freezing
-            if (_simulationManager?.PlayerCampaign == null || _playerCountry == null || !CampaignMapDrawn()) { CloseLiveCampaignMap(); return; }
+            bool runUp = _simulationManager?.PlayerCampaign == null && _simulationManager?.PlayerPreCampaign != null && !_simulationManager.PlayerPreCampaign.Finished;
+            if ((_simulationManager?.PlayerCampaign == null && !runUp) || _playerCountry == null || !CampaignMapDrawn()) { CloseLiveCampaignMap(); return; }
             double perceived = EconomicVote.RecordTermIndex(_playerCountry, _simulationManager.CurrentDate);   // §752 (A1): what the election scores - the change over the term
-            CampaignMapSnapshot? map = LiveCampaignSnapshot.BuildMap(_simulationManager.PlayerCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord, CampaignPick());
+            // K1 row 5 (S-C2): over the run-up the map is the office siting picker
+            CampaignMapSnapshot? map = runUp
+                ? LiveCampaignSnapshot.BuildPreCampaignMap(_simulationManager.PlayerPreCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord, CampaignPick())
+                : LiveCampaignSnapshot.BuildMap(_simulationManager.PlayerCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord, CampaignPick());
             if (!map.HasValue) { CloseLiveCampaignMap(); return; }
             _campaignMapScreen = map;
             _liveCampaignMapOpen = true;
@@ -188,10 +270,10 @@ namespace PoliSim.UI
         /// <summary>CL-2: a tile clicked on the live map - the next local act's region; the map redraws with the pick framed.</summary>
         private void PickCampaignRegion(int region)
         {
-            CampaignRun.State s = _simulationManager?.PlayerCampaign;
-            if (s == null) { return; }
+            CampaignRun.Setup? setup = _simulationManager?.PlayerCampaign?.Setup ?? _simulationManager?.PlayerPreCampaign?.Staged;   // S-C2: the run-up's map picks too
+            if (!setup.HasValue) { return; }
             _campaignPickedRegion = region;
-            _campaignPickedElection = s.Setup.Calendar.ElectionDate;
+            _campaignPickedElection = setup.Value.Calendar.ElectionDate;
             if (_liveCampaignMapOpen) { OpenLiveCampaignMap(); }
         }
 
@@ -317,6 +399,8 @@ namespace PoliSim.UI
 
             // CL-2: the map is the HQ's own chip while the campaign runs; a story that waits for its answer takes the legality panel's place.
             bool campaignRunning = _liveCampaignOpen && _simulationManager?.PlayerCampaign != null && !_simulationManager.PlayerCampaign.Finished;
+            // K1 row 5 (S-C2): the run-up's HQ opens the map too - as the office siting picker
+            campaignRunning |= _liveCampaignOpen && _simulationManager?.PlayerCampaign == null && _simulationManager?.PlayerPreCampaign != null && !_simulationManager.PlayerPreCampaign.Finished;
             // §697: the map is a cartogram of Sweden's valkretsar; a German campaign's Länder have none until Design's D-DE draws them, so its HQ offers
             // no map (the one-region rule places its local acts, where the party stands) rather than an empty sheet
             DrawCampaignMasthead(Board(0f, 0f, 1156f, 28f), snapshot, "CAMPAIGN HQ", campaignRunning && CampaignMapDrawn() ? "THE MAP" : null, OpenLiveCampaignMap,
@@ -677,6 +761,14 @@ namespace PoliSim.UI
                             : PoliSimTheme.Tint(PoliSimTheme.TextSecondary, 0.55f), 0f);
                 }
 
+                // K67 (2026-10-23): beside the player's own figure, the run-up television buy's estimated effect while it airs (the run-up has no momentum)
+                bool momentumShown = s.MomentumPp != null && i < s.MomentumPp.Length && Mathf.Abs((float)s.MomentumPp[i]) >= 0.05f;
+                if (!momentumShown && isPlayer && !string.IsNullOrEmpty(s.PlayerPollNote))
+                {
+                    PoliSimWidgets.MeasuredLabel(new Rect(r.x, track.yMax, r.width, momentumHeight), s.PlayerPollNote,
+                        DeskCaption(8.5f, UiPalette.GetDeltaColor(1f, higherIsBetter: true), false, TextAnchor.MiddleRight));
+                }
+
                 if (s.MomentumPp != null && i < s.MomentumPp.Length && Mathf.Abs((float)s.MomentumPp[i]) >= 0.05f)
                 {
                     GUIStyle momentum = DeskCaption(8.5f,
@@ -804,9 +896,10 @@ namespace PoliSim.UI
                 && _simulationManager.PlayerPreCampaign != null && !_simulationManager.PlayerPreCampaign.Finished;
             if (runUpLive)
             {
-                // CL-1: the run-up's verbs. Row one the preparation verbs at the price the model carries, the four the
-                // model cannot price drawn and REFUSED (their reasons printed beneath, from the run itself - never a chip
-                // that quietly does nothing); row two the five hires, each dimmed once the role is on the roster.
+                // CL-1: the run-up's verbs. Row one the preparation verbs at the price the model carries, and FUNDRAISE drawn and REFUSED
+                // (its reason printed beneath, from the run itself - never a chip that quietly does nothing); row two the five hires, each
+                // dimmed once the role is on the roster. K1 (2026-10-23): POLICY, TRAIN and STRATEGY are CUT by q4 (rows 2-4 of
+                // `docs/specs/A_LOOP_Q4_TABLE.md`: no sourced effect of their own; K6 cuts the player's strategy) and are no longer drawn.
                 PreCampaignRun.State pre = _simulationManager.PlayerPreCampaign;
                 GUIStyle chipCaption = DeskCaption(8.5f, PoliSimTheme.TextPrimary, bold: true, anchor: TextAnchor.MiddleCenter);
                 float chipHeight = Mathf.Ceil(DeskCaptionHeight(chipCaption)) + Mathf.Round(6f * uy);
@@ -815,17 +908,19 @@ namespace PoliSim.UI
                 CampaignActionKind[] verbs =
                 {
                     CampaignActionKind.EstablishOffice, CampaignActionKind.CommissionPolling, CampaignActionKind.PrepareAdvertising,
-                    CampaignActionKind.Fundraise, CampaignActionKind.DevelopPolicy, CampaignActionKind.TrainCandidate, CampaignActionKind.SetStrategy,
+                    CampaignActionKind.Fundraise,
                 };
-                string[] verbCaptions = { "OFFICE", "POLL", "TV BUY", "FUNDRAISE", "POLICY", "TRAIN", "STRATEGY" };
+                string[] verbCaptions = { "OFFICE", "POLL", "TV BUY", "FUNDRAISE" };
                 for (int i = 0; i < verbs.Length; i++)
                 {
-                    bool priced = PreCampaignRun.Refusal(verbs[i]) == null;
+                    bool priced = PreCampaignRun.Refusal(verbs[i]) == null && (verbs[i] != CampaignActionKind.Fundraise || PreCampaignRun.FundraiseOpen(pre));   // review 2's L1: dimmed where no mailing can go, its line says why
                     float w = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(verbCaptions[i])).x) + Mathf.Round(12f * ux);
                     if (x + w > r.xMax) { break; }
                     if (DrawDeskChipButton(new Rect(x, y, w, chipHeight), verbCaptions[i], chipCaption, selected: false, disabled: !priced) && priced)
                     {
-                        _simulationManager.QueueCampaignDecision(verbs[i], -1, null, PreCampaignRun.Price(pre, verbs[i]), out string refusal);
+                        // K1 row 5 (S-C2): an office goes where the map sited it (none picked: the largest electorate without one)
+                        int site = verbs[i] == CampaignActionKind.EstablishOffice ? LiveCampaignSnapshot.NextOfficeSite(pre, CampaignPick(), out _) : -1;
+                        _simulationManager.QueueCampaignDecision(verbs[i], site, null, PreCampaignRun.Price(pre, verbs[i]), out string refusal);
                         if (refusal != null) { Debug.Log("CAMPAIGN QUEUE: " + refusal); }
                     }
                     x += w + gap;
@@ -856,15 +951,13 @@ namespace PoliSim.UI
                 GUIStyle reasonStyle = DeskCaption(8.5f, PoliSimTheme.TextMuted);
                 float reasonHeight = Mathf.Ceil(DeskCaptionHeight(reasonStyle));
                 PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, reasonHeight),
-                    "REFUSED · FUNDRAISE: " + PreCampaignRun.Refusal(CampaignActionKind.Fundraise).ToUpperInvariant(), reasonStyle);
+                    PreCampaignRun.FundraiseLine(pre, Purse), reasonStyle);   // K84: what a mailing costs and raises, or why it cannot be sent
                 y += reasonHeight;
                 // A-LOOP q24 5b: the office is back in the run-up now that polling day's turnout counts its doors - what it buys, where the refusal stood
                 PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, reasonHeight),
                     "OFFICE: OPENS ON DAY ONE - ITS DOORS RAISE YOUR SUPPORTERS' TURNOUT", reasonStyle);
                 y += reasonHeight;
-                PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, reasonHeight),
-                    "POLICY, TRAIN, STRATEGY: NO PRICE IN THE MODEL AND NO SEAM IN THE RUN", reasonStyle);
-                y += reasonHeight + Mathf.Round(4f * uy);
+                y += Mathf.Round(4f * uy);
             }
             if (campaignLive)
             {
@@ -887,7 +980,9 @@ namespace PoliSim.UI
                     {
                         CampaignActions.ActionSpec spec = CampaignActions.Spec(offered[i]);
                         int region = spec.IsLocal ? LocalActRegion() : -1;   // CL-2: the map's pick, else the one-region rule
-                        _simulationManager.QueueCampaignDecision(offered[i], region, null, spec.MoneyCost, out string refusal);
+                        // K3: against the chip's party, or none; K1 rows 9 and 12: on the chosen topic, at the chosen outlay (an action with no price
+                        // - the interview - costs its hours whatever the size)
+                        _simulationManager.QueueCampaignDecision(offered[i], region, CampaignTopic(), spec.MoneyCost * CampaignOutlay(), out string refusal, againstParty: CampaignAttack());
                         if (refusal != null) { Debug.Log("CAMPAIGN QUEUE: " + refusal); }
                     }
                     x += w + gap;
@@ -898,14 +993,58 @@ namespace PoliSim.UI
                     _simulationManager.ClearCampaignQueue();
                 }
                 y += chipHeight + Mathf.Round(4f * uy);
-                // CL-2: where a local act goes, and which rule put it there - the map's pick or the strongest office. A chip
-                // that sent a rally somewhere the screen never named was the picker's absence made invisible.
-                if (!string.IsNullOrEmpty(s.LocalActsRegion))
+                // K3 (2026-10-23): the ATTACK verb - one chip cycling the party the next queued acts attack (none: the party's own case), at the head
+                // of the line that says where a local act goes. CL-2: where a local act goes, and which rule put it there - the map's pick or the
+                // strongest office. A chip that sent a rally somewhere the screen never named was the picker's absence made invisible.
                 {
-                    GUIStyle whereStyle = DeskCaption(8.5f, PoliSimTheme.TextMuted);
-                    float whereHeight = Mathf.Ceil(DeskCaptionHeight(whereStyle));
-                    PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, whereHeight), "LOCAL ACTS GO TO " + s.LocalActsRegion.ToUpperInvariant(), whereStyle);
-                    y += whereHeight + Mathf.Round(2f * uy);
+                    int attack = CampaignAttack();
+                    CampaignRun.State running = _simulationManager.PlayerCampaign;
+                    string attackCaption = "AGAINST: " + (attack >= 0 ? PoliSim.Data.PartySystems.ShortName(_playerCountry.Id, running.Setup.Parties[attack].Name).ToUpperInvariant() : "NONE");
+                    float attackWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(attackCaption)).x) + Mathf.Round(12f * ux);
+                    // review L3 (2026-10-23): the row WRAPS at the plate's right edge - a chip that would pass `r.xMax` starts a new line, so a long
+                    // short name (an entrant's) on the AGAINST chip never pushes a later chip off the plate, at whatever floor the captions draw
+                    float cx = r.x;
+                    Rect NextChip(float width)
+                    {
+                        if (cx > r.x && cx + width > r.xMax) { cx = r.x; y += chipHeight + Mathf.Round(2f * uy); }
+                        var place = new Rect(cx, y, Mathf.Min(width, r.width), chipHeight);
+                        cx += width + gap;
+                        return place;
+                    }
+                    if (DrawDeskChipButton(NextChip(attackWidth), attackCaption, chipCaption, selected: attack >= 0, disabled: false)) { CycleCampaignAttack(); }
+                    // K1 rows 9 and 12: the topic the acts carry and their outlay
+                    IssueId? topic = CampaignTopic();
+                    string topicCaption = "TOPIC: " + (topic.HasValue ? topic.Value.ToString().ToUpperInvariant() : "GENERAL");
+                    float topicWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(topicCaption)).x) + Mathf.Round(12f * ux);
+                    if (DrawDeskChipButton(NextChip(topicWidth), topicCaption, chipCaption, selected: topic.HasValue, disabled: false)) { CycleCampaignTopic(); }
+                    string sizeCaption = "SIZE ×" + CampaignOutlay().ToString(CultureInfo.InvariantCulture);
+                    float sizeWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(sizeCaption)).x) + Mathf.Round(12f * ux);
+                    if (DrawDeskChipButton(NextChip(sizeWidth), sizeCaption, chipCaption, selected: CampaignOutlay() > 1, disabled: false)) { CycleCampaignOutlay(); }
+                    // K2 (2026-10-23): the campaign poll - priced information the player buys (its effect a narrower ±, never votes); the party's
+                    // own house at its own price, one a day, bought on the day the run steps next
+                    float pollWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent("POLL")).x) + Mathf.Round(12f * ux);
+                    bool pollLegal = CampaignLegality.IsLegal(CampaignActionKind.CommissionPolling, s.Phase);
+                    if (DrawDeskChipButton(NextChip(pollWidth), "POLL", chipCaption, selected: false, disabled: !pollLegal) && pollLegal)
+                    {
+                        _simulationManager.QueueCampaignDecision(CampaignActionKind.CommissionPolling, -1, null, running.Setup.InternalHouse.Cost, out string pollRefusal);
+                        if (pollRefusal != null) { Debug.Log("CAMPAIGN QUEUE: " + pollRefusal); }
+                    }
+                    // K82 (2026-10-23): the phone bank - the party's volunteers call its own supporters where its local acts go, the final week only
+                    float phoneWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent("PHONES")).x) + Mathf.Round(12f * ux);
+                    bool phoneLegal = s.DaysUntilElection <= GotvTurnout.PhoneFinalWeekDays && CampaignLegality.IsLegal(CampaignActionKind.PhoneBank, s.Phase);
+                    if (DrawDeskChipButton(NextChip(phoneWidth), "PHONES", chipCaption, selected: false, disabled: !phoneLegal) && phoneLegal)
+                    {
+                        _simulationManager.QueueCampaignDecision(CampaignActionKind.PhoneBank, LocalActRegion(), null, GotvTurnout.PhoneDayMoney, out string phoneRefusal);
+                        if (phoneRefusal != null) { Debug.Log("CAMPAIGN QUEUE: " + phoneRefusal); }
+                    }
+                    y += chipHeight + Mathf.Round(2f * uy);
+                    if (!string.IsNullOrEmpty(s.LocalActsRegion))
+                    {
+                        GUIStyle whereStyle = DeskCaption(8.5f, PoliSimTheme.TextMuted);
+                        float whereHeight = Mathf.Ceil(DeskCaptionHeight(whereStyle));
+                        PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, whereHeight), "LOCAL ACTS GO TO " + s.LocalActsRegion.ToUpperInvariant(), whereStyle);
+                        y += whereHeight + Mathf.Round(2f * uy);
+                    }
                 }
             }
 
@@ -1031,6 +1170,8 @@ namespace PoliSim.UI
             float y = DrawCampaignLedgerHead(r, "OPEN TO YOU TODAY — WHAT THIS PHASE ALLOWS", ux, uy);
 
             CampaignActionKind[] legal = CampaignLegality.LegalActions(s.Phase);
+            // review 2's L5: the phone bank is open in the final week only (`GotvTurnout.PhoneFinalWeekDays`) - listed only inside its window
+            if (s.DaysUntilElection > GotvTurnout.PhoneFinalWeekDays) { legal = System.Array.FindAll(legal, k => k != CampaignActionKind.PhoneBank); }
 
             GUIStyle nameStyle = DeskBody(13f, PoliSimTheme.TextPrimary);
             float rowHeight = Mathf.Max(Mathf.Round(18f * uy), nameStyle.CalcSize(new GUIContent("Ag")).y);

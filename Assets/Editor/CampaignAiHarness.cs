@@ -221,7 +221,7 @@ namespace PoliSim.EditorTools
             failures += Assert(sb, "1e. W-B9: no party gave more interviews than the outlets offered it (availability, not a price)",
                 withinSlots, "8 of 8 within their bookings");
 
-            // W-B7: the debates held, and what they did - coverage and momentum, never the preference.
+            // W-B7: the debates held, and what they did - since K4 reported and nothing else (no shock applied).
             sb.Append("\n  debates (W-B7): ");
             foreach ((int dDay, int dA, int dB, double dMargin, double dCoverage, double dMomentum) in first.Debates)
             {
@@ -229,9 +229,23 @@ namespace PoliSim.EditorTools
             }
 
             sb.Append('\n');
-            failures += Assert(sb, "1f. W-B7: the two scheduled debates were held between the parties leading the PUBLISHED poll, each shocking coverage and momentum",
-                first.Debates.Count == 2 && first.Debates[0].CoverageShock > 0 && first.Debates[0].MomentumShockPp > 0,
-                $"{first.Debates.Count} debates");
+            // K4 (2026-10-23): a debate is held and reported and moves no poll ([LPP22]) - MEASURED against the same run with no debate scheduled
+            // (review L2: the record's written zeros prove nothing): the shares and the momentum at the close must be the same to the bit (and the
+            // trackers fielded as often - their count; review 2's L8: the polls themselves are not in the result, the shares they read are).
+            // The debates draw their own stream, so with no shock applied nothing else in the run can differ.
+            CampaignRun.Setup noDebates = new CampaignRun.Setup(setup.Calendar, setup.Parties, setup.PriorShares, setup.LoyaltyPerParty, setup.Compatibility, setup.TrueSalience,
+                setup.NationalAudience, setup.Regions, setup.PublicHouse, setup.PublicPollEveryDays, setup.InternalHouse, setup.ElectorateLoyalty, setup.Outlets,
+                new int[0], setup.Scandals, setup.LiveScandalRatePerPartyDay, setup.RecordShift, setup.Families, setup.AwarenessStart, setup.Grouping,
+                setup.Positions, setup.Stands, setup.Targeting, setup.DoorCacePp);
+            CampaignRun.Result quiet = RunSeeded(noDebates, seed);
+            bool sameRace = quiet.Debates.Count == 0;
+            for (int p = 0; p < first.FinalShares.Length; p++)
+            {
+                if (first.FinalShares[p] != quiet.FinalShares[p] || first.MomentumPpAtEnd[p] != quiet.MomentumPpAtEnd[p]) { sameRace = false; }
+            }
+            failures += Assert(sb, "1f. W-B7 with K4: the two scheduled debates were held between the parties leading the PUBLISHED poll and reported, and moved no poll - the run is the run with no debate, to the bit",
+                first.Debates.Count == 2 && sameRace && first.PublicPolls == quiet.PublicPolls,
+                $"{first.Debates.Count} debates; shares and momentum at the close against the debate-free run: {(sameRace ? "identical" : "DIFFERENT")}");
 
             // W-B8: the staged scandal broke, was answered, and the campaign went on - the credibility cost is
             // on the party's live figure and nowhere else.
@@ -484,16 +498,31 @@ namespace PoliSim.EditorTools
                 first.Parties[1].DayEightyPercentSpent < first.Parties[0].DayEightyPercentSpent,
                 $"80 % spent by day: pop {first.Parties[1].DayEightyPercentSpent}, prof {first.Parties[0].DayEightyPercentSpent}, est {first.Parties[2].DayEightyPercentSpent}, grass {first.Parties[3].DayEightyPercentSpent}, chaos {first.Parties[4].DayEightyPercentSpent} (of {first.DaysRun})");
 
-            bool professionalPollsMost = true;
-            for (int p = 0; p < 5; p++)
+            // K4/K65/K66 (2026-10-23) re-declared: by PERSONALITY, every party cast with it, its mean polls bought. The first five parties alone
+            // tied on the K65 build (measured out of engine, seed 777: S, the professional, 2 polls - its third fell due on a day its pace had spent
+            // the reserve - against M's and V's 2), while the professional personality's two parties bought 2 and 3. The trait is the
+            // personality's, so the personality is what is compared; blindness stays the first professional's, as before.
+            var pollsByPersonality = new Dictionary<AiPersonality, double>();
+            var castByPersonality = new Dictionary<AiPersonality, int>();
+            foreach (CampaignRun.PartyLedger l in first.Parties)
             {
-                if (p != 0 && first.Parties[p].PollsBought >= first.Parties[0].PollsBought) { professionalPollsMost = false; }
+                pollsByPersonality.TryGetValue(l.Personality, out double sum0);
+                castByPersonality.TryGetValue(l.Personality, out int count0);
+                pollsByPersonality[l.Personality] = sum0 + l.PollsBought;
+                castByPersonality[l.Personality] = count0 + 1;
+            }
+            double MeanPolls(AiPersonality k) => castByPersonality.TryGetValue(k, out int c) && c > 0 ? pollsByPersonality[k] / c : 0.0;
+            bool professionalPollsMost = true;
+            foreach (AiPersonality k in castByPersonality.Keys)
+            {
+                if (k != AiPersonality.Professional && MeanPolls(k) >= MeanPolls(AiPersonality.Professional)) { professionalPollsMost = false; }
             }
 
-            failures += Assert(sb, "2f. §32 professional: buys the most polling and never acts blind",
+            failures += Assert(sb, "2f. §32 professional: buys the most polling (mean over the parties cast with each personality) and never acts blind",
                 professionalPollsMost && first.Parties[0].BlindDecisions == 0,
-                $"polls prof {first.Parties[0].PollsBought}, pop {first.Parties[1].PollsBought}, est {first.Parties[2].PollsBought}, " +
-                $"grass {first.Parties[3].PollsBought}, chaos {first.Parties[4].PollsBought}; professional blind decisions {first.Parties[0].BlindDecisions}");
+                string.Format(CultureInfo.InvariantCulture, "mean polls prof {0:0.0}, pop {1:0.0}, est {2:0.0}, grass {3:0.0}, chaos {4:0.0}; the first five {5}, {6}, {7}, {8}, {9}; professional blind decisions {10}",
+                    MeanPolls(AiPersonality.Professional), MeanPolls(AiPersonality.Populist), MeanPolls(AiPersonality.Establishment), MeanPolls(AiPersonality.Grassroots), MeanPolls(AiPersonality.Chaotic),
+                    first.Parties[0].PollsBought, first.Parties[1].PollsBought, first.Parties[2].PollsBought, first.Parties[3].PollsBought, first.Parties[4].PollsBought, first.Parties[0].BlindDecisions));
 
             // Chaotic: "inconsistent strategy" - the party whose mix changes most from one day to the
             // NEXT within a campaign (mean L1 between consecutive days' action mixes, days with

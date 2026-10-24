@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using PoliSim.Data;
 
 namespace PoliSim.Elections
 {
@@ -60,17 +61,83 @@ namespace PoliSim.Elections
         public static readonly CampaignActionKind[] Priced =
         {
             CampaignActionKind.EstablishOffice, CampaignActionKind.RecruitStaff, CampaignActionKind.CommissionPolling, CampaignActionKind.PrepareAdvertising,
+            CampaignActionKind.Fundraise,
         };
+
+        /// <summary>
+        /// K84 (Elias, 2026-10-23; q4 row 1): SOURCED [BCP12] (Barton, Castillo &amp; Petrie, ICES discussion paper, Nov 2012, Table 4, pp. 19-21;
+        /// `docs/reference/raw/aloop/q4/gmu_ices_wp1037_barton_castillo_petrie.pdf`): the revenue per solicitation of a candidate's fundraising
+        /// letter to partisans, US local general elections 2010 - $0.401 for the positive letter ($0.305 for the negative; tone no different,
+        /// p = 0.59). DECLARED: the positive letter, a party writing to its own supporters about its own case. Its transfer to 2026 and to Europe
+        /// is [AUTHORED-DRAFT] (K1, the play-calibration list): the dollar is crossed into the national currency at the game's own ECB 2023 rate
+        /// (`EnergyLayer.NationalPerUsd`), unrevalued.
+        /// </summary>
+        public const double RevenuePerLetterUsd = 0.401;
+
+        /// <summary>CONVENTION: the letters one FUNDRAISE mailing sends - the party writes to this many of its supporters not yet written to, and may mail again.</summary>
+        public const int MailingLetters = 100_000;
+
+        /// <summary>
+        /// K84: the letter's cost - the country's own postal tariff for one domestic letter, national currency (fetched byte-exact, each folder's
+        /// `SHA256SUMS.txt`). SOURCED Germany: Deutsche Post, "Briefe in Deutschland", Standard up to 20 g, 0,95 € (`ElectionsData/germany/raw/postage/`);
+        /// the USA: USPS Notice 123 effective October 4, 2026, First-Class Mail retail single-piece letter (stamped), 1 oz, $0.82
+        /// (`ElectionsData/usa/raw/postage/`). BILLED Sweden: PostNord's price page refused the fetch (HTTP 403) and the procurement annex quoting it
+        /// answered 404 (`ElectionsData/sweden/raw/postage/BILLED.txt`). NaN where no tariff is on disk - the mailing is refused, never priced
+        /// with an invented stamp. DECLARED: the single-piece public tariff, no bulk or contract rate. DECLARED (review 2's L10): a real stamp is netted against the war chest, an [AUTHORED-DRAFT] playability scale (`LiveCampaignSetup.WarChest`), so the mailing's size against the chest is as authored as the chest.
+        /// </summary>
+        public static double LetterTariff(CountryId? country)
+        {
+            switch (country)
+            {
+                case CountryId.Germany: return 0.95;
+                case CountryId.USA: return 0.82;
+                default: return double.NaN;
+            }
+        }
+
+        /// <summary>K84: what one letter raises, in the national currency - [BCP12]'s revenue per solicitation at the game's rate.</summary>
+        public static double RevenuePerLetter(CountryId? country) => country.HasValue ? RevenuePerLetterUsd * PoliSim.Data.EnergyLayer.NationalPerUsd(country.Value) : double.NaN;
+
+        /// <summary>K84: the run-up HQ's line - the next mailing's letters, postage and revenue in <paramref name="purse"/>'s currency, or why none can go (no tariff on disk; every supporter written to).</summary>
+        public static string FundraiseLine(State s, string purse)
+        {
+            double tariff = LetterTariff(s.Country);
+            if (double.IsNaN(tariff)) { return "FUNDRAISE: NO POSTAL TARIFF ON DISK FOR THIS COUNTRY - NO LETTER CAN BE PRICED"; }
+            double letters = Math.Floor(Math.Min(MailingLetters, SupportersLeft(s)));
+            if (letters <= 0.0) { return "FUNDRAISE: EVERY SUPPORTER HAS BEEN WRITTEN TO"; }
+            // review 2's M2: the NET beside the postage and the revenue (K88)
+            return string.Format(CultureInfo.InvariantCulture, "FUNDRAISE: {0:N0} LETTERS \u00B7 POSTAGE {1:N0} \u00B7 RAISES {2:N0} \u00B7 NET {4:+#,0;-#,0} {3}", letters, letters * tariff,
+                letters * RevenuePerLetter(s.Country), purse.ToUpperInvariant(), letters * (RevenuePerLetter(s.Country) - tariff));
+        }
+
+        /// <summary>Review 2's L1: whether a FUNDRAISE mailing can be sent now - a tariff on disk, a supporter not yet written to, the chest able to pay the postage.</summary>
+        public static bool FundraiseOpen(State s)
+        {
+            double tariff = LetterTariff(s.Country);
+            if (double.IsNaN(tariff)) { return false; }
+            double letters = Math.Floor(Math.Min(MailingLetters, SupportersLeft(s)));
+            return letters > 0.0 && s.Money >= letters * tariff;
+        }
+
+        /// <summary>K84: the party's supporters the run-up can write to - its prior share of the staging's electorate (the regions' eligible), less the letters already sent.</summary>
+        public static double SupportersLeft(State s)
+        {
+            double eligible = 0.0, sum = 0.0;
+            foreach (RegionAudience r in s.Staged.Regions) { eligible += r.Eligible; }
+            foreach (double v in s.Staged.PriorShares) { sum += v; }
+            double supporters = sum > 0.0 ? eligible * s.Staged.PriorShares[s.Party] / sum : 0.0;
+            return Math.Max(0.0, supporters - s.LettersSent);
+        }
 
         /// <summary>The verbs the pre-campaign REFUSES, each with the standing reason it prints - null for a priced verb.</summary>
         public static string Refusal(CampaignActionKind kind)
         {
             switch (kind)
             {
-                case CampaignActionKind.Fundraise: return "no donor model exists to raise from";
-                case CampaignActionKind.DevelopPolicy: return "no price and no seam in the run";
-                case CampaignActionKind.TrainCandidate: return "no price in the model - a figure would be invented";
-                case CampaignActionKind.SetStrategy: return "no seam in the run - a played party's strategy is its personality's";
+                case CampaignActionKind.Fundraise: return null;   // K84: priced by the country's postal tariff, refused where none is on disk (`LetterTariff`)
+                case CampaignActionKind.DevelopPolicy: return "cut - voters do not respond to policy statements in a campaign";   // K1: q4 row 2, [AES11]
+                case CampaignActionKind.TrainCandidate: return "cut - no study measures what candidate training does to a vote";   // K1: q4 row 3
+                case CampaignActionKind.SetStrategy: return "cut - a strategy is its parts: the attack, the topic, the targeting";   // K1 and K6: q4 row 4, the player's choice cut
                 default: return Array.IndexOf(Priced, kind) >= 0 ? null : $"{kind} is not a preparation verb";
             }
         }
@@ -91,6 +158,8 @@ namespace PoliSim.Elections
             public CampaignActionKind Kind;
             public string Target;
             public double Cost;
+            /// <summary>K84: what a mailing raised (0 for every other verb).</summary>
+            public double Raised;
             /// <summary>Null when the decision was taken; otherwise why it was not.</summary>
             public string Refusal;
         }
@@ -113,6 +182,10 @@ namespace PoliSim.Elections
             public int UnpaidStaffDays;
             /// <summary>A-LOOP q24 5a: the run-up days a television buy aired on, each charged when it was made - its effect on the run-up's polls lasts its week.</summary>
             public List<int> TelevisionAired = new List<int>();
+            /// <summary>K84: the country whose tariff prices a letter (null: none - the mailing is refused), the letters sent and what they raised.</summary>
+            public CountryId? Country;
+            public double LettersSent;
+            public double Raised;
             public Poll? LatestPoll;
             public int LastPollDay = int.MinValue;
             public int PollsBought;
@@ -154,7 +227,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>Day 0 of the pre-campaign for one party of the staged campaign: the staging's chest and ground, nothing planned, nothing hired.</summary>
-        public static State Begin(CampaignRun.Setup staged, int party, System.Random pollRandom)
+        public static State Begin(CampaignRun.Setup staged, int party, System.Random pollRandom, CountryId? country = null)
         {
             if (party < 0 || party >= staged.Parties.Length) { throw new ArgumentOutOfRangeException(nameof(party)); }
             if (pollRandom == null) { throw new ArgumentNullException(nameof(pollRandom)); }
@@ -163,7 +236,7 @@ namespace PoliSim.Elections
             {
                 Calendar = staged.Calendar, Party = party, PartyName = p.Name, Staged = staged, PollRandom = pollRandom,
                 Money = p.StartingMoney, MoneyAtStart = p.StartingMoney, Volunteers = p.Volunteers,
-                Day = 0, TotalDays = 7 * staged.Calendar.PreCampaignWeeks,
+                Day = 0, TotalDays = 7 * staged.Calendar.PreCampaignWeeks, Country = country,
             };
         }
 
@@ -176,6 +249,7 @@ namespace PoliSim.Elections
                 case CampaignActionKind.RecruitStaff: return CampaignStaff.SalaryPerDay;
                 case CampaignActionKind.CommissionPolling: return s.Staged.InternalHouse.Cost;
                 case CampaignActionKind.PrepareAdvertising: return CampaignActions.Spec(CampaignActionKind.TelevisionAd).MoneyCost;
+                case CampaignActionKind.Fundraise: { double tariff = LetterTariff(s.Country); return double.IsNaN(tariff) ? 0.0 : Math.Min(MailingLetters, SupportersLeft(s)) * tariff; }   // K84: the mailing's postage
                 default: return 0.0;
             }
         }
@@ -274,6 +348,23 @@ namespace PoliSim.Elections
                         if (s.Money < entry.Cost) { entry.Refusal = "the chest cannot pay the buy"; break; }
                         s.Money -= entry.Cost;   // A-LOOP q24 5a (SD-33's fix): charged the day it airs
                         s.TelevisionAired.Add(day);
+                        break;
+                    }
+                    case CampaignActionKind.Fundraise:
+                    {
+                        // K84: a mailing to the party's own supporters - the postage paid, the letters' revenue into the chest; it buys contacts, never votes
+                        entry.Target = "supporters by letter";
+                        double tariff = LetterTariff(s.Country);
+                        if (double.IsNaN(tariff)) { entry.Refusal = "no postal tariff is on disk for this country"; break; }
+                        double letters = Math.Floor(Math.Min(MailingLetters, SupportersLeft(s)));
+                        if (letters <= 0.0) { entry.Refusal = "every supporter has been written to"; break; }
+                        entry.Cost = letters * tariff;
+                        if (s.Money < entry.Cost) { entry.Refusal = "the chest cannot pay the postage"; break; }
+                        double raised = letters * RevenuePerLetter(s.Country);
+                        s.Money += raised - entry.Cost;
+                        s.LettersSent += letters;
+                        s.Raised += raised;
+                        entry.Raised = raised;
                         break;
                     }
                     default:

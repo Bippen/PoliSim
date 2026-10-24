@@ -307,19 +307,29 @@ namespace PoliSim.Elections
         private readonly double[][] _quality;
         private readonly double[][] _againstExposure;
         private readonly double[][] _againstQuality;
+        // K66 (2026-10-23): [attacker][target][slot] the exposure and quality of the attacks a party MADE - each the share of one of its own
+        // contacts that was about the target, so it shares the attacker's class coverage (`ShareEffects`); allocated on the first attack.
+        private readonly double[][][] _attackExposure;
+        private readonly double[][][] _attackQuality;
         // q24 5a (the review's M2): each party's reach - the share of the electorate where it stands (`CampaignRun.Setup.StandingShare`); null = 1 everywhere.
         private readonly double[] _reach;
+        // review M2 (2026-10-23): [p][q] the share of the electorate where both parties stand (`CampaignRun.Setup.OverlapMatrix`); null = the smaller reach.
+        private readonly double[][] _overlap;
 
         /// <param name="reachShare">Each party's share of the electorate it can reach (where it stands); null = every party everywhere.</param>
-        public CampaignPressure(int partyCount, double[] reachShare = null)
+        /// <param name="overlap">[p][q] the share of the electorate where both parties stand; null = the smaller of the two reaches.</param>
+        public CampaignPressure(int partyCount, double[] reachShare = null, double[][] overlap = null)
         {
             _reach = reachShare;
+            _overlap = overlap;
             _persuasion = new double[partyCount];
             _enthusiasm = new double[partyCount];
             _exposure = new double[partyCount][];
             _quality = new double[partyCount][];
             _againstExposure = new double[partyCount][];
             _againstQuality = new double[partyCount][];
+            _attackExposure = new double[partyCount][][];
+            _attackQuality = new double[partyCount][][];
             for (int p = 0; p < partyCount; p++)
             {
                 _exposure[p] = new double[OwnSlots];
@@ -334,19 +344,67 @@ namespace PoliSim.Elections
         /// <summary>q24 5a: the share of the electorate party <paramref name="partyIndex"/> can reach - its coverage is read over it, never past it.</summary>
         public double Reach(int partyIndex) => _reach == null || partyIndex < 0 || partyIndex >= _reach.Length ? 1.0 : _reach[partyIndex];
 
+        /// <summary>Review M2: the share of the electorate where both parties stand - read from the candidacies region by region where they are staged (the CDU and the CSU: 0), else the smaller reach.</summary>
+        public double Overlap(int p, int q) => _overlap != null && p >= 0 && p < _overlap.Length && _overlap[p] != null && q >= 0 && q < _overlap[p].Length ? _overlap[p][q] : Math.Min(Reach(p), Reach(q));
+
+        /// <summary>K81: the overlap matrix as the tally holds it - what the balanced absorption reads; null where none was staged.</summary>
+        public double[][] OverlapMatrix => _overlap;
+
+        /// <summary>Review M2: the share of <paramref name="attacker"/>'s reach where <paramref name="target"/> is on the ballot - what an attack can take from it.</summary>
+        public double TargetShareOfReach(int attacker, int target) => Reach(attacker) > 0.0 ? Math.Min(1.0, Overlap(attacker, target) / Reach(attacker)) : 0.0;
+
         /// <summary>
-        /// W-B6 / §11's negative campaign: persuasion pressure landing AGAINST a party - <paramref name="share"/> of the attacker's contact
-        /// <paramref name="trace"/>. The pressure is netted as before; since q24 5a the contact's exposure and quality, scaled by the share,
-        /// enter the target's tally in the contact's class, and <see cref="ShareEffects(double, double)"/> gives them the sign against it.
+        /// W-B6 / §11's negative campaign, and K3's attack verb: ONE contact of <paramref name="attacker"/>'s, of which <paramref name="share"/> was
+        /// about <paramref name="target"/>. ⚠ K66 (Elias, 2026-10-23: "An attack shares coverage with the attacker's own contacts"): until K66 the
+        /// whole contact entered the attacker's own tally AND its share entered the target's against-tally, which had a coverage of its own - an
+        /// attack was free extra reach, and §881 measured the negative campaign winning all thirty cells of `CampaignStrategyHarness`. Now the
+        /// contact is split, never copied: 1 − share of its exposure and quality enters the attacker's own slot, the share enters the attack
+        /// tally (attacker, target, slot), and the two share the attacker's class coverage in `ShareEffects`. The pressure is netted the same way
+        /// (the attacker keeps 1 − share of the contact's persuasion, the target loses the share). The target's received sums are kept for the
+        /// readers of `Exposure` and `Against`.
         /// </summary>
-        public void AddAgainst(int opponentIndex, CampaignActions.ChainTrace trace, double share)
+        public void AddAttack(int attacker, int target, CampaignActions.ChainTrace trace, double share)
         {
-            if (share < 0) { throw new ArgumentException("pressure against an opponent is given as a positive share"); }
-            _persuasion[opponentIndex] -= trace.Persuasion * share;
-            if (Quality(trace) <= 0.0) { return; }   // a contact nobody found relevant or credible persuades nobody, and dilutes nothing
+            if (share < 0.0 || share > 1.0) { throw new ArgumentException("an attack's share of its contact lies in [0, 1]"); }
+            if (attacker < 0 || attacker >= _persuasion.Length || target < 0 || target >= _persuasion.Length || attacker == target) { throw new ArgumentException("an attack is one party's contact against another party"); }
+            _persuasion[attacker] += trace.Persuasion * (1.0 - share);
+            _enthusiasm[attacker] += trace.Enthusiasm;
+            _persuasion[target] -= trace.Persuasion * share;
+            int slot = Array.IndexOf(CampaignActions.TheEight, trace.Kind);
+            if (slot < 0 || Quality(trace) <= 0.0) { return; }   // a contact nobody found relevant or credible persuades nobody, and dilutes nothing
+            _exposure[attacker][slot] += trace.Exposure * (1.0 - share);
+            _quality[attacker][slot] += Quality(trace) * (1.0 - share);
+            if (_attackExposure[attacker] == null) { _attackExposure[attacker] = new double[_persuasion.Length][]; _attackQuality[attacker] = new double[_persuasion.Length][]; }
+            if (_attackExposure[attacker][target] == null) { _attackExposure[attacker][target] = new double[OwnSlots]; _attackQuality[attacker][target] = new double[OwnSlots]; }
+            _attackExposure[attacker][target][slot] += trace.Exposure * share;
+            _attackQuality[attacker][target][slot] += Quality(trace) * share;
             int c = (int)CampaignPersuasion.ClassOf(trace.Kind);
-            _againstExposure[opponentIndex][c] += trace.Exposure * share;
-            _againstQuality[opponentIndex][c] += Quality(trace) * share;
+            _againstExposure[target][c] += trace.Exposure * share;
+            _againstQuality[target][c] += Quality(trace) * share;
+        }
+
+        /// <summary>K66: the attacks <paramref name="attacker"/> made on <paramref name="target"/> in one class, exposure and quality summed over its slots - what an independent recomputation reads.</summary>
+        public void Attack(int attacker, int target, ContactClass c, out double exposure, out double quality)
+        {
+            exposure = 0.0; quality = 0.0;
+            double[] e = _attackExposure[attacker]?[target];
+            if (e == null) { return; }
+            double[] q = _attackQuality[attacker][target];
+            for (int slot = 0; slot < OwnSlots; slot++) { if (SlotClass(slot) == c) { exposure += e[slot]; quality += q[slot]; } }
+        }
+
+        /// <summary>K66: one party's attack exposure per contact class, over every target - its own books, which the AI reads with `OwnExposureByClass`.</summary>
+        public double[] OwnAttackExposureByClass(int partyIndex)
+        {
+            var a = new double[CampaignPersuasion.ClassCount];
+            double[][] made = _attackExposure[partyIndex];
+            if (made == null) { return a; }
+            foreach (double[] row in made)
+            {
+                if (row == null) { continue; }
+                for (int slot = 0; slot < OwnSlots; slot++) { a[(int)SlotClass(slot)] += row[slot]; }
+            }
+            return a;
         }
 
         public void Add(int partyIndex, CampaignActions.ChainTrace trace)
@@ -396,13 +454,27 @@ namespace PoliSim.Elections
         /// q24 5a: each party's share effect (a FRACTION, signed, before `CampaignPersuasion.Apply` scales it to the party's size) from the
         /// sources <paramref name="include"/> admits - (party, slot) over the own slots and <see cref="AgainstSlot"/>; null admits every one.
         /// Coverage is read over the party's own reach (<see cref="Reach"/>). Per class, the admitted own exposures give the coverage and their
-        /// mean quality the q; the effect is `CampaignPersuasion.ClassEffectPp`, and the attacks received count the same way with the sign
+        /// mean quality the q; the effect is `CampaignPersuasion.ClassEffectPp`, and the attacks received count with the sign (since K66 sharing their attacker's coverage)
         /// against. `CampaignRun`'s truth and the night's attribution (`VoteAttribution`) both read this one function.
         /// </summary>
-        public double[] ShareEffects(double electorate, double norm, Func<int, int, bool> include)
+        public double[] ShareEffects(double electorate, double norm, Func<int, int, bool> include) => ShareEffects(electorate, norm, include, null);
+
+        /// <summary>
+        /// q24 5a with K66: as the three-argument form, the attacks admitted by <paramref name="includeAttack"/> - (attacker, slot, target); null
+        /// admits an attack where <paramref name="include"/> admits both the attacker's slot and the target's received attacks (every one when
+        /// both are null). Per attacker and class, the coverage is read over ALL its admitted contacts, own and attack: its own part is
+        /// `CampaignPersuasion.SharedClassEffectPp`, and each target loses `CampaignPersuasion.AttackEffectPp` with the sign against. A party
+        /// that attacked no one takes `CampaignPersuasion.ClassEffectPp` exactly, as before K66.
+        /// </summary>
+        public double[] ShareEffects(double electorate, double norm, Func<int, int, bool> include, Func<int, int, int, bool> includeAttack) => ShareEffects(electorate, norm, include, includeAttack, out _, out _);
+
+        /// <summary>K92 (2026-10-24): as the four-argument form, with each party's attack losses (<paramref name="attackLoss"/>, received, positive - already netted in the effects) and the attackers' takings (<paramref name="attackGain"/>, the same amounts), fractions of the vote - what `CampaignPersuasion.ApplyCampaign` moves directly from target to attacker.</summary>
+        public double[] ShareEffects(double electorate, double norm, Func<int, int, bool> include, Func<int, int, int, bool> includeAttack, out double[] attackLoss, out double[] attackGain)
         {
             int n = _persuasion.Length;
             var effects = new double[n];
+            attackLoss = new double[n];
+            attackGain = new double[n];
             int classes = CampaignPersuasion.ClassCount;
             for (int p = 0; p < n; p++)
             {
@@ -415,18 +487,60 @@ namespace PoliSim.Elections
                     e[c] += _exposure[p][slot];
                     q[c] += _quality[p][slot];
                 }
+                double[][] ae = null, aq = null;
+                double[] made = AdmittedAttacks(p, include, includeAttack, out ae, out aq);
                 double pp = 0.0;
-                for (int c = 0; c < classes; c++) { pp += CampaignPersuasion.ClassEffectPp((ContactClass)c, e[c], q[c], electorate, norm, Reach(p)); }
-                if (include == null || include(p, AgainstSlot))
+                for (int c = 0; c < classes; c++)
                 {
-                    for (int c = 0; c < classes; c++) { pp -= CampaignPersuasion.ClassEffectPp((ContactClass)c, _againstExposure[p][c], _againstQuality[p][c], electorate, norm, Reach(p)); }
+                    pp += made == null ? CampaignPersuasion.ClassEffectPp((ContactClass)c, e[c], q[c], electorate, norm, Reach(p))
+                                       : CampaignPersuasion.SharedClassEffectPp((ContactClass)c, e[c], q[c], made[c], electorate, norm, Reach(p));
                 }
-                effects[p] = pp / 100.0;
+                effects[p] += pp / 100.0;
+                if (made == null) { continue; }
+                for (int t = 0; t < n; t++)
+                {
+                    if (ae[t] == null) { continue; }
+                    for (int c = 0; c < classes; c++)
+                    {
+                        double taken = CampaignPersuasion.AttackEffectPp((ContactClass)c, ae[t][c], aq[t][c], e[c] + made[c], electorate, norm, Reach(p), TargetShareOfReach(p, t)) / 100.0;
+                        effects[t] -= taken;
+                        attackLoss[t] += taken;
+                        attackGain[p] += taken;   // K92: the attacker takes what its attack took
+                    }
+                }
             }
             return effects;
         }
 
-        /// <summary>q24 5a, the plan's (4)(b): each party's bound in points - Σ_class upper × coverage over its own contacts, plus the same over the attacks it received - which |effect| can never pass.</summary>
+        /// <summary>K66: the attacks <paramref name="attacker"/> made that the predicates admit, per target and class (exposure, quality), and their exposure per class over every target; null when it made none admitted.</summary>
+        private double[] AdmittedAttacks(int attacker, Func<int, int, bool> include, Func<int, int, int, bool> includeAttack, out double[][] exposure, out double[][] quality)
+        {
+            exposure = null; quality = null;
+            double[][] made = _attackExposure[attacker];
+            if (made == null) { return null; }
+            int classes = CampaignPersuasion.ClassCount;
+            double[] total = null;
+            for (int t = 0; t < made.Length; t++)
+            {
+                if (made[t] == null) { continue; }
+                for (int slot = 0; slot < OwnSlots; slot++)
+                {
+                    if (made[t][slot] <= 0.0) { continue; }
+                    bool admitted = includeAttack != null ? includeAttack(attacker, slot, t)
+                        : include == null || (include(attacker, slot) && include(t, AgainstSlot));
+                    if (!admitted) { continue; }
+                    if (total == null) { total = new double[classes]; exposure = new double[made.Length][]; quality = new double[made.Length][]; }
+                    if (exposure[t] == null) { exposure[t] = new double[classes]; quality[t] = new double[classes]; }
+                    int c = (int)SlotClass(slot);
+                    exposure[t][c] += made[t][slot];
+                    quality[t][c] += _attackQuality[attacker][t][slot];
+                    total[c] += made[t][slot];
+                }
+            }
+            return total;
+        }
+
+        /// <summary>q24 5a, the plan's (4)(b), with K66: each party's bound in points - Σ_class upper × its own part of its coverage, plus, for every attack it received, the upper × the attacker's coverage × the attack's part of it × the reaches' overlap - which |effect| can never pass.</summary>
         public double[] BoundsPp(double electorate)
         {
             int n = _persuasion.Length;
@@ -436,9 +550,19 @@ namespace PoliSim.Elections
             {
                 var e = new double[classes];
                 for (int slot = 0; slot < OwnSlots; slot++) { e[(int)SlotClass(slot)] += _exposure[p][slot]; }
+                double[] made = AdmittedAttacks(p, null, null, out double[][] ae, out _);
                 for (int c = 0; c < classes; c++)
                 {
-                    bounds[p] += CampaignPersuasion.BoundPp((ContactClass)c, e[c], electorate, Reach(p)) + CampaignPersuasion.BoundPp((ContactClass)c, _againstExposure[p][c], electorate, Reach(p));
+                    double all = e[c] + (made != null ? made[c] : 0.0);
+                    double cover = CampaignPersuasion.Coverage(all, electorate, Reach(p));
+                    bounds[p] += made == null || made[c] <= 0.0 ? CampaignPersuasion.BoundPp((ContactClass)c, e[c], electorate, Reach(p))
+                                                                : (e[c] > 0.0 ? CampaignPersuasion.UpperOf((ContactClass)c) * cover * (e[c] / all) : 0.0);
+                    if (made == null) { continue; }
+                    for (int t = 0; t < n; t++)
+                    {
+                        if (ae[t] == null || ae[t][c] <= 0.0) { continue; }
+                        bounds[t] += CampaignPersuasion.UpperOf((ContactClass)c) * cover * (ae[t][c] / all) * TargetShareOfReach(p, t);
+                    }
                 }
             }
             return bounds;
@@ -483,7 +607,16 @@ namespace PoliSim.Elections
                 for (int c = 0; c < classes; c++)
                 {
                     if (e[c] > 0.0) { total++; if (CampaignPersuasion.CapBinds((ContactClass)c, e[c], q[c], norm)) { binding++; } }
-                    if (_againstExposure[p][c] > 0.0) { total++; if (CampaignPersuasion.CapBinds((ContactClass)c, _againstExposure[p][c], _againstQuality[p][c], norm)) { binding++; } }
+                }
+                // K66: each attacker's attacks on each target, per class - the per-contact effect the cap can bind on
+                if (AdmittedAttacks(p, null, null, out double[][] ae, out double[][] aq) == null) { continue; }
+                for (int t = 0; t < ae.Length; t++)
+                {
+                    if (ae[t] == null) { continue; }
+                    for (int c = 0; c < classes; c++)
+                    {
+                        if (ae[t][c] > 0.0) { total++; if (CampaignPersuasion.CapBinds((ContactClass)c, ae[t][c], aq[t][c], norm)) { binding++; } }
+                    }
                 }
             }
         }

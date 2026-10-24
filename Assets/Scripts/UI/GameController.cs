@@ -1025,6 +1025,8 @@ namespace PoliSim.UI
             // and a map left open over the previous game closes.
             _campaignPickedRegion = -1;
             CloseLiveCampaignMap();
+            _campaignAttackTarget = -1;   // K3: the attack choice is the session's too
+            _campaignTopic = -1; _campaignOutlay = 1;   // K1 rows 9 and 12: and the topic and the outlay
         }
 
         internal UiDraftState CaptureUiDrafts()

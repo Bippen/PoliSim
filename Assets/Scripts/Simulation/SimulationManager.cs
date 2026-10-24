@@ -5955,6 +5955,7 @@ namespace PoliSim.Simulation
             if (PlayerCampaign.Finished && PlayerCampaignResult == null)
             {
                 PlayerCampaignResult = Elections.CampaignRun.Finish(PlayerCampaign); RecordCampaignLedger();
+                if (PlayerCampaignResult.AbsorptionFallback != null) { UnityEngine.Debug.Log("CAMPAIGN: " + PlayerCampaignResult.AbsorptionFallback); }   // review 2's L2: a fallback is named, never silent
                 UnityEngine.Debug.Log($"CAMPAIGN: finished {PlayerCampaign.TotalDays} days for {PlayerCountryId.Value}; final shares " + string.Join(" ", System.Array.ConvertAll(PlayerCampaignResult.FinalShares, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
             }
         }
@@ -5987,7 +5988,7 @@ namespace PoliSim.Simulation
                 CampaignRecord = record;
                 PlayerCampaign = null;
                 PlayerCampaignResult = null;
-                PlayerPreCampaign = Elections.PreCampaignRun.Begin(staged, me, SimulationRandom.For(PreCampaignStream));
+                PlayerPreCampaign = Elections.PreCampaignRun.Begin(staged, me, SimulationRandom.For(PreCampaignStream), PlayerCountryId);   // K84: the country's postal tariff prices a letter
                 UnityEngine.Debug.Log($"CAMPAIGN: the run-up began {calendar.PreCampaignStart:yyyy-MM-dd} for {PlayerCountryId.Value} - {PlayerPreCampaign.TotalDays} days to the campaign's opening on {calendar.CampaignStart:yyyy-MM-dd}, polling day {calendar.ElectionDate:yyyy-MM-dd}");
             }
             int todayIndex = (int)(CurrentDate - calendar.PreCampaignStart).TotalDays;
@@ -6130,19 +6131,20 @@ namespace PoliSim.Simulation
         /// in that day's phase, when the run-up has no price for it (`PreCampaignRun.Refusal` - the four the model cannot
         /// price), or when the player's party is not in the campaign - and the refusal is the return value, so the screen
         /// can say why. `role` is the role a hire fills; an office queued with no region goes to the largest electorate
-        /// without one (the picker is the plan's S-C2).
+        /// without one (the picker is the plan's S-C2). K3 (2026-10-23): `againstParty` is the party a campaign act attacks (an index into the
+        /// campaign's parties, never the player's own; −1 for an act on the party's own case) - refused in the run-up, which has no contacts.
         /// </summary>
-        public bool QueueCampaignDecision(Elections.CampaignActionKind kind, int regionIndex, Elections.IssueId? issue, double spend, out string refusal, int role = -1)
+        public bool QueueCampaignDecision(Elections.CampaignActionKind kind, int regionIndex, Elections.IssueId? issue, double spend, out string refusal, int role = -1, int againstParty = -1)
         {
             string why = null;   // FORK-2: the decision queued again in every except-world's campaign on its day
-            bool acted = Answered(new PlayerAnswer("a campaign decision", PlayerCountryId, sim => sim.QueueCampaignDecision(kind, regionIndex, issue, spend, out _, role)),
-                () => QueueCampaignDecisionNow(kind, regionIndex, issue, spend, out why, role));
+            bool acted = Answered(new PlayerAnswer("a campaign decision", PlayerCountryId, sim => sim.QueueCampaignDecision(kind, regionIndex, issue, spend, out _, role, againstParty)),
+                () => QueueCampaignDecisionNow(kind, regionIndex, issue, spend, out why, role, againstParty));
             refusal = why;
             return acted;
         }
 
         /// <summary>FORK-2: <see cref="QueueCampaignDecision"/>'s act.</summary>
-        private bool QueueCampaignDecisionNow(Elections.CampaignActionKind kind, int regionIndex, Elections.IssueId? issue, double spend, out string refusal, int role)
+        private bool QueueCampaignDecisionNow(Elections.CampaignActionKind kind, int regionIndex, Elections.IssueId? issue, double spend, out string refusal, int role, int againstParty = -1)
         {
             refusal = null;
             if ((PlayerCampaign == null && PlayerPreCampaign == null) || CampaignRecord == null) { refusal = "no campaign is running"; return false; }
@@ -6155,6 +6157,7 @@ namespace PoliSim.Simulation
                 if (standing != null) { refusal = $"{kind}: {standing}"; return false; }
                 if (kind == Elections.CampaignActionKind.EstablishOffice && regionIndex < 0) { regionIndex = Elections.PreCampaignRun.NextOfficeRegion(PlayerPreCampaign); }
                 if (regionIndex >= PlayerPreCampaign.Staged.Regions.Length) { refusal = "no such region"; return false; }
+                if (againstParty >= 0) { refusal = "the run-up has no contacts to attack with - an attack is a campaign act"; return false; }   // K3
                 CampaignRecord.Queue.Add(new Elections.QueuedDecisionRecord { Day = PlayerPreCampaign.Day - PlayerPreCampaign.TotalDays, Kind = kind, RegionIndex = regionIndex, Issue = -1, Role = role, Spend = spend });
                 return true;
             }
@@ -6164,7 +6167,9 @@ namespace PoliSim.Simulation
             Elections.CampaignPhase phase = PlayerCampaign.Setup.Calendar.PhaseOn(PlayerCampaign.Setup.Calendar.CampaignStart.AddDays(day));
             if (!Elections.CampaignLegality.IsLegal(kind, phase)) { refusal = $"{kind} is not legal in the {phase} phase"; return false; }
             if (regionIndex >= PlayerCampaign.Setup.Regions.Length) { refusal = "no such region"; return false; }
-            CampaignRecord.Queue.Add(new Elections.QueuedDecisionRecord { Day = day, Kind = kind, RegionIndex = regionIndex, Issue = issue.HasValue ? (int)issue.Value : -1, Spend = spend });
+            // K3 (2026-10-23): the attack verb - a party of the campaign other than the player's own
+            if (againstParty >= PlayerCampaign.Setup.Parties.Length || (againstParty >= 0 && againstParty == PlayerPartyIndexForCampaign())) { refusal = "no such party to attack"; return false; }
+            CampaignRecord.Queue.Add(new Elections.QueuedDecisionRecord { Day = day, Kind = kind, RegionIndex = regionIndex, Issue = issue.HasValue ? (int)issue.Value : -1, Spend = spend, AgainstParty = againstParty < 0 ? -1 : againstParty });
             return true;
         }
 
@@ -6208,7 +6213,7 @@ namespace PoliSim.Simulation
                 var preRewound = new System.Collections.Generic.Dictionary<SimulationRandom.Stream, int>(savedCounts);
                 if (record.DrawCountsAtStart.TryGetValue(PreCampaignStream, out int preAtStart)) { preRewound[PreCampaignStream] = preAtStart; }
                 SimulationRandom.RestoreState(masterSeed, preRewound);
-                PlayerPreCampaign = Elections.PreCampaignRun.Begin(staged, me, SimulationRandom.For(PreCampaignStream));
+                PlayerPreCampaign = Elections.PreCampaignRun.Begin(staged, me, SimulationRandom.For(PreCampaignStream), PlayerCountryId);   // K84: the country's postal tariff prices a letter
                 for (int i = 0; i < record.PreCampaignDaysStepped && !PlayerPreCampaign.Finished; i++)
                 {
                     Elections.PreCampaignRun.StepDay(PlayerPreCampaign, PreCampaignDecisionsFor(record, PlayerPreCampaign, PlayerPreCampaign.Day));

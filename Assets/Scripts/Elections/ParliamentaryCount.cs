@@ -189,9 +189,10 @@ namespace PoliSim.Elections
                     double sum = 0.0;
                     foreach (double v in preference[r]) { sum += v; }
                     double supporters = sum > 0.0 ? eligible[r] * preference[r][i] / sum : 0.0;
-                    double doors = ground.DoorContacts(r, i);
-                    reach += supporters * GotvTurnout.Coverage(doors, supporters) * GotvTurnout.DoorCaceUpperPp(country, baseTurnout[r]) / 100.0;
-                    highest = Math.Max(highest, GotvTurnout.PartyTurnout(baseTurnout[r], doors, supporters, cace[r]));
+                    double doors = ground.DoorContacts(r, i), calls = ground.PhoneContacts(r, i);
+                    reach += supporters * GotvTurnout.Coverage(doors, supporters) * GotvTurnout.DoorCaceUpperPp(country, baseTurnout[r]) / 100.0
+                             + supporters * GotvTurnout.Coverage(calls, supporters) * GotvTurnout.PhoneCaceUpperPp / 100.0;   // K82: the calls' bound beside the doors'
+                    highest = Math.Max(highest, GotvTurnout.PartyTurnout(baseTurnout[r], doors, supporters, cace[r], calls));
                 }
                 result.GroundBoundPp[keys[i]] = counted.VotesCast > 0.0 ? 100.0 * reach / counted.VotesCast : 0.0;
             }
@@ -232,7 +233,7 @@ namespace PoliSim.Elections
                 if (!regionAt.TryGetValue(names[r], out int sr)) { continue; }
                 for (int i = 0; i < keys.Count; i++)
                 {
-                    if (partyAt.TryGetValue(keys[i], out int sp)) { doors.CarryDoors(r, i, gotv.DoorContacts(sr, sp)); }
+                    if (partyAt.TryGetValue(keys[i], out int sp)) { doors.CarryDoors(r, i, gotv.DoorContacts(sr, sp)); doors.CarryCalls(r, i, gotv.PhoneContacts(sr, sp)); }   // K82: and the calls
                 }
             }
             return doors;

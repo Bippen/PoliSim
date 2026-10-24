@@ -23,8 +23,12 @@ namespace PoliSim.Elections
     /// <para><b>The anchors</b> (K7): a European count reads Cantoni &amp; Pons's volunteer canvass, Italy 2014 (`EuropeanDoorCacePp`); the USA keeps
     /// Gerber &amp; Green's band at the electorate's base turnout (`UsDoorCacePp`). The US count itself stays on W-B11's mobilisation curve until
     /// its card is re-cut (`UsGroundGame`; Elias's K18), so the US band is the ruled figure the US half of 5b will read, printed beside the count.</para>
-    /// <para><b>What is not here.</b> Phone banking's effect (row 14: [GG14] pp. 16-18, the final week only) has no verb that makes calls yet;
-    /// transport and election-day reminders are cut by q4 (rows 16, 17). Enthusiasm from rallies has no sourced turnout effect and counts nothing.</para>
+    /// <para><b>Phone banking</b> (K82, ruled 2026-10-23; q4 row 14): a completed call to a supporter raises its turnout by Mann &amp; Klofstad's
+    /// high-quality figure (`PhoneCacePp`), the calls covering the supporters as the doors do and the two effects adding (DECLARED: a supporter
+    /// visited and called gains both, first order), in the final week only (`PhoneFinalWeekDays`); the player's PHONES verb makes them. Transport
+    /// and election-day reminders are cut by q4 (rows 16, 17). Enthusiasm from rallies has no sourced turnout effect and counts nothing.
+    /// DECLARED (review 2's L4): the US count is still on W-B11's mobilisation curve (K18), so a US call enters it as a weighted contact at
+    /// `GotvModel.Spec`'s [AUTHORED-DRAFT] weight of half a door, not at the phone CACE; the CACE reaches the European counts.</para>
     /// </summary>
     public static class GotvTurnout
     {
@@ -53,6 +57,29 @@ namespace PoliSim.Elections
         /// nonvoters in the control group", "(1 - 0.747)". The base the European anchor was measured at, printed beside the count's own.
         /// </summary>
         public const double CantoniPonsControlTurnout = 0.747;
+
+        /// <summary>
+        /// SOURCED [GG14] p. 19 (Gerber &amp; Green's overview, reporting Mann &amp; Klofstad 2015's head-to-head test of four phone banks on one
+        /// chatty script, 2010): "the two high-quality phone banks raised turnout among those they reached by 0.9 and 1.4 percentage points" - K82
+        /// (Elias, 2026-10-23) took this figure. DECLARED reading: their mean, 1.15 points of turnout among the supporters a completed call reached;
+        /// the transfer from US callers to a European party's volunteers is [AUTHORED-DRAFT] (the play-calibration list carries it).
+        /// </summary>
+        public const double PhoneCacePp = (0.9 + 1.4) / 2.0;
+
+        /// <summary>SOURCED [GG14] p. 19: the larger of the two high-quality estimates, 1.4 points - the bound a count's phone effect is held within (DECLARED: the overview quotes no interval).</summary>
+        public const double PhoneCaceUpperPp = 1.4;
+
+        /// <summary>SOURCED [GG14] p. 17: "callers, who can forge through fifty or so completed calls per hour" - completed calls per volunteer-hour (DECLARED for a party's volunteers, K82).</summary>
+        public const double CompletedCallsPerVolunteerHour = 50.0;
+
+        /// <summary>SOURCED [GG14] pp. 17-18 (Nickerson 2007): calls had an effect "only among those called during the final week of the campaign" - the days before polling day a call counts in.</summary>
+        public const int PhoneFinalWeekDays = 7;
+
+        /// <summary>DERIVED, the PHONES verb's outlay: the door-to-door act's own price (`CampaignActions.Spec`), so a day of calls costs what a day of doors does; the calls it buys are bounded by the price per call and the volunteers' hours (`GotvModel.Contacts`).</summary>
+        public static double PhoneDayMoney => CampaignActions.Spec(CampaignActionKind.DoorToDoor).MoneyCost;
+
+        /// <summary>CONVENTION: the party's own hours a day of phone banking takes from its headquarters (the calling is the volunteers').</summary>
+        public const double PhoneBankHours = 1.0;
 
         /// <summary>CONVENTION: the two-sided 95 % normal quantile the upper limit is read at.</summary>
         private const double NormalQuantile95 = 1.96;
@@ -97,6 +124,13 @@ namespace PoliSim.Elections
         /// supporters reached times the CACE (before the clamp, which never binds - see the class's note).</summary>
         public static double ExtraVotes(double doors, double supporters, double cacePp) => supporters * Coverage(doors, supporters) * cacePp / 100.0;
 
+        /// <summary>K82: a party's supporters' turnout with its completed <paramref name="calls"/> too - the base, the doors' reached share at their CACE and the calls' at `PhoneCacePp`, held within [0, 1].</summary>
+        public static double PartyTurnout(double baseTurnout, double doors, double supporters, double cacePp, double calls)
+        {
+            double rate = baseTurnout + Coverage(doors, supporters) * cacePp / 100.0 + Coverage(calls, supporters) * PhoneCacePp / 100.0;
+            return rate < 0.0 ? 0.0 : (rate > 1.0 ? 1.0 : rate);
+        }
+
         /// <summary>A party's supporters' turnout in a region: the base plus the reached share times the CACE, held within [0, 1].</summary>
         public static double PartyTurnout(double baseTurnout, double doors, double supporters, double cacePp)
         {
@@ -109,7 +143,10 @@ namespace PoliSim.Elections
         /// party's share of the region's preference, normalised), each party's supporters at `PartyTurnout` with its own doors there
         /// (<paramref name="doors"/>, per party) - a party nobody canvassed votes at exactly the base.
         /// </summary>
-        public static double[] RegionVotes(double eligible, double[] preference, double baseTurnout, double[] doors, double cacePp)
+        public static double[] RegionVotes(double eligible, double[] preference, double baseTurnout, double[] doors, double cacePp) => RegionVotes(eligible, preference, baseTurnout, doors, cacePp, null);
+
+        /// <summary>K82: as the five-argument form, each party's supporters also at the phone CACE on the share of them its completed calls <paramref name="calls"/> reached (null or none: exactly the doors' turnout).</summary>
+        public static double[] RegionVotes(double eligible, double[] preference, double baseTurnout, double[] doors, double cacePp, double[] calls)
         {
             var votes = new double[preference.Length];
             double sum = 0.0;
@@ -118,7 +155,10 @@ namespace PoliSim.Elections
             for (int p = 0; p < preference.Length; p++)
             {
                 double supporters = eligible * preference[p] / sum;
-                votes[p] = supporters * PartyTurnout(baseTurnout, doors != null && p < doors.Length ? doors[p] : 0.0, supporters, cacePp);
+                double called = calls != null && p < calls.Length ? calls[p] : 0.0;
+                votes[p] = supporters * (called > 0.0
+                    ? PartyTurnout(baseTurnout, doors != null && p < doors.Length ? doors[p] : 0.0, supporters, cacePp, called)
+                    : PartyTurnout(baseTurnout, doors != null && p < doors.Length ? doors[p] : 0.0, supporters, cacePp));
             }
             return votes;
         }

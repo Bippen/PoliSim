@@ -123,6 +123,27 @@ namespace PoliSim.EditorTools
                     // §699: THE PLANTED PROOF of national reach - a Land-only party scripted to air national television every day. A national act reaches
                     // only the voters with the party on their ballot. §704: the proof is the CSU's (Bayern alone) - the SSW, which the survey does not place,
                     // keeps its prior and no act moves it, so it can prove nothing about reach.
+                    // Review M2 (2026-10-23): THE PLANTED PROOF of the attack's overlap - the CDU and the CSU share no voter (the CDU stands in the
+                    // fifteen Länder the CSU does not), so an attack between them takes nothing; the same attack on a party standing everywhere takes
+                    // its share of the attacker's reach. The overlap is read region by region from the candidacies (`CampaignRun.Setup.OverlapMatrix`).
+                    {
+                        var reachOf = new double[setup.Parties.Length];
+                        for (int p = 0; p < reachOf.Length; p++) { reachOf[p] = setup.StandingShare(p); }
+                        double electorate = setup.NationalAudience, norm = CampaignPersuasion.ElectorateMean(setup);
+                        var plantedTv = new CampaignActions.ChainTrace(CampaignActionKind.TelevisionAd, 0.5 * electorate, 1.0, 0.5 * electorate, norm, 1.0,
+                            0.5 * electorate * norm * CampaignActions.Spec(CampaignActionKind.TelevisionAd).PersuasionWeight, 0.0, 0.0);
+                        double Taken(int attacker, int target)
+                        {
+                            var pressure = new CampaignPressure(setup.Parties.Length, reachOf, setup.OverlapMatrix());
+                            pressure.AddAttack(attacker, target, plantedTv, 1.0);
+                            return 100.0 * (0.0 - pressure.ShareEffects(electorate, norm)[target]);
+                        }
+                        double cduOnCsu = Taken(cdu, csu), csuOnCdu = Taken(csu, cdu), cduOnSpd = Taken(cdu, Party("SPD"));
+                        Check(cduOnCsu == 0.0 && csuOnCdu == 0.0 && cduOnSpd > 0.0,
+                            F("THE PLANTED PROOF of the attack's overlap: the CDU's television wholly against the CSU takes {0:0.0000} points from it, the CSU's against the CDU {1:0.0000} - they share no voter; the same CDU attack on the SPD takes {2:0.0000}",
+                                cduOnCsu, csuOnCdu, cduOnSpd));
+                    }
+
                     int csuAt = Party("CSU"), sswAt = Party("SSW");
                     CampaignActions.ActionSpec tv = CampaignActions.Spec(CampaignActionKind.TelevisionAd);
                     Func<int, AiDecision[]> tvScript = d => new[] { new AiDecision(CampaignActionKind.TelevisionAd, CampaignActions.ActionTarget.National(null), "Television", tv.MoneyCost, tv.Hours, 0.0, false) };
@@ -132,11 +153,15 @@ namespace PoliSim.EditorTools
                         tvStaged.DebateDays, tvStaged.Scandals, tvStaged.LiveScandalRatePerPartyDay, tvStaged.RecordShift, tvStaged.Families, tvStaged.AwarenessStart, tvStaged.Grouping,
                         tvStaged.Positions, stands: null, doorCacePp: tvStaged.DoorCacePp);
                     double csuReach = tvStaged.StandingShare(csuAt);
-                    double csuStaged = CampaignAiHarness.RunSeeded(tvStaged, 777).FinalShares[csuAt];
-                    double csuLifted = CampaignAiHarness.RunSeeded(tvLifted, 777).FinalShares[csuAt];
-                    Check(csuStaged <= csuReach && csuLifted > csuStaged && Math.Abs(setup.StandingShare(Party("CDU")) + setup.StandingShare(Party("CSU")) - 1.0) < 1e-9,
-                        F("THE PLANTED PROOF of reach: the CSU scripted to air national television daily ends at {0:F2} % with its candidacy (its reach of the country {1:F2} %, Bayern's), {2:F2} % where it is lifted and the whole country hears it; the CDU's and CSU's reaches sum to the country",
-                            csuStaged * 100.0, csuReach * 100.0, csuLifted * 100.0));
+                    CampaignRun.Result tvStagedRun = CampaignAiHarness.RunSeeded(tvStaged, 777), tvLiftedRun = CampaignAiHarness.RunSeeded(tvLifted, 777);
+                    double csuStaged = tvStagedRun.FinalShares[csuAt];
+                    double csuLifted = tvLiftedRun.FinalShares[csuAt];
+                    // K65 (2026-10-23): the count reads each effect relative to the field over the party's own reach, so lifting the candidacy also
+                    // puts the CSU before the whole country's field - the reach proof reads the CSU's OWN campaign effect, which the candidacy bounds
+                    double effectStaged = tvStagedRun.CampaignEffectPp[csuAt], effectLifted = tvLiftedRun.CampaignEffectPp[csuAt];
+                    Check(csuStaged <= csuReach && effectLifted > effectStaged && Math.Abs(setup.StandingShare(Party("CDU")) + setup.StandingShare(Party("CSU")) - 1.0) < 1e-9,
+                        F("THE PLANTED PROOF of reach: the CSU scripted to air national television daily ends at {0:F2} % with its candidacy (its reach of the country {1:F2} %, Bayern's), {2:F2} % where it is lifted; its own campaign effect {3:+0.0000} points with the candidacy, {4:+0.0000} where it is lifted and the whole country hears it; the CDU's and CSU's reaches sum to the country",
+                            csuStaged * 100.0, csuReach * 100.0, csuLifted * 100.0, effectStaged, effectLifted));
 
                     // §704 (round 4 follow-up 1): THE SSW IS BOUNDED TO ITS LAND, NOT ZEROED. The survey does not place it (no CHES 2024 position) and it did not
                     // stand in 2017, so the spatial layer gave it nothing and the 2017-2021 pair no loyal base - its 2021 prior was discarded on day 0 and it

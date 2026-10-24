@@ -85,11 +85,8 @@ The player can:
 * Recruit staff
 * Raise money
 * Establish campaign offices
-* Select campaign strategy
-* Develop policies
 * Conduct polling
 * Identify voter groups
-* Train candidates
 * Prepare advertisements
 
 ### Campaign
@@ -99,15 +96,11 @@ The player can:
 * Hold rallies
 * Run advertisements
 * Give interviews
-* Participate in debates
-* Visit regions
 * Publish policies
 * Campaign online
 * Attack opponents
-* Defend against attacks
 * Mobilize volunteers
 * Respond to events
-* Change campaign strategy
 
 ### Election Day
 
@@ -338,7 +331,6 @@ For example:
 Rally: 4 hours
 Interview: 2 hours
 Debate preparation: 6 hours
-Regional tour: 8 hours
 Policy announcement: 3 hours
 ```
 
@@ -348,14 +340,8 @@ Different staff types provide different bonuses.
 
 ```text
 Campaign Manager
-Media Advisor
 Pollster
-Policy Advisor
-Digital Strategist
 Field Organizer
-Fundraiser
-Press Secretary
-Volunteer Coordinator
 ```
 
 ### Volunteers
@@ -391,8 +377,6 @@ A party could therefore decide to concentrate resources in a few swing regions r
 ---
 
 # 11. Campaign Strategy
-
-Before and during the campaign, the player should be able to choose an overall strategy.
 
 Examples:
 
@@ -457,7 +441,6 @@ Player chooses:
 
 * Location
 * Topic
-* Speaker
 * Size
 
 Effects:
@@ -547,18 +530,6 @@ However, excessive targeting can create diminishing returns.
 
 Player can publish posts.
 
-Possible post categories:
-
-* Policy announcement
-* Attack
-* Emotional message
-* Personal story
-* Rally promotion
-* Economic message
-* Crisis response
-
-Posts can go viral, fail, or trigger controversy.
-
 ---
 
 # 13. Media System
@@ -636,16 +607,6 @@ The same campaign message may perform very differently depending on the audience
 
 Debates should be major campaign events.
 
-Before a debate, the player chooses:
-
-* Topics to emphasize
-* Attack strategy
-* Defensive strategy
-* Tone
-* Talking points
-
-During the debate, the player can make decisions.
-
 Example:
 
 ```text
@@ -670,13 +631,6 @@ Opponent Performance
 Issue Ownership
 Random Event
 ```
-
-A strong debate performance can significantly alter:
-
-* Candidate approval
-* Media coverage
-* Momentum
-* Polling
 
 ---
 
@@ -1052,9 +1006,7 @@ Campaign actions such as:
 
 * Phone banking
 * Door knocking
-* Transport
 * Volunteer operations
-* Election-day reminders
 
 increase turnout.
 
@@ -1726,3 +1678,79 @@ Prepare for Next Election
 The best campaign strategy should therefore emerge from the interaction between **political positioning, voter psychology, geography, resources, information and uncertainty**.
 
 The system should be deep enough to produce unexpected election results while remaining transparent enough that, after every election, the player can understand what decisions caused the outcome.
+
+---
+
+# 45. Cut by q4 (A-LOOP, ruled 2026-10-23, K1-K6 of docs/RULINGS_2026-10-23.md; docs/specs/A_LOOP_Q4_TABLE.md)
+
+Text moved here from its section because no field-experiment or named-search source gives the action an effect on
+vote choice or turnout (A_LOOP_PLAN §7.3). Each entry names its old place, the row of the q4 table, and the reason.
+Kept, not moved: "Attack opponents" (row 6 - K3 keeps the player's attack and the AI's, [AUTHORED-DRAFT] until LSR07
+is read) and the Pollster (row 19 - K2 keeps the information rows as priced information).
+
+## From §3 Pre-Campaign
+* Develop policies            [row 2: voters do not respond to campaign policy statements, AES11]
+* Train candidates            [row 3: no study found]
+* Select campaign strategy    [row 4: no effect of its own; its parts are rows 6, 9, 10, 14 - K6 cuts the player's choice]
+
+## From §3 Campaign
+* Participate in debates      [row 8: the player's debate choices; LPP22 finds no effect of TV debates on vote choice]
+* Visit regions               [row 13: candidates' visits move neither turnout nor the list's share, CP20]
+* Defend against attacks      [row 7: no source]
+* Change campaign strategy    [row 4]
+
+## From §9 Time
+Regional tour: 8 hours        [row 13]
+
+## From §9 Staff
+Media Advisor                 [row 20: no source for what the role adds]
+Policy Advisor                [row 22]
+Digital Strategist            [row 21]
+Fundraiser                    [row 22: the yield is FUNDRAISE's, row 1]
+Press Secretary               [row 22]
+Volunteer Coordinator         [row 22: the field organiser carries volunteers, Q7]
+
+## From §11 Campaign Strategy
+Before and during the campaign, the player should be able to choose an overall strategy.
+                              [row 4; the five sets stay in §11 as the AI personalities' reference - K6]
+
+## From §12 Rally
+* Speaker                     [row 13: CP20]
+
+## From §12 Social Media
+Possible post categories:
+
+* Policy announcement
+* Attack
+* Emotional message
+* Personal story
+* Rally promotion
+* Economic message
+* Crisis response
+
+Posts can go viral, fail, or trigger controversy.
+                              [row 18: no source for categories or virality; the post itself stays]
+
+## From §15 Debates
+Before a debate, the player chooses:
+
+* Topics to emphasize
+* Attack strategy
+* Defensive strategy
+* Tone
+* Talking points
+
+During the debate, the player can make decisions.
+                              [row 8; the example move list and "Performance depends on" stay as the run's reference]
+
+A strong debate performance can significantly alter:
+
+* Candidate approval
+* Media coverage
+* Momentum
+* Polling
+                              [K4 (ask A3): a debate is held and reported and moves no poll - LPP22, 56 TV debates in 62 elections]
+
+## From §26 Get-Out-The-Vote System
+* Transport                   [row 16: no study found]
+* Election-day reminders      [row 17: GG14 and BOND12 measure zero]

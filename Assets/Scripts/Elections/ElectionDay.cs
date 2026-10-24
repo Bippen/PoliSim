@@ -132,11 +132,12 @@ namespace PoliSim.Elections
             double cast = 0.0, eligible = 0.0;
             var digest = new StringBuilder();
             var doors = new double[partyCount];
+            var calls = new double[partyCount];   // K82: the phone bank's completed calls
 
             for (int r = 0; r < gotv.RegionCount; r++)
             {
-                for (int p = 0; p < partyCount; p++) { doors[p] = gotv.DoorContacts(r, p); }
-                double[] expected = GotvTurnout.RegionVotes(gotv.Eligible(r), regionPreference[r], baseTurnoutByRegion[r], doors, doorCacePpByRegion[r]);
+                for (int p = 0; p < partyCount; p++) { doors[p] = gotv.DoorContacts(r, p); calls[p] = gotv.PhoneContacts(r, p); }
+                double[] expected = GotvTurnout.RegionVotes(gotv.Eligible(r), regionPreference[r], baseTurnoutByRegion[r], doors, doorCacePpByRegion[r], calls);
                 double regionCast = 0.0;
                 foreach (double v in expected) { regionCast += v; }
 

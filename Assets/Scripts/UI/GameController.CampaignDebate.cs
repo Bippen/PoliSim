@@ -16,6 +16,8 @@ namespace PoliSim.UI
     /// stops. A debate screen that ended with "+1.2 % in the polls" would be inventing the single
     /// number §15 refuses to produce, and the player would learn to read a debate as votes rather
     /// than as coverage and momentum, which is the opposite of what the chain says.
+    /// ⚠ K4 (Elias, 2026-10-23): the campaign run applies neither shock - a debate is held and reported and moves no poll ([LPP22],
+    /// `CampaignRun.StepDay`) - so the verdict column reports the indices and the margin and says the polls moved by nothing.
     ///
     /// **An exchange that has not happened is drawn as ABSENT, not as zero** (the Desk's Year-0
     /// convention, 1m-r2). Mid-debate, the remaining exchanges are em-dash rows: a zero would claim
@@ -305,8 +307,8 @@ namespace PoliSim.UI
                 }
 
                 DrawCampaignEmptyRow(new Rect(r.x, y, r.width, rowHeight), "MARGIN — NOT YET", rowStyle); y += rowHeight;
-                DrawCampaignEmptyRow(new Rect(r.x, y, r.width, rowHeight), "COVERAGE SHOCK — NOT YET", rowStyle); y += rowHeight;
-                DrawCampaignEmptyRow(new Rect(r.x, y, r.width, rowHeight), "MOMENTUM SHOCK — NOT YET", rowStyle); y += rowHeight;
+                // K4 (2026-10-23): a debate moves no poll, whatever its result
+                DrawCampaignEmptyRow(new Rect(r.x, y, r.width, rowHeight), "POLLS MOVED — NONE, WHATEVER THE RESULT", rowStyle); y += rowHeight;
             }
             else
             {
@@ -320,17 +322,13 @@ namespace PoliSim.UI
                     System.Math.Abs(result.Margin).ToString("F1", CultureInfo.InvariantCulture) + " pts", rowStyle, figureStyle);
                 y += rowHeight;
 
-                DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "Coverage shock",
-                    result.CoverageShock.ToString("F2", CultureInfo.InvariantCulture), rowStyle, figureStyle);
-                y += rowHeight;
-
-                DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "Momentum shock, winner",
-                    "+" + result.MomentumShockPp.ToString("F2", CultureInfo.InvariantCulture) + " pp", rowStyle, figureStyle);
+                // K4 (2026-10-23): the result's coverage and momentum shocks are the debate model's own; the run applies neither
+                DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "Polls moved", "none", rowStyle, figureStyle);
                 y += rowHeight;
             }
 
             DrawDebateNote(new Rect(r.x, y + Mathf.Round(6f * uy), r.width, r.yMax - y - Mathf.Round(6f * uy)), r,
-                "A DEBATE MOVES COVERAGE AND MOMENTUM. IT MOVES NO VOTES DIRECTLY — WHATEVER THE POLLS DO IN THE DAYS AFTER IS THE MOMENTUM'S DOING.",
+                "A DEBATE IS HELD AND REPORTED, AND MOVES NO POLL - 56 TELEVISED DEBATES IN TEN COUNTRIES SHOWED NO MEASURABLE EFFECT ON HOW PEOPLE VOTE.",
                 "Debate verdict note");
         }
 

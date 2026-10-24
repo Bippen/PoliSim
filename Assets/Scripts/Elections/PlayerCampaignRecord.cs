@@ -93,7 +93,7 @@ namespace PoliSim.Elections
         public int Response;
     }
 
-    /// <summary>One queued decision as the save carries it: the action, its target (a region index or −1 for national; an issue or −1 for the general message), the outlay.</summary>
+    /// <summary>One queued decision as the save carries it: the action, its target (a region index or −1 for national; an issue or −1 for the general message), the outlay, and since K3 the party it attacks (−1 none).</summary>
     [Serializable]
     public class QueuedDecisionRecord
     {
@@ -104,15 +104,18 @@ namespace PoliSim.Elections
         public double Spend;
         /// <summary>CL-1: the role a RecruitStaff decision fills (a `StaffRole` as an int), −1 for every other kind. A NEGATIVE <see cref="Day"/> is a pre-campaign day.</summary>
         public int Role = -1;
+        /// <summary>K3 (Elias, 2026-10-23): the party the act ATTACKS - an index into the campaign's parties, −1 for an act on the party's own case. The run lands the negative campaign's share of the contact against it, sharing the party's coverage (K66, `CampaignPressure.AddAttack`).</summary>
+        public int AgainstParty = -1;
 
         /// <summary>The decision as the run resolves it - the spec's hours, the label from the region or "national".</summary>
         public AiDecision ToDecision(CampaignRun.Setup setup)
         {
-            CampaignActions.ActionSpec spec = CampaignActions.Spec(Kind);
+            // K2: a queued campaign poll is information, not one of the eight - its hours are the poll's (`CampaignAi.PollingHours`)
+            double hours = Kind == CampaignActionKind.CommissionPolling ? CampaignAi.PollingHours : Kind == CampaignActionKind.PhoneBank ? GotvTurnout.PhoneBankHours : CampaignActions.Spec(Kind).Hours;   // K82: the phone bank's own hours
             IssueId? issue = Issue >= 0 ? (IssueId?)(IssueId)Issue : null;
             string label = RegionIndex >= 0 && RegionIndex < setup.Regions.Length ? setup.Regions[RegionIndex].Name : "national";
             var target = RegionIndex >= 0 ? new CampaignActions.ActionTarget(RegionIndex, -1, issue) : CampaignActions.ActionTarget.National(issue);
-            return new AiDecision(Kind, target, label, Spend, spec.Hours, 0.0, false);
+            return new AiDecision(Kind, target, label, Spend, hours, 0.0, false, AgainstParty >= 0 && AgainstParty < setup.Parties.Length ? AgainstParty : -1);   // K3: the attack verb
         }
     }
 }
