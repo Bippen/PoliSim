@@ -103,7 +103,9 @@ namespace PoliSim.UI
                 Mathf.Ceil(DeskCaptionHeight(DeskCaption(10.5f, PoliSimTheme.TextPrimary))));
             float barHeight = Mathf.Round(7f * uy);
             float rowHeight = nameHeight + barHeight + Mathf.Round(11f * uy);
-            float costWidth = Mathf.Ceil(costStyle.CalcSize(new GUIContent("000,000 " + Purse + " · 0 h")).x) + Mathf.Round(8f * ux);
+            // K110 (the delta review's M-1 sweep): the column holds the widest act price as printed - the USA's re-denominated dollars run to eight digits
+            string widestCost = Kronor(System.Linq.Enumerable.Max(CampaignActions.TheEight, k => CampaignActions.Spec(k).MoneyCost));
+            float costWidth = Mathf.Ceil(costStyle.CalcSize(new GUIContent((widestCost.Length > 7 ? widestCost : "000,000") + " " + Purse + " · 0 h")).x) + Mathf.Round(8f * ux);
             float pad = Mathf.Round(6f * ux);
 
             // ONE scale across every row: this column is a comparison, and a per-row scale would

@@ -15,6 +15,7 @@ namespace PoliSim.Elections.Generated
         public const string SenateChangeSourceDigest = "e57f762dc67f1fe0ea57edfc899ea9f20d8cf500e0c04b42824e187fd00d9419";
         public const string SenateOnSourceDigest = "608e5ba9a022561d059e2ea551252dde04a4a83413d1633f98c0d8cd00b66f5f";
         public const string SenateDivisionSourceDigest = "82ec606b6d991f932c7f0a70e4cfa4f053ed9b300763ce0f61a3a799801c07ba";
+        public const string SenateSpecialSourceDigest = "81d120050c6b82f46506e71fad2f001b46a7b5a42966502950a462fa9213a1d8";
 
         /// <summary>Every saved page the Senate run read, by its path under `ElectionsData/usa/`, with its SHA-256.</summary>
         public static readonly (string Path, string Sha256)[] SenateRawSources = BuildSenateRawSources();
@@ -34,6 +35,10 @@ namespace PoliSim.Elections.Generated
 
         /// <summary>Each Congress's party division by the Senate's page ([SEN-DIV]) and each stretch of its days on which the roster gives it.</summary>
         public static readonly (int Congress, int D, int R, int I, string HoldsFrom, string HoldsTo)[] SenateDivision = BuildSenateDivision();
+
+        /// <summary>K14: each Senate special scheduled after the record's races - its polling day, the seat (state, class), the end of the unexpired
+        /// term, the holder who resigned and his last day, the appointee of record and his oath, and the pages giving the day (senate_specials.csv's header).</summary>
+        public static readonly (string PollingDay, string State, int Class, string TermEnds, string VacatedBy, string VacatedOn, string Appointee, string Sworn, string DayBy)[] SenateSpecials = BuildSenateSpecials();
 
         private static (string Path, string Sha256)[] BuildSenateRawSources() => new (string, string)[]
         {
@@ -100,6 +105,10 @@ namespace PoliSim.Elections.Generated
             ("raw/senate/wayback_senate_state_WI_20260412235540.html", "61b9957472f540ceb39a42f1d154ab968d5b5f09af185759fdc125a6a17b340a"),
             ("raw/senate/wayback_senate_state_WV_20260219174541.html", "2ad710b86da40455752459c76f7c6d6252cd415cef9f0b4ba3f8034546a277df"),
             ("raw/senate/wayback_senate_state_WY_20260827060634.html", "145590e5249f1b58747f2ab4ea071ba2d5bbbb464f14bf54407cd7c788a30d21"),
+            ("raw/senate_specials_2026/flelections_canlist_20261103-GEN_USS.html", "e8940328a2726451d3bfc28468d01bbe248646e534c4bc78ab5947d915008ba8"),
+            ("raw/senate_specials_2026/wayback_fldos_election_dates_20261021231353.html", "1abac9bb37552a5fd769fca6ee3b5aad6aa109b6c2a4f013043735d2ed13bc69"),
+            ("raw/senate_specials_2026/wayback_ohiosos_2026_schedule_20260210135215.html", "c25a87774a5cd10a932d91687dd9ed2f60437ec8affb397cf834436fdaa50009"),
+            ("raw/senate_specials_2026/wayback_ohiosos_writ_of_election_us_senate_20260424172144.pdf", "f6bfddb79eed4a477cc5c8a2709832f71a791eabed53df037e5bd8c9c4ae9dfc"),
         };
 
         private static (string State, int Class, string Senator, string Party, string IndependentFrom, string Took, string Left, string HowIn, string HowOut, string Caucus, string CaucusBy)[] BuildSenateSeats() => new (string, int, string, string, string, string, string, string, string, string, string)[]
@@ -313,5 +322,12 @@ namespace PoliSim.Elections.Generated
             (119, 45, 53, 2, "2026-03-24", "2026-07-10"),
             (119, 45, 53, 2, "2026-07-14", "2026-09-06"),
         };
+
+        private static (string PollingDay, string State, int Class, string TermEnds, string VacatedBy, string VacatedOn, string Appointee, string Sworn, string DayBy)[] BuildSenateSpecials() => new (string, string, int, string, string, string, string, string, string)[]
+        {
+            ("2026-11-03", "FL", 3, "2029-01-03", "Marco Rubio", "2025-01-20", "Ashley Moody", "2025-01-21", "the Division of Elections' 2026 dates and its candidate list for the 2026 general election"),
+            ("2026-11-03", "OH", 3, "2029-01-03", "J. D. Vance", "2025-01-10", "Jon Husted", "2025-01-21", "the Governor's writ of 2025-10-29 and the Secretary of State's 2026 schedule"),
+        };
+
     }
 }

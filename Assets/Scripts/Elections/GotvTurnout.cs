@@ -21,14 +21,13 @@ namespace PoliSim.Elections
     /// 1 at any base turnout a seeded European count reads (`GroundGameCountDiagnostic` prints the highest it reaches): the clamp in `PartyTurnout` is a guard that binds nowhere,
     /// and the effect is bounded by the CACE times the coverage, which is below 1 - no budget buys more than every supporter reached once.</para>
     /// <para><b>The anchors</b> (K7): a European count reads Cantoni &amp; Pons's volunteer canvass, Italy 2014 (`EuropeanDoorCacePp`); the USA keeps
-    /// Gerber &amp; Green's band at the electorate's base turnout (`UsDoorCacePp`). The US count itself stays on W-B11's mobilisation curve until
-    /// its card is re-cut (`UsGroundGame`; Elias's K18), so the US band is the ruled figure the US half of 5b will read, printed beside the count.</para>
+    /// Gerber &amp; Green's band at the electorate's base turnout (`UsDoorCacePp`), which the US count reads since Elias's K18 (`UsGroundGame`: each
+    /// state at its own base, the band of that base).</para>
     /// <para><b>Phone banking</b> (K82, ruled 2026-10-23; q4 row 14): a completed call to a supporter raises its turnout by Mann &amp; Klofstad's
     /// high-quality figure (`PhoneCacePp`), the calls covering the supporters as the doors do and the two effects adding (DECLARED: a supporter
     /// visited and called gains both, first order), in the final week only (`PhoneFinalWeekDays`); the player's PHONES verb makes them. Transport
     /// and election-day reminders are cut by q4 (rows 16, 17). Enthusiasm from rallies has no sourced turnout effect and counts nothing.
-    /// DECLARED (review 2's L4): the US count is still on W-B11's mobilisation curve (K18), so a US call enters it as a weighted contact at
-    /// `GotvModel.Spec`'s [AUTHORED-DRAFT] weight of half a door, not at the phone CACE; the CACE reaches the European counts.</para>
+    /// Since K18 a US call reaches the US count at the same phone CACE (the [GG14] figure, read back on its own continent).</para>
     /// </summary>
     public static class GotvTurnout
     {

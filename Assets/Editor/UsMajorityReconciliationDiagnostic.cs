@@ -18,10 +18,11 @@ namespace PoliSim.EditorTools
     /// controller's order (the day, the player's day tick, the boundary's turn):
     /// <list type="bullet">
     /// <item>(a) the window's arithmetic, DERIVED by hand: 1105(a)'s first Monday in February 2025 opens it, a bill's course before 1 October closes it;</item>
-    /// <item>(b) q16's spatial vote: a rate's place on the scale and back; a REP cut toward its position reads +1 for REP and -1 for DEM; a rise to the dial's ceiling
-    /// past DEM's own rate reads FOR from the world's standing rate below it (it ends nearer) and AGAINST from a planted rate above it, where the axis
-    /// midpoint read FOR for both; GA-2-6's shape (every rate at its ceiling) reads against for REP; and a
-    /// country without a Congress carries no spatial set;</item>
+    /// <item>(b) q16's spatial vote on K72's sourced scale (Elias's ruling of 2026-10-23): each party's position stands for its own sourced rate, a rate's place on
+    /// the scale and back; a cut halfway toward REP's rate reads +1 for REP and -1 for DEM; a rise to the dial's ceiling, far past DEM's own rate, reads AGAINST
+    /// from the standing rate below it (it ends farther - on the dial's map it read FOR) and from a planted rate above it, where the axis midpoint read FOR for
+    /// both; GA-2-6's shape (every rate at its ceiling) reads against for REP; and a country without a Congress carries no spatial set. The desk's worlds plant
+    /// the standing income tax between the two parties' sourced rates (DECLARED: REP's own is the law in force at the seed, which would leave its majority no book);</item>
     /// <item>(c) a DEM player-president (a planted game-elected Harris sworn 2025-01-20) facing the REP Congress of record: the REP majority tables its
     /// reconciliation (its book: the household rates toward REP's position, never past it) on the first day of the window and Congress sends it - REP for, DEM
     /// against, by a majority in the Senate - to the President's DESK, where it is held, nothing applied; SIGNED, it is law at once and the rates move to the
@@ -67,32 +68,33 @@ namespace PoliSim.EditorTools
                         (SimulationManager sq, World wq, Country uq) = DemPresidentWorld(hosts);
                         TaxLine income = uq.TaxLines.First(t => t.Type == TaxType.IncomeTax && t.IsImplemented);
                         float repAt = Position(uq, "REP"), demAt = Position(uq, "DEM");
-                        float roundTrip = SpatialBudgetVote.RateAt(income, SpatialBudgetVote.ScaleAt(income, income.Rate));
+                        float roundTrip = SpatialBudgetVote.RateAt(uq, income, SpatialBudgetVote.ScaleAt(uq, income, income.Rate));
                         bool repRate = UsMajorityReconciliation.TryPartyRate(uq, "REP", income, out float repRateOf);
-                        Check(Mathf.Abs(roundTrip - income.Rate) < 1e-3f && Mathf.Approximately(SpatialBudgetVote.ScaleAt(income, income.MaxRate), 0f) && Mathf.Approximately(SpatialBudgetVote.ScaleAt(income, income.MinRate), 10f)
-                              && repRate && repRateOf < income.Rate,
-                            F("(b) q16's scale: the income tax's dial {0}-{1} %, its ceiling at 0 and floor at 10 on `redistribution`; the standing {2} % at {3:0.00} and back to {4} %; REP at {5:0.00} stands for {6} % (below the standing rate), DEM at {7:0.00} for {8} %",
-                                Num(income.MinRate), Num(income.MaxRate), Num(income.Rate), SpatialBudgetVote.ScaleAt(income, income.Rate), Num(roundTrip), repAt, Num(repRateOf), demAt, Num(SpatialBudgetVote.RateAt(income, demAt))));
-                        var cut = new BudgetBill(); cut.TaxLines[TaxType.IncomeTax] = income.Rate - 2f;
+                        bool scaled = SpatialBudgetVote.TryUsScale(uq, income, out _, out float demSourced, out _, out float repSourced);
+                        Check(scaled && Mathf.Abs(roundTrip - income.Rate) < 1e-3f && repRate && Mathf.Abs(repRateOf - repSourced) < 1e-4f && repRateOf < income.Rate && income.Rate < demSourced
+                              && Mathf.Abs(SpatialBudgetVote.RateAt(uq, income, demAt) - demSourced) < 1e-3f,
+                            F("(b) q16's scale, K72's sourced one: on `redistribution` REP at {0:0.00} stands for its own {1} % and DEM at {2:0.00} for its own {3} % (the dial's map had put them at {4} % and {5} %); the standing {6} % (planted between them, K72) at {7:0.00} and back to {8} %",
+                                repAt, Num(repRateOf), demAt, Num(demSourced), Num(SpatialBudgetVote.RateAt(income, repAt)), Num(SpatialBudgetVote.RateAt(income, demAt)), Num(income.Rate), SpatialBudgetVote.ScaleAt(uq, income, income.Rate), Num(roundTrip)));
+                        var cut = new BudgetBill(); cut.TaxLines[TaxType.IncomeTax] = income.Rate - (income.Rate - repRateOf) / 2f;   // halfway to REP's own rate, so it reaches toward REP without passing it
                         var ceiling = new BudgetBill(); ceiling.TaxLines[TaxType.IncomeTax] = income.MaxRate;
                         List<SpatialRate> cutRates = SpatialBudgetVote.RatesOf(uq, cut), ceilingRates = SpatialBudgetVote.RatesOf(uq, ceiling);
                         float repCut = SpatialBudgetVote.Alignment(repAt, cutRates), demCut = SpatialBudgetVote.Alignment(demAt, cutRates);
                         Check(Mathf.Approximately(repCut, 1f) && Mathf.Approximately(demCut, -1f),
-                            F("(b) a 2-point cut toward REP's position reads {0:+0.00;-0.00} for REP and {1:+0.00;-0.00} for DEM", repCut, demCut));
+                            F("(b) a cut halfway toward REP's own rate reads {0:+0.00;-0.00} for REP and {1:+0.00;-0.00} for DEM", repCut, demCut));
                         // a rise to the dial's ceiling past DEM's own rate, from two standing laws: from the world's own (below DEM's rate) it ends nearer DEM's position
                         // than it began, so it reads FOR, the overshoot shrinking it below +1; from a planted law above DEM's rate it moves straight away, so it reads
                         // AGAINST - where the axis midpoint read the same FOR for both. The expected sign is the distances' own.
-                        float demRate = SpatialBudgetVote.RateAt(income, demAt), midpointDem = (5f - demAt) / 5f, standingIncome = income.Rate;
-                        float dFrom = Mathf.Abs(SpatialBudgetVote.ScaleAt(income, standingIncome) - demAt), dTo = Mathf.Abs(SpatialBudgetVote.ScaleAt(income, income.MaxRate) - demAt);
+                        float demRate = SpatialBudgetVote.RateAt(uq, income, demAt), midpointDem = (5f - demAt) / 5f, standingIncome = income.Rate;
+                        float dFrom = Mathf.Abs(SpatialBudgetVote.ScaleAt(uq, income, standingIncome) - demAt), dTo = Mathf.Abs(SpatialBudgetVote.ScaleAt(uq, income, income.MaxRate) - demAt);
                         float demRiseNearer = SpatialBudgetVote.Alignment(demAt, ceilingRates);
                         float plantedAbove = (demRate + income.MaxRate) / 2f;
                         income.Rate = plantedAbove;
                         float demRiseAway;
                         try { demRiseAway = SpatialBudgetVote.Alignment(demAt, SpatialBudgetVote.RatesOf(uq, ceiling)); }
                         finally { income.Rate = standingIncome; }
-                        Check(standingIncome < demRate && demRate < income.MaxRate && Mathf.Sign(demRiseNearer) == Mathf.Sign(dFrom - dTo) && demRiseNearer > 0f && demRiseNearer < 1f
+                        Check(standingIncome < demRate && demRate < income.MaxRate && Mathf.Sign(demRiseNearer) == Mathf.Sign(dFrom - dTo) && dTo > dFrom && demRiseNearer < 0f
                               && Mathf.Approximately(demRiseAway, -1f) && midpointDem > 0f,
-                            F("(b) a rise to the dial's ceiling ({0} %), past DEM's own {1} %: from the standing {2} % ({3:0.000} points from DEM's position) to the ceiling ({4:0.000} points from it) it ends NEARER - {5:+0.00;-0.00}, FOR, the overshoot below +1; from a planted {6} % (restored after) it moves straight away - {7:+0.00;-0.00}, AGAINST; the axis midpoint read {8:+0.00;-0.00} for both",
+                            F("(b) K72: a rise to the dial's ceiling ({0} %), far past DEM's own {1} %: from the standing {2} % ({3:0.000} points from DEM's position) to the ceiling ({4:0.000} points from it) it ends FARTHER - {5:+0.00;-0.00}, AGAINST (on the dial's map it ended nearer and read FOR); from a planted {6} % (restored after) it moves straight away - {7:+0.00;-0.00}, AGAINST; the axis midpoint read {8:+0.00;-0.00} for both",
                                 Num(income.MaxRate), Num(demRate), Num(standingIncome), dFrom, dTo, demRiseNearer, Num(plantedAbove), demRiseAway, midpointDem));
                         var ceilings = new BudgetBill();
                         foreach (TaxLine t in uq.TaxLines.Where(t => t.IsImplemented)) { ceilings.TaxLines[t.Type] = t.MaxRate; }
@@ -103,6 +105,31 @@ namespace PoliSim.EditorTools
                         Check(ceilingsConcern.Spatial != null && ceilingsConcern.Spatial.Count == ceilings.TaxLines.Count && repCeilings < 0f && swedish.Spatial == null,
                             F("(b) GA-2-6's shape - a reconciliation with every levied rate at its ceiling ({0} rates): REP {1:+0.00;-0.00}, against; DEM {2:+0.00;-0.00} (reported); a country without a Congress (Sweden) carries no spatial set - its budget votes are unchanged",
                                 ceilings.TaxLines.Count, repCeilings, demCeilings));
+
+                        // the review's M-2: K72's consequences on the UNPLANTED world - the seeded law on both anchored lines (the desk worlds plant around them)
+                        float plantedIncome = income.Rate;
+                        TaxLine corporate = uq.TaxLines.First(t => t.Type == TaxType.CorporateTax && t.IsImplemented);
+                        float plantedCorporate = corporate.Rate;
+                        try
+                        {
+                            income.Rate = uq.BaselineTaxRates[TaxType.IncomeTax];
+                            corporate.Rate = uq.BaselineTaxRates[TaxType.CorporateTax];
+                            SpatialBudgetVote.TryUsScale(uq, corporate, out _, out float demCorporate, out _, out float repCorporate);
+                            var incomeCut = new BudgetBill(); incomeCut.TaxLines[TaxType.IncomeTax] = income.Rate - 1f;
+                            var corporateCut = new BudgetBill(); corporateCut.TaxLines[TaxType.CorporateTax] = corporate.Rate - 1f;
+                            float repIncomeCut = SpatialBudgetVote.Alignment(repAt, SpatialBudgetVote.RatesOf(uq, incomeCut)), repCorporateCut = SpatialBudgetVote.Alignment(repAt, SpatialBudgetVote.RatesOf(uq, corporateCut));
+                            BudgetBill repBook = UsMajorityReconciliation.Book(uq, "REP", out string repBookWhy);
+                            float gap = demSourced - income.Rate, threshold = 2f * gap;
+                            var riseUnder = new BudgetBill(); riseUnder.TaxLines[TaxType.IncomeTax] = income.Rate + threshold - 0.25f;
+                            var riseOver = new BudgetBill(); riseOver.TaxLines[TaxType.IncomeTax] = income.Rate + threshold + 0.25f;
+                            float demUnder = SpatialBudgetVote.Alignment(demAt, SpatialBudgetVote.RatesOf(uq, riseUnder)), demOver = SpatialBudgetVote.Alignment(demAt, SpatialBudgetVote.RatesOf(uq, riseOver));
+                            Check(Mathf.Abs(repRateOf - income.Rate) < 1e-3f && Mathf.Abs(repCorporate - corporate.Rate) < 1e-3f && Mathf.Approximately(repIncomeCut, -1f) && Mathf.Approximately(repCorporateCut, -1f)
+                                  && repBook == null && demUnder > 0f && demOver < 0f,
+                                F("(b) THE REVIEW'S M-2, K72 UNPLANTED (the seeded law, {0} % income and {1} % corporate): REP's own rate IS the law on both lines ({2} %, {3} %), so a 1-point income cut reads {4:+0.00;-0.00} and a 1-point corporate cut {5:+0.00;-0.00} for REP, and REP's majority has no book (\"{6}\"); DEM's own income rate {7} % lies {8} points above the law, so DEM reads AGAINST any income rise past twice that, {9} points ({10:+0.00;-0.00} at {11} points, {12:+0.00;-0.00} at {13}); DEM's corporate rate {14} % (K111: as sourced)",
+                                    Num(income.Rate), Num(corporate.Rate), Num(repRateOf), Num(repCorporate), repIncomeCut, repCorporateCut, repBookWhy ?? "a book was built", Num(demSourced), Num(gap), Num(threshold),
+                                    demUnder, Num(threshold - 0.25f), demOver, Num(threshold + 0.25f), Num(demCorporate)));
+                        }
+                        finally { income.Rate = plantedIncome; corporate.Rate = plantedCorporate; }
 
                         // ============================================================ (c) the DEM player-president facing the REP Congress of record: SIGNED
                         (SimulationManager s, World w, Country u) = DemPresidentWorld(hosts);
@@ -157,10 +184,11 @@ namespace PoliSim.EditorTools
                         (SimulationManager sv, World wv, Country uv) = DemPresidentWorld(hosts);
                         TaxLine rateV = uv.TaxLines.First(t => t.Type == TaxType.IncomeTax);
                         float standingV = rateV.Rate;
-                        float plantedV = standingV + 3f;
+                        // the rate law planted between the desk's law and DEM's own rate (K72's scale): above it DEM would want REP's cut too and override its own president
+                        float plantedV = SpatialBudgetVote.TryUsScale(uv, rateV, out _, out float demV, out _, out float _) && demV > standingV ? (standingV + demV) / 2f : standingV + 3f;
                         (DateTime tabledV, DateTime _, BudgetBill heldV) = StepToDesk(sv, wv, () => rateV.Rate = plantedV);   // the review's M1: a rate law the day after the tabling
                         float voteDayV = heldV != null && heldV.TaxLines.TryGetValue(TaxType.IncomeTax, out float vd) ? vd : float.NaN;
-                        Check(heldV?.RateMoves != null && voteDayV < plantedV && voteDayV > standingV && Mathf.Abs(heldV.RateMoves[TaxType.IncomeTax] - (voteDayV - plantedV)) < 1e-4f,
+                        Check(heldV?.RateMoves != null && voteDayV < plantedV && Mathf.Abs(heldV.RateMoves[TaxType.IncomeTax] - (voteDayV - plantedV)) < 1e-4f,   // the move measured from the planted law: the book was built on the vote day
                             F("(d) BUILT AGAIN ON THE VOTE DAY (the review's M1): tabled {0} on the law of {1} %, a rate law planted the next day ({2} %) - Congress votes the book from it: the income tax {2} % to {3} %",
                                 Day(tabledV), Num(standingV), Num(plantedV), Num(voteDayV)));
                         standingV = plantedV;
@@ -235,6 +263,10 @@ namespace PoliSim.EditorTools
             harris.Electors.Add(new UsPresidentialElection.Tally { Candidate = "Donald J. Trump", Party = "REP", Votes = 268 });
             u.UsPresidentialElections.Add(harris);
             u.Government = UsPresidentialElection.GovernmentOf(harris, harris.TakesOffice);
+            // K72: under the sourced scale REP's own income rate is the TCJA's, the law in force at the seed, so the world's standing law gives a REP majority no
+            // book to send; the desk's cases plant the standing income tax between the two parties' own rates (DECLARED for the diagnostic) - REP's book cuts toward its rate
+            TaxLine income = u.TaxLines.First(t => t.Type == TaxType.IncomeTax);
+            if (SpatialBudgetVote.TryUsScale(u, income, out _, out float demRate, out _, out float repRate)) { income.Rate = (demRate + repRate) / 2f; }
             return (s, w, u);
         }
 

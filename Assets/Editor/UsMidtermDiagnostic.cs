@@ -38,6 +38,8 @@ namespace PoliSim.EditorTools
     /// <item>(f) PS-6 K13 (Elias's ruling of 2026-10-23): the president's party at a midterm is the last presidential winner's - the game's own 2024 count's in the
     /// world, and, planted, the record's winner where the game has counted none (not the presidency governing on the start's day), a game count's winner and an
     /// undecided count's acting party read before it.</item>
+    /// <item>(k) PS-6 K14 (Elias's ruling of 2026-10-23): the specials `senate_specials.csv` schedules for 3 Nov 2026 - Ohio's and Florida's class 3 seats -
+    /// are elected beside the class for the unexpired term, and once seated the Congress view edges exactly those two in brass as the game's.</item>
     /// </list>
     /// Opens its worlds under <see cref="SimulationManager.EpochScope"/> and restores the random streams and the regional readout. Writes nothing.
     /// Prints `US MIDTERM: PASS` and exits 0 when every check holds.
@@ -224,8 +226,22 @@ namespace PoliSim.EditorTools
                     midterm.V, midterm.PollV, midterm.TermPoints, midterm.PresidentsParty, UsMidtermTerm.N, UsMidtermTerm.From, UsMidtermTerm.To, UsMidtermTerm.LowerPoints, UsMidtermTerm.UpperPoints));
             Check(!midterm.BaseOfRecord && midterm.BaseYear == 2024 && midterm.VBase == first.V && midterm.House.Count == first.House.Count,
                 F("(b) the midterm House swung from the game's own 2024 count (V(B) {0:F4}, base {1}, {2})", midterm.VBase, midterm.BaseYear, midterm.BaseOfRecord ? "of record" : "the game's own"));
-            Check(midterm.SenateClass == 2 && midterm.Senate.Count > 0 && midterm.Senate.All(s => s.Class == 2 && s.Term == "full") && midterm.Convenes == Seated2027,
-                F("(b) the Senate's class 2 elected - {0} seats, REP {1}, DEM {2}, no special of record in the catalog - seated {3}", midterm.Senate.Count, midterm.SenateOf("REP"), midterm.SenateOf("DEM"), Day(midterm.Convenes)));
+            int classTwoStates = UsPresidentialReturns.SenateSeats.Where(s => s.Class == 2).Select(s => s.State).Distinct().Count();
+            List<UsCongressElection.SenateSeat> regular = midterm.Senate.Where(s => s.Term == "full").ToList(), special = midterm.Senate.Where(s => s.Term != "full").ToList();
+            string scheduled = string.Join(" ", UsPresidentialReturns.SenateSpecials.Where(s => s.PollingDay == Day(Midterm2026)).Select(s => s.State + "/" + s.Class + " unexpired").OrderBy(s => s, StringComparer.Ordinal));
+            string elected = string.Join(" ", special.Select(s => s.State + "/" + s.Class + " " + s.Term).OrderBy(s => s, StringComparer.Ordinal));
+            Check(midterm.SenateClass == 2 && regular.Count == classTwoStates && regular.All(s => s.Class == 2) && midterm.Convenes == Seated2027,
+                F("(b) the Senate's class 2 elected - {0} full-term seats of the roster's {1} class 2 states, REP {2}, DEM {3} - seated {4}", regular.Count, classTwoStates,
+                    regular.Count(s => s.Side == "REP"), regular.Count(s => s.Side == "DEM"), Day(midterm.Convenes)));
+            // K14: the specials the catalog schedules for the day are counted beside the class - Ohio's and Florida's class 3 seats, each for the unexpired term
+            Check(scheduled == "FL/3 unexpired OH/3 unexpired" && elected == scheduled,
+                F("(k) PS-6 K14: the specials of {0} elected beside the class - {1} (senate_specials.csv schedules {2}; the K14 pair is FL/3 and OH/3)", Day(Midterm2026),
+                    elected.Length == 0 ? "none" : string.Join(", ", special.Select(s => s.State + "/" + s.Class + " " + s.Side)), scheduled.Length == 0 ? "none" : scheduled));
+            UsCongressView.View seatedView = UsCongressView.Read(usa, Seated2027);
+            UsCongressView.ClassRow classThree = seatedView?.Classes?.FirstOrDefault(r => r.Class == 3);
+            string brass = classThree == null ? "no class 3 row" : string.Join(" ", classThree.Seats.Where(s => s.Special).Select(s => s.State + "/" + s.Class + (s.Game ? "" : " (not the game's)")).OrderBy(s => s, StringComparer.Ordinal));
+            Check(brass == "FL/3 OH/3",
+                F("(k) PS-6 K14: on {0} the Congress view edges in brass the seats the game elected to an unexpired term - {1}", Day(Seated2027), brass.Length == 0 ? "none" : brass));
             Dictionary<string, int> seated = midterm.HouseSeats(CountryId.USA);
             bool houseSeated = seated.All(kv => usa.ParliamentSeats.TryGetValue(kv.Key, out int n) && n == kv.Value);
             Check(houseSeated && UsCongressElection.TryInOffice(usa, Seated2027, out UsCongressElection.Contest sitting) && ReferenceEquals(sitting, midterm),

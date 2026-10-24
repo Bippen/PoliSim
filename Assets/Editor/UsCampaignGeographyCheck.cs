@@ -69,16 +69,15 @@ namespace PoliSim.EditorTools
         /// <summary>DECLARED: the replays of the per-state count under W-D1's declared regional noise - `ElectionDayHarness`'s replay count.</summary>
         private const int NoiseReplays = 400;
 
-        /// <summary>[SOURCED] Gallup's most-important-problem table, July 2026 (`ElectionsData/salience/issue_salience.md`): immigration .12, and the economy .11
-        /// ("Economy in general" and "High cost of living/Inflation" tie at 11, rising prices onto the economy by StanceModel's convention, as Germany's
-        /// staging maps them); "Government/poor leadership", the first, has no slot and is dropped, as Sweden's first is. DATED AFTER the campaign it stands
-        /// in for - US-30's reading (a wave before the campaign) is unruled; the geography measured here does not read the salience (the AI's candidate
-        /// regions are ordered by audience, the ground game's turnout by contacts).</summary>
-        private const double GallupImmigration = 0.12, GallupEconomy = 0.11;
+        // K18 (Elias's ruling of 2026-10-23): the card is re-cut to the inputs play stages on - the salience the game's US staging reads for the campaign
+        // (`LiveCampaignSetup.UsSalience`: Gallup's August 2024 wave for the 2024 campaign, US-30) and the electorate it mobilises (`UsRegions.EligibleOf`: the
+        // Census Bureau's CVAP 2020-2024, US-30), read from the game's own staging and never retyped. Until K18 the card read Gallup's July 2026 column and the
+        // University of Florida Election Lab's VEP; the VEP stays read below for one purpose only, the registered reading (see RegisteredRelative).
 
-        /// <summary>DECLARED: the per-state electorate a ground game mobilises - the University of Florida Election Lab's VEP for 2024 (saved byte for byte, its
-        /// digest held to its folder's SHA256SUMS.txt). US-30's reading of the electorate is unruled; here it stands in, in the Editor only.</summary>
-        private const string TurnoutRelative = "ElectionsData/usa/raw/returns/ufl_turnout_2024G_v0.4.csv";
+        /// <summary>DECLARED (K18): the electorate US-9 was registered on - the University of Florida Election Lab's VEP for 2024 (saved byte for byte, its digest
+        /// held to its folder's SHA256SUMS.txt). The ceiling's registered outcome (the range, the calls and the electors US-31's PLAN_PREREG reads off the card)
+        /// is measured again on it beside the re-cut, so a re-cut that changed a registered outcome fails here by name instead of re-registering silently.</summary>
+        private const string RegisteredRelative = "ElectionsData/usa/raw/returns/ufl_turnout_2024G_v0.4.csv";
 
         /// <summary>The scripted program's act (DECLARED): door-to-door in the one state, as many a day as the candidate's day holds at the act's own hours, each
         /// at the act's own price; the party's day-0 office plan the one office there. Its staging is otherwise its cast's (chest, volunteers, staff).</summary>
@@ -171,16 +170,22 @@ namespace PoliSim.EditorTools
             string Names(IEnumerable<int> rs) => string.Join(", ", rs.Select(r => names[r]));
             sb.Append(F("  the {0} largest {1} audiences: {2}; the {0} closest {1} states: {3}; the {0} closest {4} states: {5}\n", k, PriorYear, Names(largest), Names(closest), PredictedYear, Names(closestNext)));
 
-            // ---- the electorate: UF's VEP, its bytes held to the folder's digest list
-            byte[] turnoutBytes = File.ReadAllBytes(PathOf(TurnoutRelative));
-            string turnoutDigest = Sha256(turnoutBytes);
-            bool turnoutHashed = DigestListed(TurnoutRelative, turnoutDigest);
-            Dictionary<string, double> vep = ReadVep(Encoding.UTF8.GetString(turnoutBytes));
-            var missing = names.Where(s => !vep.ContainsKey(s)).ToList();
-            Check(turnoutHashed && missing.Count == 0, F("the electorate: UF's VEP ({0}) - its SHA-256 in SHA256SUMS.txt, a VEP for every jurisdiction{1}", Path.GetFileName(TurnoutRelative),
+            // ---- the electorate (K18): the game's own, the Census Bureau's CVAP (UsRegions, held figure by figure to its file by UsCampaignDiagnostic)
+            double[] eligible = names.Select(s => (double)UsRegions.EligibleOf(s)).ToArray();
+            var missing = names.Where(s => UsRegions.EligibleOf(s) <= 0).ToList();
+            Check(missing.Count == 0, F("the electorate: the game's staging's own (UsRegions.EligibleOf - the Census Bureau's CVAP 2020-2024, US-30), one for every jurisdiction{0}",
                 missing.Count == 0 ? string.Empty : " - MISSING: " + string.Join(", ", missing)));
-            double[] eligible = names.Select(s => vep.TryGetValue(s, out double v) ? v : double.NaN).ToArray();
             double usBase = prev.Sum(s => (double)s.VotesTotal) / eligible.Sum();
+            // the registered electorate (UF's VEP, US-9's own), its bytes held to the folder's digest list - read for the registered reading of (c) alone
+            byte[] turnoutBytes = File.ReadAllBytes(PathOf(RegisteredRelative));
+            string turnoutDigest = Sha256(turnoutBytes);
+            bool turnoutHashed = DigestListed(RegisteredRelative, turnoutDigest);
+            Dictionary<string, double> vep = ReadVep(Encoding.UTF8.GetString(turnoutBytes));
+            var vepMissing = names.Where(s => !vep.ContainsKey(s)).ToList();
+            Check(turnoutHashed && vepMissing.Count == 0, F("the registered electorate: UF's VEP ({0}) - its SHA-256 in SHA256SUMS.txt, a VEP for every jurisdiction{1}", Path.GetFileName(RegisteredRelative),
+                vepMissing.Count == 0 ? string.Empty : " - MISSING: " + string.Join(", ", vepMissing)));
+            double[] registeredEligible = names.Select(s => vep.TryGetValue(s, out double v) ? v : double.NaN).ToArray();
+            double registeredBase = prev.Sum(s => (double)s.VotesTotal) / registeredEligible.Sum();
 
             // ---- the field of record (US-6) and the anchor: E1's construction on the idle run
             IReadOnlyList<PresidencyOfRecord.CandidateOfRecord> field = PresidencyOfRecord.CandidatesOf(CountryId.USA, FieldTermEnd);
@@ -215,10 +220,11 @@ namespace PoliSim.EditorTools
             var regions = new RegionAudience[n];
             for (int r = 0; r < n; r++) { regions[r] = new RegionAudience(names[r], prev[r].VotesTotal, eligible: eligible[r]); }
             double nationalAudience = regions.Sum(x => x.Audience);
-            var salience = new double[IssueVector.IssueCount];
-            for (int i = 0; i < salience.Length; i++) { salience[i] = double.NaN; }
-            salience[(int)IssueId.Immigration] = GallupImmigration;
-            salience[(int)IssueId.Economy] = GallupEconomy;
+            // the salience (K18): the game's own US staging's for this campaign's opening (US-30's newest Gallup wave fielded before it), never retyped
+            double[] salience = LiveCampaignSetup.UsSalience(calendar.CampaignStart, out string salienceLabel);
+            double salienceImmigration = salience[(int)IssueId.Immigration], salienceEconomy = salience[(int)IssueId.Economy];
+            Check(salienceLabel.StartsWith("Gallup MIP August 2024", StringComparison.Ordinal) && !salienceLabel.Contains("fielded after"),
+                F("the salience: the game's US staging's for a campaign opening {0:yyyy-MM-dd} (LiveCampaignSetup.UsSalience) - {1}; K18 re-cuts the card to Gallup's August 2024 wave", calendar.CampaignStart, salienceLabel));
             LiveCampaignSetup.TryFor(CountryId.Sweden, new (int, int, Scandal)[0], null, out CampaignRun.Setup houses, out _);   // the staging's own houses (W-E4's ladder), read, not retyped
             double electorateLoyalty = LoyaltyModel.WeightedMeanLoyalty(loyalty, priorShares);
 
@@ -235,8 +241,8 @@ namespace PoliSim.EditorTools
                 LiveCampaignSetup.PublicPollEveryDays, new PollingHouse(houses.InternalHouse.Name, houses.InternalHouse.SampleSize, houses.InternalHouse.Cost, new double[keys.Length], isInternal: true),
                 electorateLoyalty, null, debateDays);
             Func<int, AiDecision[]> nothing = day => new AiDecision[0];
-            sb.Append(F("  the staging: {0} on the {1} jurisdictions (audience their {2} votes cast, {3:N0} together; electorate UF's {4} VEP, {5:N0}); the campaign {6:yyyy-MM-dd} to {7:yyyy-MM-dd}; casts by CampaignCasts.Of: {8}; seed {9}\n",
-                string.Join(" and ", keys), n, PriorYear, nationalAudience, PredictedYear, eligible.Sum(), calendar.CampaignStart, calendar.ElectionDate.AddDays(-1), castLine, Seed));
+            sb.Append(F("  the staging: {0} on the {1} jurisdictions (audience their {2} votes cast, {3:N0} together; electorate the Census Bureau's CVAP 2020-2024, {5:N0}; salience {10}); the campaign {6:yyyy-MM-dd} to {7:yyyy-MM-dd}; casts by CampaignCasts.Of: {8}; seed {9}\n",
+                string.Join(" and ", keys), n, PriorYear, nationalAudience, PredictedYear, eligible.Sum(), calendar.CampaignStart, calendar.ElectionDate.AddDays(-1), castLine, Seed, salienceLabel));
 
             // ---- THE IDLE RUN: nothing in it - no act, no debate, no story - and it is the prediction
             var idleParties = new CampaignRun.PartySetup[keys.Length];
@@ -448,7 +454,7 @@ namespace PoliSim.EditorTools
             card.Add("");
             card.Add("### (c) W-D1's per-state count under a maximal ground game");
             card.Add("");
-            card.Add(F("The count (`ElectionDay.Count`, no noise): each jurisdiction's preferences its derived shares on the idle map ({0}'s national shares from {1}'s jurisdictions, R-US14 (a) - US-4's row), its electorate UF's VEP, one base turnout ({2:0.0000}, the votes cast over the electorate - it cancels from every share; no rate clamps), the other attributes neutral. **The maximal ground game** is one party's mobilisation at the curve's ceiling in one jurisdiction (`GotvModel.Mobilization` at 100, its supporters' turnout × {3:0.00} - `TurnoutModel.MobilizationSpan`, [AUTHORED-DRAFT]): no budget buys more.",
+            card.Add(F("The count (`ElectionDay.Count`, no noise): each jurisdiction's preferences its derived shares on the idle map ({0}'s national shares from {1}'s jurisdictions, R-US14 (a) - US-4's row), its electorate the game's staging's CVAP (K18), one base turnout ({2:0.0000}, the votes cast over the electorate - it cancels from every share; no rate clamps), the other attributes neutral. **The maximal ground game** is one party's mobilisation at the curve's ceiling in one jurisdiction (`GotvModel.Mobilization` at 100, its supporters' turnout × {3:0.00} - `TurnoutModel.MobilizationSpan`, [AUTHORED-DRAFT]): no budget buys more.",
                 PredictedYear, PriorYear, usBase, maxMultiplier));
             var ceilingRows = new List<string>();
             double moveMin = double.MaxValue, moveMax = 0.0;
@@ -482,6 +488,43 @@ namespace PoliSim.EditorTools
                 moveMin, moveMax, flippable.Count, flippable.Sum(r => next[r].Electors), flippable.Count == 0 ? "none" : Names(flippable), k, PredictedYear,
                 string.Join(", ", closestNext.Select(r => F("{0} {1:+0.00;-0.00} (the ceiling's move for the trailing party {2:+0.00;-0.00})", names[r], Margin(recordNext[r]), Margin(recordNext[r]) > 0 ? ceilingMove[r][0] : ceilingMove[r][1])))));
             sb.Append(F("  (c) the ceiling: {0:0.00} to {1:0.00} pp of margin; could flip {2} calls ({3} electors): {4}\n", moveMin, moveMax, flippable.Count, flippable.Sum(r => next[r].Electors), flippable.Count == 0 ? "none" : Names(flippable)));
+
+            // K18, THE REGISTERED READING: the same ceiling on the electorate US-9 was registered on (UF's VEP, its own base turnout) - US-31's PLAN_PREREG reads
+            // the range, the calls and the electors off the sentence above, so the re-cut must print what the registered inputs print, at the card's precision,
+            // or this fails by name: a re-cut that changes a registered outcome is put to Elias, never re-registered by regenerating the card.
+            {
+                double regMin = double.MaxValue, regMax = 0.0;
+                var regFlippable = new List<int>();
+                var regNotCeiling = new List<string>();
+                ElectionDay.Result Registered(RegionalMobilization gotv) => ElectionDay.Count(names, mapIdle, gotv, registeredBase, 50.0, 50.0, 50.0, new System.Random(Seed), 0.0);
+                double[][] regBase = CountShares(Registered(new RegionalMobilization((double[])registeredEligible.Clone(), 3)));
+                for (int r = 0; r < n; r++)
+                {
+                    var move = new double[2];
+                    for (int c = 0; c < 2; c++)
+                    {
+                        var ceiling = new RegionalMobilization((double[])registeredEligible.Clone(), 3);
+                        double contacts = Math.Ceiling(CeilingEffort * registeredEligible[r]);
+                        GotvSpec spec = GotvModel.Spec(GotvOperation.DoorKnocking);
+                        ceiling.Operate(r, c, GotvOperation.DoorKnocking, contacts * spec.MoneyPerContact, contacts * spec.VolunteerHoursPerContact, out _, out _);
+                        if (ceiling.Mobilization(r, c) != 100.0) { regNotCeiling.Add(names[r]); }
+                        move[c] = Margin(CountShares(Registered(ceiling))[r]) - Margin(regBase[r]);
+                        regMin = Math.Min(regMin, Math.Abs(move[c]));
+                        regMax = Math.Max(regMax, Math.Abs(move[c]));
+                    }
+                    double m = Margin(regBase[r]);
+                    if (m > 0 ? m + move[0] < 0 : m + move[1] > 0) { regFlippable.Add(r); }
+                }
+                string Printed(double lo, double hi, List<int> flips) => F("{0:0.00} to {1:0.00} points, {2} calls - {3} electors: {4}", lo, hi, flips.Count, flips.Sum(r => next[r].Electors), flips.Count == 0 ? "none" : Names(flips));
+                string recut = Printed(moveMin, moveMax, flippable), registered = Printed(regMin, regMax, regFlippable);
+                bool regClamps = registeredBase * maxMultiplier >= 1.0;
+                Check(recut == registered && regNotCeiling.Count == 0 && !regClamps,
+                    F("K18: the re-cut does not change US-9's registered outcome - the ceiling on the game's CVAP {0}; on the registered VEP (base turnout {1:0.0000}) {2}{3}",
+                        recut, registeredBase, registered, recut == registered ? string.Empty : " - THE RE-CUT CHANGED A REGISTERED OUTCOME: US-31's PLAN_PREREG reads it off the card; put to Elias, the card not re-registered"));
+                card.Add("");
+                card.Add(F("**The registered reading** (K18): US-9 was registered on UF's VEP for 2024 (base turnout {0:0.0000}) and Gallup's July 2026 column; the ceiling on that electorate reads {1} - the re-cut's figures above to the card's precision, so the re-cut moves no registered outcome. The salience enters no figure of (c): the idle map and the ceiling read none.",
+                    registeredBase, registered));
+            }
 
             // the scripted ground game under the per-state count (from (b)), and the AI's own
             card.Add("");
@@ -577,9 +620,9 @@ namespace PoliSim.EditorTools
             }
 
             // the card's head: the staging, then (a), (b), (c) and R-US16 (c) as added above
-            string staging = F("A US campaign in the Editor only: {0} on the {1} jurisdictions - audience each one's {2} votes cast ({3:N0} together), electorate UF's {4} VEP ({5:N0}) - staged on US-6's vote model at the USA's start ({6:d MMM yyyy}), the campaign {7:d MMM} to {8:d MMM yyyy}; casts by `CampaignCasts.Of` ({9}); the model's one price table and its [AUTHORED-DRAFT] staging (`LiveCampaignSetup`'s chest, volunteers, offices and staff); salience Gallup's July 2026 (immigration {10:0.00}, the economy {11:0.00} - dated after the campaign); both parties on every ballot.",
+            string staging = F("A US campaign in the Editor only: {0} on the {1} jurisdictions - audience each one's {2} votes cast ({3:N0} together), electorate the Census Bureau's CVAP 2020-2024 ({5:N0}), the game's own staging's - staged on US-6's vote model at the USA's start ({6:d MMM yyyy}), the campaign {7:d MMM} to {8:d MMM yyyy}; casts by `CampaignCasts.Of` ({9}); the war chest the game's staging's (K19: the 2024 nominees' FEC disbursements over the campaign window, their mean, the purse re-denominated by K110 so money binds as before), the model's act prices times the chest's ratio and its [AUTHORED-DRAFT] staging (`LiveCampaignSetup`'s volunteers, offices and staff); salience the game's own staging's, Gallup's August 2024 wave (immigration {10:0.00}, the economy {11:0.00} - the newest fielded before the campaign; K18 re-cut the card from July 2026's column and UF's VEP); both parties on every ballot.",
                 string.Join(" and ", keys), n, PriorYear, nationalAudience, PredictedYear, eligible.Sum(), WorldClock.StartDate(CountryId.USA), calendar.CampaignStart, calendar.ElectionDate.AddDays(-1),
-                castLine, GallupImmigration, GallupEconomy);
+                castLine, salienceImmigration, salienceEconomy);
             string idleLine = F("The idle run - no act, no debate, no story - is the prediction ({0}); by E1's construction its national shares are {1}'s exactly (D {2}, R {3}, others {4}), and derived to the jurisdictions by R-US14 (a) they are US-4's row: electors R {5} – D {6}, {7} states called wrong.",
                 Pct(keys, idleFinal), PredictedYear, Pct(natIdle[0]), Pct(natIdle[1]), Pct(natIdle[2]), evIdle[ElectoralCollege.Republican], evIdle[ElectoralCollege.Democrat], wrongIdle);
             card.InsertRange(0, new[] { "### The staging", "", staging + " " + idleLine, "" });
@@ -588,7 +631,7 @@ namespace PoliSim.EditorTools
             stamp.Append(UsPresidentialReturns.StateSourceDigest).Append(UsPresidentialReturns.YearSourceDigest).Append(UsPresidentialReturns.DistrictSourceDigest).Append(UsPresidentialReturns.CandidateSourceDigest)
                 .Append(UsPresidentialReturns.HouseSourceDigest).Append(turnoutDigest);
             foreach (PoliticalParty party in PartySystems.RealRoster(CountryId.USA)) { stamp.Append(F("{0}:{1:R}:{2:R}:{3:R}", party.Abbrev, party.LrEcon, party.Galtan, party.PeopleVsElite)); }
-            stamp.Append(F("{0}|{1}|{2}|{3:R}|{4}|{5:R}|{6:R}|{7}|{8}", Seed, PriorYear, PredictedYear, CeilingEffort, NoiseReplays, GallupImmigration, GallupEconomy, ProgramAct, k));
+            stamp.Append(F("{0}|{1}|{2}|{3:R}|{4}|{5:R}|{6:R}|{7}|{8}", Seed, PriorYear, PredictedYear, CeilingEffort, NoiseReplays, salienceImmigration, salienceEconomy, ProgramAct, k)).Append(string.Join(",", UsRegions.CitizenVotingAgePopulation.Select(c => c.State + ":" + c.Cvap))).Append(UsCampaignSpending.SourceDigest);
             return Sha256(Encoding.UTF8.GetBytes(stamp.ToString()));
         }
 

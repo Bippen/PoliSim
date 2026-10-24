@@ -927,6 +927,28 @@ namespace PoliSim.EditorTools
                 if (!SameRow(division[i], v.Congress, v.D, v.R, v.I, v.HoldsFrom, v.HoldsTo)) { wrong.Add("division row " + i + " (" + v.Congress + " " + v.HoldsFrom + ") differs"); }
             }
 
+            // K14: the specials scheduled after the record's races - the CSV's figures, and each special a seat whose holder resigned on its day and whose
+            // appointee of record took it on his oath and serves, in a class other than the one regularly up that year
+            List<string[]> specials = ReadUsCsv(usa, "senate_specials.csv", UsPresidentialReturns.SenateSpecialSourceDigest, "polling_day,state,class,term_ends,vacated_by,vacated_on,appointee,sworn,day_by", wrong);
+            if (specials.Count != UsPresidentialReturns.SenateSpecials.Length) { wrong.Add("specials: " + specials.Count + " CSV rows, " + UsPresidentialReturns.SenateSpecials.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(specials.Count, UsPresidentialReturns.SenateSpecials.Length); i++)
+            {
+                var p = UsPresidentialReturns.SenateSpecials[i];
+                if (!SameRow(specials[i], p.PollingDay, p.State, p.Class, p.TermEnds, p.VacatedBy, p.VacatedOn, p.Appointee, p.Sworn, p.DayBy)) { wrong.Add("special row " + i + " (" + p.State + ") differs"); }
+                bool vacated = false, appointed = false;
+                foreach (var s in UsPresidentialReturns.SenateSeats)
+                {
+                    if (s.State != p.State || s.Class != p.Class) { continue; }
+                    if (s.Senator == p.VacatedBy && s.Left == p.VacatedOn && s.HowOut == "resigned") { vacated = true; }
+                    if (s.Senator == p.Appointee && s.Took == p.Sworn && s.HowIn == "appointed" && s.Left == "-") { appointed = true; }
+                }
+                if (!vacated) { wrong.Add("special " + p.State + "/" + p.Class + ": no seat row of " + p.VacatedBy + " resigned on " + p.VacatedOn); }
+                if (!appointed) { wrong.Add("special " + p.State + "/" + p.Class + ": no seat row of " + p.Appointee + " appointed, sworn " + p.Sworn + " and serving"); }
+                int year = int.Parse(p.PollingDay.Substring(0, 4), CultureInfo.InvariantCulture);
+                if (UsCongressElection.ClassUp(year) == p.Class) { wrong.Add("special " + p.State + "/" + p.Class + ": the class regularly up in " + year + " - not a special"); }
+                if (string.CompareOrdinal(p.TermEnds, p.PollingDay) <= 0) { wrong.Add("special " + p.State + "/" + p.Class + ": the term ends " + p.TermEnds + ", not after " + p.PollingDay); }
+            }
+
             // the roster again, from the seat rows alone: each (state, class) its holder at the day's end - from his oath's day, not on his last.
             // Each seat's holders in order: each took before he left, each left on or before the next one took, only the last still serving.
             var bySeat = new SortedDictionary<string, List<int>>(StringComparer.Ordinal);
@@ -1066,8 +1088,9 @@ namespace PoliSim.EditorTools
 
             sb.Append(F("    UsPresidentialReturns, the Senate by state and by date: {0} page(s) the bytes the run read; {1} senator(s), {2} change(s), {3} named day(s), "
                         + "{4} [SEN-DIV] stretch(es), every figure the CSVs'; the roster derived again from the seats - each seat its holders in order, never two at once: 100 seats on every named day, each state in two "
-                        + "classes, the classes 33, 33 and 34 states; {5}; the US start the clock's ({6})\n",
-                UsPresidentialReturns.SenateRawSources.Length, seats.Count, changes.Count, on.Count, division.Count, string.Join("; ", lines.ToArray()), start));
+                        + "classes, the classes 33, 33 and 34 states; {5}; the US start the clock's ({6}); K14's scheduled specials {7}, each a resigned holder's seat its serving appointee holds, off the year's regular class\n",
+                UsPresidentialReturns.SenateRawSources.Length, seats.Count, changes.Count, on.Count, division.Count, string.Join("; ", lines.ToArray()), start,
+                string.Join(", ", Array.ConvertAll(UsPresidentialReturns.SenateSpecials, p => p.State + "/" + p.Class + " " + p.PollingDay))));
             return 0;
         }
 

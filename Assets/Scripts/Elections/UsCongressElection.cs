@@ -34,7 +34,9 @@ namespace PoliSim.Elections
     /// block's cascade - the holder's side at the end of the polling day, else the side holding the Senate majority that day with the Vice President's vote,
     /// else (where the block's instrument fails) a seeded draw (US-8c's, never in one party's favour - DECLARED). The class up is the one the catalog's races
     /// of record elect in the same year of a six-year cycle (Art. I §3 cl. 2); the specials are the catalog's races of the day to another class (Nebraska's
-    /// Class II in 2024) - sourced, else none (G6: BILLED where a special of record is not read; no later special is on record). California's same-seat,
+    /// Class II in 2024) - sourced, else none (G6: BILLED where a special of record is not read) - and, after the catalog's races, the specials scheduled by
+    /// the states' own writs and lists (K14, `senate_specials.csv`: a seat whose holder resigned and whose appointee of record serves, elected on its polling
+    /// day for the unexpired term, seated with the rest on 3 January - DECLARED, R-US18's NY-22 convention). California's same-seat,
     /// same-day special is the full-term seat's (the block: never counted apart).</description></item>
     /// <item><description><b>Seated at noon on 3 January.</b> From <see cref="Contest.Convenes"/> the game's House holds every seat (REP the count, DEM the
     /// rest) and the game's Senate seats replace the record's for the seats it elected; the seats it did not elect stay the record's, by date (R-US1 (a):
@@ -51,8 +53,8 @@ namespace PoliSim.Elections
     /// record's latest); the president's party is the party of the president governing on the polling day. The midterm's own result is BILLED until the
     /// Clerk's statistics of its year are saved - never estimated.</description></item>
     /// </list>
-    /// Not modelled, stated: third-party winners (two sides, R-US10 (a)); runoffs, ranked-choice transfers and Georgia's majority rule; specials the record
-    /// does not hold (2026's Ohio and Florida specials for the seats vacated in January 2025 are not in the catalog - their appointees of record stand, G6);
+    /// Not modelled, stated: third-party winners (two sides, R-US10 (a)); runoffs, ranked-choice transfers and Georgia's majority rule; specials neither the
+    /// record nor `senate_specials.csv` holds (G6);
     /// party switches; a delayed oath (every winner sits from 3 January, R-US18's NY-22 convention); the Senate's own vacancies after the record's reach.
     /// </summary>
     public static class UsCongressElection
@@ -443,7 +445,8 @@ namespace PoliSim.Elections
         }
 
         /// <summary>The seats up on <paramref name="pollingDay"/>: every state holding a seat of the class up (US-12's roster, `senate_seats.csv`), each a
-        /// full term; and the catalog's races of the day to another class (the specials of record - Nebraska's Class II in 2024).</summary>
+        /// full term; the catalog's races of the day to another class (the specials of record - Nebraska's Class II in 2024); and (K14) the specials scheduled
+        /// on that day after the catalog's races (`senate_specials.csv`), each for the unexpired term.</summary>
         public static List<(string State, int Class, string Term)> SeatsUp(DateTime pollingDay)
         {
             int cls = ClassUp(pollingDay.Year);
@@ -454,6 +457,13 @@ namespace PoliSim.Elections
             foreach (var r in Generated.UsPresidentialReturns.SenateRaces)
             {
                 if (r.Year == pollingDay.Year && r.Class != cls) { up.Add((r.State, r.Class, r.Term)); }
+            }
+            // K14: the specials scheduled after the catalog's races (`senate_specials.csv`), each on its own polling day for the unexpired term; a race of
+            // record for the same seat stands in its place, so no seat is counted twice.
+            string day = pollingDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            foreach (var s in Generated.UsPresidentialReturns.SenateSpecials)
+            {
+                if (s.PollingDay == day && s.Class != cls && !up.Exists(u => u.Item1 == s.State && u.Item2 == s.Class)) { up.Add((s.State, s.Class, "unexpired")); }
             }
             return up;
         }

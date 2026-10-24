@@ -781,9 +781,9 @@ namespace PoliSim.EditorTools
                 PreCampaignRun.State mail = PreCampaignRun.Begin(staging, party, new System.Random(43), c);
                 PreCampaignRun.StepDay(mail, new[] { new PreCampaignRun.Decision(CampaignActionKind.Fundraise) });
                 double letters = Math.Min(PreCampaignRun.MailingLetters, Math.Floor(PreCampaignRun.SupportersLeft(PreCampaignRun.Begin(staging, party, new System.Random(43), c))));
-                double expect = letters * (PreCampaignRun.RevenuePerLetterUsd * EnergyLayer.NationalPerUsd(c) - PreCampaignRun.LetterTariff(c));
+                double expect = letters * (PreCampaignRun.RevenuePerLetterUsd * EnergyLayer.NationalPerUsd(c) - PreCampaignRun.LetterTariff(c)) / LiveCampaignSetup.PursePerUnit(c);   // K110: in the purse's units
                 mailingsHold &= mail.Log.Count == 1 && mail.Log[0].Refusal == null && Math.Abs((mail.Money - staging.Parties[party].StartingMoney) - expect) < 1e-6 && mail.LettersSent == letters;
-                mailings.Add(F("{0}: {1:N0} letters at {2} postage raise {3:N0} for {4:N0} - the chest {5:+#,0;-#,0}", c, letters, PreCampaignRun.LetterTariff(c), mail.Raised, mail.Log[0].Cost, mail.Money - staging.Parties[party].StartingMoney));
+                mailings.Add(F("{0}: {1:N0} letters at {2} postage raise {3:N0} for {4:N0} - the chest {5:+#,0;-#,0} (in the national currency, K110: the purse's units times {6:0.####})", c, letters, PreCampaignRun.LetterTariff(c), mail.Raised * LiveCampaignSetup.PursePerUnit(c), mail.Log[0].Cost * LiveCampaignSetup.PursePerUnit(c), (mail.Money - staging.Parties[party].StartingMoney) * LiveCampaignSetup.PursePerUnit(c), LiveCampaignSetup.PursePerUnit(c)));
             }
             Check(mailingsHold, F("(K84) a fundraising mailing pays the country's postage and banks [BCP12]'s revenue per letter, never a vote; Sweden refused (\"{0}\"); {1}",
                 unpriced.Log.Count == 1 ? unpriced.Log[0].Refusal : "-", string.Join("; ", mailings)));

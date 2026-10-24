@@ -1332,11 +1332,12 @@ namespace PoliSim.UI
         /// job a hero numeral has. **Not `UiFormat.Money`** either: that is dollar-prefixed and
         /// tiered (`$1.12M`), and this sheet is denominated in the purse's national units at full precision because a
         /// campaign budget is spent in units a treasurer would recognise, not in rounded millions.
-        /// Invariant, like every other numeric site here (B3's defect class).
+        /// Invariant, like every other numeric site here (B3's defect class). K110: the amount is in the purse's units, printed in its national currency
+        /// (`LiveCampaignSetup.PursePerUnit` - the USA's re-denominated dollars, one to one elsewhere).
         /// </summary>
-        private static string Kronor(double amount)
+        private string Kronor(double amount)
         {
-            return amount.ToString("N0", CultureInfo.InvariantCulture);
+            return (amount * PoliSim.Elections.LiveCampaignSetup.PursePerUnit(PlayerCountryId)).ToString("N0", CultureInfo.InvariantCulture);
         }
 
         /// <summary>

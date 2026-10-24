@@ -81,13 +81,13 @@ namespace PoliSim.Simulation
         public static bool TryPartyRate(Country country, string party, TaxLine line, out float rate)
         {
             rate = float.NaN;
-            if (country == null || line == null || string.IsNullOrEmpty(party)) { return false; }
+            if (country == null || line == null || string.IsNullOrEmpty(party) || !SpatialBudgetVote.Applies(country)) { return false; }   // the review's L-4: Congress.Applies - a US Congress with a sworn Senate; the player's by this method's callers, all on the player's day tick
             foreach (PoliticalParty p in PartySystems.For(country.Id))
             {
                 if (p.Abbrev != party) { continue; }
                 float at = StanceModel.Position(p, StanceAxis.Redistribution, false);
                 if (float.IsNaN(at)) { return false; }
-                rate = SpatialBudgetVote.RateAt(line, at);
+                rate = SpatialBudgetVote.RateAt(country, line, at);   // K72: the sourced scale where it holds
                 return true;
             }
             return false;

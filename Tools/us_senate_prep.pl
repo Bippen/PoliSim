@@ -599,6 +599,79 @@ for my $x (@holders) {
 }
 @changes = sort { $a->[0] cmp $b->[0] || $a->[1] cmp $b->[1] || $a->[3] cmp $b->[3] } @changes;
 
+# ---------------------------------------------------------------- K14 (RULINGS_2026-10-23): the specials scheduled after the record's races - Ohio's and Florida's of 3 Nov 2026
+# A special is a seat whose holder resigned and whose appointee of record serves, on a polling day the state's election office names, for the
+# unexpired term to the end of the seat's class. Read from raw/senate_specials_2026/ (each file held to its SHA256SUMS.txt line):
+#   - Ohio: the Governor's writ of election of 29 Oct 2025 (wayback_ohiosos_writ_of_election_us_senate_*.pdf) - a scanned image with no text
+#     layer, so its words are transcribed below (DECLARED) and the file is held by its digest; and the Secretary of State's 2026 schedule
+#     (wayback_ohiosos_2026_schedule_*.html), whose "2026 GENERAL/SPECIAL ELECTION | <day>" line is read and must be the writ's day;
+#   - Florida: the Division of Elections' 2026 dates (wayback_fldos_election_dates_*.html, the general election's "Election Day") and its
+#     candidate list for the 2026 general election (flelections_canlist_20261103-GEN_USS.html), whose "United States Senator" table must
+#     carry the appointee of record as its incumbent - the race on that day for the seat the appointee holds.
+# The seat, its class, the resignation and the appointee's oath are the roster's own (the Senate's pages above); the term's end is the class
+# page's own words. It dies, writing nothing, where a page is off its digest, a line is not found, the two Ohio days differ, the vacated
+# senator's row does not end resigned on the day, the appointee's row is not appointed and serving, the state holds a seat of the regular
+# class of the polling day's year (the race would not be a special), or the class page's term end is not after the polling day.
+my %spec_writ = (   # DECLARED: the writ's words, read off its scan (the file's digest holds the scan itself)
+    OH => { vacated => 'J. D. Vance', vacated_on => '2025-01-10', appointee => 'Jon Husted', appointed => '2025-01-17', polling => '2026-11-03', signed => '2025-10-29',
+            quote => 'hold a special election on Tuesday, November 3, 2026 to fill such vacancy' },
+);
+my @specials;   # [ polling_day, state, class, term_ends, vacated_by, vacated_on, appointee, sworn, day_by ]
+my @special_notes;
+{
+    my %sp;
+    open my $s, '<', "$raw/senate_specials_2026/SHA256SUMS.txt" or die "$raw/senate_specials_2026/SHA256SUMS.txt: $!\n";
+    while (my $l = <$s>) { $sums{"senate_specials_2026/$2"} = $1 if $l =~ /^([0-9a-f]{64}) \*(.+?)\s*$/; }
+    close $s;
+    page('senate_specials_2026/' . one('senate_specials_2026', 'wayback_ohiosos_writ_of_election_us_senate_\d{14}\.pdf'));
+    my $oh = words(page('senate_specials_2026/' . one('senate_specials_2026', 'wayback_ohiosos_2026_schedule_\d{14}\.html')));
+    if ($oh =~ /2026 GENERAL\/SPECIAL ELECTION \| ([A-Z][a-z]+ \d{1,2}, 2026)/) {
+        my $d = day($1, 'the Ohio schedule');
+        problem("Ohio: the Secretary of State's schedule names the general/special election $d, the writ $spec_writ{OH}{polling}") unless $d eq $spec_writ{OH}{polling};
+        $sp{OH} = { polling => $d, by => 'the Governor\'s writ of ' . $spec_writ{OH}{signed} . ' and the Secretary of State\'s 2026 schedule' };
+    } else { problem("Ohio: the Secretary of State's schedule carries no '2026 GENERAL/SPECIAL ELECTION | <day>' line"); }
+    my $fd = words(page('senate_specials_2026/' . one('senate_specials_2026', 'wayback_fldos_election_dates_\d{14}\.html')));
+    my $fday;
+    if ($fd =~ /General Election 2026 .*? Election Day: ([A-Z][a-z]+ \d{1,2}, 2026)/) { $fday = day($1, 'the Florida dates'); }
+    else { problem("Florida: the Division of Elections' dates carry no 2026 general election day"); }
+    my $fl_raw = page('senate_specials_2026/' . one('senate_specials_2026', 'flelections_canlist_20261103-GEN_USS\.html'));
+    my $fl = words($fl_raw);
+    if (!$fday) { }
+    elsif ($fl_raw !~ /name="elecid" value="(\d{4})(\d\d)(\d\d)-GEN"/ || "$1-$2-$3" ne $fday) { problem("Florida: the candidate list is not the general election of $fday"); }
+    elsif ($fl !~ /United States Senator Candidate Status Primary General (.*?) United States Representative /) { problem("Florida: the candidate list carries no United States Senator table"); }
+    else {
+        my $t = $1;
+        my @inc = $t =~ /([A-Z][A-Za-z'-]+) , ([A-Z][A-Za-z]+) [^()]*\((?:REP|DEM|NPA|LPF|[A-Z]{3})\) \*Incumbent/g;
+        if (@inc != 2) { problem("Florida: the United States Senator table names " . (@inc / 2) . " incumbent(s), not one"); }
+        else { $sp{FL} = { polling => $fday, incumbent => "$inc[1] $inc[0]", by => 'the Division of Elections\' 2026 dates and its candidate list for the 2026 general election' }; }
+    }
+    my %term_end;
+    for my $c (['I', 1], ['II', 2], ['III', 3]) {
+        my $w = words(page('records/' . one('records', "wayback_senate_class_$c->[0]_\\d{8}\\.html")));
+        if ($w =~ /Class $c->[0] terms run from the beginning of the \d+(?:st|nd|rd|th) Congress on [A-Z][a-z]+\.? \d{1,2}, \d{4}, to the end of the \d+(?:st|nd|rd|th) Congress on ([A-Z][a-z]+\.? \d{1,2}, \d{4})/) { $term_end{$c->[1]} = day($1, "the Class $c->[0] page"); }
+        else { problem("the Class $c->[0] page gives no term end"); }
+    }
+    for my $st (sort keys %sp) {
+        my $p = $sp{$st};
+        my ($regular) = grep { ($term_end{$_} // '') =~ /^(\d{4})/ && $1 == substr($p->{polling}, 0, 4) + 1 } keys %term_end;   # the class whose terms end on the 3 January after the polling day
+        if (!$regular) { problem("$st: no class's term ends in the January after $p->{polling}"); next; }
+        if ($seat{$st}{$regular}) { problem("$st holds a class $regular seat, the regular class of $p->{polling}: the race would not be a special"); next; }
+        my @serving = grep { $_->{left} eq '-' && $_->{how_in} eq 'appointed' } map { @{$seat{$st}{$_}} } sort keys %{$seat{$st}};
+        my $w = $spec_writ{$st};
+        @serving = grep { $_->{name} eq $w->{appointee} } @serving if $w;
+        @serving = grep { $_->{name} =~ /^\Q$p->{incumbent}\E$/ || ($_->{name} =~ s/\s+/ /gr) eq $p->{incumbent} } @serving if $p->{incumbent};
+        if (@serving != 1) { problem("$st: " . scalar(@serving) . " appointee(s) of record serving to match the special, not one"); next; }
+        my $ap = $serving[0];
+        my ($before) = grep { $_->{left} ne '-' && $_->{left} le $ap->{took} } reverse sort { $a->{took} cmp $b->{took} } @{$seat{$st}{$ap->{class}}};
+        if (!$before || $before->{how_out} ne 'resigned') { problem("$st: the seat's holder before $ap->{name} did not resign"); next; }
+        if ($w && ($before->{name} ne $w->{vacated} || $before->{left} ne $w->{vacated_on})) { problem("$st: the roster's vacancy is $before->{name} on $before->{left}, the writ's $w->{vacated} on $w->{vacated_on}"); next; }
+        if (!($term_end{$ap->{class}} gt $p->{polling})) { problem("$st: class $ap->{class}'s term ends $term_end{$ap->{class}}, not after $p->{polling}"); next; }
+        push @specials, [$p->{polling}, $st, $ap->{class}, $term_end{$ap->{class}}, $before->{name}, $before->{left}, $ap->{name}, $ap->{took}, $p->{by}];
+        push @special_notes, "$st: the writ dates the appointment $w->{appointed}; the Senate's Appointed Senators page, the roster's source, $_" for grep { $w && $_ ne $w->{appointed} } map { /appointed (\d{4}-\d\d-\d\d)/ ? $1 : () } map { $_->[5] } grep { $_->[1] eq $st && $_->[3] eq 'sworn' && $_->[4] eq $ap->{name} } @changes;
+    }
+    problem('the specials read are ' . join(' ', map { $_->[1] } @specials) . ', not Ohio and Florida') unless join(' ', map { $_->[1] } @specials) eq 'FL OH';
+}
+
 $SIG{__WARN__} = 'DEFAULT';
 if (@problems) { my $n = @problems; print STDERR "MISMATCH: $_\n" for splice @problems; die "$n mismatch(es) - nothing written\n"; }
 
@@ -646,7 +719,13 @@ my $csv_v = $gen . "# US-12: the party division of each Congress as the Senate's
     . "congress,d,r,i,holds_from,holds_to\n";
 my @vrows;
 for my $c (117, 118, 119) { for my $h (@{$holds{$c}}) { my @row = ($c, $div{$c}{D}, $div{$c}{R}, $div{$c}{I}, @$h); push @vrows, \@row; $csv_v .= join(',', @row) . "\n"; } }
+my $csv_p = $gen . "# K14 (RULINGS_2026-10-23): a row a Senate special election scheduled after the record's races - a seat whose holder resigned and whose\n"
+    . "# appointee of record serves, elected on polling_day for the unexpired term to term_ends (the class page's own end of the seat's class).\n"
+    . "# vacated_by / vacated_on: the holder who resigned and his last day; appointee / sworn: the appointee of record and his oath - all by the\n"
+    . "# senate_seats.csv's roster; day_by: the pages that give the polling day (raw/senate_specials_2026/, its fetch log).\n"
+    . "polling_day,state,class,term_ends,vacated_by,vacated_on,appointee,sworn,day_by\n" . join('', map { join(',', @$_) . "\n" } @specials);
 my ($ds, $dc, $do, $dv) = map { sha256_hex($_) } ($csv_s, $csv_c, $csv_o, $csv_v);
+my $dp = sha256_hex($csv_p);
 sub cq { my $s = shift; $s =~ s/\\/\\\\/g; $s =~ s/"/\\"/g; return "\"$s\""; }
 my $cs = "// GENERATED by Tools/us_senate_prep.pl. DO NOT EDIT BY HAND.\n//\n"
     . "// Sources: ElectionsData/usa/senate_seats.csv, senate_changes.csv, senate_on.csv and senate_division.csv (their SHA-256 below), written by\n"
@@ -658,7 +737,8 @@ my $cs = "// GENERATED by Tools/us_senate_prep.pl. DO NOT EDIT BY HAND.\n//\n"
     . "    // by methods: the partial class has one static initializer, which Mono's JIT overflowed once already (UsHouseDistricts.cs).\n"
     . "    public static partial class UsPresidentialReturns\n    {\n"
     . "        public const string SenateSeatSourceDigest = \"$ds\";\n        public const string SenateChangeSourceDigest = \"$dc\";\n"
-    . "        public const string SenateOnSourceDigest = \"$do\";\n        public const string SenateDivisionSourceDigest = \"$dv\";\n\n"
+    . "        public const string SenateOnSourceDigest = \"$do\";\n        public const string SenateDivisionSourceDigest = \"$dv\";\n"
+    . "        public const string SenateSpecialSourceDigest = \"$dp\";\n\n"
     . "        /// <summary>Every saved page the Senate run read, by its path under `ElectionsData/usa/`, with its SHA-256.</summary>\n"
     . "        public static readonly (string Path, string Sha256)[] SenateRawSources = BuildSenateRawSources();\n\n"
     . "        /// <summary>A row a senator who held a seat on or after 3 Jan 2023, or whose service ended from 4 Jan 2017 to that day (s795, on his
@@ -673,6 +753,9 @@ my $cs = "// GENERATED by Tools/us_senate_prep.pl. DO NOT EDIT BY HAND.\n//\n"
     . "        public static readonly (string Day, string What, int C1D, int C1R, int C1I, int C1Vacant, int C2D, int C2R, int C2I, int C2Vacant, int C3D, int C3R, int C3I, int C3Vacant, int D, int R, int I, int Vacant, int DemCaucus, int RepCaucus)[] SenateOn = BuildSenateOn();\n\n"
     . "        /// <summary>Each Congress's party division by the Senate's page ([SEN-DIV]) and each stretch of its days on which the roster gives it.</summary>\n"
     . "        public static readonly (int Congress, int D, int R, int I, string HoldsFrom, string HoldsTo)[] SenateDivision = BuildSenateDivision();\n\n"
+    . "        /// <summary>K14: each Senate special scheduled after the record's races - its polling day, the seat (state, class), the end of the unexpired\n"
+    . "        /// term, the holder who resigned and his last day, the appointee of record and his oath, and the pages giving the day (senate_specials.csv's header).</summary>\n"
+    . "        public static readonly (string PollingDay, string State, int Class, string TermEnds, string VacatedBy, string VacatedOn, string Appointee, string Sworn, string DayBy)[] SenateSpecials = BuildSenateSpecials();\n\n"
     . "        private static (string Path, string Sha256)[] BuildSenateRawSources() => new (string, string)[]\n        {\n"
     . join('', map { "            (\"$_\", \"$read{$_}\"),\n" } sort keys %read) . "        };\n\n"
     . "        private static (string State, int Class, string Senator, string Party, string IndependentFrom, string Took, string Left, string HowIn, string HowOut, string Caucus, string CaucusBy)[] BuildSenateSeats() => new (string, int, string, string, string, string, string, string, string, string, string)[]\n        {\n"
@@ -682,9 +765,12 @@ my $cs = "// GENERATED by Tools/us_senate_prep.pl. DO NOT EDIT BY HAND.\n//\n"
     . "        private static (string Day, string What, int C1D, int C1R, int C1I, int C1Vacant, int C2D, int C2R, int C2I, int C2Vacant, int C3D, int C3R, int C3I, int C3Vacant, int D, int R, int I, int Vacant, int DemCaucus, int RepCaucus)[] BuildSenateOn() => new (string, string, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)[]\n        {\n"
     . join('', map { "            (" . join(', ', cq($_->[0]), cq($_->[1]), @$_[2 .. 19]) . "),\n" } @onrows) . "        };\n\n"
     . "        private static (int Congress, int D, int R, int I, string HoldsFrom, string HoldsTo)[] BuildSenateDivision() => new (int, int, int, int, string, string)[]\n        {\n"
-    . join('', map { "            ($_->[0], $_->[1], $_->[2], $_->[3], " . cq($_->[4]) . ', ' . cq($_->[5]) . "),\n" } @vrows) . "        };\n    }\n}\n";
+    . join('', map { "            ($_->[0], $_->[1], $_->[2], $_->[3], " . cq($_->[4]) . ', ' . cq($_->[5]) . "),\n" } @vrows) . "        };\n\n"
+    . "        private static (string PollingDay, string State, int Class, string TermEnds, string VacatedBy, string VacatedOn, string Appointee, string Sworn, string DayBy)[] BuildSenateSpecials() => new (string, string, int, string, string, string, string, string, string)[]\n        {\n"
+    . join('', map { "            (" . join(', ', cq($_->[0]), cq($_->[1]), $_->[2], map { cq($_) } @$_[3 .. 8]) . "),\n" } @specials) . "        };\n
+    }\n}\n";
 $cs =~ s/\n/\r\n/g;
-write_all("$usa/senate_seats.csv" => $csv_s, "$usa/senate_changes.csv" => $csv_c, "$usa/senate_on.csv" => $csv_o, "$usa/senate_division.csv" => $csv_v,
+write_all("$usa/senate_seats.csv" => $csv_s, "$usa/senate_changes.csv" => $csv_c, "$usa/senate_on.csv" => $csv_o, "$usa/senate_division.csv" => $csv_v, "$usa/senate_specials.csv" => $csv_p,
           'Assets/Scripts/Elections/Generated/UsSenateRecord.cs' => $cs);
 
 # ---------------------------------------------------------------- the run's report (the record pastes it)
@@ -699,4 +785,6 @@ print "early appointee: $_
 " for @early_appointed;
 print "the record's reach $reach: " . (@beyond ? join('; ', @beyond) : 'nothing beyond it on the pages read') . "\n";
 print "caucus: $_->{st} $_->{name} ($_->{party}) with the Democrats, by $_->{caucus_by}\n" for grep { $_->{caucus} } @holders;
-print "wrote $usa/senate_seats.csv (" . scalar(@srows) . " senators), senate_changes.csv (" . scalar(@changes) . "), senate_on.csv (" . scalar(@onrows) . " days), senate_division.csv, Assets/Scripts/Elections/Generated/UsSenateRecord.cs\n";
+print "special: " . join(' ', @$_[0 .. 7]) . "\n" for @specials;
+print "special note: $_\n" for @special_notes;
+print "wrote $usa/senate_seats.csv (" . scalar(@srows) . " senators), senate_changes.csv (" . scalar(@changes) . "), senate_on.csv (" . scalar(@onrows) . " days), senate_division.csv, senate_specials.csv (" . scalar(@specials) . "), Assets/Scripts/Elections/Generated/UsSenateRecord.cs\n";

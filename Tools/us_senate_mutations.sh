@@ -11,14 +11,15 @@ PDFT=/mingw64/bin/pdftotext; [ -x "$PDFT" ] || PDFT=pdftotext
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 T="$WORK/copy"
-OUTS="ElectionsData/usa/senate_seats.csv ElectionsData/usa/senate_changes.csv ElectionsData/usa/senate_on.csv ElectionsData/usa/senate_division.csv Assets/Scripts/Elections/Generated/UsSenateRecord.cs"
+OUTS="ElectionsData/usa/senate_seats.csv ElectionsData/usa/senate_changes.csv ElectionsData/usa/senate_on.csv ElectionsData/usa/senate_division.csv ElectionsData/usa/senate_specials.csv Assets/Scripts/Elections/Generated/UsSenateRecord.cs"
 caught=0; bad=0
 S=ElectionsData/usa/raw/senate
 R=ElectionsData/usa/raw/records
+K=ElectionsData/usa/raw/senate_specials_2026   # K14's pages
 
 fresh() {
   rm -rf "$T"; mkdir -p "$T/ElectionsData/usa/raw" "$T/Tools" "$T/Assets/Scripts/Elections/Generated"
-  cp -r "$ROOT/$S" "$ROOT/$R" "$T/ElectionsData/usa/raw/"
+  cp -r "$ROOT/$S" "$ROOT/$R" "$ROOT/$K" "$T/ElectionsData/usa/raw/"
   cp "$ROOT/Tools/us_senate_prep.pl" "$T/Tools/"
 }
 resum() {   # re-pin a mutated page in its group's sums, so the mutation reaches the parser and not the digest check
@@ -153,6 +154,18 @@ case_ "[SEN-DIV]'s 118th line holding on no day (D 50)" "[SEN-DIV] 118: D 50 R 4
 case_ "[SEN-DIV]'s note: Vance's resignation a day early" "[SEN-DIV] note: JD Vance resigned 2025-01-09 from class 3, the roster 2025-01-10, class 3" v02
 v03() { local f=$R/wayback_senate_party_division_20260919.html; perl -0777 -i -pe 's{119th Congress \(2025}{119th Congresses (2025}' $f; resum $f; }
 case_ "[SEN-DIV] without its 119th line" "[SEN-DIV]: lines for 117 118, not the 117th-119th" v03
+
+# --- K14: the specials scheduled after the record's races (Ohio's and Florida's of 3 Nov 2026)
+k01() { printf ' ' >> $K/wayback_ohiosos_writ_of_election_us_senate_20260424172144.pdf; }
+k02() { local f=$K/wayback_ohiosos_2026_schedule_20260210135215.html; sed -i 's/2026 GENERAL\/SPECIAL ELECTION | November 3, 2026/2026 GENERAL\/SPECIAL ELECTION | November 4, 2026/' "$f"; resum "$f"; }
+k03() { local f=$K/flelections_canlist_20261103-GEN_USS.html; perl -0pi -e 's/\*Incumbent//' "$f"; resum "$f"; }
+k04() { sed -i "s/vacated => 'J. D. Vance', vacated_on => '2025-01-10'/vacated => 'J. D. Vance', vacated_on => '2025-01-09'/" Tools/us_senate_prep.pl; }   # TOOL: the writ's words transcribed wrong
+k05() { local f=$R/wayback_senate_class_III_20260913.html; sed -i 's/to the end of the 120th Congress on January 3, 2029/to the end of the 120th Congress on January 3, 2025/' "$f"; resum "$f"; }
+case_ "K14: the writ's scan changed by one byte" "wayback_ohiosos_writ_of_election_us_senate_20260424172144.pdf: SHA-256" k01
+case_ "K14: Ohio's schedule naming another day than the writ" "Ohio: the Secretary of State's schedule names the general/special election 2026-11-04, the writ 2026-11-03" k02
+case_ "K14: Florida's Senate list with no incumbent" "Florida: the United States Senator table names 0 incumbent(s), not one" k03
+case_ "K14: the writ's vacancy not the roster's" "OH: the roster's vacancy is J. D. Vance on 2025-01-10, the writ's J. D. Vance on 2025-01-09" k04
+case_ "K14: a class's term ending before the special" "FL: class 3's term ends 2025-01-03, not after 2026-11-03" k05
 
 # --- the copy's own tool
 t01() { sed -i 's/^my \$reach = .*/my $reach = undef . "2026-09-06";/' Tools/us_senate_prep.pl; }   # TOOL: an undefined value

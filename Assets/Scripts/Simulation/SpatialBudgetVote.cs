@@ -27,7 +27,9 @@ namespace PoliSim.Simulation
     /// <item><b>The place of a rate</b> ([AUTHORED-DRAFT] reading, DECLARED): a tax line's rate is placed on the `redistribution` scale its moves already load
     /// (`ParliamentSystem.GetBudgetBillConcern`) linearly across the line's own dial - its ceiling at 0 ("strongly favors redistribution"), its floor at 10 - so
     /// a party's position on that axis (`StanceModel.Position`, `lrecon` where `redistribution` is unpublished) is the rate it would set, and the standing law
-    /// and the bill are points on the same scale. No figure is added: the dial's range is the model's own (`TaxTypeRateRanges`).</item>
+    /// and the bill are points on the same scale. No figure is added: the dial's range is the model's own (`TaxTypeRateRanges`). Since K72 (Elias's ruling of
+    /// 2026-10-23) a US line `Generated.UsRateAnchors` carries - the income tax and the corporate tax - is placed on the sourced scale instead (`TryUsScale`):
+    /// the line through the two major parties' positions at their own sourced rates; every other line keeps the dial's map.</item>
     /// <item><b>The vote</b>: the party's term-1 alignment on that axis is how much nearer the bill brings the rates to the party's position than the standing
     /// law holds them, per unit of the bill's move - (d(standing) - d(bill)) / |move|, the distances Euclidean over the rates the bill moves - so a move
     /// straight toward the party's position reads +1, straight away -1, and a move past it reads less the further it overshoots (negative past twice the
@@ -58,6 +60,49 @@ namespace PoliSim.Simulation
         public static float RateAt(TaxLine line, float position)
             => Mathf.Clamp(line.MaxRate - Mathf.Clamp(position, 0f, 10f) / 10f * (line.MaxRate - line.MinRate), line.MinRate, line.MaxRate);
 
+        /// <summary>
+        /// K72 (Elias's ruling of 2026-10-23: "q16's dial-to-rate scale is sourced (party platforms or roll calls), US only"): THE SOURCED SCALE of a US line
+        /// that `Generated.UsRateAnchors` carries (the income tax and the corporate tax) - each major party's own statutory rate (the 2024 platform's where it
+        /// states one; else the rate the party enacted or defended on the Tax Cuts and Jobs Act's final roll calls, which split the parties whole), carried onto the
+        /// game's line in proportion to the statutory rate in force (the line's seeded rate x the party's rate / the rate in force - DERIVED), and the scale the
+        /// line through the two parties' (position, rate) points: each party's `redistribution` position stands for its own sourced rate exactly. False - the
+        /// dial's linear map then stands - where the line carries no anchors, the country is not the USA, a party has no position, or the two positions or rates coincide. Its callers gate it on `Applies` (`Congress.Applies`: a US Congress with a sworn Senate - `RatesOf` and `UsMajorityReconciliation.TryPartyRate`, the review's L-4); that it is the player's Congress rests on those callers running on the player's day tick.
+        /// </summary>
+        public static bool TryUsScale(Country country, TaxLine line, out float demAt, out float demRate, out float repAt, out float repRate)
+        {
+            demAt = demRate = repAt = repRate = float.NaN;
+            if (country == null || line == null || country.Id != CountryId.USA || country.BaselineTaxRates == null || !country.BaselineTaxRates.TryGetValue(line.Type, out float seed)) { return false; }
+            foreach (var a in Elections.Generated.UsRateAnchors.Lines)
+            {
+                if (a.Tax != line.Type.ToString() || a.InForce <= 0.0) { continue; }
+                foreach (PoliticalParty p in PartySystems.For(country.Id))
+                {
+                    if (p.Abbrev == "DEM") { demAt = StanceModel.Position(p, StanceAxis.Redistribution, false); }
+                    else if (p.Abbrev == "REP") { repAt = StanceModel.Position(p, StanceAxis.Redistribution, false); }
+                }
+                demRate = (float)(seed * a.Dem / a.InForce);
+                repRate = (float)(seed * a.Rep / a.InForce);
+                return !float.IsNaN(demAt) && !float.IsNaN(repAt) && !Mathf.Approximately(demAt, repAt) && !Mathf.Approximately(demRate, repRate);
+            }
+            return false;
+        }
+
+        /// <summary>K72: a rate's place on the scale - the sourced line through the two parties' points where `TryUsScale` holds (unbounded: a rate past both
+        /// parties' lies past both positions), else the dial's map (`ScaleAt(TaxLine, float)`).</summary>
+        public static float ScaleAt(Country country, TaxLine line, float rate)
+        {
+            if (!TryUsScale(country, line, out float demAt, out float demRate, out float repAt, out float repRate)) { return ScaleAt(line, rate); }
+            return repAt + (rate - repRate) * (demAt - repAt) / (demRate - repRate);
+        }
+
+        /// <summary>K72: the rate a position stands for - the sourced line where `TryUsScale` holds (the position within 0-10, the rate within the dial), else the dial's map.</summary>
+        public static float RateAt(Country country, TaxLine line, float position)
+        {
+            if (!TryUsScale(country, line, out float demAt, out float demRate, out float repAt, out float repRate)) { return RateAt(line, position); }
+            float at = Mathf.Clamp(position, 0f, 10f);
+            return Mathf.Clamp(repRate + (at - repAt) * (demRate - repRate) / (demAt - repAt), line.MinRate, line.MaxRate);
+        }
+
         /// <summary>The rates <paramref name="bill"/> moves, placed on the scale - null where the spatial vote does not read the bill (another country, or a bill moving no
         /// rate); a bill moving a sub-row is the caller's to exclude. Each named implemented line whose rate differs from the standing one, as the concern builder reads a move.</summary>
         public static List<SpatialRate> RatesOf(Country country, BudgetBill bill)
@@ -69,7 +114,7 @@ namespace PoliSim.Simulation
                 TaxLine line = null;
                 foreach (TaxLine l in country.TaxLines) { if (l.Type == kv.Key) { line = l; break; } }
                 if (line == null || !line.IsImplemented || Mathf.Approximately(line.PointsOf(kv.Value - line.Rate), 0f)) { continue; }
-                float standingAt = ScaleAt(line, line.Rate), billAt = ScaleAt(line, Mathf.Clamp(kv.Value, line.MinRate, line.MaxRate));
+                float standingAt = ScaleAt(country, line, line.Rate), billAt = ScaleAt(country, line, Mathf.Clamp(kv.Value, line.MinRate, line.MaxRate));   // K72: the sourced scale where it holds
                 if (float.IsNaN(standingAt) || float.IsNaN(billAt)) { continue; }
                 (rates ??= new List<SpatialRate>()).Add(new SpatialRate(line.Type, standingAt, billAt, line.PointsOf(kv.Value - line.Rate)));
             }

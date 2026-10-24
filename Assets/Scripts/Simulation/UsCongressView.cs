@@ -15,7 +15,7 @@ namespace PoliSim.Simulation
     /// sworn, an override at two thirds of each chamber voting, the Vice President's vote on an equal division), and the next polling day with what it elects.
     /// Pure: it reads the country and the date and writes nothing; `UsCongressViewDiagnostic` holds every figure to the reads it is made of.
     /// <para><b>What the model does not hold, and so this does not say:</b> a seat's class in the game's world is the catalog's (US-12's roster) and the game's
-    /// contests' - the 2026 specials in Ohio and Florida (K14) are not yet sourced into the catalog, so no game special is held for them; a seat the game elected
+    /// contests' - a special the game holds is one the catalog schedules (K14, `senate_specials.csv`), drawn edged in brass once seated; a seat the game elected
     /// carries no independent (the count elects a side); and no absence is modelled, so an override's base is the chamber seated (the plate's "of the N voting").</para>
     /// </summary>
     public static class UsCongressView

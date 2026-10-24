@@ -46,6 +46,18 @@ namespace PoliSim.Elections
         public const double FlatCredibility = 0.6;
         /// <summary>[AUTHORED-DRAFT] D-1 (c): the equal war chest, a playability scale - `DATA_BILL.md` carries the bill for a sourced one.</summary>
         public const double WarChest = 2_400_000.0;
+        /// <summary>K19 (Elias's ruling of 2026-10-23): the USA's war chest in dollars, each party's - DERIVED from SOURCED FEC spending
+        /// (`Generated.UsCampaignSpending`: the 2024 nominees' committees' disbursements over the game's campaign window, their mean).</summary>
+        public static double UsWarChest => Generated.UsCampaignSpending.WarChestUsd;
+
+        /// <summary>K110 (Elias's ruling of 2026-10-24): the US campaign's purse is RE-DENOMINATED - one unit of the model's price table is this many dollars, the
+        /// FEC chest over the model's chest (DERIVED from the two figures, never typed), so the chest is K19's in dollars, every act's price the model's times
+        /// this ratio, and money binds as it did. Every other country's purse is its own currency, one to one.</summary>
+        public static double UsDollarsPerUnit => UsWarChest / WarChest;
+
+        /// <summary>K110: the purse's national currency per model unit - `UsDollarsPerUnit` for the USA, 1 elsewhere. The HQ prints a figure times it, and a
+        /// sourced national price (the postage, a letter's revenue) enters the purse divided by it.</summary>
+        public static double PursePerUnit(CountryId? country) => country == CountryId.USA ? UsDollarsPerUnit : 1.0;
         /// <summary>[AUTHORED-DRAFT] W-B11: 800 volunteers × 3 h a day, equal for all by design (W-B4's offices grow them).</summary>
         public const int Volunteers = 800;
         /// <summary>[AUTHORED-DRAFT] W-B4: what each staged office puts into its own daily ground operation (400 doors a day at 5 kr).</summary>
@@ -237,8 +249,10 @@ namespace PoliSim.Elections
         /// nominees everywhere). Staged on the vote model the prediction is made of (<see cref="NationalElection.TryCompatibility"/>: US-6's compatibility,
         /// its prior and its loyalty, mapped by key), so an idle campaign reproduces the day's prediction and a campaign moves it; the count reads the run's
         /// final shares, then the states (R-US14), then the electors (`SimulationManager`'s US count). The casts are the CHES rule's (§695, GPS 2019 for the
-        /// USA); the salience the newest Gallup wave fielded before the campaign (<see cref="UsSalience"/>). ⚠ The price table - the war chest, every action's
-        /// cost - is the model's one, as the HQ prints it in the player's currency: a US table in dollars is BILLED, not invented (Germany's is billed too).
+        /// USA); the salience the newest Gallup wave fielded before the campaign (<see cref="UsSalience"/>). The war chest is K19's, in dollars from FEC
+        /// spending (`UsWarChest`: the 2024 nominees' committees' disbursements over the campaign window, their mean - DERIVED); K110 re-denominates the purse,
+        /// one unit of the model's table `UsDollarsPerUnit` dollars, so every act's price is the model's times the chest's ratio and money binds as before - the
+        /// relative prices stay [AUTHORED-DRAFT] (the FEC reports disbursements by purpose, never a price per act).
         /// PS-6 US-26 (R-US11 (a)): <paramref name="played"/> - the game's country - stages the prior and the loyalty on its history rolled forward to the
         /// calendar's polling day, the very call the count's prediction makes on that day (`NationalElection.TryCompatibility` with the country and the day), so a
         /// campaign of a later cycle stages on the game's own House counts and its idle run still reproduces the day's prediction; none handed, the record's pair.
@@ -294,7 +308,7 @@ namespace PoliSim.Elections
                 AiPersonality personality = PersonalityOf(CountryId.USA, cast[p]);
                 PreCampaignRun.Outcome? brought = p == playerParty ? playerOutcome : null;
                 parties[p] = new CampaignRun.PartySetup(cast[p], personality, FlatCredibility,
-                    brought.HasValue ? brought.Value.Money : WarChest, match, brought.HasValue ? brought.Value.Volunteers : Volunteers,
+                    brought.HasValue ? brought.Value.Money : WarChest, match, brought.HasValue ? brought.Value.Volunteers : Volunteers,   // K110: the purse in units of UsDollarsPerUnit dollars - K19's chest
                     CandidateFor(personality, cast[p]), brought.HasValue ? brought.Value.Offices : p == playerParty ? OfficesFor(personality, regions, stands[p]) : OfficesByTargeting(personality, regions, stands[p], officeOrder), OfficeOperationsPerDay,
                     brought.HasValue ? brought.Value.Staff : StaffFor(personality), brought.HasValue ? brought.Value.TelevisionBuys : TelevisionBuysFor(personality),
                     p == playerParty ? playerScript : null, p == playerParty ? playerScandalScript : null);
@@ -317,14 +331,15 @@ namespace PoliSim.Elections
             }
             sb.Append(string.Format(CultureInfo.InvariantCulture,
                 "\n    {0} jurisdictions (SOURCED {1} valid presidential votes, US-3's catalog; the Census Bureau's CVAP 2020-2024), national audience {2:N0}, electorate {3:N0}; salience {4}\n" +
-                "    each party only where it is on the ballot (/nJ above); [AUTHORED-DRAFT] issue-match {5:F2} flat, credibility {6:F2} flat, war chest {7:N0} each - the model's one price table, a US one in dollars BILLED\n",
-                regions.Length, priorYear, national, eligible, salienceLabel, FlatIssueMatch, FlatCredibility, WarChest));
-            sb.Append("    [AUTHORED-DRAFT] targeting: every AI weighs its local acts where electors x the swing index of the margin derived from the last published poll are largest, and opens its day-0 offices where the same rule weighs most on the staging's opening shares (K27); the count counts each state with the ground game and the declared regional noise (R-US16 (b))\n");
+                "    each party only where it is on the ballot (/nJ above); [AUTHORED-DRAFT] issue-match {5:F2} flat, credibility {6:F2} flat; war chest {7:N0} dollars each - K19, the 2024 nominees' FEC disbursements {8} to {9}, their mean (DERIVED); K110: the purse re-denominated, one unit of the model's table {10:N4} dollars, so every act's price is the model's times that ratio and money binds as before [AUTHORED-DRAFT relative prices]\n",
+                regions.Length, priorYear, national, eligible, salienceLabel, FlatIssueMatch, FlatCredibility, UsWarChest, Generated.UsCampaignSpending.WindowFrom, Generated.UsCampaignSpending.WindowTo, UsDollarsPerUnit));
+            sb.Append("    [AUTHORED-DRAFT] targeting: every AI weighs its local acts where electors x the swing index of the margin derived from the last published poll are largest, and opens its day-0 offices where the same rule weighs most on the staging's opening shares (K27); the count counts each state with the ground game - doors and calls at 5b's turnout CACEs, the doors at Gerber & Green's band (K18) - and the declared regional noise (R-US16 (b))\n");
             note = sb.ToString();
             setup = new CampaignRun.Setup(cal, parties, prior, loyalty, compatibility, salience,
                 national, regions, publicHouse, PublicPollEveryDays, internalHouse, LoyaltyModel.WeightedMeanLoyalty(loyalty, prior), null, null, scandals, liveScandalRate,
                 null, PartyFamilies.For(CountryId.USA, cast), NationalElection.EntrantAwareness(CountryId.USA, cast), EntrantLayer.GroupingOf(CountryId.USA, cast), EntrantSimilarity.For(CountryId.USA, cast),
-                stands, targeting);   // PS-6 US-31: the AI weighs its local acts where the declared rule says (R-US16 (b))
+                stands, targeting,   // PS-6 US-31: the AI weighs its local acts where the declared rule says (R-US16 (b))
+                doorCacePp: eligible > 0.0 ? GotvTurnout.UsDoorCacePp(national / eligible) : 0.0);   // K18: the US count reads 5b at Gerber & Green's band (K7); the AI values a door at the band of the national base turnout (DECLARED: one figure a staging, as Europe's)
             return true;
         }
 

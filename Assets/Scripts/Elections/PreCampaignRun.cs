@@ -83,7 +83,7 @@ namespace PoliSim.Elections
         /// the USA: USPS Notice 123 effective October 4, 2026, First-Class Mail retail single-piece letter (stamped), 1 oz, $0.82
         /// (`ElectionsData/usa/raw/postage/`). BILLED Sweden: PostNord's price page refused the fetch (HTTP 403) and the procurement annex quoting it
         /// answered 404 (`ElectionsData/sweden/raw/postage/BILLED.txt`). NaN where no tariff is on disk - the mailing is refused, never priced
-        /// with an invented stamp. DECLARED: the single-piece public tariff, no bulk or contract rate. DECLARED (review 2's L10): a real stamp is netted against the war chest, an [AUTHORED-DRAFT] playability scale (`LiveCampaignSetup.WarChest`), so the mailing's size against the chest is as authored as the chest.
+        /// with an invented stamp. DECLARED: the single-piece public tariff, no bulk or contract rate. DECLARED (review 2's L10): a real stamp is netted against the war chest, an [AUTHORED-DRAFT] playability scale (`LiveCampaignSetup.WarChest`), so the mailing's size against the chest is as authored as the chest - in the USA the chest is K19's, from FEC spending (`LiveCampaignSetup.UsWarChest`).
         /// </summary>
         public static double LetterTariff(CountryId? country)
         {
@@ -116,7 +116,7 @@ namespace PoliSim.Elections
             double tariff = LetterTariff(s.Country);
             if (double.IsNaN(tariff)) { return false; }
             double letters = Math.Floor(Math.Min(MailingLetters, SupportersLeft(s)));
-            return letters > 0.0 && s.Money >= letters * tariff;
+            return letters > 0.0 && s.Money >= letters * tariff / LiveCampaignSetup.PursePerUnit(s.Country);   // K110: the postage in the purse's units
         }
 
         /// <summary>K84: the party's supporters the run-up can write to - its prior share of the staging's electorate (the regions' eligible), less the letters already sent.</summary>
@@ -249,7 +249,7 @@ namespace PoliSim.Elections
                 case CampaignActionKind.RecruitStaff: return CampaignStaff.SalaryPerDay;
                 case CampaignActionKind.CommissionPolling: return s.Staged.InternalHouse.Cost;
                 case CampaignActionKind.PrepareAdvertising: return CampaignActions.Spec(CampaignActionKind.TelevisionAd).MoneyCost;
-                case CampaignActionKind.Fundraise: { double tariff = LetterTariff(s.Country); return double.IsNaN(tariff) ? 0.0 : Math.Min(MailingLetters, SupportersLeft(s)) * tariff; }   // K84: the mailing's postage
+                case CampaignActionKind.Fundraise: { double tariff = LetterTariff(s.Country); return double.IsNaN(tariff) ? 0.0 : Math.Min(MailingLetters, SupportersLeft(s)) * tariff / LiveCampaignSetup.PursePerUnit(s.Country); }   // K84: the mailing's postage, in the purse's units (K110)
                 default: return 0.0;
             }
         }
@@ -358,9 +358,10 @@ namespace PoliSim.Elections
                         if (double.IsNaN(tariff)) { entry.Refusal = "no postal tariff is on disk for this country"; break; }
                         double letters = Math.Floor(Math.Min(MailingLetters, SupportersLeft(s)));
                         if (letters <= 0.0) { entry.Refusal = "every supporter has been written to"; break; }
-                        entry.Cost = letters * tariff;
+                        double perUnit = LiveCampaignSetup.PursePerUnit(s.Country);   // K110: a sourced national price enters the purse in its units
+                        entry.Cost = letters * tariff / perUnit;
                         if (s.Money < entry.Cost) { entry.Refusal = "the chest cannot pay the postage"; break; }
-                        double raised = letters * RevenuePerLetter(s.Country);
+                        double raised = letters * RevenuePerLetter(s.Country) / perUnit;
                         s.Money += raised - entry.Cost;
                         s.LettersSent += letters;
                         s.Raised += raised;

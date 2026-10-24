@@ -1,0 +1,10 @@
+# K19 (RULINGS_2026-10-23): the FEC spending the US war chest is derived from - the 2024 major-party presidential nominees' principal campaign committees (Harris for President C00703975, Donald J. Trump for President 2024 C00828541), from the FEC's OpenFEC API (api.open.fec.gov, the public DEMO_KEY), each response saved byte-exact by curl.
+# time (UTC)	status	bytes	file	url
+2026-10-24T17:17:21Z	200	2281	fec_committee_C00703975_totals_2024.json	https://api.open.fec.gov/v1/committee/C00703975/totals/?cycle=2024&api_key=DEMO_KEY
+2026-10-24T17:17:23Z	200	83399	fec_committee_C00703975_reports_2024.json	https://api.open.fec.gov/v1/committee/C00703975/reports/?cycle=2024&per_page=100&sort=coverage_end_date&api_key=DEMO_KEY
+2026-10-24T17:17:23Z	200	1468	fec_schedule_b_by_purpose_C00703975_2024.json	https://api.open.fec.gov/v1/schedules/schedule_b/by_purpose/?committee_id=C00703975&cycle=2024&per_page=100&api_key=DEMO_KEY
+2026-10-24T17:17:26Z	200	3447	fec_committee_C00828541_totals_2024.json	https://api.open.fec.gov/v1/committee/C00828541/totals/?cycle=2024&api_key=DEMO_KEY
+2026-10-24T17:17:27Z	200	140204	fec_committee_C00828541_reports_2024.json	https://api.open.fec.gov/v1/committee/C00828541/reports/?cycle=2024&per_page=100&sort=coverage_end_date&api_key=DEMO_KEY
+2026-10-24T17:17:28Z	200	1338	fec_schedule_b_by_purpose_C00828541_2024.json	https://api.open.fec.gov/v1/schedules/schedule_b/by_purpose/?committee_id=C00828541&cycle=2024&per_page=100&api_key=DEMO_KEY
+2026-10-24T17:19:37Z	200	1729	fec_committee_C00703975_history_2024.json	https://api.open.fec.gov/v1/committee/C00703975/history/2024/?api_key=DEMO_KEY
+2026-10-24T17:19:39Z	200	1708	fec_committee_C00828541_history_2024.json	https://api.open.fec.gov/v1/committee/C00828541/history/2024/?api_key=DEMO_KEY

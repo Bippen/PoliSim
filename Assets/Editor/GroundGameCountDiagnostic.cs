@@ -29,8 +29,8 @@ namespace PoliSim.EditorTools
     /// CACE's upper limit, over the votes cast), the highest supporters' turnout below 1 (never at the clamp), the player's campaign against idle
     /// printed whole (the persuasion of 5a plus the turnout of 5b) and its turnout part positive and inside its bound - GA-5-1's question.</item>
     /// <item><b>(5) the AI values a door at the count's own arithmetic</b>: `CampaignAi.DoorTurnoutValuePp` equals the hand formula, falls as the
-    /// party's own doors there grow, is zero blind (no poll seen) and zero on a staging whose count reads no 5b turnout (the US's, which keeps
-    /// W-B11's curve until its card is re-cut).</item>
+    /// party's own doors there grow, is zero blind (no poll seen) and zero on a staging whose count reads no 5b turnout (a harness's own - the US staging
+    /// reads 5b at Gerber &amp; Green's band since K18).</item>
     /// <item><b>(6) the office in the run-up</b> (row 5, K1): planned where the decision names, paid on the campaign's day 0, and its doors reach
     /// the count - the player's ground effect with the office above the same run without it.</item>
     /// </list>
@@ -343,7 +343,7 @@ namespace PoliSim.EditorTools
                 F("(5) the AI values {0:N0} more doors in {1} at the count's own arithmetic: {2:0.000000} points with {3:N0} doors already opened (by hand {4:0.000000}), {5:0.000000} with none - a worked region is worth less",
                     more, s.Regions[r].Name, later, already, hand, first));
             Check(CampaignAi.DoorTurnoutValuePp(View(false, GotvTurnout.EuropeanDoorCacePp, 0.0), r, more) == 0.0 && CampaignAi.DoorTurnoutValuePp(View(true, 0.0, 0.0), r, more) == 0.0,
-                "(5) blind (no poll seen) a door's turnout is worth nothing, and on a staging whose count reads no 5b turnout (the USA's) nothing");
+                "(5) blind (no poll seen) a door's turnout is worth nothing, and on a staging whose count reads no 5b turnout (a harness's own; since K18 the USA's reads it, `UsCampaignDiagnostic`) nothing");
 
             // the review 2's L5: against the count's OWN move - the same doors laid on the count (sigma 0) at the shares the AI polled, the party's counted
             // share with the doors less without them; the AI reads its national share in the region, the count the region's own (the declared tolerance)

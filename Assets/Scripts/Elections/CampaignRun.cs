@@ -119,7 +119,7 @@ namespace PoliSim.Elections
             /// the largest audiences (Sweden, Germany, every harness).</summary>
             public readonly RegionTargeting Targeting;
             /// <summary>A-LOOP q24 5b: the turnout CACE (points among the reached) an opened door earns on this staging's count - `GotvTurnout`, the figure
-            /// the AI values a door at; 0 = the staging's count reads no 5b turnout (the USA, still on W-B11's curve; a harness's own staging).</summary>
+            /// the AI values a door at; 0 = the staging's count reads no 5b turnout (a harness's own staging; the USA's reads it since K18).</summary>
             public readonly double DoorCacePp;
 
             /// <summary>§697: whether <paramref name="party"/> stands in <paramref name="region"/> - everywhere where no candidacy is staged.</summary>

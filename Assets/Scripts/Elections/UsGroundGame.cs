@@ -15,9 +15,12 @@ namespace PoliSim.Elections
     /// R-US14's derived shares: the derived shares are each jurisdiction's preference, the two nominees' ground contacts its mobilization. The state effect -
     /// the counted shares less the derived - is kept on the contest (<see cref="StateEffect"/>), so a stored contest re-derives its own states and a save
     /// carries what no later run can re-draw. A game with no campaign, and a midterm (US-27: none runs), count as before.</description></item>
-    /// <item><description><b>The frame</b> (DECLARED, US-9's, the frame R-US16 was sized on): one base turnout, the staging's votes cast over its electorate,
-    /// which cancels from every share unless a rate clamps; the other turnout attributes neutral (50, untouched); the two nominees' columns carry their
-    /// parties' contacts, every other candidate's none (no campaigning party backs one - US-30 (c)).</description></item>
+    /// <item><description><b>The frame</b> (K18, Elias's ruling of 2026-10-23 - the US count onto GATE-18 piece one's 5b, the US anchor Gerber &amp; Green's band
+    /// per K7): each jurisdiction at its own base turnout, its votes cast of record over its electorate (the staging's CVAP); a nominee's supporters there
+    /// turn out at the base plus the door CACE on the share of them its opened doors reached (`GotvTurnout.DoorCacePp`, the band of that base) and the phone
+    /// CACE on the share its completed calls reached; the two nominees' columns carry their parties' doors and calls, every other candidate's none (no
+    /// campaigning party backs one - US-30 (c)). Until K18 the count read W-B11's mobilisation curve on one national base (US-9's frame, the one R-US16 was
+    /// sized on); that function stays as US-31's registered one (`EffectsOnCurve`), read by its measurement alone.</description></item>
     /// <item><description><b>The noise is keyed, never counted</b> (<see cref="SimulationRandom.RegionalElectionNoiseSeedOn"/>): the master seed, the
     /// country and the polling day, so the played world, a load of its save and every fork of it draw the same numbers for the same count (R-US25's common
     /// random numbers, US-8b's rule), and no counted stream moves.</description></item>
@@ -25,7 +28,7 @@ namespace PoliSim.Elections
     /// is its electors times §25's swing index (<see cref="SwingRegions.Index"/>) of its margin as the count would derive it from the last published poll;
     /// an AI weighs its local acts in the heaviest, in place of the largest audiences.</description></item>
     /// </list>
-    /// The USA's alone: Sweden's and Germany's AI weighs the largest audiences (R-US16 (c) is not ruled); their chambers are counted region by region since GATE-18 q2, by `ParliamentaryCount` on 5b's turnout CACE, where this count keeps W-B11's mobilisation curve until the US card is re-cut (K18).
+    /// The USA's alone: Sweden's and Germany's AI weighs the largest audiences (R-US16 (c) is not ruled); their chambers are counted region by region since GATE-18 q2, by `ParliamentaryCount` on 5b's turnout CACE at Cantoni &amp; Pons's figure, this count on the same 5b at Gerber &amp; Green's band (K7, K18).
     /// </summary>
     public static class UsGroundGame
     {
@@ -48,15 +51,41 @@ namespace PoliSim.Elections
             public double RepublicanTwoParty;
         }
 
-        /// <summary>What the count reads of a finished campaign: its jurisdictions by name, each one's electorate, the two nominees' parties' weighted ground
-        /// contacts there, and the frame's base turnout.</summary>
+        /// <summary>What the count reads of a finished campaign: its jurisdictions by name, each one's electorate and votes cast of record (its audience), the
+        /// two nominees' parties' opened doors and completed calls there (5b, the count since K18), their weighted ground contacts (W-B11's curve, the count
+        /// US-31 registered its measurement on - `EffectsOnCurve`), and the frame's national base turnout.</summary>
         public sealed class Campaign
         {
             public string[] Regions;
             public double[] Eligible;
+            public double[] Audience;
+            public double[] DemocratDoors;
+            public double[] RepublicanDoors;
+            public double[] DemocratCalls;
+            public double[] RepublicanCalls;
             public double[] DemocratContacts;
             public double[] RepublicanContacts;
             public double BaseTurnout;
+
+            /// <summary>K18: a jurisdiction's own base turnout - its votes cast of record over its electorate (5b reads each region at its own, as
+            /// `ParliamentaryCount` does); 0 where it has no electorate.</summary>
+            public double BaseTurnoutAt(int r) => Eligible[r] > 0.0 && Audience != null ? Audience[r] / Eligible[r] : 0.0;
+
+            /// <summary>An empty campaign on <paramref name="n"/> jurisdictions - every contact array allocated, none made.</summary>
+            public static Campaign Empty(int n) => new Campaign
+            {
+                Regions = new string[n], Eligible = new double[n], Audience = new double[n], DemocratDoors = new double[n], RepublicanDoors = new double[n],
+                DemocratCalls = new double[n], RepublicanCalls = new double[n], DemocratContacts = new double[n], RepublicanContacts = new double[n],
+            };
+
+            /// <summary>A deep copy - every array cloned.</summary>
+            public Campaign Copy() => new Campaign
+            {
+                Regions = (string[])Regions.Clone(), Eligible = (double[])Eligible.Clone(), Audience = (double[])Audience.Clone(),
+                DemocratDoors = (double[])DemocratDoors.Clone(), RepublicanDoors = (double[])RepublicanDoors.Clone(), DemocratCalls = (double[])DemocratCalls.Clone(),
+                RepublicanCalls = (double[])RepublicanCalls.Clone(), DemocratContacts = (double[])DemocratContacts.Clone(), RepublicanContacts = (double[])RepublicanContacts.Clone(),
+                BaseTurnout = BaseTurnout,
+            };
         }
 
         /// <summary>The ground game of a finished campaign on <paramref name="setup"/> (<paramref name="result"/>'s mobilization), the two parties found by key
@@ -72,12 +101,17 @@ namespace PoliSim.Elections
             }
             if (rep < 0 || dem < 0 || rep >= result.Gotv.PartyCount || dem >= result.Gotv.PartyCount) { return null; }
             int n = setup.Regions.Length;
-            var c = new Campaign { Regions = new string[n], Eligible = new double[n], DemocratContacts = new double[n], RepublicanContacts = new double[n] };
+            Campaign c = Campaign.Empty(n);
             double audience = 0.0, eligible = 0.0;
             for (int r = 0; r < n; r++)
             {
                 c.Regions[r] = setup.Regions[r].Name;
                 c.Eligible[r] = result.Gotv.Eligible(r);
+                c.Audience[r] = setup.Regions[r].Audience;
+                c.DemocratDoors[r] = result.Gotv.DoorContacts(r, dem);
+                c.RepublicanDoors[r] = result.Gotv.DoorContacts(r, rep);
+                c.DemocratCalls[r] = result.Gotv.PhoneContacts(r, dem);
+                c.RepublicanCalls[r] = result.Gotv.PhoneContacts(r, rep);
                 c.DemocratContacts[r] = result.Gotv.WeightedContacts(r, dem);
                 c.RepublicanContacts[r] = result.Gotv.WeightedContacts(r, rep);
                 audience += setup.Regions[r].Audience;
@@ -101,12 +135,13 @@ namespace PoliSim.Elections
             RegionAudience[] regions = UsRegions.Regions(pollingDay, out double _, out int _, out why);
             if (regions == null || regions.Length == 0) { return null; }
             int n = regions.Length;
-            var c = new Campaign { Regions = new string[n], Eligible = new double[n], DemocratContacts = new double[n], RepublicanContacts = new double[n] };
+            Campaign c = Campaign.Empty(n);
             double audience = 0.0, eligible = 0.0;
             for (int r = 0; r < n; r++)
             {
                 c.Regions[r] = regions[r].Name;
                 c.Eligible[r] = regions[r].Eligible;
+                c.Audience[r] = regions[r].Audience;
                 audience += regions[r].Audience;
                 eligible += regions[r].Eligible;
             }
@@ -115,34 +150,87 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
-        /// THE STATE EFFECT of <paramref name="campaign"/>'s ground game on the derived states <paramref name="derived"/>: W-D1's count of every jurisdiction
-        /// the campaign staged (its preference the derived shares, its mobilization the two nominees' contacts), the noise of <paramref name="sigmaPp"/> drawn on
-        /// <paramref name="noiseSeed"/>, against the derived shares. Pure. Null, with the reason, where a derived state has no staged jurisdiction or the
-        /// frame would clamp a turnout rate (the count would no longer cancel the base).
+        /// THE STATE EFFECT of <paramref name="campaign"/>'s ground game on the derived states <paramref name="derived"/> - since K18 (Elias's ruling of
+        /// 2026-10-23, GATE-18 piece one's 5b): 5b's count of every jurisdiction the campaign staged (`ElectionDay.Count`'s count in play, as
+        /// `ParliamentaryCount` counts the European chambers) - its preference the derived shares, each jurisdiction at its own base turnout (its votes cast
+        /// of record over its electorate, `Campaign.BaseTurnoutAt`), each nominee's supporters at that base plus the door CACE on the share of
+        /// them its opened doors reached and the phone CACE on the share its completed calls reached (`GotvTurnout.RegionVotes`); the door CACE Gerber &amp;
+        /// Green's band at the jurisdiction's own base (`GotvTurnout.DoorCacePp`, K7: "the US keeps GG14") - the noise of <paramref name="sigmaPp"/> drawn on
+        /// <paramref name="noiseSeed"/>, against the derived shares. Pure. Null, with the reason, where a derived state has no staged jurisdiction, a
+        /// jurisdiction has no base turnout, or a reached supporter's turnout would reach one (the clamp, which 5b never binds at a US base).
         /// </summary>
         public static List<StateEffect> Effects(ElectoralCollege.StateCall[] derived, Campaign campaign, int noiseSeed, double sigmaPp, out string why)
         {
-            why = null;
-            if (derived == null || campaign?.Regions == null) { why = "no derived states or no campaign to count"; return null; }
-            int n = campaign.Regions.Length;
-            var at = new Dictionary<string, int>(StringComparer.Ordinal);
-            for (int i = 0; i < derived.Length; i++) { at[derived[i].State] = i; }
-            var names = new string[n];
-            var preference = new double[n][];
+            if (!Frame(derived, campaign, out string[] names, out double[][] preference, out why)) { return null; }
+            int n = names.Length;
+            var gotv = new RegionalMobilization((double[])campaign.Eligible.Clone(), 3);
+            var baseTurnout = new double[n];
+            var cace = new double[n];
+            for (int r = 0; r < n; r++)
+            {
+                gotv.CarryDoors(r, ElectoralCollege.ShareDemocrat, campaign.DemocratDoors[r]);
+                gotv.CarryDoors(r, ElectoralCollege.ShareRepublican, campaign.RepublicanDoors[r]);
+                gotv.CarryCalls(r, ElectoralCollege.ShareDemocrat, campaign.DemocratCalls[r]);
+                gotv.CarryCalls(r, ElectoralCollege.ShareRepublican, campaign.RepublicanCalls[r]);
+                baseTurnout[r] = campaign.BaseTurnoutAt(r);
+                cace[r] = GotvTurnout.DoorCacePp(CountryId.USA, baseTurnout[r]);
+                if (baseTurnout[r] <= 0.0) { why = names[r] + " has no base turnout (no votes cast of record or no electorate)"; return null; }
+                if (baseTurnout[r] + (GotvTurnout.DoorCaceUpperPp(CountryId.USA, baseTurnout[r]) + GotvTurnout.PhoneCaceUpperPp) / 100.0 >= 1.0) { why = names[r] + ": a reached supporter's turnout would reach one"; return null; }
+            }
+            ElectionDay.Result count = ElectionDay.Count(names, preference, gotv, baseTurnout, cace, new System.Random(noiseSeed), sigmaPp);   // 5b's count in play, the scaled noise (K34)
+            return EffectsOf(names, preference, count, out why);
+        }
+
+        /// <summary>
+        /// THE REGISTERED FUNCTION (K18 keeps it, for US-31's PLAN_PREREG alone): the state effect as the US count made it from US-31 to K18 - W-D1's count
+        /// over W-B11's mobilisation curve (the two nominees' weighted contacts, one national base turnout that cancels from every share unless a rate clamps,
+        /// the other attributes neutral). US-31 registered "US-9's measured amount" on this function, so its measurement is held on it unchanged while the
+        /// count reads 5b (`Effects`). Called by no count. Pure; null, with the reason, as `Effects`, or where the frame would clamp.
+        /// </summary>
+        public static List<StateEffect> EffectsOnCurve(ElectoralCollege.StateCall[] derived, Campaign campaign, int noiseSeed, double sigmaPp, out string why)
+        {
+            if (!Frame(derived, campaign, out string[] names, out double[][] preference, out why)) { return null; }
+            int n = names.Length;
             var gotv = new RegionalMobilization((double[])campaign.Eligible.Clone(), 3);
             for (int r = 0; r < n; r++)
             {
-                if (!at.TryGetValue(campaign.Regions[r], out int s)) { why = campaign.Regions[r] + " is staged and has no derived state"; return null; }
-                names[r] = campaign.Regions[r];
-                preference[r] = (double[])derived[s].Shares.Clone();
                 gotv.Carry(r, ElectoralCollege.ShareDemocrat, campaign.DemocratContacts[r]);
                 gotv.Carry(r, ElectoralCollege.ShareRepublican, campaign.RepublicanContacts[r]);
             }
-            if (at.Count != n) { why = "the derived states and the staged jurisdictions differ in number"; return null; }
             double most = 1.0;
             for (int r = 0; r < n; r++) { for (int p = 0; p < 2; p++) { most = Math.Max(most, TurnoutModel.Multiplier(gotv.Mobilization(r, p), TurnoutModel.MobilizationSpan)); } }
             if (campaign.BaseTurnout <= 0.0 || campaign.BaseTurnout * most >= 1.0) { why = "the frame would clamp a turnout rate"; return null; }
-            ElectionDay.Result count = ElectionDay.Count(names, preference, gotv, campaign.BaseTurnout, Neutral, Neutral, Neutral, new System.Random(noiseSeed), sigmaPp, scaledNoise: true);   // Elias's ruling of 2026-10-23: the scaled form, as every count in play
+            ElectionDay.Result count = ElectionDay.Count(names, preference, gotv, campaign.BaseTurnout, Neutral, Neutral, Neutral, new System.Random(noiseSeed), sigmaPp, scaledNoise: true);
+            return EffectsOf(names, preference, count, out why);
+        }
+
+        /// <summary>Each staged jurisdiction's name and its derived shares as the count's preference; false, with the reason, where they do not match.</summary>
+        private static bool Frame(ElectoralCollege.StateCall[] derived, Campaign campaign, out string[] names, out double[][] preference, out string why)
+        {
+            why = null;
+            names = null;
+            preference = null;
+            if (derived == null || campaign?.Regions == null) { why = "no derived states or no campaign to count"; return false; }
+            int n = campaign.Regions.Length;
+            var at = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (int i = 0; i < derived.Length; i++) { at[derived[i].State] = i; }
+            names = new string[n];
+            preference = new double[n][];
+            for (int r = 0; r < n; r++)
+            {
+                if (!at.TryGetValue(campaign.Regions[r], out int s)) { why = campaign.Regions[r] + " is staged and has no derived state"; return false; }
+                names[r] = campaign.Regions[r];
+                preference[r] = (double[])derived[s].Shares.Clone();
+            }
+            if (at.Count != n) { why = "the derived states and the staged jurisdictions differ in number"; return false; }
+            return true;
+        }
+
+        /// <summary>The counted shares less the derived, jurisdiction by jurisdiction.</summary>
+        private static List<StateEffect> EffectsOf(string[] names, double[][] preference, ElectionDay.Result count, out string why)
+        {
+            why = null;
+            int n = names.Length;
             var effects = new List<StateEffect>(n);
             for (int r = 0; r < n; r++)
             {

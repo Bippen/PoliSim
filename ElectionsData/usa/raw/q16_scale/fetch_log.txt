@@ -1,0 +1,9 @@
+# K72 (RULINGS_2026-10-23): the sources q16's dial-to-rate scale is refitted on - the 2024 platforms, the Tax Cuts and Jobs Act's final roll calls, and the Code's rates; each saved byte-exact by curl (an HTML page's content-encoding decoded, as curl --compressed does).
+# time (UTC)	status	bytes	file	url
+2026-10-24T17:28:57Z	200	1385394	gop_RNC2024-Platform.pdf	https://prod-static.gop.com/media/RNC2024-Platform.pdf (live)
+2026-10-24T17:28:57Z	200	94512	clerk_house_roll699_2017.xml	https://clerk.house.gov/evs/2017/roll699.xml (live)
+2026-10-24T17:29:00Z	200	274582	govinfo_USCODE-2023-title26-sec1.htm	https://www.govinfo.gov/content/pkg/USCODE-2023-title26/html/USCODE-2023-title26-subtitleA-chap1-subchapA-partI-sec1.htm (live)
+2026-10-24T17:29:00Z	200	27722	govinfo_USCODE-2023-title26-sec11.htm	https://www.govinfo.gov/content/pkg/USCODE-2023-title26/html/USCODE-2023-title26-subtitleA-chap1-subchapA-partII-sec11.htm (live)
+2026-10-24T17:44:37Z	200	28845	wayback_senate_vote_115_1_00323_20260719001157.xml	https://web.archive.org/web/20260719001157id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00323.xml (capture 20260719001157; the live host answers 403)
+2026-10-24T17:45:12Z	200	349894	ucsb_presidency_2024-democratic-party-platform.html	https://www.presidency.ucsb.edu/documents/2024-democratic-party-platform (live, the American Presidency Project's copy of the 2024 Democratic platform)
+# BILLED: the Democratic party's own PDF, https://democrats.org/wp-content/uploads/2024/08/FINAL-MASTER-PLATFORM.pdf - the live file answers 404 and the Wayback capture 20240819121037 answered 429 (rate limit) twice on 2026-10-24; the American Presidency Project's copy stands in.

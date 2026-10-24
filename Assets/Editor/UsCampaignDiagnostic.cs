@@ -33,8 +33,8 @@ namespace PoliSim.EditorTools
     /// <para><b>PS-6 US-31</b> (R-US16 (b), RULED - I3; the plan's done-when "the campaign diagnostic shows the AI's local acts concentrated where the rule
     /// says, and a player's ground game in one state moving it by US-9's measured amount, able to flip it"): (k) the USA's staging declares the AI's
     /// targeting rule, its weights recomputed off planted polls; (l) every local act of a party that never looks lands in the rule's regions of its day, and
-    /// the planted tooth (the rule stripped) lands outside them; (m) the US count's ground game at US-9's maximal ground game on US-9's own map gives US-9's
-    /// measured amount as its card prints it (PLAN_PREREG, <see cref="Us9CardReading"/>), the same on the game's staging read, the trailing party's ceiling in
+    /// the planted tooth (the rule stripped) lands outside them; (m) US-31's registered function (W-B11's curve, the count's own until K18) at US-9's maximal ground game on US-9's own map gives US-9's
+    /// measured amount as its card prints it (PLAN_PREREG, <see cref="Us9CardReading"/>), the count's own 5b function since K18 read beside it on that map and on the game's staging, the trailing party's ceiling in
     /// the closest state flipping it through the count's own path and nothing else, US-9's scripted program read, the planted tooth (no ground game) below
     /// the range; (n) the regional noise keyed - the same count bit for bit, another master seed other numbers, no counted stream drawn; (h) the game's own
     /// polling day counting each state with its ground game, the stored contest re-deriving it (its effects cleared, the derived states - the tooth), the
@@ -194,9 +194,12 @@ namespace PoliSim.EditorTools
                 F("(e) every party cast by the CHES rule (§695): {0}", string.Join(", ", Enumerable.Range(0, keys.Length).Select(p => keys[p] + " " + setup.Parties[p].Personality))));
             int strayOffices = 0;
             for (int p = 0; p < keys.Length; p++) { foreach (int r in setup.Parties[p].Offices) { if (r < 0 || r >= setup.Regions.Length || !setup.StandsIn(p, r)) { strayOffices++; } } }
-            Check(strayOffices == 0 && setup.Parties.All(p => p.StartingMoney == LiveCampaignSetup.WarChest) && note.Contains("BILLED"),
-                F("(f) every staged office on a jurisdiction where its party stands ({0}); every chest the model's one price table ({1:N0} each - a US table in dollars BILLED, the note says so)",
-                    string.Join(", ", Enumerable.Range(0, keys.Length).Select(p => keys[p] + " " + string.Join("/", setup.Parties[p].Offices.Select(r => setup.Regions[r].Name)))), LiveCampaignSetup.WarChest));
+            double perUnit = LiveCampaignSetup.PursePerUnit(CountryId.USA);
+            Check(strayOffices == 0 && setup.Parties.All(p => p.StartingMoney == LiveCampaignSetup.WarChest) && LiveCampaignSetup.UsWarChest == PoliSim.Elections.Generated.UsCampaignSpending.WarChestUsd
+                  && perUnit == LiveCampaignSetup.UsWarChest / LiveCampaignSetup.WarChest && Math.Abs(LiveCampaignSetup.WarChest * perUnit - LiveCampaignSetup.UsWarChest) < 1e-6
+                  && LiveCampaignSetup.PursePerUnit(CountryId.Sweden) == 1.0 && note.Contains("K19") && note.Contains("K110"),
+                F("(f) every staged office on a jurisdiction where its party stands ({0}); every chest K19's, from FEC spending - {1:N0} units of the model's table at K110's {2:N4} dollars a unit, {3:N2} dollars each (the 2024 nominees' disbursements over the campaign window, their mean), so every act's price is the model's times that ratio and money binds as before - the note says so",
+                    string.Join(", ", Enumerable.Range(0, keys.Length).Select(p => keys[p] + " " + string.Join("/", setup.Parties[p].Offices.Select(r => setup.Regions[r].Name)))), LiveCampaignSetup.WarChest, perUnit, LiveCampaignSetup.WarChest * perUnit));
 
             // ---- (g) an idle campaign on the start's staging is the start's prediction
             NationalElection.TryPredictShares(CountryId.USA, out Dictionary<string, double> atStart);
@@ -379,6 +382,22 @@ namespace PoliSim.EditorTools
 
         private static double Margin(double[] shares) => 100.0 * (shares[ElectoralCollege.ShareRepublican] - shares[ElectoralCollege.ShareDemocrat]);
 
+        /// <summary>K112 (PREREGISTERED, `Reviews/2026-10-24_usdata_prereg.md` rule 1): 5b's closed form - the margin move (REP less DEM, points) when the worked party's
+        /// doors reach k = 1 - e^(-doors / supporters) of its supporters, who vote at the base plus Gerber &amp; Green's band at that base, while everyone else votes at
+        /// the base. DERIVED from 5b's arithmetic, never measured.</summary>
+        private static double ClosedFormMovePp(double[] shares, bool rep, double baseTurnout, double eligible, double doors)
+        {
+            double d = shares[ElectoralCollege.ShareDemocrat], r = shares[ElectoralCollege.ShareRepublican], o = shares[ElectoralCollege.ShareOthers];
+            double sum = d + r + o;
+            d /= sum; r /= sum; o /= sum;
+            double sp = rep ? r : d;
+            double c = GotvTurnout.DoorCacePp(CountryId.USA, baseTurnout) / 100.0;
+            double k = GotvTurnout.Coverage(doors, eligible * sp);
+            double total = baseTurnout + sp * k * c;
+            double d2 = (d * baseTurnout + (rep ? 0.0 : d * k * c)) / total, r2 = (r * baseTurnout + (rep ? r * k * c : 0.0)) / total;
+            return 100.0 * ((r2 - d2) - (r - d));
+        }
+
         /// <summary>(k) and (l): the rule declared on the USA's staging and read off a poll, and where the AI's local acts land - every one of a party that
         /// never looks (Chaotic, W-C2's reactivity 0) inside the rule's regions of its day; the planted tooth, the same staging with the rule stripped, lands
         /// outside them.</summary>
@@ -452,6 +471,10 @@ namespace PoliSim.EditorTools
                 }
                 CampaignRun.Result run = CampaignRun.Finish(st);
                 fallbackDays = run.Parties.Sum(l => l.RuleFallbackDays);
+                // K19/K110, READ (not judged): how much of K19's chest the AI's campaign spends at the re-denominated prices (the model's times the chest's ratio)
+                double dollars = LiveCampaignSetup.PursePerUnit(CountryId.USA);
+                sb.Append(F("    (l) K110, read: each party's chest spent by polling day, at the re-denominated prices - {0}\n", string.Join(", ", run.Parties.Select((l, i) => F("{0} {1:0.00} % of {2:N0} dollars ({3:N0} left)",
+                    s.Parties[i].Name, s.Parties[i].StartingMoney > 0.0 ? 100.0 * (s.Parties[i].StartingMoney - l.MoneyLeft) / s.Parties[i].StartingMoney : double.NaN, s.Parties[i].StartingMoney * dollars, l.MoneyLeft * dollars)))));
                 int acts = 0, inside = 0;
                 var by = new Dictionary<string, int>();
                 foreach (CampaignRun.PartyLedger ledger in run.Parties)
@@ -501,11 +524,7 @@ namespace PoliSim.EditorTools
                 s.PublicPollEveryDays, s.InternalHouse, s.ElectorateLoyalty, s.Outlets, s.DebateDays, s.Scandals, s.LiveScandalRatePerPartyDay, s.RecordShift, s.Families, s.AwarenessStart,
                 s.Grouping, s.Positions, s.Stands, rule);
 
-        private static UsGroundGame.Campaign Copy(UsGroundGame.Campaign c) => new UsGroundGame.Campaign
-        {
-            Regions = (string[])c.Regions.Clone(), Eligible = (double[])c.Eligible.Clone(), DemocratContacts = (double[])c.DemocratContacts.Clone(),
-            RepublicanContacts = (double[])c.RepublicanContacts.Clone(), BaseTurnout = c.BaseTurnout,
-        };
+        private static UsGroundGame.Campaign Copy(UsGroundGame.Campaign c) => c.Copy();
 
         /// <summary>(m) and (n): a ground game in one state through the US count - the ceiling in every state moving it by US-9's measured amount (PLAN_PREREG),
         /// the worked state alone; the trailing party's ceiling in the closest state flipping it, its electors and nothing else; US-9's scripted program read;
@@ -517,14 +536,22 @@ namespace PoliSim.EditorTools
             int tieSeed = UsPresidentialElection.TieSeedOf(SimulationRandom.MasterSeed, polled.Year);
             UsPresidentialElection.Contest idleCount = UsPresidentialElection.Count(CountryId.USA, polled, atStart, null, tieSeed, null, null, out ElectoralCollege.StateCall[] derived, out string why);
             UsGroundGame.Campaign none = UsGroundGame.Of(setup, idleAtStart);
-            bool empty = none != null && none.DemocratContacts.All(c => c == 0.0) && none.RepublicanContacts.All(c => c == 0.0);
+            bool empty = none != null && none.DemocratContacts.All(c => c == 0.0) && none.RepublicanContacts.All(c => c == 0.0) && none.DemocratDoors.All(c => c == 0.0)
+                         && none.RepublicanDoors.All(c => c == 0.0) && none.DemocratCalls.All(c => c == 0.0) && none.RepublicanCalls.All(c => c == 0.0);
             Check(idleCount != null && derived != null && derived.Length == 51 && empty && none.Regions.SequenceEqual(setup.Regions.Select(r => r.Name)),
                 F("(m) US-31: the count's frame on the start's staging - the idle run's ground game read by UsGroundGame.Of ({0} jurisdictions, no contact), base turnout {1:0.0000} (votes cast over the electorate), the derived states the prediction's count{2}",
                     none?.Regions.Length ?? 0, none?.BaseTurnout ?? double.NaN, idleCount == null ? " - NO COUNT: " + why : string.Empty));
             if (idleCount == null || none == null) { return; }
+            double stagedEligible = setup.Regions.Sum(r => r.Eligible);
+            double stagedCace = GotvTurnout.UsDoorCacePp(setup.NationalAudience / stagedEligible);
+            Check(setup.DoorCacePp == stagedCace && stagedCace > 0.0 && none.Regions.Select((s, i) => none.BaseTurnoutAt(i)).All(b => b > 0.0 && b < 1.0),
+                F("(m) K18: the US staging's count reads 5b - every state at its own base turnout (votes cast of record over its CVAP, {0:0.0000} to {1:0.0000}), the AI valuing a door at Gerber & Green's band of the national base {2:0.0000}: {3} points (the staging carries {4})",
+                    none.Regions.Select((s, i) => none.BaseTurnoutAt(i)).Min(), none.Regions.Select((s, i) => none.BaseTurnoutAt(i)).Max(), setup.NationalAudience / stagedEligible, stagedCace, setup.DoorCacePp));
 
-            // the maximal ground game in one state, either party, noise off, through the US count's own function - on US-9's own map, then on this staging's
-            (double Low, double High, double Stray, List<string> Flippable, int FlippableElectors, int NotAt100, string Why) Sweep(ElectoralCollege.StateCall[] map)
+            // the maximal ground game in one state, either party, noise off - through US-31's registered function (W-B11's curve, `UsGroundGame.EffectsOnCurve`,
+            // the count's own until K18) on US-9's own map, where the PLAN_PREREG holds; then through the count's own function since K18 (5b, `UsGroundGame.Effects`),
+            // on US-9's map and on this staging's, read beside it (K18 moved the count; a pass rule for 5b's figure is Elias's to register)
+            (double Low, double High, double Stray, List<string> Flippable, int FlippableElectors, int NotAt100, string Why) Sweep(ElectoralCollege.StateCall[] map, bool registered)
             {
                 double lo = double.MaxValue, hi = 0.0, stray = 0.0;
                 var flippable = new List<string>();
@@ -536,9 +563,15 @@ namespace PoliSim.EditorTools
                     {
                         UsGroundGame.Campaign c = Copy(none);
                         double contacts = Math.Ceiling(CeilingEffort * c.Eligible[r]);
-                        if (GotvModel.Mobilization(contacts, c.Eligible[r]) != 100.0) { not100++; }
-                        if (rep) { c.RepublicanContacts[r] = contacts; } else { c.DemocratContacts[r] = contacts; }
-                        List<UsGroundGame.StateEffect> e = UsGroundGame.Effects(map, c, 0, 0.0, out string whyCeiling);
+                        if (registered && GotvModel.Mobilization(contacts, c.Eligible[r]) != 100.0) { not100++; }
+                        if (rep) { c.RepublicanContacts[r] = contacts; c.RepublicanDoors[r] = contacts; } else { c.DemocratContacts[r] = contacts; c.DemocratDoors[r] = contacts; }
+                        List<UsGroundGame.StateEffect> e = registered ? UsGroundGame.EffectsOnCurve(map, c, 0, 0.0, out string whyCeiling) : UsGroundGame.Effects(map, c, 0, 0.0, out whyCeiling);
+                        if (e != null && !registered)
+                        {
+                            // 5b's bound: a party's extra votes are at most its supporters times the band's upper CACE, so a margin moves by at most that CACE over the base
+                            double b = c.BaseTurnoutAt(r);
+                            if (Math.Abs(100.0 * (e[r].Republican - e[r].Democrat)) > GotvTurnout.DoorCaceUpperPp(CountryId.USA, b) / b + UnworkedPp) { not100++; }
+                        }
                         if (e == null) { return (double.NaN, double.NaN, double.NaN, flippable, 0, not100, none.Regions[r] + " not counted: " + whyCeiling); }
                         move[rep ? 1 : 0] = 100.0 * (e[r].Republican - e[r].Democrat);
                         for (int o = 0; o < e.Count; o++) { if (o != r) { stray = Math.Max(stray, Math.Abs(100.0 * (e[o].Republican - e[o].Democrat))); } }
@@ -550,29 +583,65 @@ namespace PoliSim.EditorTools
                 }
                 return (lo, hi, stray, flippable, electors, not100, null);
             }
+            // K112: every state, either party, measured through 5b against the closed form - the band (smallest and largest closed-form move) and the worst departure
+            (double Low, double High, double Worst, int Off, string First, string Why) FiveBBand(ElectoralCollege.StateCall[] map)
+            {
+                double lo = double.MaxValue, hi = 0.0, worst = 0.0;
+                int off = 0;
+                string first = null;
+                for (int r = 0; r < none.Regions.Length; r++)
+                {
+                    ElectoralCollege.StateCall call = map.First(s => s.State == none.Regions[r]);
+                    foreach (bool rep in new[] { false, true })
+                    {
+                        UsGroundGame.Campaign c = Copy(none);
+                        double doors = Math.Ceiling(CeilingEffort * c.Eligible[r]);
+                        if (rep) { c.RepublicanDoors[r] = doors; } else { c.DemocratDoors[r] = doors; }
+                        List<UsGroundGame.StateEffect> e = UsGroundGame.Effects(map, c, 0, 0.0, out string why);
+                        if (e == null) { return (double.NaN, double.NaN, double.NaN, -1, null, none.Regions[r] + " not counted: " + why); }
+                        double measured = 100.0 * (e[r].Republican - e[r].Democrat);
+                        double closed = ClosedFormMovePp(call.Shares, rep, c.BaseTurnoutAt(r), c.Eligible[r], doors);
+                        lo = Math.Min(lo, Math.Abs(closed)); hi = Math.Max(hi, Math.Abs(closed));
+                        double gap = Math.Abs(measured - closed);
+                        worst = Math.Max(worst, gap);
+                        if (gap > UnworkedPp) { off++; first = first ?? F("{0} {1} measured {2:+0.0000;-0.0000} against {3:+0.0000;-0.0000}", call.State, rep ? "REP" : "DEM", measured, closed); }
+                    }
+                }
+                return (lo, hi, worst, off, first, null);
+            }
             var prev2020 = UsPresidentialReturns.States.Where(s => s.Year == 2020).ToArray();
             var rows2024 = UsPresidentialReturns.States.Where(s => s.Year == 2024).ToArray();
             double cast2024 = rows2024.Sum(s => (double)s.VotesTotal);
             double[] national2024 = { rows2024.Sum(s => (double)s.VotesD) / cast2024, rows2024.Sum(s => (double)s.VotesR) / cast2024, rows2024.Sum(s => (double)s.VotesOther) / cast2024 };
             ElectoralCollege.FromNationalShares(2020, 2024, national2024, out ElectoralCollege.StateCall[] us9Map, out double _);   // US-9's idle map: US-4's (a) row, 2024's national shares on 2020's states
-            var us9 = Sweep(us9Map);
+            var us9 = Sweep(us9Map, true);
             bool cardRead = Us9CardReading(out double cardLow, out double cardHigh, out int cardFlips, out int cardElectors, out string cardList, out string cardWhy);
             bool asUs9 = cardRead && us9.Why == null && us9.NotAt100 == 0 && Math.Abs(us9.Low - cardLow) <= CardRoundingPp + UnworkedPp && Math.Abs(us9.High - cardHigh) <= CardRoundingPp + UnworkedPp
                          && us9.Flippable.Count == cardFlips && us9.FlippableElectors == cardElectors && string.Join(", ", us9.Flippable.OrderBy(x => x, StringComparer.Ordinal)) == cardList
                          && us9.Stray < UnworkedPp && prev2020.Length == us9Map.Length;
             Check(asUs9,
-                F("(m) THE DONE-WHEN, US-9's measured amount (PLAN_PREREG): the US count's ground game (UsGroundGame.Effects, the count's own function) at US-9's maximal ground game on US-9's own map moves one state's margin {0:0.000} to {1:0.000} points, either party - the card's US-9 block {2:0.00} to {3:0.00} (within its rounding {4}) - and could flip {5} calls, {6} electors ({7}), the card's {8}, {9} ({10}); every unworked state by at most {11:0.0e+0} points{12}",
+                F("(m) THE DONE-WHEN, US-9's measured amount (PLAN_PREREG): US-31's registered function (UsGroundGame.EffectsOnCurve - W-B11's curve, the count's own until K18) at US-9's maximal ground game on US-9's own map moves one state's margin {0:0.000} to {1:0.000} points, either party - the card's US-9 block {2:0.00} to {3:0.00} (within its rounding {4}) - and could flip {5} calls, {6} electors ({7}), the card's {8}, {9} ({10}); every unworked state by at most {11:0.0e+0} points{12}",
                     us9.Low, us9.High, cardLow, cardHigh, CardRoundingPp, us9.Flippable.Count, us9.FlippableElectors, string.Join(", ", us9.Flippable), cardFlips, cardElectors, cardList, us9.Stray,
                     cardRead ? (us9.Why == null ? string.Empty : " - " + us9.Why) : " - THE CARD: " + cardWhy));
-            var live = Sweep(derived);
-            Check(live.Why == null && live.NotAt100 == 0 && live.Stray < UnworkedPp,
-                F("(m) on the game's own staging (its map the prediction's count, its electorate the CVAP) the same ceiling moves one state's margin {0:0.000} to {1:0.000} points and could flip {2} calls, {3} electors ({4}); every unworked state by at most {5:0.0e+0} points{6}",
-                    live.Low, live.High, live.Flippable.Count, live.FlippableElectors, string.Join(", ", live.Flippable), live.Stray, live.Why == null ? string.Empty : " - " + live.Why));
-            // the planted tooth: no ground game, and no state moves by US-9's amount
+            // K112 (PREREGISTERED, `Reviews/2026-10-24_usdata_prereg.md` rule 1, committed before this check read it): THE REGISTERED 5b CEILING - every state, either
+            // party, through the count's own function (5b) moves its margin by exactly 5b's closed form, within the count's whole-vote rounding
+            var us9Now = Sweep(us9Map, false);
+            var us9Band = FiveBBand(us9Map);
+            Check(us9Now.Why == null && us9Now.NotAt100 == 0 && us9Now.Stray < UnworkedPp && us9Band.Why == null && us9Band.Off == 0,
+                F("(m) K112, THE REGISTERED 5b CEILING on US-9's own map: every state, either party, moves by 5b's closed form (the worked party's supporters at the base plus Gerber & Green's band, everyone else at the base) within {0:0.0e+0} points - the band {1:0.000} to {2:0.000} points (worst off the closed form {3:0.0e+0}{4}); each state inside 5b's bound; could flip {5} calls, {6} electors ({7}) - against US-9's registered {8:0.00} to {9:0.00} on the curve; every unworked state by at most {10:0.0e+0} points{11}",
+                    UnworkedPp, us9Band.Low, us9Band.High, us9Band.Worst, us9Band.First == null ? string.Empty : ", " + us9Band.First, us9Now.Flippable.Count, us9Now.FlippableElectors, string.Join(", ", us9Now.Flippable),
+                    cardLow, cardHigh, us9Now.Stray, (us9Now.Why ?? us9Band.Why) == null ? string.Empty : " - " + (us9Now.Why ?? us9Band.Why)));
+            var live = Sweep(derived, false);
+            var liveBand = FiveBBand(derived);
+            Check(live.Why == null && live.NotAt100 == 0 && live.Stray < UnworkedPp && liveBand.Why == null && liveBand.Off == 0,
+                F("(m) K112, THE REGISTERED 5b CEILING on the game's own staging (its map the prediction's count, its electorate the CVAP): every state, either party, by 5b's closed form within {0:0.0e+0} points - the band {1:0.000} to {2:0.000} points (worst off {3:0.0e+0}{4}); could flip {5} calls, {6} electors ({7}); every unworked state by at most {8:0.0e+0} points{9}",
+                    UnworkedPp, liveBand.Low, liveBand.High, liveBand.Worst, liveBand.First == null ? string.Empty : ", " + liveBand.First, live.Flippable.Count, live.FlippableElectors, string.Join(", ", live.Flippable), live.Stray,
+                    (live.Why ?? liveBand.Why) == null ? string.Empty : " - " + (live.Why ?? liveBand.Why)));
+            // the planted tooth (the review's L-5, the prereg's last rule): no ground game anywhere moves no state by 5b's smallest closed-form move
             List<UsGroundGame.StateEffect> idleEffects = UsGroundGame.Effects(derived, none, 0, 0.0, out string _);
             double idleMost = idleEffects == null ? double.NaN : idleEffects.Max(x => Math.Abs(100.0 * (x.Republican - x.Democrat)));
-            Check(idleEffects != null && idleMost < cardLow - CardRoundingPp,
-                F("(m) the planted tooth - no ground game anywhere: the widest move {0:0.0e+0} points, below US-9's range, so the assertion above bites", idleMost));
+            Check(idleEffects != null && idleMost < liveBand.Low,
+                F("(m) the planted tooth - no ground game anywhere: the widest move {0:0.0e+0} points, below 5b's smallest closed-form move {1:0.000}, so the band above bites", idleMost, liveBand.Low));
 
             // able to flip it: the trailing party's ceiling in the closest winner-take-all state, through the count's own path with its keyed noise
             int noiseSeed = UsGroundGame.NoiseSeedOf(CountryId.USA, polled);
@@ -582,16 +651,40 @@ namespace PoliSim.EditorTools
             bool trailingRep = noisy[t].Winner == ElectoralCollege.Democrat;
             int at = Array.IndexOf(none.Regions, noisy[t].State);
             UsGroundGame.Campaign worked = Copy(none);
-            if (trailingRep) { worked.RepublicanContacts[at] = Math.Ceiling(CeilingEffort * worked.Eligible[at]); } else { worked.DemocratContacts[at] = Math.Ceiling(CeilingEffort * worked.Eligible[at]); }
+            double ceilingDoors = Math.Ceiling(CeilingEffort * worked.Eligible[at]);
+            if (trailingRep) { worked.RepublicanContacts[at] = ceilingDoors; worked.RepublicanDoors[at] = ceilingDoors; } else { worked.DemocratContacts[at] = ceilingDoors; worked.DemocratDoors[at] = ceilingDoors; }
             UsPresidentialElection.Contest flipped = UsPresidentialElection.Count(CountryId.USA, polled, atStart, null, tieSeed, null, null, worked, noiseSeed, out ElectoralCollege.StateCall[] after, out string _);
             string party = trailingRep ? "REP" : "DEM";
             bool othersSame = after != null && Enumerable.Range(0, noisy.Length).All(i => i == t || (after[i].Winner == noisy[i].Winner && after[i].Shares.SequenceEqual(noisy[i].Shares)));
             bool flips = after != null && after[t].Winner != noisy[t].Winner;
             int gained = flipped != null ? flipped.ElectorsOf(party) - noiseOnly.ElectorsOf(party) : -1;
-            Check(flips && othersSame && gained == noisy[t].Electors && flipped.GroundGame.Count == noisy.Length,
-                F("(m) THE DONE-WHEN, able to flip it: the closest winner-take-all state on the count with the declared noise (seed keyed on {0:yyyy-MM-dd}), {1} at {2:+0.00;-0.00}, worked at the ceiling by the trailing {3}: its margin {2:+0.00;-0.00} -> {4:+0.00;-0.00}, the call {5}; every other state's shares bit for bit the same; {3} gains its {6} electors ({7} -> {8})",
-                    polled, noisy[t].State, Margin(noisy[t].Shares), party, after != null ? Margin(after[t].Shares) : double.NaN, flips ? "FLIPS" : "DOES NOT FLIP", noisy[t].Electors,
-                    noiseOnly.ElectorsOf(party), flipped?.ElectorsOf(party) ?? -1));
+            // K112/K113, K114 (PREREGISTERED, rule 2 and amendment 1): pass if the call flips; if it does not, the NAMED line (not a failure - Elias's K114) only
+            // where the live path itself is judged: nothing else moved, no elector gained, a ground-game effect for every state, the live move the count's own
+            // function on the live inputs (to 1e-9 points), and the worked state's 5b move with the noise off on its noisy-map shares the closed form
+            List<UsGroundGame.StateEffect> liveWorked = UsGroundGame.Effects(derived, worked, noiseSeed, UsGroundGame.NoiseSigmaPp, out string _);
+            List<UsGroundGame.StateEffect> liveNone = UsGroundGame.Effects(derived, none, noiseSeed, UsGroundGame.NoiseSigmaPp, out string _);
+            int liveAt = liveWorked == null ? -1 : liveWorked.FindIndex(x => x.State == noisy[t].State);
+            double liveExpected = liveAt < 0 || liveNone == null ? double.NaN
+                : 100.0 * ((liveWorked[liveAt].Republican - liveWorked[liveAt].Democrat) - (liveNone[liveAt].Republican - liveNone[liveAt].Democrat));
+            double liveMove = after != null ? Margin(after[t].Shares) - Margin(noisy[t].Shares) : double.NaN;
+            bool liveIsCount = Math.Abs(liveMove - liveExpected) <= 1e-9;
+            List<UsGroundGame.StateEffect> flipNoNoise = UsGroundGame.Effects(noisy, worked, 0, 0.0, out string _);
+            double flipMove = flipNoNoise == null ? double.NaN : 100.0 * (flipNoNoise[at].Republican - flipNoNoise[at].Democrat);
+            double flipClosed = ClosedFormMovePp(noisy[t].Shares, trailingRep, worked.BaseTurnoutAt(at), worked.Eligible[at], ceilingDoors);
+            bool asClosed = Math.Abs(flipMove - flipClosed) <= UnworkedPp;
+            string flipLine = F("the closest winner-take-all state on the count with the declared noise (seed keyed on {0:yyyy-MM-dd}), {1} at {2:+0.00;-0.00}, worked at the ceiling by the trailing {3}: its margin {2:+0.00;-0.00} -> {4:+0.00;-0.00}, the call {5}; every other state's shares bit for bit the same; {3} gains its {6} electors ({7} -> {8}); 5b's move there {9:+0.000;-0.000} points (noise off), the closed form {10:+0.000;-0.000}",
+                polled, noisy[t].State, Margin(noisy[t].Shares), party, after != null ? Margin(after[t].Shares) : double.NaN, flips ? "FLIPS" : "DOES NOT FLIP", noisy[t].Electors,
+                noiseOnly.ElectorsOf(party), flipped?.ElectorsOf(party) ?? -1, flipMove, flipClosed);
+            if (flips || !othersSame || !asClosed || flipped == null || gained != 0 || flipped.GroundGame.Count != noisy.Length || !liveIsCount)
+            {
+                Check(flips && othersSame && gained == noisy[t].Electors && flipped.GroundGame.Count == noisy.Length && liveIsCount,
+                    "(m) THE DONE-WHEN, able to flip it (K112, preregistered; amendment 1): " + flipLine + F("; the live move {0:+0.000000;-0.000000} against the count's own function {1:+0.000000;-0.000000}", liveMove, liveExpected));
+            }
+            else
+            {
+                sb.Append(F("    REGISTERED OUTCOME CHANGED (K113): US-31's able-to-flip clause no longer holds on the live path - {0}; the shortfall {1:0.000} points. K18 changed it and 5b is kept (Elias's K113)\n",
+                    flipLine, Math.Abs(Margin(noisy[t].Shares)) - Math.Abs(flipClosed)));
+            }
 
             // the second review's L2: no noise votes for a column that stands nowhere in a state (US-6c, J3) - every state planted with no other candidate on
             // its ballot (its others' share given to the Democratic nominee), counted with the declared noise: every other candidate stays at 0 in every state
@@ -639,7 +732,7 @@ namespace PoliSim.EditorTools
             for (int i = 0; i < keys.Length; i++) { programShares[keys[i]] = programRun.FinalShares[i]; }
             UsPresidentialElection.Count(CountryId.USA, polled, programShares, null, tieSeed, null, null, out ElectoralCollege.StateCall[] programDerived, out string _);
             UsGroundGame.Campaign repOnly = UsGroundGame.Of(setup, programRun);
-            if (repOnly != null) { repOnly = Copy(repOnly); for (int r = 0; r < repOnly.DemocratContacts.Length; r++) { repOnly.DemocratContacts[r] = 0.0; } }
+            if (repOnly != null) { repOnly = Copy(repOnly); for (int r = 0; r < repOnly.DemocratContacts.Length; r++) { repOnly.DemocratContacts[r] = 0.0; repOnly.DemocratDoors[r] = 0.0; repOnly.DemocratCalls[r] = 0.0; } }
             List<UsGroundGame.StateEffect> programEffects = programDerived != null && repOnly != null ? UsGroundGame.Effects(programDerived, repOnly, 0, 0.0, out string _) : null;
             int made = programRun.Parties[repIndex].ActionCount[CampaignAi.IndexOfAction(ProgramAct)];
             double gaMove = programEffects != null ? 100.0 * (programEffects[ga].Republican - programEffects[ga].Democrat) : double.NaN;

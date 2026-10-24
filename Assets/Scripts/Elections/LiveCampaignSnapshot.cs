@@ -287,11 +287,12 @@ namespace PoliSim.Elections
             string purse = country.Id == CountryId.Sweden ? "KR" : EnergyLayer.CurrencyCode(country.Id);
             if (pre.Day > 0)
             {
+                double perUnit = LiveCampaignSetup.PursePerUnit(country.Id);   // K110 (the delta review's M-1): purse units printed in the purse's currency, as the HQ's other figures
                 foreach (PreCampaignRun.Entry e in PreCampaignRun.EntriesOn(pre, pre.Day - 1))
                 {
                     notes.Add(e.Refusal == null
-                        ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "YESTERDAY · {0} {1} · {2:N0} {4}{3}", SpacedUpper(e.Kind), e.Target.ToUpperInvariant(), e.Cost,
-                            e.Raised > 0.0 ? string.Format(System.Globalization.CultureInfo.InvariantCulture, " · RAISED {0:N0} {1} · NET {2:+#,0;-#,0} {1}", e.Raised, purse, e.Raised - e.Cost) : string.Empty, purse)   // K84: a mailing's revenue
+                        ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "YESTERDAY · {0} {1} · {2:N0} {4}{3}", SpacedUpper(e.Kind), e.Target.ToUpperInvariant(), e.Cost * perUnit,
+                            e.Raised > 0.0 ? string.Format(System.Globalization.CultureInfo.InvariantCulture, " · RAISED {0:N0} {1} · NET {2:+#,0;-#,0} {1}", e.Raised * perUnit, purse, (e.Raised - e.Cost) * perUnit) : string.Empty, purse)   // K84: a mailing's revenue
                         : string.Format(System.Globalization.CultureInfo.InvariantCulture, "YESTERDAY · {0} {1} · REFUSED: {2}", SpacedUpper(e.Kind), e.Target.ToUpperInvariant(), e.Refusal.ToUpperInvariant()));
                 }
             }

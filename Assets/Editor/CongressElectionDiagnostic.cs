@@ -375,12 +375,12 @@ namespace PoliSim.EditorTools
                 card.Add("");
                 card.Add("**Declared**: the Senate seats the game did not elect keep the record's resignations and appointments, those that follow from the record's own presidential result included - Vance's Ohio seat vacant from 10 Jan 2025 and Rubio's Florida seat on 20 Jan, both filled on 21 Jan, whoever the game elected - so \"435 and 100\" is held on each 3 January, the day each Congress sits. Under a president acting after an undecided contest (R-US22) no Vice President is in office, and the acting president's party decides an equal Senate. An acting president of the player's party is the player's.");
                 card.Add("");
-                card.Add("**Not modelled, stated**: third-party winners; runoffs, ranked-choice transfers and Georgia's majority rule; specials the record does not hold; party switches; a delayed oath (every winner sits from 3 January). The midterms are US-27's (`UsMidtermDiagnostic`).");
+                card.Add("**Not modelled, stated**: third-party winners; runoffs, ranked-choice transfers and Georgia's majority rule; specials neither the record nor `senate_specials.csv` (K14) holds; party switches; a delayed oath (every winner sits from 3 January). The midterms are US-27's (`UsMidtermDiagnostic`).");
                 card.Add("");
                 card.Add("The rulings it runs on: R-US18 (b) (I1) and R-US19 (c) over (a) (I2), each RULED; R-US15 (a) (G2); R-US22's order (I6) where the House cannot choose.");
             }
             return Digest(string.Join("\n", card) + UsPresidentialReturns.HouseDistrictSourceDigest + UsPresidentialReturns.HouseMapSourceDigest + UsPresidentialReturns.HouseSourceDigest
-                + UsPresidentialReturns.SenateRaceSourceDigest + UsPresidentialReturns.SenateSeatSourceDigest + UsPresidentialReturns.StateSourceDigest);
+                + UsPresidentialReturns.SenateRaceSourceDigest + UsPresidentialReturns.SenateSeatSourceDigest + UsPresidentialReturns.SenateSpecialSourceDigest + UsPresidentialReturns.StateSourceDigest);
         }
 
 
