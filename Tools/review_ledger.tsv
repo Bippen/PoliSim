@@ -331,3 +331,4 @@ file	Assets/Scripts/Elections/Generated/FiscalBalanceRecord.cs	ad361d32e4272da23
 file	Assets/Scripts/Data/FiscalVoteBook.cs	9a8f8d2d30aacdec7ac995b9e06fff74822c6748f9d3df8216d60830ef499dee	reviewed	2026-10-24	s912	Reviews/2026-10-24_fisc_integrator_delta.md	-
 file	Assets/Scripts/Elections/FiscalVote.cs	b52651f7ac4ca48f51639011e8cbf1970d3ecaec165e8650762a49c64e6ff9fd	reviewed	2026-10-24	s912	Reviews/2026-10-24_fisc_integrator_delta.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	91a5e27a336cd953a39170926537da82d9992c43e9cb414477e6463927ff8e01	reviewed	2026-10-24	s912	Reviews/2026-10-24_fisc_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	6fb4212ec2c1b6f8f6c38d90b24b1f06c1b472674c448bd45acfc6aaec091cb9	reviewed	2026-10-24	s913	Reviews/2026-10-24_g18b_integrator_delta.md	-

@@ -155,10 +155,12 @@ namespace PoliSim.EditorTools
                             q = RunAcross(hosts, cleanup, asked, Mode.Ledger);
                             runs++;
                         }
-                        Outcome qa = RunAcross(hosts, cleanup, asked, Mode.FormationAround);
+                        bool plant = !q.PlayerAskedFirst;
+                        if (plant) { asked = Governing; q = RunAcross(hosts, cleanup, asked, Mode.Ledger, plantAsk: true); runs++; }
+                        Outcome qa = RunAcross(hosts, cleanup, asked, Mode.FormationAround, plant);
                         Check(q.PlayerAskedFirst && q.Formations > 0,
                             F("2. the player leading {0}: the Speaker asked the player's party first after the count of {1} ({2}, found in {3} run(s)); the player answered {4} formation question(s) (a pass, an offer declined)",
-                                asked, q.PollingDay, q.PlayerAskedFirst ? "yes" : "NO - the case has no teeth: the Speaker asked " + (q.FirstAsked ?? "no party"), runs, q.Formations));
+                                asked, q.PollingDay, q.PlayerAskedFirst ? (q.PlayedPlanted ? "yes, PLANTED - no count asked it first: the count asked " + (q.FirstAsked ?? "no party") : "yes") : "NO - the case has no teeth: the Speaker asked " + (q.FirstAsked ?? "no party"), runs, q.Formations));
                         Check(q.Real == qa.Real, "2. the played world is the same with the pass given through the ledger and around it" + (q.Real == qa.Real ? string.Empty : FirstDifference(q.Real, qa.Real)));
                         Check(q.Fork == q.Real && q.Line.Values.All(v => v == 0f),
                             F("2. the ledger's Trade fork EQUALS the played world through the Speaker's round{0}; its line {1}", q.Fork == q.Real ? string.Empty : FirstDifference(q.Real, q.Fork), Lines(q.Line)));
@@ -227,7 +229,7 @@ namespace PoliSim.EditorTools
         {
             public string Real, Fork, PollingDay = "never", ReadOn = "never", NoneGovernment = "none", ForkGovernment = "none", PlantedOver = "never read", FirstAsked;
             public Dictionary<string, float> Line = new Dictionary<string, float>();
-            public bool Governs, ElectionHeld, ForkHeld, NoneMeetingPending, PlayerAskedFirst, NoneFormed, ForkFormed, Planted, NonePlanted;
+            public bool Governs, ElectionHeld, ForkHeld, NoneMeetingPending, PlayerAskedFirst, NoneFormed, ForkFormed, Planted, NonePlanted, PlayedPlanted;
             public string NoneFirstAsked;
             public int PollingDays, Meetings, Bills, Formations, NoneForeignDraws, RealForeignDraws;
             /// <summary>K50: the no-policy world's own election (its last record's day and whether it counted the chamber) and its standing figures against the start's.</summary>
@@ -237,7 +239,7 @@ namespace PoliSim.EditorTools
 
         // ------------------------------------------------------------------ 1 and 2
 
-        private static Outcome RunAcross(List<GameObject> hosts, List<Action> cleanup, string party, Mode mode)
+        private static Outcome RunAcross(List<GameObject> hosts, List<Action> cleanup, string party, Mode mode, bool plantAsk = false)
         {
             var o = new Outcome();
             Game g = OpenSweden(hosts, cleanup, "ForkAnswersDiagnostic." + party + "." + mode, party, null, out o.Governs);
@@ -275,6 +277,21 @@ namespace PoliSim.EditorTools
                             noneRound.Stage = RoundStage.PlayerAsked;
                             noneRound.AskedOn = noneSim.CurrentDate;
                             o.NonePlanted = true;
+                        }
+                        // case 2's precondition planted in the played world too, where no count asks the player's party first (the Swedish blocs of 2026 near even: the idle party's count swings who is asked): the Trade fork brought to today and asked the same, so the two stay one world
+                        SpeakerRound playedRound = g.Sim.RoundOf(Player);
+                        if (plantAsk && (mode == Mode.Ledger || mode == Mode.FormationAround) && playedRound != null && !(playedRound.Stage == RoundStage.PlayerAsked && playedRound.Asked == party))
+                        {
+                            if (fork != null)
+                            {
+                                fork.CatchUp(g.Sim.DaysIntoTurn);
+                                SpeakerRound forked = ForkSim(fork).RoundOf(Player);
+                                if (forked != null) { forked.Asked = party; forked.Stage = RoundStage.PlayerAsked; forked.AskedOn = ForkSim(fork).CurrentDate; }
+                            }
+                            playedRound.Asked = party;
+                            playedRound.Stage = RoundStage.PlayerAsked;
+                            playedRound.AskedOn = g.Sim.CurrentDate;
+                            o.PlayedPlanted = true;
                         }
                     }
                     if (polled && g.Boundary) { break; }   // read at the boundary after the polling day, before the next answer (the fork reaches it at its next turn)

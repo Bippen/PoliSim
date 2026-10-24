@@ -1,0 +1,391 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using PoliSim.Data;
+using PoliSim.Elections;
+using PoliSim.Simulation;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
+
+namespace PoliSim.EditorTools
+{
+    /// <summary>
+    /// GATE-18 piece two (`POLISIM_FEATURE_LIST.md` row 5; Elias's ruling q18 of 2026-10-18 with K-1): <b>AN ELECTION OF RECORD INSIDE A START'S WINDOW IS
+    /// REPRODUCED BY AN IDLE GAME</b> - "eve-fitted factors at the unit the count uses (E1's form); each share within 1.5 points, and the record's government
+    /// formed; the noise at zero for this gate; the out-of-sample prediction printed beside it. Sweden 2026 (K-1) and Poland's 2025 run-off are inside it."
+    /// <list type="number">
+    /// <item><description><b>The window.</b> Every election of record on or after each start's opening day, printed with what holds it: the chamber elections
+    /// the game counts (`ParliamentaryCount.CountsIn`) carry the record's factors (`RecordFactors.Elections`); the presidential votes of record are E1's; the
+    /// rest are named with the reason the game holds no count of them.</description></item>
+    /// <item><description><b>The idle game</b>, per chamber election of the table: a world built as a new game builds one at the country's start (the seed of
+    /// play, the epoch first, the record seated on its date), the player's party the start's prime minister's (DECLARED), stepped by the game's own day loop in
+    /// the controller's order (the day, the player's day tick, the boundary with no decision anywhere, the market's turn state, the player's election) through
+    /// the polling day of record and on until the first government formed after it. Nothing is played: each wait on the player is answered at the start of
+    /// the next day by the AI's rule for the player's party (`SimulationManager.AnswerWaitsAsTheAi`, Elias's K49 for an unanswered question - DECLARED as the
+    /// idle player's answer). The whole run is inside `ParliamentaryCount.NoiseAtZero`.</description></item>
+    /// <item><description><b>The fit</b> (E1's form at the count's unit): each list's factor is the record's share over the roster's total divided by the share
+    /// the idle game handed the count, refit by the count itself to its fixed point (the doors' turnout moves a counted share a little off the handed one) and
+    /// normalised so the factors times the handed shares sum to one. Printed as FIT lines, which `Tools/chamber_factor_patch.pl` patches into
+    /// `RecordFactors` from this log.</description></item>
+    /// <item><description><b>The gate</b> (FAILS while any is false): every factor of the election fitted; the count drawn at sigma 0; every list's share as the
+    /// game counted it within `TolerancePp` of the record's share over the roster's total; and, where the record names the cabinet formed after that election,
+    /// the game's first government formed after the polling day led by the record's head's party with the record's cabinet. Where the record names none, the
+    /// clause is printed NOT ON RECORD and asserts nothing.</description></item>
+    /// <item><description><b>The out-of-sample prediction, beside it</b>: the same count of the same idle game's handed shares at factor one - the model's own
+    /// prediction, which nothing of the record reached (no part of the game before the count reads the factors) - per list, its miss, its mean absolute miss and
+    /// its chamber. Printed, never a pass condition.</description></item>
+    /// <item><description><b>Poland's 2025 presidential election</b>, on E1's reference world (`PresidentialReferenceWorld` - RULED F4: the world that follows
+    /// history is the one E1's factors are fitted on): every first-round candidate of record within `TolerancePp` of the PKW's, the run-off electing the
+    /// record's winner with his share of the two within `TolerancePp` of the record's. Beside it, the first round at factor one (the candidates with no roster
+    /// party at their share of record, as E1 rules their base) and the run-off it leads to.</description></item>
+    /// </list>
+    /// Prints `=== Gate18Diagnostic: the gate holds ===` and exits 0 when every clause holds. Run:
+    /// `Unity.exe -batchmode -nographics -projectPath &lt;path&gt; -executeMethod PoliSim.EditorTools.Gate18Diagnostic.Run -logFile &lt;path&gt;`.
+    /// </summary>
+    public static class Gate18Diagnostic
+    {
+        /// <summary>q18's tolerance, ruled: each share within this many points of the record's.</summary>
+        public const double TolerancePp = 1.5;
+        /// <summary>The play key the films and the fork checks seed with.</summary>
+        private const int Seed = 777;
+        /// <summary>CONVENTION: the fit's fixed point is reached when every counted share sits this close to its target (fractions of the vote).</summary>
+        private const double FitConvergence = 1e-12;
+        /// <summary>CONVENTION: the most iterations the fit takes to reach its fixed point.</summary>
+        private const int FitIterations = 200;
+        /// <summary>CONVENTION: the stored factors are reported as due a refit when the refit moves one by more than this, relative.</summary>
+        private const double RefitReportFloor = 1e-6;
+
+        private static readonly MethodInfo SeatMethod = typeof(SimulationManager).GetMethod("SeatTheRecordOnItsDate", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        private static int _failures;
+        private static StringBuilder _sb;
+
+        public static void Run()
+        {
+            CheckExit.ArmLogFold();
+            _failures = 0;
+            _sb = new StringBuilder("=== Gate18Diagnostic (GATE-18 piece two, q18 with K-1): an election of record inside a start's window reproduced by an idle game, the noise at zero ===\n");
+            try
+            {
+                Window();
+                using (ParliamentaryCount.NoiseAtZero())
+                {
+                    foreach (ElectionVintage election in RecordFactors.Elections) { Chamber(election); }
+                    Presidential();
+                }
+            }
+            catch (Exception e) { Check(false, "the run threw " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace); }
+            _sb.Append(_failures == 0 ? "=== Gate18Diagnostic: the gate holds ===" : F("=== Gate18Diagnostic: {0} FAILED ===", _failures));
+            if (_failures == 0) { Debug.Log(_sb.ToString()); } else { Debug.LogError(_sb.ToString()); }
+            CheckExit.Finish(_failures == 0 ? 0 : 1);
+        }
+
+        // ============================================================ the window
+        private static void Window()
+        {
+            _sb.Append("  the elections of record inside each start's window (on or after its opening day):\n");
+            foreach (CountryId id in new[] { CountryId.Sweden, CountryId.Germany, CountryId.Poland, CountryId.Italy, CountryId.USA, CountryId.France })
+            {
+                DateTime start = WorldClock.StartDate(id);
+                foreach (WorldClock.ChamberOfRecord c in WorldClock.Chambers(id))
+                {
+                    if (c.ElectionDay == DateTime.MinValue || c.ElectionDay < start) { continue; }
+                    string holds = RecordFactors.Elections.Contains(c.Vintage) ? "the chamber count, the record's factors fitted here - IN THE GATE"
+                        : WorldClock.GoverningModeOnly(id) ? "no election is held (governing mode)"
+                        : WorldClock.NoElectionYet(id) ? "no election is held in this game yet"
+                        : WorldClock.RecordSeatsChamber(id) ? "the House counted on the day loop by its own model, not the chamber count - not in this piece"
+                        : !ParliamentaryCount.CountsIn(id) ? "not counted by the chamber count"
+                        : "counted, but no factors are carried for it";
+                    _sb.Append(F("    {0}: starts {1:yyyy-MM-dd}; the chamber election of {2:yyyy-MM-dd} ({3}) - {4}\n", id, start, c.ElectionDay, c.Vintage, holds));
+                }
+                foreach (CountryId presidential in new[] { CountryId.Poland, CountryId.USA })
+                {
+                    if (presidential != id) { continue; }
+                    DateTime vote = PresidentialReferenceWorld.VoteOfRecord(id);
+                    if (vote < start) { continue; }
+                    _sb.Append(F("    {0}: the presidential vote of {1:yyyy-MM-dd} - E1's factors on its reference world{2}\n", id, vote,
+                        id == CountryId.Poland ? " - IN THE GATE (the run-off)" : " (UsPresidentialFactorCheck holds them; the count by the states is not in this piece)"));
+                }
+            }
+        }
+
+        // ============================================================ a chamber election of record, by an idle game
+        private static void Chamber(ElectionVintage election)
+        {
+            CountryId id = RecordFactors.CountryOf(election);
+            DateTime poll = RecordFactors.PollingDayOf(election);
+            _sb.Append(F("  {0} ({1}, polling day {2:yyyy-MM-dd}):\n", election, id, poll));
+            bool fitted = RecordFactors.IsFitted(election, out List<string> unfitted);
+            Check(fitted, fitted ? "every list's factor is fitted" : "UNFITTED - no fit patched in for " + string.Join(", ", unfitted) + " (perl Tools/chamber_factor_patch.pl <this log>, then run again)");
+
+            if (!PartySystems.TryHistory(id, out double[] recordShares, out double[] _, election)) { Check(false, "the record's shares are not on disk"); return; }
+            PoliticalParty[] roster = PartySystems.RealRoster(id);
+            double rosterTotal = recordShares.Sum();
+            var target = new Dictionary<string, double>(StringComparer.Ordinal);
+            for (int i = 0; i < roster.Length && i < recordShares.Length; i++) { target[roster[i].Abbrev] = recordShares[i] / rosterTotal; }
+
+            using (SimulationManager.EpochScope())
+            {
+                SimulationRandom.Seed(Seed);
+                EnergyMarket.ResetCalibration();
+                WorldClock.ApplyStart(id);
+                World w = WorldFactory.CreateDefault();
+                var host = new GameObject("Gate18Diagnostic." + id);
+                try
+                {
+                    SimulationManager s = host.AddComponent<SimulationManager>();
+                    s.SetWorld(w);
+                    s.PlayerCountryId = id;
+                    Country country = w.GetCountry(id);
+                    string player = IncumbentParty(id, SimulationManager.EpochDate);
+                    country.PlayerPartyAbbrev = player;
+                    SeatMethod.Invoke(s, null);
+                    int chairs = CabinetSystem.SeatAverageCabinet(country);   // the start's chairs filled as every new game fills them on its start day (GameController.SelectPlayerCountry, PlayProtocolStaging) (§913)
+                    _sb.Append(F("    the idle game: opened {0:yyyy-MM-dd}, seed {1}, the player's party {2} (the start's prime minister's, DECLARED), nothing played; the average minister seated in {3} vacant chair(s) of the player's, as a new game's start seats them\n", s.CurrentDate, Seed, player ?? "none", chairs));
+
+                    // to the polling day, the count held by the day loop
+                    ParliamentaryCount.Held held = null;
+                    for (int day = 0; day < 800 && held == null && s.CurrentDate <= poll; day++)
+                    {
+                        Day(s, w, id);
+                        if (s.LastPlayerCount != null && s.LastPlayerCount.Day == poll) { held = s.LastPlayerCount; }
+                    }
+                    if (held == null || held.Counted == null) { Check(false, F("the idle game held no chamber count on {0:yyyy-MM-dd} (it stood on {1:yyyy-MM-dd})", poll, s.CurrentDate)); return; }
+                    Check(held.Counted.SigmaPp == 0.0, F("the count drawn at sigma {0} (the noise at zero for this gate) - {1}", held.Counted.SigmaPp, held.Setup.HasValue ? "the campaign's shares through the tactical layer, its doors counted" : "the prediction, no campaign staged"));
+                    Dictionary<string, double> expected = RecordFactors.Apply(RecordFactors.Based(election, held.BeforeFactors), RecordFactors.Stored(election));
+                    bool carried = held.Factors != null && held.Election == election && held.Handed.All(kv => expected.TryGetValue(kv.Key, out double e) && kv.Value == e);
+                    Check(fitted ? carried : held.Factors == null && ReferenceEquals(held.Handed, held.BeforeFactors),
+                        fitted ? "the count was handed the shares times the stored factors (" + election + ")" : "unfitted: the count was handed the model's own shares, no factor carried");
+
+                    // K109, planted: a list handed nothing carries its share of record as its base; every other list its handed share
+                    string plantedKey = roster[0].Abbrev;
+                    var planted = new Dictionary<string, double>(held.BeforeFactors, StringComparer.Ordinal) { [plantedKey] = 0.0 };
+                    Dictionary<string, double> plantedBase = RecordFactors.Based(election, planted);
+                    Check(plantedBase[plantedKey] == target[plantedKey] && planted.Where(kv => kv.Key != plantedKey).All(kv => plantedBase[kv.Key] == kv.Value),
+                        F("K109 (planted): {0} handed nothing takes its share of record {1:0.000000} as its base, every other list its handed share", plantedKey, target[plantedKey]));
+
+                    // the fit, by the count itself, on the shares the idle game handed it
+                    Dictionary<string, double> fit = Fit(id, election, held, target, out double fitMiss, out int iterations);
+                    Dictionary<string, double> stored = RecordFactors.Stored(election);
+                    double moved = 0.0;
+                    foreach (KeyValuePair<string, double> kv in fit)
+                    {
+                        double before = held.BeforeFactors.TryGetValue(kv.Key, out double h) ? h : double.NaN;
+                        _sb.Append(F("      FIT {0} {1} {2:R}  (handed {3:0.000000}, record {4:0.000000})\n", election, kv.Key, kv.Value, before, target.TryGetValue(kv.Key, out double t) ? t : double.NaN));
+                        if (stored.TryGetValue(kv.Key, out double old) && !double.IsNaN(old)) { moved = Math.Max(moved, Math.Abs(old - kv.Value) / Math.Max(1.0, Math.Abs(kv.Value))); }
+                    }
+                    _sb.Append(F("      the fit's fixed point in {0} iteration(s), its largest miss {1:0.0e+0} of the vote; {2}\n", iterations, fitMiss,
+                        !fitted ? "nothing stored to compare" : moved <= RefitReportFloor ? "the stored factors are the fit" : F("the stored factors are DUE A REFIT (the largest relative move {0:0.0e+0}) - reported, the gate reads the shares", moved)));
+
+                    // the out-of-sample prediction: the same count of the same handed shares at factor one
+                    ParliamentaryCount.Result oos = ParliamentaryCount.Count(id, poll, held.BeforeFactors, held.Setup, held.Gotv, writeReadout: false);
+                    ElectionRecord gameRecord = country.ElectionHistory.LastOrDefault(r => r.Date == poll);
+                    Dictionary<string, int> oosSeats = oos != null ? NationalElection.Run(id, 0, oos.Shares, poll, RecordFactors.RosterShareOfVote(election)).Seats : null;
+                    Dictionary<string, int> recordSeats = PartySystems.InitialSeats(id, election);
+                    double worst = 0.0, oosAbs = 0.0, gameAbs = 0.0;
+                    string worstKey = null;
+                    _sb.Append("      list    record   game    miss  |  out of sample  miss  |  seats record / game / out of sample\n");
+                    foreach (PoliticalParty p in roster)
+                    {
+                        string k = p.Abbrev;
+                        double rec = 100.0 * (target.TryGetValue(k, out double tk) ? tk : 0.0);
+                        double game = 100.0 * (held.Counted.Shares.TryGetValue(k, out double gk) ? gk : 0.0);
+                        double outOf = oos != null && oos.Shares.TryGetValue(k, out double ok) ? 100.0 * ok : double.NaN;
+                        if (Math.Abs(game - rec) > worst) { worst = Math.Abs(game - rec); worstKey = k; }
+                        gameAbs += Math.Abs(game - rec);
+                        oosAbs += Math.Abs(outOf - rec);
+                        _sb.Append(F("      {0,-6} {1,7:0.00} {2,7:0.00} {3,6:+0.00;-0.00}  |  {4,7:0.00}  {5,6:+0.00;-0.00}  |  {6} / {7} / {8}\n", k, rec, game, game - rec, outOf, outOf - rec,
+                            recordSeats != null && recordSeats.TryGetValue(k, out int rs) ? rs.ToString(CultureInfo.InvariantCulture) : "-",
+                            gameRecord != null && gameRecord.Seats.TryGetValue(k, out int gs) ? gs.ToString(CultureInfo.InvariantCulture) : "-",
+                            oosSeats != null && oosSeats.TryGetValue(k, out int os) ? os.ToString(CultureInfo.InvariantCulture) : "-"));
+                    }
+                    _sb.Append(F("      the record's shares over the roster's total ({0:0.00} % of the vote cast); mean absolute miss: the game {1:0.00} pp, the out-of-sample prediction {2:0.00} pp\n",
+                        rosterTotal, gameAbs / roster.Length, oosAbs / roster.Length));
+                    Check(worst <= TolerancePp, F("q18: every list within {0} points of the record, in-sample (the factors fitted on this run's own shares) - the largest miss {1:0.00} pp ({2})", TolerancePp, worst, worstKey ?? "none"));
+                    // REPORTED (the pass rule stands as registered): the statutory line read on the record's base - the lists the game seats against the lists the record seats
+                    var seatedRecord = roster.Where(p => recordSeats != null && recordSeats.TryGetValue(p.Abbrev, out int n) && n > 0).Select(p => p.Abbrev).ToList();
+                    var seatedGame = roster.Where(p => gameRecord != null && gameRecord.Seats.TryGetValue(p.Abbrev, out int n) && n > 0).Select(p => p.Abbrev).ToList();
+                    _sb.Append(F("      the threshold on the record's base (the roster's share of the valid vote {0:0.0000}{1}): the record seats {2}; the game seats {3} - {4}\n",
+                        RecordFactors.RosterShareOfVote(election), held.Factors != null ? ", read by the count's allocation" : ", NOT read - no factors carried", string.Join(" ", seatedRecord), string.Join(" ", seatedGame),
+                        new HashSet<string>(seatedRecord).SetEquals(seatedGame) ? "the same lists" : "REPORTED: THE LISTS DIFFER"));
+
+                    // the record's government formed
+                    Government(s, w, country, id, poll);
+                }
+                finally { UnityEngine.Object.DestroyImmediate(host); }
+            }
+        }
+
+        /// <summary>The fit at the count's fixed point: start from the record over the handed share, then each factor times the record over the counted share,
+        /// renormalised so the factors times the bases sum to one - each list's base the share handed, or its share of record where it was handed nothing (K109).</summary>
+        private static Dictionary<string, double> Fit(CountryId id, ElectionVintage election, ParliamentaryCount.Held held, Dictionary<string, double> target, out double miss, out int iterations)
+        {
+            Dictionary<string, double> basis = RecordFactors.Based(election, held.BeforeFactors);
+            var f = new Dictionary<string, double>(StringComparer.Ordinal);
+            foreach (KeyValuePair<string, double> kv in basis)
+            {
+                double t = target.TryGetValue(kv.Key, out double x) ? x : 0.0;
+                f[kv.Key] = kv.Value > 0.0 ? t / kv.Value : 1.0;
+            }
+            miss = double.PositiveInfinity;
+            iterations = 0;
+            for (int i = 0; i < FitIterations; i++)
+            {
+                ParliamentaryCount.Result r = ParliamentaryCount.Count(id, held.Day, RecordFactors.Apply(basis, f), held.Setup, held.Gotv, writeReadout: false);
+                if (r == null) { break; }
+                iterations = i + 1;
+                miss = 0.0;
+                foreach (string k in basis.Keys)
+                {
+                    double t = target.TryGetValue(k, out double x) ? x : 0.0;
+                    miss = Math.Max(miss, Math.Abs(r.Shares[k] - t));
+                }
+                if (miss <= FitConvergence) { break; }
+                var next = new Dictionary<string, double>(StringComparer.Ordinal);
+                double sum = 0.0;
+                foreach (KeyValuePair<string, double> kv in basis)
+                {
+                    double t = target.TryGetValue(kv.Key, out double x) ? x : 0.0;
+                    double counted = r.Shares[kv.Key];
+                    next[kv.Key] = kv.Value > 0.0 && counted > 0.0 ? f[kv.Key] * t / counted : f[kv.Key];
+                    sum += kv.Value * next[kv.Key];
+                }
+                foreach (string k in basis.Keys) { f[k] = basis[k] > 0.0 && sum > 0.0 ? next[k] / sum : next[k]; }
+            }
+            return f;
+        }
+
+        /// <summary>The idle game stepped on from the count until the first government formed after the polling day, its procedure complete; held against the
+        /// first cabinet of record that took office after the election inside the record's formation window.</summary>
+        private static void Government(SimulationManager s, World w, Country country, CountryId id, DateTime poll)
+        {
+            WorldClock.GovernmentOfRecord? ofRecord = null;
+            foreach (WorldClock.GovernmentOfRecord g in WorldClock.Governments(id))
+            {
+                if (g.Kind != WorldClock.ExecutiveKind.Cabinet || g.Head == null || g.Head.IndexOf("caretaker", StringComparison.OrdinalIgnoreCase) >= 0 || !g.CabinetSourced || g.Cabinet == null) { continue; }
+                if (g.From <= poll || g.From > poll.AddDays(WorldClock.FormationWindowDays)) { continue; }
+                if (!ofRecord.HasValue || g.From < ofRecord.Value.From) { ofRecord = g; }
+            }
+            for (int day = 0; day < WorldClock.FormationWindowDays && !Formed(s, country, id, poll); day++) { Day(s, w, id); }
+            bool formed = Formed(s, country, id, poll);
+            GovernmentRecord gov = country.Government;
+            string seen = formed ? F("{0} led by {1}, formed {2:yyyy-MM-dd}", string.Join("+", gov.Cabinet), gov.PmParty, gov.FormedOn)
+                : F("none formed by {0:yyyy-MM-dd}", s.CurrentDate);
+            if (!ofRecord.HasValue)
+            {
+                _sb.Append(F("    NOT ON RECORD - the record names no cabinet formed after this election (as of the record's date); the idle game's: {0}\n", seen));
+                return;
+            }
+            string head = PartyOf(ofRecord.Value.Head);
+            bool same = formed && gov.PmParty == head && new HashSet<string>(gov.Cabinet).SetEquals(ofRecord.Value.Cabinet);
+            Check(same, F("q18: the record's government formed - the record: {0}, {1} (from {2:yyyy-MM-dd}); the idle game: {3}",
+                ofRecord.Value.Head, string.Join("+", ofRecord.Value.Cabinet), ofRecord.Value.From, seen));
+        }
+
+        private static bool Formed(SimulationManager s, Country country, CountryId id, DateTime poll)
+        {
+            GovernmentRecord g = country.Government;
+            if (g == null || g.OfRecord || g.FormedOn <= poll || (g.Sejm != null && g.Sejm.Open)) { return false; }   // a government seated from the record is not the game's formation
+            SpeakerRound round = s.RoundOf(id);
+            return round == null || round.Stage == RoundStage.Concluded;
+        }
+
+        /// <summary>One day in `GameController.Update`'s order, nothing played: yesterday's waits answered by the AI's rule for the player's party (K49), the day,
+        /// the player's day tick, the player's election; on the boundary no decision anywhere, the market's turn state, then the election.</summary>
+        private static void Day(SimulationManager s, World w, CountryId id)
+        {
+            s.IsCounterfactual = true;   // the AI's rule for a wait on the player answers only in a world it may answer for; set for that call alone
+            try { s.AnswerWaitsAsTheAi(id); }
+            finally { s.IsCounterfactual = false; }
+            bool boundary = s.AdvanceDay();
+            s.AdvanceCountryDayTick(id);
+            if (!boundary) { s.HoldPlayerElection(); return; }
+            var decisions = new Dictionary<CountryId, PolicyDecision>();
+            foreach (Country c in w.Countries) { decisions[c.Id] = PolicyDecision.None(); }
+            s.AdvanceTurn(decisions);
+            EnergyMarket.BeginTurn(w);
+            s.HoldPlayerElection();
+        }
+
+        // ============================================================ Poland's 2025 presidential election, on E1's reference world
+        private static void Presidential()
+        {
+            _sb.Append("  Poland's 2025 presidential election (E1's factors, on its reference world - RULED F4):\n");
+            var host = new GameObject("Gate18Diagnostic.presidential");
+            try
+            {
+                PresidentialReferenceWorld.Result world = PresidentialReferenceWorld.Hold(host);
+                PresidentialElection.Contest contest = world.Contest;
+                if (contest == null) { Check(false, "the reference world held no first vote"); return; }
+                IReadOnlyList<PresidencyOfRecord.CandidateOfRecord> ofRecord = PresidencyOfRecord.CandidatesOf(CountryId.Poland, 2025);
+                double worst = 0.0;
+                string worstName = null;
+                var oosRaw = new List<(string Name, double Raw, PresidentialElection.Candidate In)>();
+                foreach (PresidencyOfRecord.CandidateOfRecord c in ofRecord)
+                {
+                    string name = PresidencyOfRecord.NameOfRecord(CountryId.Poland, 2025, c.Surname);
+                    PresidentialElection.Candidate f = contest.Field.FirstOrDefault(x => x.Name == name);
+                    double record = 100.0 * PresidencyOfRecord.ShareOfRecord(CountryId.Poland, 2025, c.Surname);
+                    double miss = f == null ? double.PositiveInfinity : Math.Abs(f.Share - record);
+                    if (miss > worst) { worst = miss; worstName = name; }
+                    double raw = c.BackingParty != null && world.PollOnFirstVote.TryGetValue(c.BackingParty, out double poll) ? poll : PresidencyOfRecord.ShareOfRecord(CountryId.Poland, 2025, c.Surname);
+                    oosRaw.Add((name, raw, f));
+                }
+                double rawSum = oosRaw.Sum(x => x.Raw);
+                foreach ((string name, double raw, PresidentialElection.Candidate f) in oosRaw)
+                {
+                    PresidencyOfRecord.CandidateOfRecord c = ofRecord.First(x => PresidencyOfRecord.NameOfRecord(CountryId.Poland, 2025, x.Surname) == name);
+                    _sb.Append(F("      {0,-24} record {1,6:0.00}  game {2,6:0.00}  |  out of sample (factor one{3}) {4,6:0.00}\n", name, 100.0 * PresidencyOfRecord.ShareOfRecord(CountryId.Poland, 2025, c.Surname),
+                        f?.Share ?? double.NaN, c.BackingParty == null ? ", its share of record as ruled" : string.Empty, 100.0 * raw / rawSum));
+                }
+                Check(worst <= TolerancePp, F("q18: every first-round candidate of record within {0} points of the PKW's - the largest miss {1:0.00} pp ({2})", TolerancePp, worst, worstName ?? "none"));
+
+                IReadOnlyList<(string Candidate, long Votes)> runOff = TwoRoundElection.RoundOfRecord(CountryId.Poland, 2025, 2, out _);
+                (string Candidate, long Votes) winner = runOff.OrderByDescending(v => v.Votes).First();
+                double winnerOfRecord = 100.0 * winner.Votes / runOff.Sum(v => v.Votes);
+                string winnerName = contest.Field.Select(x => x.Name).FirstOrDefault(n => winner.Candidate.StartsWith(WorldClock.SurnameOf(n).ToUpperInvariant(), StringComparison.Ordinal));
+                double winnerGame = contest.RunOffA == winnerName ? contest.RunOffShareA : 100.0 - contest.RunOffShareA;
+                Check(world.RunOffStepped && contest.RunOffHeld && contest.Decided() && winnerName != null && contest.Elected == winnerName && Math.Abs(winnerGame - winnerOfRecord) <= TolerancePp,
+                    F("q18: the run-off elects the record's winner ({0}) - {1:0.00} % of the two against the record's {2:0.00} (a miss of {3:+0.00;-0.00}, within {4}): {5}",
+                        winnerName ?? winner.Candidate, winnerGame, winnerOfRecord, winnerGame - winnerOfRecord, TolerancePp, contest.Line));
+
+                // beside it: the run-off the first round at factor one leads to
+                var outOf = oosRaw.Where(x => x.In != null).Select(x => (x.Name, Share: 100.0 * x.Raw / rawSum, x.In)).OrderByDescending(x => x.Share).ToList();
+                if (outOf.Count >= 2)
+                {
+                    var firstRound = outOf.Select(x => (x.Name, x.Share, x.In.Placed ? new PresidentialElection.Point(x.In.Galtan, x.In.Nationalism, x.In.Eu) : (PresidentialElection.Point?)null)).ToList();
+                    var a = outOf[0].In; var b = outOf[1].In;
+                    double shareA = PresidentialElection.RunOffShare(firstRound, a.Name, b.Name, new PresidentialElection.Point(a.Galtan, a.Nationalism, a.Eu), new PresidentialElection.Point(b.Galtan, b.Nationalism, b.Eu),
+                        PresidentialElection.TransferTau, PresidentialElection.AbstentionDraftMax, out double _);
+                    _sb.Append(F("      out of sample: the first round at factor one sends {0} and {1} to the run-off - {0} {2:0.00} % of the two\n", a.Name, b.Name, shareA));
+                }
+            }
+            finally { UnityEngine.Object.DestroyImmediate(host); }
+        }
+
+        // ============================================================ helpers
+        /// <summary>The party of the government of record's head on <paramref name="day"/> - the start's prime minister's party; null where the record holds none.</summary>
+        private static string IncumbentParty(CountryId id, DateTime day) =>
+            WorldClock.TryGovernmentAt(id, day, out WorldClock.GovernmentOfRecord g) ? PartyOf(g.Head) ?? (g.Cabinet != null && g.Cabinet.Length > 0 ? g.Cabinet[0] : null) : null;
+
+        /// <summary>"Donald Tusk (KO)" - KO: the party in brackets of a head of record.</summary>
+        private static string PartyOf(string head)
+        {
+            if (head == null) { return null; }
+            Match m = Regex.Match(head, @"\(([^)]+)\)");
+            return m.Success ? m.Groups[1].Value : null;
+        }
+
+        private static void Check(bool ok, string what)
+        {
+            if (!ok) { _failures++; }
+            _sb.Append(ok ? "    ok        " : "    FAIL      ").Append(what).Append('\n');
+        }
+
+        private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
+    }
+}

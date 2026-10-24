@@ -63,7 +63,7 @@ namespace PoliSim.Elections
         /// the 41 okregi by the uniform swing, d'Hondt in each among the lists that clear the threshold. Every key of <paramref name="shares"/> is in the
         /// result (0 where it wins nothing). <paramref name="perDistrict"/>: each okreg's seats by list, for a caller that shows them.
         /// </summary>
-        public static Dictionary<string, int> Allocate(IReadOnlyDictionary<string, double> shares, out List<Dictionary<string, int>> perDistrict)
+        public static Dictionary<string, int> Allocate(IReadOnlyDictionary<string, double> shares, out List<Dictionary<string, int>> perDistrict, double rosterShareOfVote = 1.0)
         {
             var keys = new List<string>();
             foreach (KeyValuePair<string, double> kv in shares) { keys.Add(kv.Key); }
@@ -78,7 +78,7 @@ namespace PoliSim.Elections
                 var lists = new List<(string Key, double Votes)>();
                 for (int i = 0; i < keys.Count; i++)
                 {
-                    if (!Admitted(keys[i], shares[keys[i]])) { continue; }
+                    if (!Admitted(keys[i], shares[keys[i]] * rosterShareOfVote)) { continue; }   // GATE-18 piece two: the line read on the valid vote where the shares are the roster's (one otherwise)
                     if (spread[d][i] > 0.0) { lists.Add((keys[i], spread[d][i])); }
                 }
                 Dictionary<string, int> won = DHondt(lists, PolishSejmDistricts2023.Magnitudes[d]);

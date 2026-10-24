@@ -492,3 +492,9 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 
 - **K46 in real play.** A manual save drops a world only when it still equals the game; every family you have touched has a non-zero line, so a manual save still carries it (your ruling's own consequence). The saving is for families never touched, and for autosaves, which carry no world and rebuild them at the load (each line then measured from the load, K96).
 - **No family:** the Docket's sign/veto answers and the debt-limit verbs answer a bill already passed or a wait, so they stay answers of no family. The omnibus budget is one family, not split by its parts.
+
+### GATE-18 piece two (§913): for your information
+
+- **Germany's out-of-sample miss is large.** Without the record's factors the idle game hands AfD 9.6 % against its 21.7 % and BSW 13.3 % against 5.2 % (a mean miss of 5.11 pp; Sweden 1.15, Poland 1.45). The factors absorb it, so the record is reproduced, but a game started in 2024 that runs past 2025 carries the model's own German shares, not the record's.
+- **Sweden 2026's government is not on record yet**, so the gate asserts nothing for it (NOT ON RECORD). Once the Riksdag's prime-minister vote is sourced and added, the gate checks it with no code change, and may turn red if the idle game forms otherwise.
+- **The factors also carry the idle player's lack of campaigning** (K108): a player who campaigns hard as the prime minister's party lands above the record on that day by their campaign's own effect.

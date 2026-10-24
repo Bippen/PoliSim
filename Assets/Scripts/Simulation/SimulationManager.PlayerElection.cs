@@ -14,6 +14,10 @@ namespace PoliSim.Simulation
     /// </summary>
     public partial class SimulationManager
     {
+        /// <summary>GATE-18 piece two: the player's last chamber count as this world held it - what it was handed before and after the record's factors, what
+        /// it read and what it returned; null before this world has counted one. Per world, never saved (a check's reading, not the game's state).</summary>
+        public ParliamentaryCount.Held LastPlayerCount { get; private set; }
+
         /// <summary>FORK-2: the player's country's election of the chamber held today - <see cref="RunPlayerElection"/>, then <see cref="SeatPlayerElection"/>
         /// - as a world with no controller holds it (a counterfactual's day, a check's). Nothing where today is not the player's polling day.</summary>
         public void HoldPlayerElection()
@@ -172,14 +176,28 @@ namespace PoliSim.Simulation
             // GATE-18 q2 with A-LOOP q24 5b: the count in play - every region on its own turnout, the campaign's doors at the turnout CACE, the declared
             // regional noise keyed by the master seed, the country and the day (ParliamentaryCount); the chamber is allocated on the counted shares
             bool campaignRan = campaign != null && CampaignRecord != null && CampaignRecord.ElectionDate == CurrentDate && PlayerCampaign != null;
+            // GATE-18 piece two (q18 with K-1): on the polling day of a chamber election of record, the shares handed to the count carry that election's
+            // eve-fitted factors per list (RecordFactors, E1's form at the count's unit); on any other day, and while no fit is patched in, nothing
+            Dictionary<string, double> beforeFactors = shareByParty;
+            if (RecordFactors.TryFor(id, CurrentDate, out ElectionVintage factoredElection, out Dictionary<string, double> factors))
+            {
+                shareByParty = RecordFactors.Apply(RecordFactors.Based(factoredElection, beforeFactors), factors);   // K109: a list handed nothing on its share of record
+                if (!IsCounterfactual) { Debug.Log($"FACTORS: {id} on {CurrentDate:yyyy-MM-dd} - " + RecordFactors.Line(factoredElection, beforeFactors, shareByParty, factors)); }
+            }
             ParliamentaryCount.Result counted = ParliamentaryCount.Count(id, CurrentDate, shareByParty, campaignRan ? PlayerCampaign.Setup : (CampaignRun.Setup?)null, campaignRan ? campaign.Gotv : null);
+            LastPlayerCount = new ParliamentaryCount.Held
+            {
+                Day = CurrentDate, BeforeFactors = beforeFactors, Handed = shareByParty, Factors = factors, Election = factoredElection,
+                Setup = campaignRan ? PlayerCampaign.Setup : (CampaignRun.Setup?)null, Gotv = campaignRan ? campaign.Gotv : null, Counted = counted,
+            };
             if (counted != null)
             {
                 shareByParty = counted.Shares;
                 if (!IsCounterfactual) { Debug.Log($"COUNT: {id} on {CurrentDate:yyyy-MM-dd} - " + counted.Line); }
             }
 
-            ElectionRecord record = NationalElection.Run(id, CurrentTurn, shareByParty, CurrentDate);
+            // GATE-18 piece two: on the polling day of record the threshold reads the record's base - the shares are the roster's vote, the lists it does not carry the rest
+            ElectionRecord record = NationalElection.Run(id, CurrentTurn, shareByParty, CurrentDate, factors != null ? RecordFactors.RosterShareOfVote(factoredElection) : 1.0);
             country.ElectionHistory.Add(record);
             if (!IsCounterfactual) { Debug.Log($"ELECTION: held for {id} on {CurrentDate:yyyy-MM-dd} (turn {CurrentTurn}) by {record.Method}" + (PlayerCampaignResult != null ? " (a campaign result exists)" : " (no campaign result)")); }
             if (NationalElection.CountsParliament(record.Method))   // PS-6 K74: the parliamentary methods

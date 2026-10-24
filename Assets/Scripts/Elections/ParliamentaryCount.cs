@@ -66,6 +66,21 @@ namespace PoliSim.Elections
             public Dictionary<string, double> StillShares;
         }
 
+        /// <summary>GATE-18 piece two: the player's count as the day held it - the day, the shares handed before and after the record's factors (`RecordFactors`;
+        /// the same where the day carries none), the factors, the campaign's staging and mobilization the count read, and its result - kept by the manager that
+        /// held it (`SimulationManager.LastPlayerCount`), never saved, so a check can count the same shares again at factor one (the out-of-sample figure).</summary>
+        public sealed class Held
+        {
+            public DateTime Day;
+            public Dictionary<string, double> BeforeFactors;
+            public Dictionary<string, double> Handed;
+            public Dictionary<string, double> Factors;
+            public ElectionVintage Election;
+            public CampaignRun.Setup? Setup;
+            public RegionalMobilization Gotv;
+            public Result Counted;
+        }
+
         /// <summary>CONVENTION: the smallest ground-game move the count line names, in points - a reading floor, not a figure about the world.</summary>
         private const double PrintFloorPp = 0.005;
 

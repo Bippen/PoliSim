@@ -517,7 +517,7 @@ namespace PoliSim.Elections
         public static bool CountsParliament(ElectionMethod method) => method != ElectionMethod.NotImplemented && method != ElectionMethod.UsCongress;
 
         /// <summary>Runs the country's own procedure on a set of national vote shares, or reports that the model does not implement it.</summary>
-        public static ElectionRecord Run(CountryId country, int turn, IReadOnlyDictionary<string, double> shares, System.DateTime date = default)
+        public static ElectionRecord Run(CountryId country, int turn, IReadOnlyDictionary<string, double> shares, System.DateTime date = default, double rosterShareOfVote = 1.0)
         {
             var record = new ElectionRecord { Turn = turn, Date = date, CountryId = country.ToString() };
 
@@ -526,7 +526,7 @@ namespace PoliSim.Elections
                 case CountryId.Germany:
                     record.Method = ElectionMethod.GermanyNationalProportional;
                     Allocate(record, country, shares, PartySystems.ChamberSeats(country), GermanThreshold,
-                        SeatAllocation.SainteLagueDivisor);
+                        SeatAllocation.SainteLagueDivisor, rosterShareOfVote);
                     return record;
 
                 case CountryId.Sweden:
@@ -538,7 +538,7 @@ namespace PoliSim.Elections
                     // chamber's composition. Placing those seats across the 29 valkretsar is
                     // SeatConversion.Sweden, and it needs a regional count to do it.
                     Allocate(record, country, shares, PartySystems.ChamberSeats(country),
-                        SeatConversion.NationalThreshold, SeatAllocation.ModifiedSainteLagueDivisor);
+                        SeatConversion.NationalThreshold, SeatAllocation.ModifiedSainteLagueDivisor, rosterShareOfVote);
                     return record;
 
                 case CountryId.Poland:
@@ -546,7 +546,7 @@ namespace PoliSim.Elections
                     // among the lists that clear 5 % (a coalition 8 %; the minority exempt) - no national tier (PolishSejmAllocation)
                     record.Method = ElectionMethod.PolandDistricts;
                     foreach (PoliticalParty party in PartySystems.For(country)) { record.Shares[party.Abbrev] = shares != null && shares.TryGetValue(party.Abbrev, out double s) ? s : 0.0; }
-                    foreach (KeyValuePair<string, int> kv in PolishSejmAllocation.Allocate(record.Shares, out _)) { record.Seats[kv.Key] = kv.Value; }
+                    foreach (KeyValuePair<string, int> kv in PolishSejmAllocation.Allocate(record.Shares, out _, rosterShareOfVote)) { record.Seats[kv.Key] = kv.Value; }
                     return record;
 
                 default:
@@ -589,7 +589,7 @@ namespace PoliSim.Elections
 
         private static void Allocate(ElectionRecord record, CountryId country,
             IReadOnlyDictionary<string, double> shares, int chamber, double threshold,
-            System.Func<int, double> divisor)
+            System.Func<int, double> divisor, double rosterShareOfVote = 1.0)
         {
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(country);
             var keys = new List<string>();
@@ -613,7 +613,9 @@ namespace PoliSim.Elections
             // §704: the threshold's base is ALL valid votes (§ 4 Abs. 2 BWahlG: "der im Wahlgebiet abgegebenen gültigen Zweitstimmen"). Shares are fractions
             // of the valid vote; where they sum to less than one, the rest went to lists the roster does not carry, and they still count in the base - on
             // the official 2025 counts the BSW's 4.981 % read 5.21 % of the roster's sum and would have cleared the line. A game's shares sum to one.
-            long thresholdBase = System.Math.Max(total, 100_000_000L);
+            // GATE-18 piece two: on the polling day of an election of record the shares are the roster's vote and the lists it does not carry are the rest of the
+            // base - the roster's share of the valid vote as that election's returns give it (`RecordFactors.RosterShareOfVote`); one on every other day
+            long thresholdBase = System.Math.Max(total, rosterShareOfVote == 1.0 ? 100_000_000L : (long)System.Math.Round(100_000_000.0 / rosterShareOfVote));
             int[] seats = SeatAllocation.AllocateWithThreshold(votes.ToArray(), thresholdBase, threshold, chamber, divisor, exempt.ToArray());
             for (int i = 0; i < keys.Count; i++)
             {

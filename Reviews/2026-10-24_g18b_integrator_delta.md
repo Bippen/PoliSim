@@ -1,0 +1,22 @@
+# wave/g18b: the integrator's reading of the money-path delta after the review (2026-10-24)
+
+**Why this exists.** `Reviews/2026-10-24_g18b_review.md` (independent, NOT READY: H1 the threshold base, fixed in 0de1c316 and read there as a delta; H2 the idle game seating no average cabinet; M1-M6, L1-L6) reviewed `wave/g18b` at 23e1137a and 0de1c316. The integrator then changed one money path on main past the reviewed state, with Elias's ruling K109 (2026-10-24), and the diagnostic and the patch tool on the review's findings. This file is the reading of that delta.
+
+**Files reviewed:** `Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs` (the money path), `Assets/Scripts/Elections/RecordFactors.cs`, `Assets/Editor/Gate18Diagnostic.cs`, `Assets/Editor/ForkAnswersDiagnostic.cs`, `Tools/chamber_factor_patch.pl`.
+
+**What the delta does.**
+- K109 (`SimulationManager.PlayerElection.cs:184`): on the polling day of an election of record, with every factor fitted, the count is handed `Apply(Based(election, shares), factors)` in place of `Apply(shares, factors)`. `RecordFactors.Based` copies the handed shares and, for a list handed nothing (`!(handed > 0)`) with a share of record above zero, puts its share of record over the roster's total in its place; every other list is unchanged, and the shares are unchanged where the record's returns are not on disk. The log line and the `ParliamentaryCount.Held` record still carry the handed shares (`beforeFactors`), so the gate reads what the model handed.
+- H2 (`Gate18Diagnostic.cs:147`): the idle game seats the average minister in the player's vacant chairs after the player's party and the record's government are set, as `GameController.SelectPlayerCountry` and `PlayProtocolStaging` do; the count of chairs seated is printed.
+- The gate's fit reads the same base (`Fit(..., election, ...)`, every `held.BeforeFactors` inside it replaced by `basis`), and its "handed the shares times the stored factors" check compares with `Apply(Based(...), stored)`; a planted case holds `Based` on a copy with the roster's first list zeroed.
+- M5: `chamber_factor_patch.pl` dies, writing nothing, on an (election, party) printed twice in the block and on a table entry of a fitted election with no FIT line. Tested on the real log (g18a4: dry run, every factor unchanged) and on two faked logs (a duplicated CDU line; the FDP line removed): each died with its message.
+- L1: the out-of-sample seats are allocated on the record's base too.
+- M2: the q18 line says "in-sample (the factors fitted on this run's own shares)".
+- `ForkAnswersDiagnostic` case 2: with the record's factors patched in, no count of Sweden 2026 asks the player's party first (played as M the Speaker asks S; played as S it asks M - the blocs near even, the idle party's count deciding). Where none does, the case plants the question in the played world and in the Trade fork on the same day (the fork brought to today first) and says so (PLANTED), as the no-policy arm already planted its own.
+
+**Risks.**
+- `Based` is reached only where `RecordFactors.TryFor` is true: the player's chamber election on the polling day of an election of record, with every entry fitted. No other day, no AI country and no no-policy world reads it (the no-policy dump has no player), so the sentinel cannot move; `dump913c` is the proof.
+- A list handed nothing today: none (the three elections' FIT lines all start from a handed share above zero), so K109 moves no current count; the planted case is its only exercise. A list newly handed zero by a later model change now reads its record share times a factor the fit gives it, not zero - the ruling's intent.
+- The H2 refit (`g18a5`) moved no factor at any digit: the average cabinet changes nothing that reaches the count's shares between the start and the polling day in an idle game (the gate now prints the chairs seated to show the step ran).
+- The ForkAnswers plant sets the played world's Speaker round: it is a test fixture inside the diagnostic's own game, not game code.
+
+**Verdict:** the delta implements K109 and the review's H2, M2, M5 and L1; READY subject to the named runs (n913c: Gate18Diagnostic, ForkAnswersDiagnostic, ForkDayTickDiagnostic and the rule checks), the dump against `form` and both bars on the merged tree. M1 holds on main (the gate is in the simulation group); M3 ruled K109; M4 ruled K108 (declared); M6 declared; L2-L6 declared.
