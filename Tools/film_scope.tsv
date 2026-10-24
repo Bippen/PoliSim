@@ -203,3 +203,6 @@ scope	drys914	USA@1280x720	2026-10-24	s914	K15-K16 re-stage the USA's 90h/90i Fe
 scope	drys915	USA@1280x720	2026-10-24	s915	K110 re-denominates the US campaign HQ's money (the YESTERDAY note, the act-price column) and K14 adds two seats to the 2026 Senate board; US-only
 scope	drys915c	USA@1280x720	2026-10-24	s915	the campaign HQ pass (-shotcampaign) for K110's re-denominated money: the YESTERDAY note and the act-price column
 scope	drys915d	USA@1280x720	2026-10-24	s915	the interrupts pass stages the US run-up HQ (cl1) for K110's re-denominated money; -shotcampaign is Sweden-only
+scope	dryusj_rep	USA@1280x720,USA@2560x1440	2026-10-24	s916	US-36: the US journey film, REP win staged, at the two widths the close names
+scope	dryusj_dem	USA@1280x720,USA@2560x1440	2026-10-24	s916	US-36: the US journey film, DEM win staged, at the two widths the close names
+scope	drys916pl	Poland@1280x720,Poland@2560x1440	2026-10-24	s916	the night boards' held widths now measure bold text at its weight (US-36's escape); Poland's night uses the same HoldWidth

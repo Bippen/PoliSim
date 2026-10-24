@@ -618,6 +618,8 @@ namespace PoliSim.Testing
             // (the warm-up drives the manager, not the controller) and film the NEXT cycle's night against a chamber play never voted in - the
             // 2030 night the first film of §619 showed, with no history beside it. So no warm-up here: the film opens on day 0.
             else if (Interrupts) { Debug.Log("SHOT: -shotinterrupts - no warm-up: the film plays the country's game from its start to its first polling day (PS-2, §619)."); }
+            // PS-6 US-36: the US journey plays its game from the start too - the run-up, the campaign and the 2024 count are what it films
+            else if (UsJourney) { Debug.Log("SHOT: -shotusjourney - no warm-up: the film plays the US game from its start through the 2024 count to the 2026 midterm (US-36)."); }
             else
             {
                 AdvanceDays(controller, _countryId);
@@ -642,8 +644,8 @@ namespace PoliSim.Testing
             // warm-up's election, so its formation sheet went unfilmed, while its released clock filmed clean (drys875, realse875: 155 of 155). The USA is the
             // country whose released clock breaks: its appropriation is a day tick the warm-up never runs.
             bool ownBank = _countryId == CountryId.USA;
-            SetPrivateField(controller, "_daySpeedTimer", ownBank && !opensOnTheSave && !Interrupts ? -ClockHoldSeconds : 0f);
-            if (ownBank && !opensOnTheSave && !Interrupts) { Debug.Log("SHOT: the clock stays HELD after the warm-up - the USA, whose appropriation is a day tick the warm-up never runs (the Fed chair's hold held it until AF-7)."); }
+            SetPrivateField(controller, "_daySpeedTimer", ownBank && !opensOnTheSave && !Interrupts && !UsJourney ? -ClockHoldSeconds : 0f);   // US-36: the journey holds its own clock
+            if (ownBank && !opensOnTheSave && !Interrupts && !UsJourney) { Debug.Log("SHOT: the clock stays HELD after the warm-up - the USA, whose appropriation is a day tick the warm-up never runs (the Fed chair's hold held it until AF-7)."); }
 
             // R-D4: the playtest saves are staged on the warmed-up game BEFORE the sweep's own drafts
             // (diverged SWF weights, drafted spending lines) go in - a playtester should open a clean
@@ -667,6 +669,13 @@ namespace PoliSim.Testing
             if (ElectionNightBoard)
             {
                 yield return CaptureElectionNight(controller);
+                yield break;
+            }
+
+            // PS-6 US-36: the US journey instead of the sweep - the run ends here.
+            if (UsJourney)
+            {
+                yield return CaptureUsJourney(controller);
                 yield break;
             }
 
@@ -5189,6 +5198,11 @@ namespace PoliSim.Testing
         /// <summary>§707 (`-shotformation`, with `-shotinterrupts`): after the night, the game played on to its formation - the round opened, the
         /// sheet where the player's party is asked, the ballot's eve, the government installed.</summary>
         public bool Formation;
+        /// <summary>PS-6 US-36 (`-shotusjourney`): a US game filmed from its start through the 2024 count, the oath, the bills, the first budget, the debt
+        /// limit's episode and the 2026 midterm (`CaptureUsJourney`). The run ends there.</summary>
+        public bool UsJourney;
+        /// <summary>PS-6 US-36 (`-shotwinner=DEM|REP`, with `-shotusjourney`): the party the journey's 2024 count is staged to elect.</summary>
+        public string UsJourneyWinner = "";
 
         /// <summary>Frames the clock is watched for at VeryFast (0.25 s per day): long enough that a running
         /// clock moves several days, so "no day passed" is a held clock and not a slow frame.</summary>
@@ -5980,6 +5994,648 @@ namespace PoliSim.Testing
             yield return Film("e8d_formation_government", false);
             GovernmentRecord formed = country.Government;
             Debug.Log($"SHOT: -shotformation - {sim.CurrentDate:yyyy-MM-dd} the round concluded: {string.Join("+", formed.Cabinet)} led by {formed.PmParty} ({formed.Basis}).");
+        }
+
+        /// <summary>
+        /// PS-6 US-36 (`docs/specs/USA_STAGE_PLAN.md` US-36: "A US game is filmed from 12 Mar 2024 through the 2024 count, the oath, a bill through both
+        /// chambers, a veto, the first budget, the debt limit's episode and the 2026 midterm; the driver stages each outcome (a DEM win, a REP win) as
+        /// `-shotformation` stages a formation"): THE US JOURNEY. One US game played from its start as the interrupts film plays it - the day path, the
+        /// country's day tick, the turn on its boundary, play's own clock held while the harness walks - and every milestone VERIFIED on the game before its
+        /// frame is named (a `SHOT: USJ frame - STAGED:` line with the evidence). A milestone that cannot be reached prints `MISSING` and fails the film; one
+        /// the rules put out of reach for the role the count left the player in prints `NOT IN THIS OUTCOME` - never a silence. The series is `usj`; the
+        /// start card is the opening's 01f2_start_points (every film's).
+        /// <para>The outcome is STAGED (`StageUsWinner`): on the polling day the campaign's final shares are re-split between REP and DEM by the least margin
+        /// that elects `UsJourneyWinner`, and the day's count is held again through the manager's own count - no random stream is read (the count's state
+        /// noise is keyed by the seed, the country and the day). Everything after it is the game's: the oath, the Congress it seats, the first budget, the
+        /// debt limit's episode and the midterm are played, and the player answers only where play cannot go on without an answer, with the least answer
+        /// there is (`-shotformation`'s rule): a player-president tables the standing figures as the first budget, and proposes the record's last raise when
+        /// the limit waits on the President; every bill on the desk is left to its period. The bill frames are staged through the game's own gate as the
+        /// sweep's 89h-89l are, each put back after. Silent: the listener is muted at the film's start (the harness rule).</para>
+        /// </summary>
+        private IEnumerator CaptureUsJourney(GameController controller)
+        {
+            SimulationManager sim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+            Country usa = sim?.World?.GetCountry(CountryId.USA);
+            string winner = (UsJourneyWinner ?? string.Empty).Trim().ToUpperInvariant();
+            if (_countryId != CountryId.USA || usa == null || (winner != "DEM" && winner != "REP") || !string.IsNullOrEmpty(LoadSave))
+            {
+                Debug.LogError($"SHOT: -shotusjourney plays a US game from its start and stages its 2024 count for -shotwinner=DEM or -shotwinner=REP - this run plays {_countryId}, winner '{UsJourneyWinner}', load '{LoadSave}', manager {(sim != null ? "found" : "NOT found")}; NOTHING filmed.");
+                _failed++;
+                EndSweep();
+                yield break;
+            }
+            var noDecisions = new Dictionary<CountryId, PolicyDecision>();
+            void Step()
+            {
+                bool boundary = sim.AdvanceDay();
+                MemTick(sim);
+                sim.AdvanceCountryDayTick(_countryId);
+                if (boundary) { sim.AdvanceTurn(noDecisions); }
+            }
+            int WalkUntil(Func<bool> reached, int maxDays)
+            {
+                int d = 0;
+                while (!reached() && d < maxDays) { Step(); d++; }
+                return d;
+            }
+            FieldInfo hqField = controller.GetType().GetField("_liveCampaignOpen", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo nightField = controller.GetType().GetField("_electionNight", BindingFlags.Instance | BindingFlags.NonPublic);
+            bool HqOpen() => hqField?.GetValue(controller) is bool open && open;
+
+            Expect("usj01_runup_hq", "usj02_campaign_opening_hq", "usj03_campaign_hq_late", "usj04_night_2024", "usj05_after_night_2024", "usj06_congress_seated",
+                "usj07_oath_desk", "usj08_oath_congress", "usj09_signing_bill_signed", "usj10_signing_veto_sustained", "usj11_signing_veto_overridden",
+                "usj15_budget_before_congress", "usj16_budget_decided", "usj17_debt_limit_reached",
+                "usj19_debt_limit_raise_before_congress", "usj20_debt_limit_resolved", "usj21_midterm_night_2026", "usj22_after_midterm_congress");
+            Debug.Log($"SHOT: USJ - the US journey from {sim.CurrentDate:yyyy-MM-dd}: the player's party {usa.PlayerPartyAbbrev}, the 2024 count staged for {winner}; the start card is 01f2_start_points, filmed in the opening.");
+
+            // play's clock: Normal, and held an hour short of a day for the whole journey - the controller's own Update meets the campaign's opening (it opens
+            // the HQ before any gate), and no real-time day passes between the harness's days
+            FieldInfo speedField = controller.GetType().GetField("_gameSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
+            object speedWas = speedField?.GetValue(controller);
+            SetEnumField(controller, "_gameSpeed", "Normal");
+            SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+            SetPrivateField(controller, "_onDesk", true);
+
+            // (1) the run-up's HQ, on the run-up's first day
+            int days = WalkUntil(() => sim.PlayerPreCampaign != null || sim.PlayerCampaign != null, MaxStateSearchDays);
+            if (sim.PlayerPreCampaign != null && sim.PlayerCampaign == null)
+            {
+                InvokeNoArg(controller, "OpenLiveCampaign");
+                yield return Settle();
+                if (!HqOpen()) { UsjMissing("usj01_runup_hq", $"the run-up began {sim.CurrentDate:yyyy-MM-dd} and the HQ did not open from its own branch"); }
+                else
+                {
+                    UsjStaged("usj01_runup_hq", string.Format(CultureInfo.InvariantCulture, "the run-up's HQ on {0:yyyy-MM-dd}, {1} day(s) in: run-up day {2}, chest {3:F0}, nothing queued", sim.CurrentDate, days, sim.PlayerPreCampaign.Day, sim.PlayerPreCampaign.Money));
+                    Claim("imgui");
+                    yield return Capture("usj01_runup_hq");
+                }
+                InvokeNoArg(controller, "CloseLiveCampaign");
+                SetPrivateField(controller, "_onDesk", true);
+                yield return Settle();
+            }
+            else { UsjMissing("usj01_runup_hq", $"no run-up began within {days} day(s) (the campaign {(sim.PlayerCampaign != null ? "began first" : "never began")})"); }
+
+            // (2) the campaign's opening - an interrupt the controller meets by itself, its HQ open and the clock held until it is acknowledged
+            days = WalkUntil(() => sim.PlayerCampaign != null, MaxStateSearchDays);
+            if (sim.PlayerCampaign == null) { UsjMissing("usj02_campaign_opening_hq", $"no campaign began within {days} day(s)"); }
+            else
+            {
+                SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+                yield return Settle();
+                yield return Settle();
+                string banner = controller.GetType().GetMethod("BuildFoldedInterruptText", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, new object[] { true }) as string;
+                if (!HqOpen() || banner == null || banner.IndexOf("campaign", StringComparison.OrdinalIgnoreCase) < 0) { UsjMissing("usj02_campaign_opening_hq", $"the campaign began {sim.CurrentDate:yyyy-MM-dd} and the HQ {(HqOpen() ? "opened" : "did NOT open")} with the banner \"{banner ?? "(none)"}\""); }
+                else
+                {
+                    UsjStaged("usj02_campaign_opening_hq", string.Format(CultureInfo.InvariantCulture, "the campaign opened {0:yyyy-MM-dd} ({1} day(s) after the run-up), the HQ open by itself, the banner \"{2}\"; {3} campaign day(s) to the polling day", sim.CurrentDate, days, banner, sim.PlayerCampaign.TotalDays));
+                    Claim("imgui");
+                    yield return Capture("usj02_campaign_opening_hq");
+                    SetPrivateField(controller, "_daySpeedTimer", 0f);   // released for the watch, so a held date is the interrupt's and not the harness's
+                    yield return AssertClockHeld(controller, sim, "the US campaign's opening");
+                    SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+                }
+                InvokeNoArg(controller, "AcknowledgeCampaignOpening");
+                InvokeNoArg(controller, "CloseLiveCampaign");
+                SetPrivateField(controller, "_onDesk", true);
+                yield return Settle();
+            }
+
+            // (3) the campaign's HQ a week before the polling day
+            if (sim.PlayerCampaign != null)
+            {
+                days = WalkUntil(() => sim.PlayerCampaign == null || sim.PlayerCampaign.Finished || sim.PollingDayToday || sim.PlayerCampaign.Day >= sim.PlayerCampaign.TotalDays - 7, MaxStateSearchDays);
+                if (sim.PlayerCampaign == null || sim.PlayerCampaign.Finished || sim.PollingDayToday) { UsjMissing("usj03_campaign_hq_late", $"the campaign {(sim.PlayerCampaign == null ? "ended" : "finished")} before a late day was reached ({sim.CurrentDate:yyyy-MM-dd})"); }
+                else
+                {
+                    InvokeNoArg(controller, "OpenLiveCampaign");
+                    yield return Settle();
+                    if (!HqOpen()) { UsjMissing("usj03_campaign_hq_late", $"the HQ did not open on campaign day {sim.PlayerCampaign.Day}"); }
+                    else
+                    {
+                        UsjStaged("usj03_campaign_hq_late", string.Format(CultureInfo.InvariantCulture, "the campaign's HQ on {0:yyyy-MM-dd}, campaign day {1} of {2}", sim.CurrentDate, sim.PlayerCampaign.Day, sim.PlayerCampaign.TotalDays));
+                        Claim("imgui");
+                        yield return Capture("usj03_campaign_hq_late");
+                    }
+                    InvokeNoArg(controller, "CloseLiveCampaign");
+                    SetPrivateField(controller, "_onDesk", true);
+                    yield return Settle();
+                }
+            }
+            else { UsjMissing("usj03_campaign_hq_late", "no campaign ran"); }
+
+            // (4) the polling day: the count staged for the winner asked, then the night the controller's own election call opens
+            days = WalkUntil(() => sim.PollingDayToday, MaxStateSearchDays);
+            if (!sim.PollingDayToday)
+            {
+                UsjMissing("usj04_night_2024", $"no polling day within {days} day(s); the journey ends here");
+                SetPrivateField(controller, "_onDesk", true);
+                if (speedWas != null) { speedField.SetValue(controller, speedWas); }
+                EndSweep();
+                yield break;
+            }
+            DateTime polled = sim.CurrentDate.Date;
+            bool staged = StageUsWinner(sim, usa, winner, out string stagedLine);
+            Debug.Log("SHOT: USJ - the 2024 count " + (staged ? "STAGED: " : "NOT STAGED: ") + stagedLine);
+            UsPresidentialElection.Contest counted = usa.UsPresidentialElections.Find(c => c.PollingDay.Date == polled);
+            yield return SealLiveSigning(controller, "usj04a_signing_before_the_night");
+            HideLiveCampaign(controller);
+            InvokeNoArg(controller, "CheckElection");
+            object night = nightField?.GetValue(controller);
+            if (night != null)
+            {
+                yield return WaitForCanvasSettle(controller, wantActive: true);
+                yield return Settle();
+                if (!staged || counted == null || counted.WinnerParty != winner) { UsjMissing("usj04_night_2024", $"the night is up but the count elects {counted?.WinnerParty ?? "no one"}, not {winner} ({stagedLine})"); }
+                else
+                {
+                    UsjStaged("usj04_night_2024", string.Format(CultureInfo.InvariantCulture, "the night of {0:yyyy-MM-dd} opened by the controller's own election call: {1} ({2}) elected, the College REP {3} DEM {4}, takes office {5:yyyy-MM-dd}",
+                        polled, counted.Winner, counted.WinnerParty, counted.ElectorsOf("REP"), counted.ElectorsOf("DEM"), counted.TakesOffice));
+                    Claim("electionnight");
+                    yield return Capture("usj04_night_2024");
+                    RecordCanvasTextAssert("usj04_night_2024", controller);
+                    SetPrivateField(controller, "_daySpeedTimer", 0f);
+                    yield return AssertClockHeld(controller, sim, "the 2024 night");
+                    SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+                }
+                InvokeNoArg(controller, "DismissElectionNight");
+                yield return WaitForCanvasSettle(controller, wantActive: false);
+                yield return Settle();
+            }
+            else { UsjMissing("usj04_night_2024", $"the polling day {polled:yyyy-MM-dd} showed NO night (the ELECTION: line above says why)"); }
+            bool over = controller.GetType().GetField("_isGameOver", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) is bool o && o;
+            if (over || nightField?.GetValue(controller) != null)
+            {
+                UsjMissing("usj05_after_night_2024", over ? "the game ended on the night's verdict; the journey ends here" : "the night would not dismiss; the journey ends here");
+                if (speedWas != null) { speedField.SetValue(controller, speedWas); }
+                EndSweep();
+                yield break;
+            }
+            SetPrivateField(controller, "_onDesk", true);
+            yield return Settle();
+            UsjStaged("usj05_after_night_2024", $"the night dismissed on {sim.CurrentDate:yyyy-MM-dd}, the game running on (not over), the Desk");
+            Claim("imgui");
+            yield return Capture("usj05_after_night_2024");
+
+            // (5) to the midterm: each milestone watched for day by day, filmed the first day the game reaches it
+            DateTime oathDay = counted != null ? counted.TakesOffice.Date : UsPresidentialElection.OathDayAfter(polled);
+            bool congressFilmed = false, oathSeen = false, billsFilmed = false, playerPresident = false, windowSeen = false, decidedFilmed = false, reachedFilmed = false, holdSeen = false, raiseFilmed = false, resolvedFilmed = false;
+            BudgetBill budgetAtOath = null, budgetFilmed = null;
+            int divisionsSeen = 0, raisesBefore = usa.DebtLimitRaises, proposals = 0;
+            int walked = 0;
+            while (walked < MaxStateSearchDays)
+            {
+                Step();
+                walked++;
+                DateTime today = sim.CurrentDate.Date;
+                if (sim.PollingDayToday) { break; }
+                if (walked % 30 == 0) { SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds); yield return null; }
+
+                if (!congressFilmed && UsCongressElection.TryInOffice(usa, today, out UsCongressElection.Contest sitting) && sitting.PollingDay.Date == polled)
+                {
+                    congressFilmed = true;
+                    UsjStaged("usj06_congress_seated", string.Format(CultureInfo.InvariantCulture, "{0:yyyy-MM-dd}: the Congress the game elected on {1:yyyy-MM-dd} sits (convened {2:yyyy-MM-dd}): the House REP {3} DEM {4}, the Senate REP {5} DEM {6}",
+                        today, sitting.PollingDay, sitting.Convenes, sitting.HouseRep, sitting.HouseDem, sitting.SenateOf("REP"), sitting.SenateOf("DEM")));
+                    yield return UsjFilmPage(controller, "usj06_congress_seated", "Politics", "Parliament", false, null, null);
+                }
+
+                if (!oathSeen && today >= oathDay)
+                {
+                    oathSeen = true;
+                    bool sworn = UsPresidentialElection.TryInOffice(usa, today, out UsPresidentialElection.Contest inOffice) && inOffice.PollingDay.Date == polled && inOffice.WinnerParty == winner && UsBudgetProcedure.HoldsPresidency(usa, winner);
+                    playerPresident = Congress.PresidentOn(usa, today, out string shownAs, out string presidentsParty, out bool isPlayer) && isPlayer;
+                    budgetAtOath = sim.GetPendingBudgetBill(usa.Id);
+                    if (!sworn) { UsjMissing("usj07_oath_desk", $"on {today:yyyy-MM-dd} the president in office is not the staged count's {winner} ({shownAs ?? "none"}, {presidentsParty ?? "-"})"); UsjMissing("usj08_oath_congress", "no oath of the staged count"); }
+                    else
+                    {
+                        UsjStaged("usj07_oath_desk", $"{today:yyyy-MM-dd}: the oath - {inOffice.Winner} ({inOffice.WinnerParty}) in office, the government {usa.Government?.Executive}; the player's {usa.PlayerPartyAbbrev} {(playerPresident ? "holds the presidency (a player-president)" : "is out of the White House")}");
+                        yield return UsjFilmPage(controller, "usj07_oath_desk", null, null, false, null, null);
+                        UsjStaged("usj08_oath_congress", $"{today:yyyy-MM-dd}: the Congress view on the oath's day, {inOffice.WinnerParty} in the White House");
+                        yield return UsjFilmPage(controller, "usj08_oath_congress", "Politics", "Parliament", false, null, null);
+                    }
+                    if (playerPresident) { Expect("usj12_signing_desk_answer", "usj13_signing_desk_veto", "usj14_budget_window", "usj18_debt_limit_hold"); }
+                    else
+                    {
+                        UsjNotInOutcome("usj14_budget_window", "the president is not the player's party, so the AI administration tables the budget itself and no window opens for the player (PS-3e)");
+                        UsjNotInOutcome("usj18_debt_limit_hold", "the limit waits on a player-president only (K85); the AI administration tables the raise itself (K23)");
+                    }
+                }
+
+                // the bills, two days after the oath: the staged contest of the desk's frames is sworn the day before the film's day, after the game's own
+                if (oathSeen && !billsFilmed && today >= oathDay.AddDays(2))
+                {
+                    billsFilmed = true;
+                    yield return UsjFilmBills(controller, sim, usa);
+                }
+
+                // the debt limit reached - from the suspension's end, before or after the oath
+                if (!reachedFilmed && UsDebtLimit.IsRead(usa) && usa.DebtLimitReachedOn != DateTime.MinValue && !UsDebtLimit.Suspended(usa, today))
+                {
+                    reachedFilmed = true;
+                    UsjStaged("usj17_debt_limit_reached", $"{today:yyyy-MM-dd}: the limit reached on {usa.DebtLimitReachedOn:yyyy-MM-dd} - {UsDebtLimit.LawWords(usa)}; the measures run to {UsDebtLimit.BindsOn(usa):yyyy-MM-dd} ({UsDebtLimit.MeasuresDaysLeft(usa, today)} day(s) left)");
+                    yield return UsjFilmPage(controller, "usj17_debt_limit_reached", "Budget", null, false, null, "budget:debt");
+                }
+
+                if (!oathSeen) { continue; }
+
+                // the first budget after the oath: a player-president's window, the bill before Congress, its acts decided
+                BudgetBill pending = sim.GetPendingBudgetBill(usa.Id);
+                if (budgetAtOath != null && !ReferenceEquals(pending, budgetAtOath)) { budgetAtOath = null; }   // what stood before Congress at the oath is decided: the first budget is the next
+                if (playerPresident && !windowSeen && budgetFilmed == null && pending == null && sim.GetPendingBudgetProcess(usa.Id))
+                {
+                    windowSeen = true;
+                    UsjStaged("usj14_budget_window", $"{today:yyyy-MM-dd}: the budget window open for the player-president ({usa.PlayerPartyAbbrev}), nothing before Congress");
+                    yield return UsjFilmPage(controller, "usj14_budget_window", "Budget", null, false, null, null);
+                    BudgetBill draft = controller.GetType().GetMethod("BuildBudgetBillFromDrafts", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, null) as BudgetBill;
+                    bool tabled = draft != null && sim.IntroduceBudgetBill(usa.Id, draft);
+                    Debug.Log($"SHOT: USJ - the player-president tables the drafts as they stand (the least answer, -shotformation's rule): {(tabled ? "tabled - " + SimulationManager.DescribeBudgetBill(draft) : "REFUSED (the LEVERS: line above says why)")}");
+                    pending = sim.GetPendingBudgetBill(usa.Id);
+                }
+                if (budgetFilmed == null && budgetAtOath == null && pending != null && !pending.ContinuingResolution)
+                {
+                    budgetFilmed = pending;
+                    divisionsSeen = usa.Divisions.Entries.Count > 0 ? usa.Divisions.Entries[usa.Divisions.Entries.Count - 1].Number : 0;
+                    UsjStaged("usj15_budget_before_congress", $"{today:yyyy-MM-dd}: the first budget after the oath before Congress ({SimulationManager.DescribeBudgetBill(pending)}, {(pending.GovernmentBill ? "the administration's" : "the player-president's")}), decided in {pending.DaysRemaining} day(s)");
+                    yield return UsjFilmPage(controller, "usj15_budget_before_congress", null, null, false, "effects", null);
+                }
+                if (budgetFilmed != null && !decidedFilmed && !ReferenceEquals(sim.GetPendingBudgetBill(usa.Id), budgetFilmed))
+                {
+                    decidedFilmed = true;
+                    var acts = new List<string>();
+                    bool appropriation = false;
+                    foreach (DivisionRecord record in usa.Divisions.Entries)
+                    {
+                        if (record.Number <= divisionsSeen) { continue; }
+                        acts.Add($"No. {record.Number} {(record.Passed ? "passed" : "failed")}: {record.Title}");
+                        if (record.Title != null && record.Title.StartsWith(UsBudgetProcedure.ActWords(UsBudgetProcedure.Act.Appropriation), StringComparison.Ordinal)) { appropriation = true; }
+                    }
+                    BudgetBill after = sim.GetPendingBudgetBill(usa.Id);
+                    if (!appropriation) { UsjMissing("usj16_budget_decided", $"the first budget left the slot on {today:yyyy-MM-dd} with no appropriation voted ({acts.Count} division(s): {string.Join("; ", acts)})"); }
+                    else
+                    {
+                        UsjStaged("usj16_budget_decided", $"{today:yyyy-MM-dd}: the first budget decided as its acts - {string.Join("; ", acts)}; funded through {usa.AppropriatedThrough:yyyy-MM-dd}{(after != null ? "; now before Congress: " + SimulationManager.DescribeBudgetBill(after) : string.Empty)}");
+                        yield return UsjFilmPage(controller, "usj16_budget_decided", "Politics", "Parliament", true, null, null);
+                    }
+                }
+
+                // the debt limit's hold (a player-president's: the binding limit with nothing proposed holds play's clock) and its resolution
+                if (playerPresident && sim.DebtLimitAwaitsPresident(usa.Id) && proposals < 8)
+                {
+                    bool held = controller.GetType().GetMethod("DebtLimitHolds", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, null) is bool h && h;
+                    if (!holdSeen)
+                    {
+                        holdSeen = true;
+                        if (!held) { UsjMissing("usj18_debt_limit_hold", $"{today:yyyy-MM-dd}: the limit waits on the President and play's clock does NOT hold on it"); }
+                        else
+                        {
+                            string holdBanner = controller.GetType().GetMethod("BuildFoldedInterruptText", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, new object[] { true }) as string;
+                            UsjStaged("usj18_debt_limit_hold", $"{today:yyyy-MM-dd}: the measures ran out on {UsDebtLimit.BindsOn(usa):yyyy-MM-dd} with nothing proposed - the limit waits on the President and holds play's clock (K85); {UsDebtLimit.LawWords(usa)}; the banner \"{holdBanner ?? "(none)"}\"");
+                            yield return UsjFilmPage(controller, "usj18_debt_limit_hold", null, null, false, null, null);
+                        }
+                    }
+                    if (usa.DebtLimitWithheldBy != null)   // the review's M2: a standing withhold - let it bind first (K89/K90), as the warm-up does; never a raise voted down at once
+                    {
+                        // a raise fell to a standing withhold: the President lets the limit bind until the episode changes (K90), then is asked again
+                        bool letBind = sim.LetDebtLimitBind(usa.Id, out string bindRefused);
+                        Debug.Log($"SHOT: USJ - {today:yyyy-MM-dd}: {usa.DebtLimitWithheldBy} withholds the raise; the President lets the limit bind until that changes: {(letBind ? "done" : "refused (" + bindRefused + ")")}");
+                    }
+                    else
+                    {
+                        proposals++;
+                        bool proposed = sim.ProposeDebtLimitRaise(usa.Id, UsDebtLimit.Pl119IncreaseUsd, DateTime.MinValue, out string proposeRefused);
+                        Debug.Log($"SHOT: USJ - {today:yyyy-MM-dd}: the President proposes the record's last raise, {UsDebtLimit.TrillionsWords(UsDebtLimit.Pl119IncreaseUsd)} over the excess (proposal {proposals}): {(proposed ? "tabled" : "REFUSED (" + proposeRefused + ")")}");
+                    }
+                }
+                BudgetBill raise = sim.GetPendingDebtLimitBill(usa.Id);
+                if (!raiseFilmed && raise != null)
+                {
+                    raiseFilmed = true;
+                    UsjStaged("usj19_debt_limit_raise_before_congress", $"{today:yyyy-MM-dd}: {UsDebtLimit.BillTitle(raise)} - {(raise.Docket != null ? "on the President's desk since " + raise.Docket.PresentedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "before Congress, voted in " + raise.DaysRemaining.ToString(CultureInfo.InvariantCulture) + " day(s)")}; {(raise.GovernmentBill ? "the administration's" : "the President's own")}{(usa.DebtLimitWithheldBy != null ? "; withheld by " + usa.DebtLimitWithheldBy : string.Empty)}");
+                    yield return UsjFilmPage(controller, "usj19_debt_limit_raise_before_congress", "Budget", null, false, null, "budget:debt");
+                }
+                if (raiseFilmed && !resolvedFilmed && usa.DebtLimitRaises > raisesBefore)
+                {
+                    resolvedFilmed = true;
+                    UsjStaged("usj20_debt_limit_resolved", $"{today:yyyy-MM-dd}: the episode closed by law - the game's act no. {usa.DebtLimitRaises}: {UsDebtLimit.LawWords(usa)}");
+                    yield return UsjFilmPage(controller, "usj20_debt_limit_resolved", "Budget", null, false, null, "budget:debt");
+                }
+            }
+
+            // what the walk never reached, each named with the state it stood in
+            DateTime stopped = sim.CurrentDate.Date;
+            if (!congressFilmed) { UsjMissing("usj06_congress_seated", $"no Congress of the game's count sat by {stopped:yyyy-MM-dd}"); }
+            if (!oathSeen) { UsjMissing("usj07_oath_desk", $"the oath day {oathDay:yyyy-MM-dd} was not reached by {stopped:yyyy-MM-dd}"); UsjMissing("usj08_oath_congress", "no oath"); }
+            if (!billsFilmed) { foreach (string bill in new[] { "usj09_signing_bill_signed", "usj10_signing_veto_sustained", "usj11_signing_veto_overridden", "usj12_signing_desk_answer", "usj13_signing_desk_veto" }) { UsjMissing(bill, $"the bills are staged two days after the oath ({oathDay:yyyy-MM-dd}), never reached by {stopped:yyyy-MM-dd}"); } }
+            if (playerPresident && !windowSeen && budgetFilmed == null) { UsjMissing("usj14_budget_window", $"no budget window opened for the player-president by {stopped:yyyy-MM-dd}"); }
+            if (budgetFilmed == null) { UsjMissing("usj15_budget_before_congress", $"no budget (other than a continuing resolution) came before Congress after the oath by {stopped:yyyy-MM-dd}"); }
+            else if (!decidedFilmed) { UsjMissing("usj16_budget_decided", $"the first budget was still before Congress on {stopped:yyyy-MM-dd}"); }
+            if (!reachedFilmed) { UsjMissing("usj17_debt_limit_reached", $"the debt never reached the limit by {stopped:yyyy-MM-dd} ({(UsDebtLimit.IsRead(usa) ? UsDebtLimit.LawWords(usa) : "the law not read")})"); }
+            if (playerPresident && !holdSeen) { UsjMissing("usj18_debt_limit_hold", $"the limit never waited on the President by {stopped:yyyy-MM-dd} (reached {(usa.DebtLimitReachedOn == DateTime.MinValue ? "no" : usa.DebtLimitReachedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}, raises {usa.DebtLimitRaises - raisesBefore})"); }
+            if (!raiseFilmed) { UsjMissing("usj19_debt_limit_raise_before_congress", $"no raise came before Congress by {stopped:yyyy-MM-dd}"); }
+            else if (!resolvedFilmed) { UsjMissing("usj20_debt_limit_resolved", $"no raise or suspension became law by {stopped:yyyy-MM-dd} ({UsDebtLimit.LawWords(usa)})"); }
+            if (proposals >= 8) { Debug.Log($"SHOT: USJ - the President's raises reached the walk's cap of 8 proposals; from then the walk ran on days play's clock would hold (the review's L1){(sim.DebtLimitAwaitsPresident(usa.Id) ? " - the limit still waited on the President on " + stopped.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : string.Empty)}"); }
+            if (!oathSeen) { Debug.Log("SHOT: USJ usj12-usj14, usj18 - no oath reached, so the player's role is unknown and the player-president's frames were never declared (the review's L5)"); }
+
+            // (6) the 2026 midterm: the House, the class and the two specials of record (K14), the night the controller's own election call opens
+            if (!sim.PollingDayToday || !UsCongressElection.IsMidterm(stopped))
+            {
+                UsjMissing("usj21_midterm_night_2026", $"the walk stopped on {stopped:yyyy-MM-dd} with no midterm polling day");
+                UsjMissing("usj22_after_midterm_congress", "no midterm");
+            }
+            else
+            {
+                UsCongressElection.Contest midterm = usa.UsCongressElections.Find(c => c.PollingDay.Date == stopped);
+                var specials = new List<string>();
+                if (midterm != null) { foreach (UsCongressElection.SenateSeat seat in midterm.Senate) { if (seat.Term == "unexpired") { specials.Add(seat.State + "/" + seat.Class.ToString(CultureInfo.InvariantCulture) + " " + seat.Side); } } }
+                bool fl = specials.Exists(s => s.StartsWith("FL/3", StringComparison.Ordinal)), oh = specials.Exists(s => s.StartsWith("OH/3", StringComparison.Ordinal));
+                yield return SealLiveSigning(controller, "usj21a_signing_before_the_midterm");
+                HideLiveCampaign(controller);
+                InvokeNoArg(controller, "CheckElection");
+                if (nightField?.GetValue(controller) == null) { UsjMissing("usj21_midterm_night_2026", $"the midterm {stopped:yyyy-MM-dd} showed NO night (counted: {(midterm != null ? midterm.Line : "no Congress count")})"); }
+                else
+                {
+                    yield return WaitForCanvasSettle(controller, wantActive: true);
+                    yield return Settle();
+                    if (midterm == null || !fl || !oh) { UsjMissing("usj21_midterm_night_2026", $"the night is up but the count {(midterm == null ? "is absent" : "carries the specials [" + string.Join(", ", specials) + "], not FL/3 and OH/3")}"); }
+                    else
+                    {
+                        UsjStaged("usj21_midterm_night_2026", string.Format(CultureInfo.InvariantCulture, "the midterm night of {0:yyyy-MM-dd}: the House REP {1} DEM {2}, class {3} and the specials {4}; the president's party {5}, its term {6:0.00} point(s)",
+                            stopped, midterm.HouseRep, midterm.HouseDem, midterm.SenateClass, string.Join(", ", specials), midterm.PresidentsParty, midterm.TermPoints));
+                        Claim("electionnight");
+                        yield return Capture("usj21_midterm_night_2026");
+                        RecordCanvasTextAssert("usj21_midterm_night_2026", controller);
+                        SetPrivateField(controller, "_daySpeedTimer", 0f);
+                        yield return AssertClockHeld(controller, sim, "the 2026 midterm night");
+                        SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+                    }
+                    InvokeNoArg(controller, "DismissElectionNight");
+                    yield return WaitForCanvasSettle(controller, wantActive: false);
+                    yield return Settle();
+                }
+                if (midterm == null || nightField?.GetValue(controller) != null) { UsjMissing("usj22_after_midterm_congress", midterm == null ? "no midterm count" : "the night would not dismiss"); }
+                else
+                {
+                    UsjStaged("usj22_after_midterm_congress", $"{sim.CurrentDate:yyyy-MM-dd}: the Congress view after the midterm - the 120th elected, seated on {midterm.Convenes:yyyy-MM-dd}");
+                    yield return UsjFilmPage(controller, "usj22_after_midterm_congress", "Politics", "Parliament", false, null, null);
+                }
+            }
+
+            if (speedWas != null) { speedField.SetValue(controller, speedWas); }
+            SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+            Debug.Log($"SHOT: USJ done on {sim.CurrentDate:yyyy-MM-dd} - the count staged for {winner}, the player's {usa.PlayerPartyAbbrev} {(playerPresident ? "a player-president" : "out of the White House")}; {_captured} captured, {_failed} failed.");
+            EndSweep();
+        }
+
+        /// <summary>PS-6 US-36: a journey frame's evidence, printed before the frame is named.</summary>
+        private static void UsjStaged(string frame, string evidence) => Debug.Log("SHOT: USJ " + frame + " - STAGED: " + evidence);
+
+        /// <summary>PS-6 US-36: a journey frame the game did not reach - loud, and a failure of the film.</summary>
+        private void UsjMissing(string frame, string why)
+        {
+            Debug.LogError("SHOT: USJ " + frame + " - MISSING: " + why);
+            _failed++;
+        }
+
+        /// <summary>PS-6 US-36: a journey frame the rules put out of reach for the role the count left the player in - said, never silent, and no failure.</summary>
+        private static void UsjNotInOutcome(string frame, string why) => Debug.Log("SHOT: USJ " + frame + " - NOT IN THIS OUTCOME: " + why);
+
+        /// <summary>PS-6 US-36: the live HQ closed before a night or a page, and the Desk put back - an HQ the game opened by itself would sit over the frame.</summary>
+        private static void HideLiveCampaign(GameController controller)
+        {
+            if (controller.GetType().GetField("_liveCampaignOpen", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) is bool open && open) { InvokeNoArg(controller, "CloseLiveCampaign"); }
+            SetPrivateField(controller, "_onDesk", true);
+        }
+
+        /// <summary>
+        /// PS-6 US-36: one journey frame of an IMGUI page - the Desk (<paramref name="tab"/> null; scrolled to <paramref name="deskCard"/> where named), or a tab
+        /// and its page (the Parliament tab's rows by their top where <paramref name="rows"/>), with a slip pinned on <paramref name="slipAnchor"/> where named;
+        /// the frame's evidence was printed by the caller. The Desk, its scroll and the pins are put back after.
+        /// </summary>
+        private IEnumerator UsjFilmPage(GameController controller, string frame, string tab, string category, bool rows, string deskCard, string slipAnchor)
+        {
+            HideLiveCampaign(controller);
+            SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+            if (tab != null)
+            {
+                SetPrivateField(controller, "_onDesk", false);
+                SetEnumField(controller, "_consolidatedTab", tab);
+                if (category != null) { SetEnumField(controller, "_politicsCategory", category); }
+            }
+            ResetScrolls(controller);
+            ScrollDeskTo(controller, null);
+            yield return Settle();
+            if (rows) { ScrollBy(controller, CongressRowsScroll(controller, 900f)); yield return Settle(); }
+            if (deskCard != null) { ScrollDeskTo(controller, deskCard); yield return Settle(); }
+            IList pins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as IList;
+            if (slipAnchor != null)
+            {
+                MethodInfo pin = controller.GetType().GetMethod("PinSlipOnAnchorForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (pin == null || pins == null) { Debug.LogError($"SHOT: USJ {frame} - the controller has no PinSlipOnAnchorForFilm / _slipPins; the frame is filmed with no slip."); _failed++; }
+                else { pin.Invoke(controller, new object[] { slipAnchor, new Vector2(UiScreen.Width * 0.58f, UiScreen.Height * 0.40f) }); yield return Settle(); yield return Settle(); }
+            }
+            Claim("imgui");
+            yield return Capture(frame);
+            pins?.Clear();
+            ResetScrolls(controller);
+            ScrollDeskTo(controller, null);
+            SetPrivateField(controller, "_onDesk", true);
+            yield return Settle();
+        }
+
+        /// <summary>PS-6 US-36: the signing takeover for the newest division, VERIFIED up before its frame is named, filmed with the Canvas guard and closed by
+        /// <paramref name="closeVerb"/> (SIGN on the plate, or LATER on a desk's answer plate).</summary>
+        private IEnumerator UsjFilmSigning(GameController controller, string frame, string closeVerb)
+        {
+            HideLiveCampaign(controller);
+            InvokeNoArg(controller, "TriggerSigningForNewestDivision");
+            yield return WaitForCanvasSettle(controller, wantActive: true);
+            yield return Settle();
+            string kind = controller.GetType().GetField("_canvasScreenKind", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller)?.ToString();
+            if (kind != "Signing") { UsjMissing(frame, $"the signing takeover did not come up (the Canvas screen is {kind ?? "none"})"); yield break; }
+            Claim("signing");
+            yield return Capture(frame);
+            RecordCanvasTextAssert(frame, controller);
+            InvokeNoArg(controller, closeVerb);
+            yield return WaitForCanvasSettle(controller, wantActive: false);
+            yield return Settle();
+            Claim("imgui");
+        }
+
+        /// <summary>
+        /// PS-6 US-36: THE BILLS ON THE JOURNEY'S WORLD, after the oath - each staged through the game's own gate as the sweep's are, each put back: (9) a bill of
+        /// the president's party sent by both chambers and signed by the president (rule (a), never the player's docket - the player's party seated as the other
+        /// party's for the staging, `StageUsSignedBill`); (10) the other party's bill vetoed and the veto sustained in its first chamber, and (11) a veto
+        /// overridden in both - the override vote (`StageUsVetoDivision`; where no bill of the other party reaches the desk on the game's chambers, the two
+        /// parties' seats are swapped for that staging alone and put back, said in the log); (12) the majority's reconciliation on a player-president's desk -
+        /// the answer plate - and (13) the House's vote on that veto (`StageUsDeskReconciliation`, its restore run in every outcome). A restore line closes it.
+        /// </summary>
+        private IEnumerator UsjFilmBills(GameController controller, SimulationManager sim, Country usa)
+        {
+            string mine = usa.PlayerPartyAbbrev;
+            GovernmentRecord government0 = usa.Government;
+            Dictionary<string, int> house0 = usa.ParliamentSeats, senate0 = usa.SecondChamberSeats;
+            int contests0 = usa.UsPresidentialElections.Count;
+
+            if (StageUsSignedBill(usa, sim, out string signedLine)) { UsjStaged("usj09_signing_bill_signed", signedLine); yield return UsjFilmSigning(controller, "usj09_signing_bill_signed", "SignPendingDivision"); }
+            else { UsjMissing("usj09_signing_bill_signed", signedLine); }
+
+            foreach ((string frame, bool overridden) in new[] { ("usj10_signing_veto_sustained", false), ("usj11_signing_veto_overridden", true) })
+            {
+                bool vetoStaged = StageUsVetoDivision(usa, sim, overridden);
+                if (!vetoStaged && !overridden && Congress.PresidentOn(usa, sim.CurrentDate, out _, out string pp, out _) && (pp == "REP" || pp == "DEM"))
+                {
+                    string op = pp == "REP" ? "DEM" : "REP";
+                    Debug.Log($"SHOT: USJ {frame} - no bill of {op}'s is sent and vetoed on the game's chambers; {pp}'s and {op}'s seats swapped in both chambers for this staging alone, restored after.");
+                    usa.ParliamentSeats = SwappedSeats(house0, pp, op);
+                    usa.SecondChamberSeats = SwappedSeats(senate0, pp, op);
+                    try { vetoStaged = StageUsVetoDivision(usa, sim, false); }
+                    finally { usa.ParliamentSeats = house0; usa.SecondChamberSeats = senate0; }
+                }
+                if (!vetoStaged) { UsjMissing(frame, "no bill could be staged through the gate in the asked shape (the SHOT: staged the US veto line above says how it fell)"); continue; }
+                DivisionRecord ceremony = usa.Divisions.Entries[usa.Divisions.Entries.Count - 1];
+                UsjStaged(frame, $"No. {ceremony.Number}: {ceremony.Title} - the line {ceremony.Required}, {(ceremony.Passed ? "overridden" : "the veto stands")}{(ceremony.OtherChamber != null ? ", both chambers voted on it" : ", its first chamber alone")}");
+                yield return UsjFilmSigning(controller, frame, "SignPendingDivision");
+            }
+
+            DivisionRecord deskPassage = null;
+            Action restoreDesk = null;
+            try
+            {
+                if (!(Congress.PresidentOn(usa, sim.CurrentDate, out _, out _, out bool deskIsPlayers) && deskIsPlayers))
+                {
+                    const string why = "the answer plate is a player-president's desk, and the count left the player out of the White House";
+                    UsjNotInOutcome("usj12_signing_desk_answer", why);
+                    UsjNotInOutcome("usj13_signing_desk_veto", why);
+                }
+                else if (!StageUsDeskReconciliation(usa, sim, out deskPassage, out restoreDesk)) { UsjMissing("usj12_signing_desk_answer", "the majority's reconciliation could not be put on a player-president's desk (the SHOT: 89k line above says why)"); UsjMissing("usj13_signing_desk_veto", "no bill on the desk"); }
+                else
+                {
+                    UsjStaged("usj12_signing_desk_answer", $"No. {deskPassage.Number}: {deskPassage.Title} - held on the player-president's desk, unanswered");
+                    yield return UsjFilmSigning(controller, "usj12_signing_desk_answer", "AnswerLater");
+                    if (!sim.VetoDocketBill(usa.Id, deskPassage, out string vetoWhy)) { UsjMissing("usj13_signing_desk_veto", $"the veto was refused ({vetoWhy})"); }
+                    else
+                    {
+                        DivisionRecord vote = usa.Divisions.Entries[usa.Divisions.Entries.Count - 1];
+                        if (vote.Passed) { UsjMissing("usj13_signing_desk_veto", $"the veto put to the override was OVERRIDDEN (No. {vote.Number}: {vote.Title}), not the asked frame (the veto standing)"); }
+                        else
+                        {
+                            UsjStaged("usj13_signing_desk_veto", $"No. {vote.Number}: {vote.Title} - the player-president's veto put to the override, the veto stands");
+                            yield return UsjFilmSigning(controller, "usj13_signing_desk_veto", "SignPendingDivision");
+                        }
+                    }
+                }
+            }
+            finally { restoreDesk?.Invoke(); }
+
+            bool putBack = usa.PlayerPartyAbbrev == mine && ReferenceEquals(usa.Government, government0) && ReferenceEquals(usa.ParliamentSeats, house0) && ReferenceEquals(usa.SecondChamberSeats, senate0) && usa.UsPresidentialElections.Count == contests0;
+            string restored = $"SHOT: USJ usj09-usj13 restored - the player's {usa.PlayerPartyAbbrev} (before {mine}), the government {usa.Government?.Executive} (the game's {(ReferenceEquals(usa.Government, government0) ? "as found" : "NOT as found")}), the chambers' seats {(ReferenceEquals(usa.ParliamentSeats, house0) && ReferenceEquals(usa.SecondChamberSeats, senate0) ? "as found" : "NOT as found")}, {usa.UsPresidentialElections.Count} presidential contest(s) (before {contests0}); the staged divisions stay on the record, as every staging's do";
+            if (putBack) { Debug.Log(restored + "."); }
+            else { Debug.LogError(restored + " - NOT PUT BACK."); _failed++; }
+        }
+
+        /// <summary>
+        /// PS-6 US-36: A BILL BOTH CHAMBERS SEND AND THE PRESIDENT SIGNS, through the game's own gate on the journey's world - the president's party's own bill (the
+        /// first of the veto staging's dial moves, toward its end, that the projection passes with that party for in both chambers), the draw's indices planted
+        /// at each list's first entry (`UsVeto.PlantIndex`); the player's party seated as the other party's for the staging alone, so the president answers by
+        /// rule (a) and never on the player's docket, and put back after. The gate's records are the frame's; the bill's policy is not applied (the site that
+        /// would apply it is not run), as the veto staging's.
+        /// </summary>
+        private static bool StageUsSignedBill(Country player, SimulationManager sim, out string line)
+        {
+            DateTime day = sim.CurrentDate;
+            if (!Congress.Applies(player) || !Congress.PresidentOn(player, day, out string president, out string pp, out _) || (pp != "REP" && pp != "DEM"))
+            {
+                line = $"no Congress seated, or no president of REP or DEM on {day:yyyy-MM-dd}";
+                return false;
+            }
+            MethodInfo gate = typeof(SimulationManager).GetMethod("UsVetoGate", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Country), typeof(DivisionRecord), typeof(BillConcern), typeof(bool), typeof(DocketEntry).MakeByRefType(), typeof(bool) }, null);
+            if (gate == null) { line = "SimulationManager.UsVetoGate not found"; return false; }
+            string op = pp == "REP" ? "DEM" : "REP";
+            string mine = player.PlayerPartyAbbrev;
+            player.PlayerPartyAbbrev = op;
+            try
+            {
+                var tried = new List<string>();
+                foreach ((string title, BillConcern concern) in UsVetoCandidates(player, pp))
+                {
+                    int origin = Congress.OriginOf(player, concern, day);
+                    Congress.Verdict v = Congress.Project(player, concern, day, origin);
+                    if (!v.Passed || !SideIs(v.House, pp, 1) || !SideIs(v.Senate, pp, 1)) { tried.Add(title + " (projected " + (v.Passed ? "passed" : "stopped") + ")"); continue; }
+                    bool sent, law;
+                    DivisionRecord passage;
+                    using (UsVeto.PlantIndex(0))
+                    {
+                        passage = ParliamentSystem.Divide(player, title, concern, day, out sent);
+                        law = gate.Invoke(sim, new object[] { player, passage, concern, sent, null, false }) is bool decided && decided;   // every parameter given, as the veto staging's
+                    }
+                    DivisionRecord newest = player.Divisions.Entries[player.Divisions.Entries.Count - 1];
+                    if (sent && law && passage != null && passage.OtherChamber != null && newest.Title != null && !newest.Title.StartsWith("Vetoed by the President (", StringComparison.Ordinal))   // signed: no veto record after the passage (the Senate's own passage carries cloture's 60, so Required is no test)
+                    {
+                        line = $"the president ({president}, {pp}) signs {pp}'s '{title}', sent by both chambers (the draw planted at each list's first entry): No. {passage.Number}, {passage.Title}";
+                        return true;
+                    }
+                    tried.Add(title + " (sent " + sent + ", law " + law + ", the other chamber's " + (passage?.OtherChamber != null ? "record" : "NONE") + ", the newest No. " + newest.Number + " '" + newest.Title + "' required " + newest.Required + ")");
+                }
+                line = $"no bill of {pp}'s was sent by both chambers and signed on {day:yyyy-MM-dd}: {string.Join("; ", tried)}";
+                return false;
+            }
+            finally { player.PlayerPartyAbbrev = mine; }
+        }
+
+        /// <summary>
+        /// PS-6 US-36: THE 2024 COUNT STAGED FOR <paramref name="winner"/> - as `-shotformation` stages a formation, by the least intervention that gives the asked
+        /// outcome. Where the count as played already elects it, nothing is staged. Otherwise the campaign's final shares are re-split between REP and DEM,
+        /// their sum kept, by the played margin turned the other way and then wider in quarter-point steps until the College elects <paramref name="winner"/>
+        /// outright; at each step the day's presidential and Congress contests are taken off the country and the manager's own count (`HoldUsPresidentialCount`,
+        /// the campaign's shares, its ground game, the House and the Senate class on the same poll) holds the day again. Nothing else the count wrote exists to
+        /// undo (`UsPresidentialElection.Hold` and `UsCongressElection.Hold` add their contest and nothing more). No random stream is read: the state noise is
+        /// keyed by the seed, the country and the day, and the election's own sigma is zero in play. Where no step elects the winner, the played shares and
+        /// count are put back and false is returned.
+        /// </summary>
+        private static bool StageUsWinner(SimulationManager sim, Country usa, string winner, out string line)
+        {
+            DateTime day = sim.CurrentDate.Date;
+            UsPresidentialElection.Contest played = usa.UsPresidentialElections.Find(c => c.PollingDay.Date == day);
+            if (played == null) { line = $"the day loop held no presidential count on {day:yyyy-MM-dd} (the PRESIDENTIAL: line above says why)"; return false; }
+            string playedLine = string.Format(CultureInfo.InvariantCulture, "the count as played: {0} ({1}), the College REP {2} DEM {3}", played.Winner ?? "no one", played.WinnerParty ?? "-", played.ElectorsOf("REP"), played.ElectorsOf("DEM"));
+            if (played.Decided() && played.WinnerParty == winner) { line = playedLine + " - it elects " + winner + " as played; nothing staged"; return true; }
+            CampaignRun.Result result = sim.PlayerCampaignResult;
+            if (!sim.TryPlayerCampaignShares(out Dictionary<string, double> _) || result?.FinalShares == null || sim.PlayerCampaign == null || sim.PlayerCampaign.Setup.Parties == null)
+            {
+                line = playedLine + " - no campaign ran up to the polling day, so the count read the prediction and there are no campaign shares to stage; the played count stands";
+                return false;
+            }
+            CampaignRun.PartySetup[] parties = sim.PlayerCampaign.Setup.Parties;
+            int iw = -1, il = -1;
+            string loser = winner == "REP" ? "DEM" : "REP";
+            for (int i = 0; i < parties.Length; i++) { if (parties[i].Name == winner) { iw = i; } else if (parties[i].Name == loser) { il = i; } }
+            MethodInfo hold = typeof(SimulationManager).GetMethod("HoldUsPresidentialCount", BindingFlags.Instance | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+            if (iw < 0 || il < 0 || hold == null) { line = playedLine + $" - the campaign stages no {winner} or {loser}, or SimulationManager.HoldUsPresidentialCount is not found; the played count stands"; return false; }
+            double[] was = (double[])result.FinalShares.Clone();
+            double sum = was[iw] + was[il];
+            void Recount(double w, double l)
+            {
+                result.FinalShares[iw] = w;
+                result.FinalShares[il] = l;
+                usa.UsPresidentialElections.RemoveAll(c => c.PollingDay.Date == day);
+                usa.UsCongressElections.RemoveAll(c => c.PollingDay.Date == day);
+                hold.Invoke(sim, null);
+            }
+            for (int step = 1; step <= 160; step++)   // the review's M1: the least margin - upward from a tie in quarter points (to 40), never the played margin turned
+            {
+                double m = 0.0025 * step;
+                if (m <= 0.0) { continue; }
+                Recount(sum / 2.0 + m / 2.0, sum / 2.0 - m / 2.0);
+                UsPresidentialElection.Contest recount = usa.UsPresidentialElections.Find(c => c.PollingDay.Date == day);
+                if (recount != null && recount.Decided() && recount.WinnerParty == winner)
+                {
+                    line = string.Format(CultureInfo.InvariantCulture, "{0}; the campaign's final shares re-split {1} {2:0.00} % / {3} {4:0.00} % (played {1} {5:0.00} % / {3} {6:0.00} %, a {7:0.00}-point margin for {1}), the count held again: {8} ({9}), the College REP {10} DEM {11}",
+                        playedLine, winner, 100.0 * result.FinalShares[iw], loser, 100.0 * result.FinalShares[il], 100.0 * was[iw], 100.0 * was[il], 100.0 * m, recount.Winner, recount.WinnerParty, recount.ElectorsOf("REP"), recount.ElectorsOf("DEM"));
+                    return true;
+                }
+            }
+            Recount(was[iw], was[il]);
+            line = playedLine + $" - no re-split up to a 40.00-point margin elects {winner} outright; the played shares and count are put back";
+            return false;
         }
 
         /// <summary>

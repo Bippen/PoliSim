@@ -41604,3 +41604,20 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** cheap915b 138 of 138 (after the integrator's (d) fix; cheap915 had failed it alone); sim915 76 of 76; n915 24 of 25 then n915c UsMajorityReconciliationDiagnostic clean (the (d) fix); dump915 (label usdata) BYTE-IDENTICAL to form on both seeds; slrt915 12 clean at format 64; stage915 the play saves at 64; the card blocks rewritten (wr915a US-9, wr915b Congress); drys915 USA 1280 166 measured, 0 failed; real915 USA 1280 exit 0; drys915d/real915d the interrupts pass (-shotcampaign is Sweden-only), the run-up HQ read in dollars (the YESTERDAY note, the chest, the offices)
 
 **Commit:** this one.
+
+## 916. PS-6 US-36 PART ONE: THE US JOURNEY FILMED REAL FROM 12 MAR 2024 TO THE 2026 MIDTERM, EACH OUTCOME STAGED (-shotusjourney -shotwinner=DEM|REP); THE NIGHT BOARDS' HELD WIDTHS AT THE TEXT'S OWN MEASURE (2026-10-24)
+
+**What was owed:** US-36's film (`docs/specs/USA_STAGE_PLAN.md`): a US game from its start through the 2024 count, the oath, a bill through both chambers, a veto, the first budget, the debt limit's episode and the 2026 midterm, each outcome staged as `-shotformation` stages a formation; every Canvas surface real at 1280 and 2560. K118 (Elias, 2026-10-24): two outcomes.
+
+**Built** (an implementer on `wave/us36`: 6182de98; squash-merged on §915):
+- `UiScreenshotDriver.CaptureUsJourney`, the usj series usj01-usj22 (the start card is the opening's 01f2_start_points): the day path walked as `-shotinterrupts` walks it, each milestone verified before its frame (`SHOT: USJ frame - STAGED / MISSING / NOT IN THIS OUTCOME`); `StageUsWinner` re-splits the campaign's final shares by the least margin that elects the winner asked and holds the day's count again (no stream read); `StageUsSignedBill`; the 89h-89l stagings reused with a restore line; the player's least answers. Flags parsed in `UiScreenshotCapture` for the film and the dry film.
+- The integrator, on the films and the review (`Reviews/2026-10-24_us36_review.md`, independent: READY - M1 the count staged by the played margin turned, not the least; M2 a raise proposed under a standing withhold; L1-L11): the signed bill's test reads a veto record, not a required count (the Senate's own passage carries cloture's 60); M1 the search upward from a tie in quarter points; M2 a standing withhold lets the limit bind first (K89/K90); L1 the proposal cap logged; L5 no oath logged; usj12/usj13 declared a player-president's only (NOT IN THIS OUTCOME otherwise).
+- A real UI defect the films found: the US night's ELECT name ("Harris", bold) escaped its held width by 1.6 px at 1280 - `ElectionNightScreen.HoldWidth` (the Polish and US boards' 13 sites) now holds a text at the larger of the probe's measure and the text's own unwrapped width.
+
+**Measured:** usj_rep_1280d and usj_rep_2560c - 30 declared frames, 0 missing, 35 captured, 0 canvas-text violations (11 asserts); usj_dem_1280c and usj_dem_2560c - 26 declared, 0 missing, 31 captured, 0 violations (9 asserts); the dry films dryusj_rep and dryusj_dem at both widths 0 failed, 0 overflow; the walk ~965 game days in under 40 s dry. The debt limit binds 2025-07-13 and closes by law 2025-07-25 for the REP player-president; the midterm counts class 2 and the FL/3 and OH/3 specials.
+
+**Declared:** the outcome staged by the least re-split from a tie; the first budget the first non-CR bill after the oath; usj12-usj14 and usj18 a player-president's only; the oath filmed as the Desk and the Congress view (no oath surface is built); the staged bills' divisions stay on the record.
+
+**Bars:** cheap916 138 of 138; the films real at 1280 and 2560 for both winners (usj_dem_1280c, usj_dem_2560c, usj_rep_1280d, usj_rep_2560c) and the Polish nights (real916plc, real916plwc) after the width fix, exit 0; dryusj_rep/dryusj_dem and drys916pl 0 failed; no dump owed (test code and a layout width only)
+
+**Commit:** this one.

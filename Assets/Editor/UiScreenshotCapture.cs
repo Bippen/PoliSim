@@ -450,6 +450,10 @@ namespace PoliSim.EditorTools
             driver.CampaignHq = Environment.GetCommandLineArgs().Contains("-shotcampaign");
             driver.Interrupts = Environment.GetCommandLineArgs().Contains("-shotinterrupts");
             driver.Formation = Environment.GetCommandLineArgs().Contains("-shotformation");   // §707: the interrupts film played on to the formation
+            // PS-6 US-36: -shotusjourney plays a US game from its start to the 2026 midterm, its 2024 count staged for -shotwinner=DEM or -shotwinner=REP
+            // (the driver refuses any other country or winner, and a -shotload). Read in a film and in a dry film alike.
+            driver.UsJourney = Environment.GetCommandLineArgs().Contains("-shotusjourney");
+            driver.UsJourneyWinner = Arg("-shotwinner=", "");
             driver.CueSweep = Environment.GetCommandLineArgs().Contains("-cuesweep");
             // W-E6 (2026-08-30): film board 1h, election night, instead of the sweep. Stages the
             // SOURCED Swedish 2022 returns like -shotcampaign, and demands the same country.
@@ -508,11 +512,11 @@ namespace PoliSim.EditorTools
                 driver.ExpectedHeight = 0;
                 driver.BeforeExit = null;
                 driver.DryExit = OnDrySessionEnd;
-                Debug.Log($"SHOT: DRY session {index + 1} of {sessions.Length} - {session[0]} at {w}x{h - GameViewChromeHeight} (a {w}x{h} film's frame), label {driver.Label}.");
+                Debug.Log($"SHOT: DRY session {index + 1} of {sessions.Length} - {session[0]} at {w}x{h - GameViewChromeHeight} (a {w}x{h} film's frame), label {driver.Label}{(driver.UsJourney ? ", the US journey staged for " + (driver.UsJourneyWinner.Length == 0 ? "NO WINNER" : driver.UsJourneyWinner) : string.Empty)}.");
                 Debug.Log(FilmHeader(driver.Country, w));
                 return;
             }
-            Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, ladder={driver.Ladder}, campaign={driver.CampaignHq}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
+            Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, ladder={driver.Ladder}, campaign={driver.CampaignHq}, usjourney={(driver.UsJourney ? driver.UsJourneyWinner : "off")}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
             Debug.Log(FilmHeader(driver.Country, Screen.width));
         }
 

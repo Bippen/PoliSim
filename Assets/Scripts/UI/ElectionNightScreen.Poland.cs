@@ -787,7 +787,7 @@ namespace PoliSim.UI
             if (text == null) { return; }
             LayoutElement le = text.GetComponent<LayoutElement>();
             if (le == null) { le = text.gameObject.AddComponent<LayoutElement>(); }   // Unity's null, never ??
-            le.minWidth = le.preferredWidth = Measure(text.text, text.fontSize, text.font);
+            le.minWidth = le.preferredWidth = Mathf.Max(Measure(text.text, text.fontSize, text.font), Mathf.Ceil(text.preferredWidth));   // the text's own unwrapped width too (US-36's film: a bold name escaped a probe's measure by 1.6 px)
             le.flexibleWidth = 0f;
         }
 

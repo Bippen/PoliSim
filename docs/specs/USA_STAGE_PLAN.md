@@ -624,6 +624,8 @@ Every Canvas surface filmed REAL at 1280 and 2560: the start card, the signing a
 *Needs:* US-26 to US-35.
 *Done when:* each film's SHOT lines are checked — what it captured, never its exit code; every guard passes; every bar is green on the committed tree; PS-6 + SP-6 and D-US are closed in the list, each with its §, and what stays owed is listed.
 
+**Built (part one): `COMPLETED.md` §916** - the US journey film (`-shotusjourney -shotwinner=DEM|REP`, the usj series): from 12 Mar 2024 through the run-up, the campaign, the 2024 night with the count staged for each winner by the least margin from a tie, the Congress seated, the oath, a bill signed, a veto sustained and one overridden, the desk's answer and its veto (a player-president's), the first budget, the debt limit reached, held, raised and law, and the midterm night with the FL/3 and OH/3 specials; filmed real at 1280 and 2560 for both winners, every declared frame captured, 0 canvas-text violations. K118: two outcomes, no DEM player-president session.
+
 ---
 
 ## 4. The rulings
