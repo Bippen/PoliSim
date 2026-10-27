@@ -249,6 +249,7 @@ namespace PoliSim.Elections
             if (!TryCompatibility(country, out string[] keys, out double[] compatibility, out double[] prior, out double[] loyalty, played, on)) { return false; }
             double[] preference = PreferenceModel.Preference(compatibility, prior, loyalty);
             preference = EntrantLayer.ApplyFor(preference, prior, country, keys, EntrantAwareness(country, keys));   // §681: an entrant's reach and where it draws from; none, the very array
+            preference = EntrantLayer.RegionalAffinity(country, keys, preference, PartyFamilies.For(country, keys));   // K129: a Regional party read through its valkrets's electorate; none, the very array
             preference = EconomicVote.ApplyRecordShift(keys, preference, recordShift);   // PS-3k (§638): the government's record, before the regions are derived; none given, none applied
             preference = EntrantLayer.HoldToReach(country, keys, preference, null);   // GATE-18 q22: a created party held within its origin's reach (no campaign: the opening awareness); none registered, the very array
 

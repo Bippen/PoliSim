@@ -189,6 +189,63 @@ namespace PoliSim.Elections
             return scaled ?? awareness;
         }
 
+        /// <summary>K129 (Elias, 2026-10-27): a Regional party's share read through its own valkrets's electorate - scaled by its parents' strength
+        /// there against the nation (`SwedishRegions.TryStrengthRatio`), its parents weighted as the layer's nest draws them: <see cref="GroupingStrength"/>
+        /// from its own family by size, the rest from every real party by size. The real parties absorb the change by size. The very array where no Regional
+        /// party is in the keys.</summary>
+        public static double[] RegionalAffinity(CountryId country, IReadOnlyList<string> keys, double[] shares, int[] family) =>
+            shares == null || !CreatedParties.Any(country) ? shares : Affinity(keys, shares, family, null, k => CreatedOf(country, k));
+
+        /// <summary>K129: the same for a campaign's cast, its opening awareness marking the created parties.</summary>
+        public static double[] RegionalAffinity(IReadOnlyList<string> keys, double[] shares, int[] family, double[] opening) =>
+            shares == null || opening == null ? shares : Affinity(keys, shares, family, opening, CreatedAnywhere);
+
+        /// <summary>K129: the affinity itself - <c>Σ_j w_j · ratio_j</c> over the real parties, <c>w_j = G · [family_j = family_c] · s_j / S_family
+        /// + (1 - G) · s_j / S_real</c>.</summary>
+        public static double AffinityOf(IReadOnlyList<string> keys, double[] shares, int[] family, int created, string region, bool[] isReal)
+        {
+            double all = 0.0, kin = 0.0;
+            int own = family != null && created < family.Length ? family[created] : -1;
+            for (int j = 0; j < shares.Length; j++)
+            {
+                if (!isReal[j]) { continue; }
+                all += shares[j];
+                if (own >= 0 && family != null && j < family.Length && family[j] == own) { kin += shares[j]; }
+            }
+            if (all <= 0.0) { return 1.0; }
+            double g = kin > 0.0 ? GroupingStrength : 0.0, weighted = 0.0, weights = 0.0;
+            for (int j = 0; j < shares.Length; j++)
+            {
+                if (!isReal[j] || !SwedishRegions.TryStrengthRatio(region, keys[j], out double ratio)) { continue; }
+                double w = (1.0 - g) * shares[j] / all + (g > 0.0 && family[j] == own ? g * shares[j] / kin : 0.0);
+                weighted += w * ratio;
+                weights += w;
+            }
+            return weights > 0.0 ? weighted / weights : 1.0;
+        }
+
+        private static double[] Affinity(IReadOnlyList<string> keys, double[] shares, int[] family, double[] opening, Func<string, CreatedParty> created)
+        {
+            if (keys == null) { return shares; }
+            var isReal = new bool[shares.Length];
+            var regional = new List<(int Index, string Region)>();
+            for (int i = 0; i < shares.Length && i < keys.Count; i++)
+            {
+                CreatedParty c = opening != null && (i >= opening.Length || opening[i] >= 1.0) ? null : created(keys[i]);
+                isReal[i] = c == null;
+                if (c != null && RegionalBase(c) < 1.0) { regional.Add((i, c.Region)); }
+            }
+            if (regional.Count == 0) { return shares; }
+            double[] scaled = (double[])shares.Clone();
+            foreach ((int i, string region) in regional) { scaled[i] = shares[i] * AffinityOf(keys, shares, family, i, region, isReal); }
+            double createdBefore = 0.0, createdAfter = 0.0, real = 0.0;
+            for (int i = 0; i < shares.Length; i++) { if (isReal[i]) { real += shares[i]; } else { createdBefore += shares[i]; createdAfter += scaled[i]; } }
+            if (real <= 0.0) { return shares; }
+            double factor = (real - (createdAfter - createdBefore)) / real;
+            for (int i = 0; i < shares.Length; i++) { if (isReal[i]) { scaled[i] = shares[i] * factor; } }
+            return scaled;
+        }
+
         /// <summary>GATE-18 q22: the shares with every created party held within its reach (`Ceiling` at its awareness - the opening awareness
         /// where <paramref name="awareness"/> is null: no campaign), the excess spread over the real parties by their size. The very array where no cap binds.</summary>
         public static double[] HoldToReach(CountryId country, IReadOnlyList<string> keys, double[] shares, double[] awareness) =>

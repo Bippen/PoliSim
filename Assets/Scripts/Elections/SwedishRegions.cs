@@ -180,6 +180,26 @@ namespace PoliSim.Elections
         /// report every constituency as fully counted the moment it declared.</summary>
         public static long EligibleAt(int region) => SwedishValkretsReturns2026.Eligible[region];
 
+        /// <summary>K129 (Elias, 2026-10-27): a party's strength in one valkrets against the nation at the seated election - its share of the
+        /// valkrets' valid vote over its share of the nation's [DERIVED: the catalog's returns]; false for a valkrets or party the catalog does not carry,
+        /// or a party with no national vote.</summary>
+        public static bool TryStrengthRatio(string region, string party, out double ratio)
+        {
+            ratio = double.NaN;
+            int col = MapColumns(new[] { party })[0];
+            if (col < 0) { return false; }
+            double votes = 0.0, valid = 0.0, own = double.NaN, ownValid = double.NaN;
+            for (int r = 0; r < Count; r++)
+            {
+                votes += SwedishValkretsReturns2026.Votes[r][col];
+                valid += SwedishValkretsReturns2026.Valid[r];
+                if (string.Equals(SwedishValkretsReturns2026.Names[r], region, StringComparison.Ordinal)) { own = SwedishValkretsReturns2026.Votes[r][col]; ownValid = SwedishValkretsReturns2026.Valid[r]; }
+            }
+            if (double.IsNaN(own) || ownValid <= 0.0 || votes <= 0.0 || valid <= 0.0) { return false; }
+            ratio = (own / ownValid) / (votes / valid);
+            return true;
+        }
+
         /// <summary>Where each requested party sits in the catalog's column order, or -1.</summary>
         private static int[] MapColumns(IReadOnlyList<string> partyKeys)
         {

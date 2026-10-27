@@ -1302,6 +1302,7 @@ namespace PoliSim.Elections
                 double[] layerPrior = cast != null ? EntrantLayer.LayerPrior(cast, prior, setup.AwarenessStart) : prior;
                 double[] reached = cast != null ? EntrantLayer.RegionalAwareness(cast, awareness, setup.AwarenessStart) : awareness;
                 preference = EntrantLayer.Active == EntrantLayer.Rule.SimilarityForAll ? EntrantSimilarity.Apply(preference, layerPrior, setup.Positions, reached) : EntrantLayer.Apply(preference, layerPrior, setup.Families, reached, setup.Grouping);   // §681
+                if (cast != null) { preference = EntrantLayer.RegionalAffinity(cast, preference, setup.Families, setup.AwarenessStart); }   // K129: a Regional party through its valkrets's electorate
             }
             // PS-3k (§638): the government's record moves the electorate's preference - each governing party by exactly its shift, the rest absorbing it.
             if (setup.RecordShift != null) { preference = EconomicVote.ApplyRecordShiftByIndex(preference, setup.RecordShift); }

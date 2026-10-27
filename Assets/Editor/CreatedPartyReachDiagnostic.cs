@@ -205,6 +205,37 @@ namespace PoliSim.EditorTools
                         F("a Regional party of {0} at (5, 5), no campaign: {1:0.00} % inside its valkrets, 0 in every other (the largest elsewhere {2:0.00} %), {3:0.000} % of the nation's vote = its valkrets' share times its weight {4:0.000} % - below the {5:0} % route's line and the {6:0} % national line",
                             region, inside * 100.0, outside * 100.0, shares["REG"] * 100.0, rebuilt * 100.0, regionalLine * 100.0, NationalElection.ThresholdOf(CountryId.Sweden) * 100.0));
                 }
+
+                // (5) K129 (Elias, 2026-10-27): a Regional party read through its own valkrets's electorate - inert with none registered; where it stands
+                // matters (one placement, every valkrets); still below the route's line with no campaign
+                CreatedParties.Clear();
+                var flat = new double[k0.Length];
+                for (int i = 0; i < flat.Length; i++) { flat[i] = 1.0 / flat.Length; }
+                Check(ReferenceEquals(EntrantLayer.RegionalAffinity(CountryId.Sweden, k0, flat, null), flat), "K129: none registered, the affinity returns the very array");
+                var inner = new List<(string Region, double Share)>();
+                foreach (string region in valkretsar)
+                {
+                    CreatedParties.Clear();
+                    var reg = new CreatedParty { Country = CountryId.Sweden, Key = "REG", Name = "Regionpartiet", LeaderName = "A. Testsson" };
+                    PartyCreationFlow.ChooseOrigin(reg, PartyOrigin.Regional);
+                    reg.Region = region;
+                    reg.LrEcon = 5f; reg.Galtan = 5f;
+                    CreatedParties.TryRegister(reg, sweden, out _);
+                    if (!NationalElection.TryPredictShares(CountryId.Sweden, out _)) { continue; }
+                    int col = NationalElection.LastRegionalKeys.ToList().IndexOf("REG");
+                    int own = Array.IndexOf(NationalElection.LastRegionalNames, region);
+                    if (col >= 0 && own >= 0) { inner.Add((region, NationalElection.LastRegionalShares[own][col])); }
+                }
+                if (inner.Count == valkretsar.Length)
+                {
+                    var low = inner.OrderBy(x => x.Share).First();
+                    var high = inner.OrderBy(x => x.Share).Last();
+                    double routeLine = NationalElection.RegionalThresholdOf(CountryId.Sweden);
+                    Check(high.Share - low.Share > 1e-4 && high.Share < routeLine,
+                        F("K129: where it stands matters - a Regional party at (5, 5), no campaign, in each of the {0} valkretsar: lowest {1:0.00} % ({2}), highest {3:0.00} % ({4}), every one below the {5:0} % line",
+                            inner.Count, low.Share * 100.0, low.Region, high.Share * 100.0, high.Region, routeLine * 100.0));
+                }
+                else { Check(false, F("K129: {0} of {1} valkretsar measured", inner.Count, valkretsar.Length)); }
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally

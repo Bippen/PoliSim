@@ -41687,3 +41687,20 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** none owed (a document and a record; the probe ran and was removed, no code committed).
 
 **Commit:** this one.
+
+## 921. K129: A CREATED REGIONAL PARTY READ THROUGH ITS OWN VALKRETS'S ELECTORATE - WHERE IT STANDS MATTERS (2026-10-27)
+
+**The ruling:** K129 (Elias, 2026-10-27, on §920's measurement): a Regional party's share inside its valkrets is built from that valkrets's own electorate (it was one national figure scaled by the region's weight - every valkrets alike).
+
+**Built:**
+- `SwedishRegions.TryStrengthRatio` - a party's share of one valkrets's valid vote over its share of the nation's, from the seated election's returns [DERIVED: the catalog].
+- `EntrantLayer.RegionalAffinity` / `AffinityOf` - after the layer, a Regional party's share is scaled by its parents' strength in its valkrets against the nation, its parents weighted as the layer's nest draws them (`GroupingStrength` from its own family by size, the rest from every real party by size); the real parties absorb the change by size; the very array where no Regional party is registered. Called in both paths the layer runs in: the prediction (`NationalElection.TryPredictShares`, after `ApplyFor`) and the campaign (`CampaignRun`, after `EntrantLayer.Apply`); the reach cap (`HoldToReach`) still holds after it.
+- `CreatedPartyReachDiagnostic` (5): inert with none registered; a Regional party at (5, 5), no campaign, measured in each of the 29 valkretsar - lowest 1.57 % (Skåne läns södra), highest 2.04 % (Norrbottens län), every one below the 12 % line.
+
+**Measured** (the §920 probe re-run once as `probe129`, then removed again): play's best in-valkrets share at the best placement now runs 2.98 % (Stockholm) to 3.93 % (Skåne läns norra och östra), where it was 3.11 % in every valkrets; at Recognition 5 the cap still binds at 7.80 %; the AI's best seeded campaign at Stockholms kommun still ends at 8.07 % (the cap at its grown awareness). K128 stands: the route is not reached by a played campaign.
+
+**Declared:** the parents' weights are the nest's own (no new figure); the strength ratio reads the 2026 returns (the prior the regional layer moves), so a valkrets realigned since reads as it was.
+
+**Bars:** n921 10 of 10 (the created-party diagnostics, the Riksdag allocation, the text checks); dump921 (family k129) BYTE-IDENTICAL to form on both seeds - no sentinel move, so no review owed (the tier); cheap921 141 of 141; sim921 77 of 77; no film owed (no UI path)
+
+**Commit:** this one.
