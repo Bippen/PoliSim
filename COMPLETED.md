@@ -41704,3 +41704,15 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** n921 10 of 10 (the created-party diagnostics, the Riksdag allocation, the text checks); dump921 (family k129) BYTE-IDENTICAL to form on both seeds - no sentinel move, so no review owed (the tier); cheap921 141 of 141; sim921 77 of 77; no film owed (no UI path)
 
 **Commit:** this one.
+
+## 922. PS-6 CLOSED: US-36 PART TWO - THE US JOURNEY RE-FILMED ON THE COMMITTED TREE FOR BOTH WINNERS; PS-6 + SP-6 AND D-US CLOSED IN THE LIST (2026-10-27)
+
+**What US-36 owed** (`docs/specs/USA_STAGE_PLAN.md`): each film's SHOT lines checked, every guard passing, every bar green on the committed tree, PS-6 + SP-6 and D-US closed with what stays owed. Part one (§916) filmed the journey; §917-§921 changed the formation, the projection and the entrant layer since, so the journey was filmed again on afabde17.
+
+**Measured:** usj922_rep_1280 and usj922_rep_2560 - 30 declared frames, 0 missing, 35 captured, 0 canvas-text clips; usj922_dem_1280 and usj922_dem_2560 - 26 declared, 0 missing, 31 captured, 0 clips; dryusj922_rep and dryusj922_dem at 1280 and 2560 - 0 failed, 0 overflow, 0 errors (the counts §916 measured).
+
+**Closed:** PS-6 + SP-6 (the row's status) and D-US (built §904/§905 from Code's PROPOSAL boards, K36/K37). **Stays owed:** SP-6b (the third-party run, R-US4); the Fed nomination's lapse at the oath or at the session's end (asked, ASKS_FOR_ELIAS); the LOOKED AT stamps on 29a/29b and 30a-30d. The feature list's row 4 says PS-6 closed.
+
+**Bars:** cheap921 141 of 141 and sim921 77 of 77 on afabde17 (no code since); the four real films and two dry films above.
+
+**Commit:** this one.
