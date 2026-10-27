@@ -41677,3 +41677,13 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** n919 16 of 16 (the formateur, round, German, constructive-vote, confidence, motion-reach, projection, Gate18, blocs and fork diagnostics); dump919 (family k124) BYTE-IDENTICAL to form on both seeds - no sentinel move, so no review owed (the tier); drys919 Sweden and Germany 0 failed; real919Sw (Sweden 1280) exit 0, no canvas clip; cheap919 141 of 141; sim919 77 of 77.
 
 **Commit:** this one.
+
+## 920. K127 MEASURED, K128-K129 RULED: A CREATED REGIONAL PARTY'S REACH INSIDE ITS OWN VALKRETS (2026-10-27)
+
+**Measured** (a one-off Editor probe, run once as `probe127` and deleted; the log verbatim in `Reviews/2026-10-27_k127_regional_reach.md`): the best in-valkrets share on a 5x5 grid in each of the 29 valkretsar - play's prediction 3.11 %, at Recognition 5 7.80 % (exactly the cap, 0.65 x 12 %), at full awareness with the cap lifted 20.71 %; one seeded campaign at Stockholms kommun, every stat 5, its cast AI: 8.07 % inside, 0.78 % nationally. Every valkrets gives the same figures at the same placement (2.5, 7.5): the regional layer scales one national figure by the region's weight.
+
+**Ruled:** K128 - the route stays hard, no tuning; K127's film waits for a played crossing. K129 - a Regional party's in-valkrets share from its own valkrets's electorate (owed: a model change, reviewed and barred).
+
+**Bars:** none owed (a document and a record; the probe ran and was removed, no code committed).
+
+**Commit:** this one.
