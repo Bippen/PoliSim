@@ -183,6 +183,12 @@ namespace PoliSim.Elections
             public string PlayerParty;
             public bool PlayerInCabinet;
             public bool PlayerSupports;
+            /// <summary>GATE-18 q20: the procedure's own projection from the night (`FormationProjection`) - where it comes from, in the board's words
+            /// (the Speaker's proposal it is, the ballot), and whether it read a wait on the player by the AI's rule for the player's party, or stops
+            /// short of the procedure's end. Null where the view is a staged fixture's (a film with no world).</summary>
+            public string ProjectionStep;
+            public bool ReadsPlayersAnswer;
+            public bool Partial;
         }
 
         /// <summary>PS-3i-2c (§653): the formation on the country's current chamber under a named reading - an election's (`DeclarationReading.OfElection`,

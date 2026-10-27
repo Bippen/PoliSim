@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PoliSim.Data;
 using PoliSim.Elections.Generated;
 
 namespace PoliSim.Elections
@@ -61,6 +62,7 @@ namespace PoliSim.Elections
 
             int[] column = MapColumns(partyKeys);
             var regions = new RegionalVoteModel.RegionInput[Count];
+            string[] ownRegion = RegionalPartiesRegions(partyKeys);   // GATE-18 q22: null where no Regional party is in the keys
 
             for (int r = 0; r < Count; r++)
             {
@@ -71,6 +73,9 @@ namespace PoliSim.Elections
                     // eight-party file is not evidence that a ninth party did not stand, and assuming
                     // otherwise would silently remove it from every region.
                     available[p] = column[p] < 0 || SwedishValkretsReturns2026.Votes[r][column[p]] > 0L;
+                    // GATE-18 q22: a created Regional party stands in its own valkrets alone - its vote comes from its regional base, so the
+                    // derivation spreads its national share over that region only (the CSU's rule, §689)
+                    if (ownRegion != null && ownRegion[p] != null) { available[p] = string.Equals(ownRegion[p], SwedishValkretsReturns2026.Names[r], StringComparison.Ordinal); }
                 }
 
                 regions[r] = new RegionalVoteModel.RegionInput(
@@ -80,6 +85,39 @@ namespace PoliSim.Elections
             }
 
             return regions;
+        }
+
+        /// <summary>GATE-18 q22: for each key, the valkrets a created Regional party of Sweden's chose, where the catalog names it; null for every
+        /// other key - and null whole where no such party is in the keys, so a roster with none reads nothing new.</summary>
+        private static string[] RegionalPartiesRegions(IReadOnlyList<string> partyKeys)
+        {
+            if (!CreatedParties.Any(CountryId.Sweden)) { return null; }
+            string[] own = null;
+            for (int p = 0; p < partyKeys.Count; p++)
+            {
+                CreatedParty c = EntrantLayer.CreatedOf(CountryId.Sweden, partyKeys[p]);
+                if (c == null || c.Origin != PartyOrigin.Regional || !TryWeightShare(c.Region, out double _)) { continue; }
+                own ??= new string[partyKeys.Count];
+                own[p] = c.Region;
+            }
+            return own;
+        }
+
+        /// <summary>GATE-18 q22: a valkrets' share of the nation's valid vote at the seated election (the catalog's weights, as the derivation reads
+        /// them); false for a name the catalog does not carry.</summary>
+        public static bool TryWeightShare(string name, out double share)
+        {
+            share = double.NaN;
+            if (string.IsNullOrEmpty(name)) { return false; }
+            double total = 0.0, own = double.NaN;
+            for (int r = 0; r < Count; r++)
+            {
+                total += SwedishValkretsReturns2026.Valid[r];
+                if (string.Equals(SwedishValkretsReturns2026.Names[r], name, StringComparison.Ordinal)) { own = SwedishValkretsReturns2026.Valid[r]; }
+            }
+            if (double.IsNaN(own) || total <= 0.0) { return false; }
+            share = own / total;
+            return true;
         }
 
         /// <summary>

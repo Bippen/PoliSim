@@ -35,6 +35,9 @@ namespace PoliSim.EditorTools
     /// game counted it within `TolerancePp` of the record's share over the roster's total; and, where the record names the cabinet formed after that election,
     /// the game's first government formed after the polling day led by the record's head's party with the record's cabinet. Where the record names none, the
     /// clause is printed NOT ON RECORD and asserts nothing.</description></item>
+    /// <item><description><b>GATE-18 q20, with it</b> (FAILS while false): the night installs nothing - the government before the polling day governs on
+    /// through it - and the night's projection by the procedure's own code (`SimulationManager.ProjectFormation`) is the government the procedure formed,
+    /// "formed" read off the procedure's own completion; a projection that stops at the Bundestag's first ballot is printed and asserts nothing.</description></item>
     /// <item><description><b>The out-of-sample prediction, beside it</b>: the same count of the same idle game's handed shares at factor one - the model's own
     /// prediction, which nothing of the record reached (no part of the game before the count reads the factors) - per list, its miss, its mean absolute miss and
     /// its chamber. Printed, never a pass condition.</description></item>
@@ -151,8 +154,10 @@ namespace PoliSim.EditorTools
 
                     // to the polling day, the count held by the day loop
                     ParliamentaryCount.Held held = null;
+                    GovernmentRecord eve = null;   // GATE-18 q20: the government before the polling day's own day - the night must leave it in place
                     for (int day = 0; day < 800 && held == null && s.CurrentDate <= poll; day++)
                     {
+                        eve = country.Government;
                         Day(s, w, id);
                         if (s.LastPlayerCount != null && s.LastPlayerCount.Day == poll) { held = s.LastPlayerCount; }
                     }
@@ -234,7 +239,7 @@ namespace PoliSim.EditorTools
                     }
 
                     // the record's government formed
-                    Government(s, w, country, id, poll);
+                    Government(s, w, country, id, poll, eve);
                 }
                 finally { UnityEngine.Object.DestroyImmediate(host); }
             }
@@ -320,8 +325,12 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>The idle game stepped on from the count until the first government formed after the polling day, its procedure complete; held against the
-        /// first cabinet of record that took office after the election inside the record's formation window.</summary>
-        private static void Government(SimulationManager s, World w, Country country, CountryId id, DateTime poll)
+        /// first cabinet of record that took office after the election inside the record's formation window. GATE-18 q20 (ruled 2026-10-18: "one formation
+        /// code ... office changes when the procedure completes"): on the night, before a day of the procedure runs, the procedure's own projection
+        /// (`SimulationManager.ProjectFormation`, what the night draws) and the government left in place (<paramref name="eve"/>, the record before the polling
+        /// day); every change of the record from then on printed with its basis; and the projection held against what the procedure formed - "formed"
+        /// being the procedure's own completion (the round concluded, the Sejm's steps closed: `Formed`), never the night's.</summary>
+        private static void Government(SimulationManager s, World w, Country country, CountryId id, DateTime poll, GovernmentRecord eve)
         {
             WorldClock.GovernmentOfRecord? ofRecord = null;
             foreach (WorldClock.GovernmentOfRecord g in WorldClock.Governments(id))
@@ -330,11 +339,52 @@ namespace PoliSim.EditorTools
                 if (g.From <= poll || g.From > poll.AddDays(WorldClock.FormationWindowDays)) { continue; }
                 if (!ofRecord.HasValue || g.From < ofRecord.Value.From) { ofRecord = g; }
             }
-            for (int day = 0; day < WorldClock.FormationWindowDays && !Formed(s, country, id, poll); day++) { Day(s, w, id); }
+            // q20: the night - its projection, and the government it leaves in place
+            FormationProjection expected = s.ProjectFormation(country, poll);
+            Check(expected != null && eve != null && ReferenceEquals(country.Government, eve),
+                F("q20: the night installs nothing - {0} governs on through the night; the night projects {1}", Who(eve), expected?.Describe() ?? "NOTHING (no procedure)"));
+            if (expected != null) { foreach (string step in expected.Steps) { _sb.Append("        ").Append(step).Append('\n'); } }
+            var changes = new List<string>();
+            GovernmentRecord last = country.Government;
+            // the review's M3: this election's own procedure, held by reference - the Sejm's steps opened tonight, the round that reads this polling day once it
+            // opens - so "none formed" is read off the procedure ending within its own limit, never off the window running out
+            SejmFormation sejmOf = country.Government?.Sejm != null && country.Government.Sejm.PollingDay == poll.Date ? country.Government.Sejm : null;
+            SpeakerRound roundOf = null;
+            bool EndedWithout()
+            {
+                SpeakerRound r = s.RoundOf(id);
+                if (roundOf == null && r != null && r.ReadsOn == poll.Date) { roundOf = r; }
+                return !Formed(s, country, id, poll) && ((roundOf != null && roundOf.Stage == RoundStage.Concluded) || (sejmOf != null && !sejmOf.Open));
+            }
+            for (int day = 0; day < WorldClock.FormationWindowDays && !Formed(s, country, id, poll) && !EndedWithout(); day++)
+            {
+                Day(s, w, id);
+                if (!ReferenceEquals(country.Government, last)) { last = country.Government; changes.Add(F("{0:yyyy-MM-dd} {1} ({2})", s.CurrentDate, Who(last), last?.Basis ?? "no basis")); }
+            }
             bool formed = Formed(s, country, id, poll);
+            bool endedWithout = EndedWithout();
             GovernmentRecord gov = country.Government;
-            string seen = formed ? F("{0} led by {1}, formed {2:yyyy-MM-dd}", string.Join("+", gov.Cabinet), gov.PmParty, gov.FormedOn)
-                : F("none formed by {0:yyyy-MM-dd}", s.CurrentDate);
+            string seen = formed ? (Reappointed(country, poll)
+                    ? F("{0} led by {1}, the sitting cabinet reappointed by the Sejm's steps and holding its confidence (its formation day {2:yyyy-MM-dd} kept)", string.Join("+", gov.Cabinet), gov.PmParty, gov.FormedOn)
+                    : F("{0} led by {1}, formed {2:yyyy-MM-dd}", string.Join("+", gov.Cabinet), gov.PmParty, gov.FormedOn))
+                : endedWithout ? (roundOf != null && roundOf.Stage == RoundStage.Concluded
+                    ? F("none formed - the procedure ended within its own limit on {0:yyyy-MM-dd}, the round concluded after {1} rejection(s) of {2}", s.CurrentDate, roundOf.Rejections, SpeakerRound.ProposalLimit)
+                    : F("none formed - the procedure ended within its own limit on {0:yyyy-MM-dd}, the Sejm's steps concluded with no cabinet elected", s.CurrentDate))
+                : F("none formed by {0:yyyy-MM-dd} - THE WINDOW ENDED with the procedure still open ({1})", s.CurrentDate,
+                    roundOf != null ? "the round at " + roundOf.Stage : sejmOf != null ? "the Sejm's steps at " + sejmOf.Stage : "no procedure of this election seen");
+            _sb.Append("      q20: the record changed by the procedure alone - ").Append(changes.Count > 0 ? string.Join("; ", changes) : "no change").Append('\n');
+            if (expected != null && !expected.Partial)
+            {
+                bool match = expected.Expected
+                    ? formed && gov.PmParty == expected.PmParty && new HashSet<string>(gov.Cabinet).SetEquals(expected.Cabinet) && new HashSet<string>(gov.Support).SetEquals(expected.Support)
+                    : !formed && endedWithout;   // M3: a projection of none holds only where the procedure itself ended forming none, not where the window ran out
+                Check(match, F("q20: the night's projection is what the procedure formed - projected {0}; the procedure: {1}",
+                    expected.Expected ? string.Join("+", expected.Cabinet) + " led by " + expected.PmParty + (expected.Support.Count > 0 ? " with " + string.Join("+", expected.Support) : string.Empty) : "none", seen));
+            }
+            else if (expected != null)
+            {
+                _sb.Append(F("      q20: PROJECTED TO THE FIRST BALLOT ONLY ({0}) - nothing asserted; the procedure: {1}\n", expected.Reason, seen));
+            }
             if (!ofRecord.HasValue)
             {
                 _sb.Append(F("    NOT ON RECORD - the record names no cabinet formed after this election (as of the record's date); the idle game's: {0}\n", seen));
@@ -346,9 +396,23 @@ namespace PoliSim.EditorTools
                 ofRecord.Value.Head, string.Join("+", ofRecord.Value.Cabinet), ofRecord.Value.From, seen));
         }
 
+        /// <summary>GATE-18 q20: a government record in one line - its cabinet, its prime minister's party, a caretaker's standing.</summary>
+        private static string Who(GovernmentRecord g) =>
+            g == null ? "no government" : (g.Cabinet.Count > 0 ? string.Join("+", g.Cabinet) : "no cabinet") + " led by " + (g.PmParty ?? "-") + (g.Caretaker ? " (a caretaker)" : string.Empty);
+
+        /// <summary>The delta review's L-d: the Sejm's steps of this election closed on the sitting cabinet - the President's designee, reappointed (Art. 154
+        /// ust. 1, `GovernmentRecord.Reappoint`, which ends its caretaking and keeps its formation day), holding the Sejm's confidence. That is the procedure's
+        /// own government, formed, whatever its formation day says; a cabinet the steps left a caretaker is not.</summary>
+        private static bool Reappointed(Country country, DateTime poll)
+        {
+            GovernmentRecord g = country.Government;
+            return g != null && g.Sejm != null && g.Sejm.PollingDay == poll.Date && !g.Sejm.Open && !g.Caretaker && g.FormedOn <= poll;
+        }
+
         private static bool Formed(SimulationManager s, Country country, CountryId id, DateTime poll)
         {
             GovernmentRecord g = country.Government;
+            if (Reappointed(country, poll)) { return true; }   // the delta review's L-d: the steps' own outcome, its formation day kept
             if (g == null || g.OfRecord || g.FormedOn <= poll || (g.Sejm != null && g.Sejm.Open)) { return false; }   // a government seated from the record is not the game's formation
             SpeakerRound round = s.RoundOf(id);
             return round == null || round.Stage == RoundStage.Concluded;

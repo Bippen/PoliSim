@@ -366,7 +366,7 @@ namespace PoliSim.UI
                 laender = BuildLaenderMap(centreDe, state, partyNames, previous, inkCountry);
                 Transform rightDe = Column(body.transform, "Governs", 1.2f);
                 rightDe.GetComponent<VerticalLayoutGroup>().spacing = 1f;
-                BuildChamberGermany(rightDe, state, partyNames, totalSeats, inkCountry);
+                BuildChamberGermany(rightDe, state, partyNames, totalSeats, inkCountry, government);   // GATE-18 q20: the first ballot projected
                 BuildLedger(rightDe, ledger, ledgerParty);
                 return null;
             }
@@ -541,9 +541,10 @@ namespace PoliSim.UI
         /// <summary>
         /// §707 (24a ⑧, ⑤): WHO GOVERNS on a German night is the chamber alone - the Bundestag elects the chancellor under Art. 63 weeks later
         /// (§705), so nothing is drawn in a formation's place: the bar by Fraktion (the Union one block, the CSU hairlined inside it), largest first,
-        /// the tick at a majority of the members. During the count the chamber waits with the seats.
+        /// the tick at a majority of the members. During the count the chamber waits with the seats. GATE-18 q20: once the count is complete, under the bar,
+        /// what the chancellor's election is EXPECTED TO FORM, projected to its first ballot by the election's own code (`BuildExpectedGermany`).
         /// </summary>
-        private static void BuildChamberGermany(Transform parent, NightState state, string[] partyNames, int totalSeats, CountryId inkCountry)
+        private static void BuildChamberGermany(Transform parent, NightState state, string[] partyNames, int totalSeats, CountryId inkCountry, GovernmentFormation.View government = null)
         {
             Heading(parent, "WHO GOVERNS — THE NEW BUNDESTAG");
             int majority = totalSeats / 2 + 1;
@@ -608,7 +609,32 @@ namespace PoliSim.UI
             image.raycastTarget = false;
             Wrapped(parent, string.Format(CultureInfo.InvariantCulture, "a block per Fraktion, largest first · the tick is {0} of {1} · the Bundespräsident proposes, the Bundestag elects once it convenes (Art. 63 GG)",
                 majority, totalSeats), 10, PoliSimTheme.TextMuted);
+            BuildExpectedGermany(parent, government);
         }
+
+        /// <summary>GATE-18 q20: the German night's EXPECTED TO FORM - the chancellor's election projected to its first ballot (Art. 63 Abs. 1-2 GG) by its own
+        /// code: the Bundespräsident's candidate's government where the first ballot elects it, else the ballot's shortfall and the fourteen days that
+        /// follow. Nothing where no projection was handed (a staged fixture).</summary>
+        private static void BuildExpectedGermany(Transform parent, GovernmentFormation.View government)
+        {
+            if (government == null) { return; }
+            if (government.HasGovernment)
+            {
+                Row(parent, "EXPECTED TO FORM  " + Parties(government.Cabinet), string.Format(CultureInfo.InvariantCulture, "{0} of {1}", government.CabinetSeats, government.TotalSeats), 12, PoliSimTheme.TextPrimary, bold: true);
+                if (!string.IsNullOrEmpty(government.ProjectionStep)) { Wrapped(parent, government.ProjectionStep, 10, PoliSimTheme.TextSecondary); }
+            }
+            else
+            {
+                Row(parent, "NOT EXPECTED AT THE FIRST BALLOT", "—", 12, PoliSimTheme.Caution, bold: true);
+                Wrapped(parent, government.Reason ?? string.Empty, 10, PoliSimTheme.TextSecondary);
+            }
+            Wrapped(parent, ProjectionFoot(government, "THE BUNDESTAG ELECTS"), 10, PoliSimTheme.TextMuted);
+        }
+
+        /// <summary>GATE-18 q20: the projection's foot - office changes only when the vote is won; where the projection read a wait on the player, it says the
+        /// player's own answer can change it (K119) - one line, so Sweden's Governs column holds at 1280 (s918's real film clipped the three-line foot).</summary>
+        private static string ProjectionFoot(GovernmentFormation.View government, string vote) =>
+            government.ReadsPlayersAnswer ? "A PROJECTION - YOUR ANSWER CAN CHANGE IT; OFFICE ON THE VOTE" : "A PROJECTION - OFFICE CHANGES ONLY WHEN " + vote;
 
         /// <summary>
         /// Item 2: board 4a's cartogram - 29 tiles, area = fixed mandates, eleven bands - each declared valkrets in its
@@ -698,7 +724,9 @@ namespace PoliSim.UI
         /// chamber and drawn: the outcome by its own name, the cabinet and who carries it from outside, the investiture the
         /// chamber's own rule sets, and one line for the player by C-R4's rule (D-5 (a): office is cabinet membership, and
         /// support from outside is not office). ⚠ On a PARTIAL count nothing is formed: a government on projected seats is a
-        /// forecast, and the section says the formation waits for the last constituency.
+        /// forecast, and the section says the formation waits for the last constituency. GATE-18 q20 (ruled 2026-10-18): what is drawn is what the
+        /// country's procedure is EXPECTED TO FORM, projected by the procedure's own code (`SimulationManager.ProjectFormation`), with the step it comes
+        /// from - never a government in office: office changes when the procedure completes.
         /// </summary>
         private static void BuildGovernment(Transform parent, NightState state, GovernmentFormation.View government, CountryId inkCountry)
         {
@@ -708,7 +736,7 @@ namespace PoliSim.UI
                 Row(parent, "the chamber is not final until the last valkrets declares", "—", 11, PoliSimTheme.TextMuted);
                 return;
             }
-            Heading(parent, "WHO GOVERNS - FORMED ON THE NEW CHAMBER");
+            Heading(parent, "WHO GOVERNS - EXPECTED TO FORM");   // GATE-18 q20: the procedure's projection, never a government in office
             if (government == null)
             {
                 Row(parent, "no formation was run for this night", "—", 11, PoliSimTheme.TextMuted);
@@ -716,11 +744,12 @@ namespace PoliSim.UI
             }
             if (!government.HasGovernment)
             {
-                Row(parent, "NO GOVERNMENT CAN FORM", "NEW ELECTION", 13, PoliSimTheme.Bad, bold: true);
+                Row(parent, "NO GOVERNMENT EXPECTED TO FORM", government.Partial ? "THE BALLOTS GO ON" : "THE ROUND BREAKS OFF", 13, PoliSimTheme.Bad, bold: true);
                 Wrapped(parent, government.Reason ?? string.Empty, 11, PoliSimTheme.TextSecondary);
             }
             else
             {
+                if (!string.IsNullOrEmpty(government.ProjectionStep)) { Wrapped(parent, government.ProjectionStep, 10, PoliSimTheme.TextSecondary); }   // q20: the step it comes from
                 Row(parent, OutcomeName(government.Outcome), string.Format(CultureInfo.InvariantCulture, "{0} of {1} seats in cabinet",
                     government.CabinetSeats, government.TotalSeats), 13, PoliSimTheme.TextPrimary, bold: true);
                 Row(parent, "IN CABINET  " + Parties(government.Cabinet), government.CabinetSeats.ToString(CultureInfo.InvariantCulture), 12, PoliSimTheme.TextPrimary);
@@ -729,14 +758,15 @@ namespace PoliSim.UI
                     12, PoliSimTheme.TextSecondary);
                 BuildGovernmentBar(parent, government, inkCountry);
                 Wrapped(parent, government.NegativeRule
-                        ? string.Format(CultureInfo.InvariantCulture, "INVESTITURE BY THE NEGATIVE RULE: {0} seats vote against it, and it takes {1} against to refuse it - it takes office", government.OpposedSeats, government.Majority)
-                        : string.Format(CultureInfo.InvariantCulture, "INVESTITURE BY A MAJORITY FOR: {0} seats for it, {1} needed - it takes office", government.SupportedSeats, government.Majority),
+                        ? string.Format(CultureInfo.InvariantCulture, "INVESTITURE BY THE NEGATIVE RULE: {0} AGAINST, {1} TO REFUSE IT", government.OpposedSeats, government.Majority)
+                        : string.Format(CultureInfo.InvariantCulture, "INVESTITURE BY A MAJORITY FOR: {0} seats for it, {1} needed", government.SupportedSeats, government.Majority),
                     11, PoliSimTheme.TextSecondary);
                 if (!government.DeclarationsSourced)
                 {
-                    Wrapped(parent, "formed on DERIVED red lines only - this country's declared refusals are not sourced", 10, PoliSimTheme.TextMuted);
+                    Wrapped(parent, "projected on DERIVED red lines only - this country's declared refusals are not sourced", 10, PoliSimTheme.TextMuted);
                 }
             }
+            if (!string.IsNullOrEmpty(government.ProjectionStep) || !government.HasGovernment) { Wrapped(parent, ProjectionFoot(government, "THE RIKSDAG VOTES"), 10, PoliSimTheme.TextMuted); }   // q20
 
             // The player's outcome, by C-R4's rule, in one plain line.
             if (government.PlayerParty == null)
@@ -745,16 +775,16 @@ namespace PoliSim.UI
             }
             else if (!government.HasGovernment)
             {
-                Row(parent, "YOU - " + government.PlayerParty, "STAY IN OFFICE UNTIL ONE CAN FORM", 13, PoliSimTheme.Caution, bold: true);
+                Row(parent, "YOU - " + government.PlayerParty, "THE OUTGOING GOVERNMENT SERVES ON", 13, PoliSimTheme.Caution, bold: true);
             }
             else if (government.PlayerInCabinet)
             {
-                Row(parent, "YOU - " + government.PlayerParty + " IN THE CABINET", "IN OFFICE", 14, PoliSimTheme.Good, bold: true);
+                Row(parent, "YOU - " + government.PlayerParty + " IN THE CABINET", "EXPECTED IN OFFICE", 14, PoliSimTheme.Good, bold: true);
             }
             else
             {
                 Row(parent, "YOU - " + government.PlayerParty + (government.PlayerSupports ? " SUPPORTS IT FROM OUTSIDE" : " IN OPPOSITION"),
-                    "OUT OF OFFICE", 14, PoliSimTheme.Bad, bold: true);
+                    "EXPECTED OUT OF OFFICE", 14, PoliSimTheme.Bad, bold: true);
                 if (government.PlayerSupports)
                 {
                     Wrapped(parent, "support is not office - the rule (C-R4, D-5 (a)) counts cabinet seats only", 10, PoliSimTheme.TextMuted);
@@ -825,7 +855,7 @@ namespace PoliSim.UI
             RawImage image = art.AddComponent<RawImage>();
             image.texture = texture;
             image.raycastTarget = false;
-            Wrapped(parent, string.Format(CultureInfo.InvariantCulture, "cabinet solid · support hatched · the tick is the majority, {0} of {1}",
+            Wrapped(parent, string.Format(CultureInfo.InvariantCulture, "cabinet solid · support hatched · the tick a majority, {0} of {1}",
                 government.Majority, government.TotalSeats), 10, PoliSimTheme.TextMuted);
         }
 

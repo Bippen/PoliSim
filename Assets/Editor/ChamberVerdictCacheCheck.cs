@@ -388,12 +388,13 @@ namespace PoliSim.EditorTools
                 files++;
                 foreach (Match m in DirectWrite.Matches(SourceText.ReadWithoutComments(path)))
                 {
-                    if (m.Groups[1].Value == "view") { views++; continue; }
+                    bool projectionFile = path.Replace('\\', '/').EndsWith("/Simulation/SimulationManager.FormationProjection.cs", StringComparison.Ordinal);
+                    if (m.Groups[1].Value == "view" || (projectionFile && m.Groups[1].Value == "projection")) { views++; continue; }   // a formation's view, and the night's FormationProjection in its own file (s918), are not a record
                     failures.Add($"{path.Replace('\\', '/')}: '{m.Value}' writes who governs in place outside GovernmentRecord's methods - the record's version does not move, and the chamber cache keeps the old government");
                 }
             }
             if (files == 0) { failures.Add("the who-governs guard read no source - it verified NOTHING"); }
-            line.Append(string.Format(CultureInfo.InvariantCulture, "; the guard read {0} source files, every write to who governs outside the record's methods a formation view's ({1})", files, views));
+            line.Append(string.Format(CultureInfo.InvariantCulture, "; the guard read {0} source files, every write to who governs outside the record's methods a formation view's or projection's ({1})", files, views));
         }
 
         private static void OnSweden(string name, List<string> failures, Action<SimulationManager, Country, World> body)

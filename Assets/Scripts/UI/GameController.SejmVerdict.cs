@@ -27,29 +27,39 @@ namespace PoliSim.UI
             }
             string sitting = f != null ? f.FirstSitting.ToString("d MMMM yyyy", CultureInfo.InvariantCulture) : "its first sitting";
             string steps = $"The Sejm first sits on {sitting}, where the cabinet resigns; the next is appointed by Art. 154's steps.";
-            // A Sejm of record: the cabinet the record's Sejm elected, where its parties hold a majority of tonight's count - SejmFormation.TryRecordCabinet,
-            // the rule the procedure's install reads, so the night and the install cannot disagree. DECLARED, put to Elias: a player's party in the record's
-            // cabinet is seated in it as on the record, and the night says so.
-            if (SejmFormation.TryRecordCabinet(_playerCountry, latest.Date, out System.Collections.Generic.List<string> recordCabinet, out System.Collections.Generic.List<string> recordSupport,
-                out string recordPm, out string recordHead, out bool recordCarries, out int recordYes, out int recordMembers) && recordCarries)
+            // GATE-18 q20 (Elias's ruling of 2026-10-18: "one formation code"): what the steps are expected to form is the steps' own projection
+            // (`SimulationManager.ProjectFormation`, in the order `SejmStep` runs them: the President's designee and the Sejm's confidence, then the Sejm's own
+            // election - the record's cabinet where it carries tonight's count, `SejmFormation.TryRecordCabinet`, else the formation's projection), so the
+            // night and the install cannot disagree. DECLARED, put to Elias: a player's party in the record's cabinet is seated in it as on the record, and the
+            // night says so.
+            // the review's L5: a projection that throws degrades the night's sentence (no government named), never the election step it is read in
+            FormationProjection expected = null;
+            try { expected = _simulationManager.ProjectFormation(_playerCountry, latest.Date); }
+            catch (System.Exception e) { Debug.LogError($"FORMATION: the Sejm's projection THREW ({e.GetType().Name}: {e.Message}) - the night names no expected government"); }
+            if (expected != null) { Debug.Log("FORMATION: the night projects " + expected.Describe() + " | " + string.Join(" | ", expected.Steps)); }
+            if (expected == null)
             {
-                var names = new System.Collections.Generic.List<string>();
-                foreach (string key in recordCabinet) { names.Add(PartySystems.ShortName(_playerCountry.Id, key)); }
-                string place = mine == recordPm ? "leading it - your party heads the record's cabinet, as on the record"
-                    : recordCabinet.Contains(mine) ? "in the cabinet - your party joins the record's cabinet, as on the record"
-                    : recordSupport.Contains(mine) ? "supporting it from outside, as on the record"
-                    : "in opposition";
-                _pendingElectionVerdict = $"{steps} Expected to form: the record's {string.Join("+", names)} government led by {recordHead}, its parties holding {recordYes} of {recordMembers} seats, "
-                    + $"with {PartySystems.ShortName(_playerCountry.Id, mine)} {place}.";
+                // the delta review's L-f: no projection is not a projection of none - the sentence says the outcome cannot be projected tonight
+                _pendingElectionVerdict = $"{steps} The outcome of the steps cannot be projected tonight. The outgoing cabinet carries on until a new one is appointed (Art. 162).";
             }
-            else if (!government.HasGovernment)
+            else if (!expected.Expected)
             {
-                _pendingElectionVerdict = $"{steps} No government is expected to form from this Sejm - {government.Reason ?? "no formation"}. The outgoing cabinet carries on until one is appointed (Art. 162).";
+                _pendingElectionVerdict = $"{steps} No government is expected to form from this Sejm - {expected.Reason ?? "no formation"}. The outgoing cabinet carries on until one is appointed (Art. 162).";
+            }
+            else if (expected.Head != null)
+            {
+                // a cabinet of record - the President's designee, or the cabinet the record's Sejm elected - where its parties carry tonight's count
+                string place = mine == expected.PmParty ? "leading it - your party heads the record's cabinet, as on the record"
+                    : expected.Cabinet.Contains(mine) ? "in the cabinet - your party joins the record's cabinet, as on the record"
+                    : expected.Support.Contains(mine) ? "supporting it from outside, as on the record"
+                    : "in opposition";
+                _pendingElectionVerdict = $"{steps} Expected to form: the record's {expected.CabinetLine()} government led by {expected.Head}, its parties holding {expected.VotesFor} of {expected.Members} seats, "
+                    + $"with {PartySystems.ShortName(_playerCountry.Id, mine)} {place}.";
             }
             else
             {
-                string standing = government.PlayerInCabinet ? "in the cabinet" : government.PlayerSupports ? "supporting it from outside" : "in opposition";
-                _pendingElectionVerdict = $"{steps} Expected to form: a {government.CabinetDescription} government, with {PartySystems.ShortName(_playerCountry.Id, mine)} {standing}."
+                string standing = expected.Cabinet.Contains(mine) ? "in the cabinet" : expected.Support.Contains(mine) ? "supporting it from outside" : "in opposition";
+                _pendingElectionVerdict = $"{steps} Expected to form: a {expected.CabinetLine()} government, with {PartySystems.ShortName(_playerCountry.Id, mine)} {standing}."
                     + (government.DeclarationsSourced ? string.Empty : " (Projected on DERIVED red lines only - this country's declared refusals are not sourced.)");   // the general verdict's note (GameController.cs), kept
             }
             _pendingElectionVerdictEndsGame = false;

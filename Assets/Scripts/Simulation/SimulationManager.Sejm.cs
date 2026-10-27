@@ -138,8 +138,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>The formation on the new Sejm under the election's own declarations - the projection the night names.</summary>
-        private static Elections.GovernmentFormation.View Projection(Country country, Elections.SejmFormation f) =>
-            Elections.GovernmentFormation.ViewOf(country, Elections.DeclarationReading.OfElection(country.Id, f.PollingDay));
+        private static Elections.GovernmentFormation.View Projection(Country country, Elections.SejmFormation f) => Projection(country, f.PollingDay);
+
+        /// <summary>GATE-18 q20: the same on an election's polling day - the one the steps read and the night's projection reads (`ProjectFormation`).</summary>
+        private static Elections.GovernmentFormation.View Projection(Country country, System.DateTime pollingDay) =>
+            Elections.GovernmentFormation.ViewOf(country, Elections.DeclarationReading.OfElection(country.Id, pollingDay));
 
         /// <summary>Installs the cabinet the procedure names as a new government record, the procedure moving with it.</summary>
         private Elections.GovernmentRecord InstallSejmCabinet(Country country, Elections.SejmFormation f, string basis)

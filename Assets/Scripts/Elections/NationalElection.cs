@@ -117,6 +117,18 @@ namespace PoliSim.Elections
         /// declared at the record's elections (MN; `ElectionsData/poland/returns_2023.md`, Rules); carried forward the same way.</remarks>
         public static bool ExemptFromThreshold(CountryId country, string abbrev) => (country == CountryId.Germany && abbrev == "SSW") || (country == CountryId.Poland && abbrev == "MN");
 
+        /// <summary>GATE-18 q22: the national line a party's list must clear in <paramref name="country"/>'s chamber count, as `Run` allocates it - Sweden's,
+        /// Germany's and Poland's party threshold; NaN for a country whose chamber the game does not count by a national line.</summary>
+        public static double ThresholdOf(CountryId country) =>
+            country == CountryId.Sweden ? SeatConversion.NationalThreshold
+            : country == CountryId.Germany ? GermanThreshold
+            : country == CountryId.Poland ? PolishSejmAllocation.PartyThreshold
+            : double.NaN;
+
+        /// <summary>GATE-18 q22: the line a list must clear inside one region to share in that region's seats, where the country has such a route
+        /// (Sweden's, `SeatConversion.RegionalThreshold`); NaN for a country with none.</summary>
+        public static double RegionalThresholdOf(CountryId country) => country == CountryId.Sweden ? SeatConversion.RegionalThreshold : double.NaN;
+
         /// <summary>
         /// W-G1: the vote shares an election returns for a country, through the vote model''s
         /// GOOD layer rather than its bare one.
@@ -238,6 +250,7 @@ namespace PoliSim.Elections
             double[] preference = PreferenceModel.Preference(compatibility, prior, loyalty);
             preference = EntrantLayer.ApplyFor(preference, prior, country, keys, EntrantAwareness(country, keys));   // §681: an entrant's reach and where it draws from; none, the very array
             preference = EconomicVote.ApplyRecordShift(keys, preference, recordShift);   // PS-3k (§638): the government's record, before the regions are derived; none given, none applied
+            preference = EntrantLayer.HoldToReach(country, keys, preference, null);   // GATE-18 q22: a created party held within its origin's reach (no campaign: the opening awareness); none registered, the very array
 
             shares = new Dictionary<string, double>();
             for (int i = 0; i < keys.Length; i++) { shares[keys[i]] = preference[i]; }

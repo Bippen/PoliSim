@@ -1185,16 +1185,46 @@ namespace PoliSim.Testing
 
                                 // Premise 3, revise and re-offer: a partner's posts taken back by the formateur - the partner's answer turns, and the sheet says why.
                                 string stinted = null;
-                                if (draftField?.GetValue(controller) is FormationProposal draft && versionField != null)
+                                FormationProposal stintDraft = versionField != null ? draftField?.GetValue(controller) as FormationProposal : null;
+                                if (stintDraft != null)
                                 {
-                                    foreach (string partner in draft.CabinetParties)
+                                    foreach (string partner in stintDraft.CabinetParties)
                                     {
-                                        if (partner == draft.Formateur || draft.PostsOf(partner) == 0) { continue; }
-                                        if (!draft.Posts.ContainsKey(draft.Formateur)) { draft.Posts[draft.Formateur] = new List<CabinetPortfolio>(); }
-                                        draft.Posts[draft.Formateur].AddRange(draft.Posts[partner]);
-                                        draft.Posts[partner] = new List<CabinetPortfolio>();
+                                        if (partner == stintDraft.Formateur || stintDraft.PostsOf(partner) == 0) { continue; }
+                                        if (!stintDraft.Posts.ContainsKey(stintDraft.Formateur)) { stintDraft.Posts[stintDraft.Formateur] = new List<CabinetPortfolio>(); }
+                                        stintDraft.Posts[stintDraft.Formateur].AddRange(stintDraft.Posts[partner]);
+                                        stintDraft.Posts[partner] = new List<CabinetPortfolio>();
                                         stinted = partner;
                                         break;
+                                    }
+                                    versionField.SetValue(controller, (int)versionField.GetValue(controller) + 1);
+                                }
+                                // s918: a formateur drafting alone (Sweden's round S-led alone since s917's count) has no partner to stint - the harness seats a seated
+                                // party outside the cabinet with no post, largest first, and keeps the first that refuses FOR THE POSTS (not on a red line), the premise's own case
+                                bool premiseUnstageable = false;   // every candidate explained: refused on a rule (a red line, K-1f, no seat) or accepted with nowhere else to go
+                                if (stintDraft != null && stinted == null && roundCountry.ParliamentSeats != null)
+                                {
+                                    premiseUnstageable = true;
+                                    var candidates = new List<string>();
+                                    foreach (KeyValuePair<string, int> kv in roundCountry.ParliamentSeats)
+                                    {
+                                        if (kv.Value > 0 && kv.Key != stintDraft.Formateur && kv.Key != roundCountry.PlayerPartyAbbrev && !stintDraft.CabinetParties.Contains(kv.Key)) { candidates.Add(kv.Key); }
+                                    }
+                                    if (candidates.Count == 0) { premiseUnstageable = false; }
+                                    candidates.Sort((a, b) => roundCountry.ParliamentSeats[b] != roundCountry.ParliamentSeats[a] ? roundCountry.ParliamentSeats[b].CompareTo(roundCountry.ParliamentSeats[a]) : string.CompareOrdinal(a, b));
+                                    foreach (string candidate in candidates)
+                                    {
+                                        stintDraft.CabinetParties.Add(candidate);
+                                        stintDraft.Posts[candidate] = new List<CabinetPortfolio>();
+                                        versionField.SetValue(controller, (int)versionField.GetValue(controller) + 1);
+                                        yield return Settle();
+                                        ProposalVerdict trial = controller.GetType().GetField("_formationVerdict", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as ProposalVerdict;
+                                        PartyAnswer tried = trial?.Answers.Find(a => a.Party == candidate);
+                                        if (RefusesForThePosts(tried)) { stinted = candidate; Debug.Log($"SHOT: §647 - {stintDraft.Formateur} drafts alone; {candidate} seated in its cabinet with no post for the premise."); break; }
+                                        Debug.Log($"SHOT: §647 - {candidate} seated with no post does not refuse for the posts: {(tried == null ? "no answer" : tried.Reason)}");
+                                        if (tried == null || tried.Alternative > 0.0) { premiseUnstageable = false; }   // an answer the rule does not explain: a partner with somewhere better that took no post
+                                        stintDraft.CabinetParties.Remove(candidate);
+                                        stintDraft.Posts.Remove(candidate);
                                     }
                                     versionField.SetValue(controller, (int)versionField.GetValue(controller) + 1);
                                 }
@@ -1202,7 +1232,11 @@ namespace PoliSim.Testing
                                 yield return Settle();
                                 ProposalVerdict revised = controller.GetType().GetField("_formationVerdict", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as ProposalVerdict;
                                 PartyAnswer stintedAnswer = revised?.Answers.Find(a => a.Party == stinted);
-                                if (stinted == null || stintedAnswer == null || stintedAnswer.Accepts)
+                                if (stinted == null && premiseUnstageable)
+                                {
+                                    Debug.Log($"SHOT: §647 - PREMISE 2 NOT STAGEABLE in this world (named, not a failure; Germany's sheet films it): {stintDraft?.Formateur} drafts alone and every seated party outside its cabinet refuses on a rule or has no formation elsewhere - the lines above.");
+                                }
+                                else if (stinted == null || !RefusesForThePosts(stintedAnswer))
                                 {
                                     Debug.LogError($"SHOT: {stem}_formation_sheet_revised - a partner offered no post should refuse (premise 2); stinted {stinted ?? "none"}, answer {(stintedAnswer == null ? "none" : stintedAnswer.Accepts ? "accepts" : "refuses")}.");
                                     _failed++;
@@ -7615,6 +7649,11 @@ namespace PoliSim.Testing
 
             return country.TaxLines[0];
         }
+
+        /// <summary>§647's premise 2, exactly (s918): a partner refuses FOR THE POSTS - offered none of those Gamson's law allocates it, its payoff weighed
+        /// against the formation's elsewhere. Only that branch of `FormationProposal.Answer` fills `Alternative`; a red line's refusal leaves it zero.</summary>
+        private static bool RefusesForThePosts(PartyAnswer answer) =>
+            answer != null && !answer.Accepts && answer.PostsOffered == 0 && answer.PostsExpected > 0 && answer.Alternative > 0.0;
 
         private static void ResetScrolls(object target) => SetScrolls(target, 0f);
 

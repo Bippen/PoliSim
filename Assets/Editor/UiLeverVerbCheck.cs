@@ -114,6 +114,7 @@ namespace PoliSim.EditorTools
             ("AdvanceDay", "the day's own path"), ("AdvanceCountryDayTick", "the day's own path"), ("AdvanceTurn", "the day's own path"),
             ("RunPlayerElection", "the day's own path - every world that steps the player's day holds it"), ("SeatPlayerElection", "the day's own path - every world that steps the player's day holds it"),
             ("SetWorld", "the start's setup"), ("ResetClockToEpoch", "the start's setup"), ("SeatTheSecondChamberOfRecord", "the start's setup - the seat taken before the no-policy world is forked"),
+            ("ProjectFormation", "a read - the night's projection on a round of its own; FormationProjectionDiagnostic asserts it moves no state (s918)"),
             ("PreviewTurn", "the preview's clone"), ("PreviewTurnWithBudgetDraft", "the preview's clone"), ("PreviewTurnWithSectorDraft", "the preview's clone"),
             ("CanOrderExtraElection", "a read"), ("CarbonFigureYieldsOn", "a read"), ("CentralBankHeadAwaitsPlayer", "a read"), ("DraftPassageYear", "a read"),
             ("DraftProposal", "a read - the formation sheet's first draft"), ("ElectionAwaitsRound", "a read"), ("EstimateBudgetBill", "a read"), ("EstimateTradeBill", "a read"),

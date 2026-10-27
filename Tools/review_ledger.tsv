@@ -338,3 +338,6 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	6124af141344862b580223472df4
 file	Assets/Scripts/Elections/Generated/UsCampaignSpending.cs	14d8fdcadafc28e7d0194473c8d45b4ff12624d28f722264c19c597dd6adb30b	reviewed	2026-10-24	s915	Reviews/2026-10-24_usdata_review2.md	-
 file	Assets/Scripts/Simulation/SpatialBudgetVote.cs	e5cc5b5beee22ffc34ce14c5ea35bb64f839a5ef39ad78049064d877066af6fd	reviewed	2026-10-24	s915	Reviews/2026-10-24_usdata_review3.md	-
 file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	8e7652662ed926f2b41a398f02fdfbf45ae83c09866bcbe9ac5cb1e1e2d5f7c2	reviewed	2026-10-25	s917	Reviews/2026-10-24_g18c_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	70f452a0a6d83fdc828071544257bb784f9061383b99c4d44a5d471d1e4d92e8	reviewed	2026-10-27	s918	Reviews/2026-10-24_g18d_review2.md	-
+file	Assets/Scripts/Simulation/SimulationManager.Sejm.cs	76318b5c9bc431f47acc4037d7abc41b3afbe382e9224e89b4ba1d62f08bc3a7	reviewed	2026-10-27	s918	Reviews/2026-10-24_g18d_review2.md	-
+file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	d8a4fe76f8d179c829bf01c4cc6e7734a936998662938da65ec5de596a713652	reviewed	2026-10-27	s918	Reviews/2026-10-27_g18d_integration_review.md	-

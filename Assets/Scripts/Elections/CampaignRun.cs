@@ -1293,10 +1293,28 @@ namespace PoliSim.Elections
         /// </summary>
         private static double[] Standing(Setup setup, double[] prior, double[] preference, double[] awareness)
         {
-            if (setup.Families != null) { preference = EntrantLayer.Active == EntrantLayer.Rule.SimilarityForAll ? EntrantSimilarity.Apply(preference, prior, setup.Positions, awareness) : EntrantLayer.Apply(preference, prior, setup.Families, awareness, setup.Grouping); }   // §681
+            // GATE-18 q22: the cast's created parties (marked by an opening awareness below one) enter the layer as entrants, a Regional party reaching its
+            // own region's voters alone, and each is held within its origin's reach as its awareness has grown - the idle prediction's terms
+            // (`EntrantLayer.ApplyFor`, `HoldToReach`); a cast with none carries no opening awareness, and every array is the very one
+            string[] cast = setup.AwarenessStart != null ? CastKeys(setup) : null;
+            if (setup.Families != null)
+            {
+                double[] layerPrior = cast != null ? EntrantLayer.LayerPrior(cast, prior, setup.AwarenessStart) : prior;
+                double[] reached = cast != null ? EntrantLayer.RegionalAwareness(cast, awareness, setup.AwarenessStart) : awareness;
+                preference = EntrantLayer.Active == EntrantLayer.Rule.SimilarityForAll ? EntrantSimilarity.Apply(preference, layerPrior, setup.Positions, reached) : EntrantLayer.Apply(preference, layerPrior, setup.Families, reached, setup.Grouping);   // §681
+            }
             // PS-3k (§638): the government's record moves the electorate's preference - each governing party by exactly its shift, the rest absorbing it.
             if (setup.RecordShift != null) { preference = EconomicVote.ApplyRecordShiftByIndex(preference, setup.RecordShift); }
+            if (cast != null) { preference = EntrantLayer.HoldToReach(cast, preference, setup.AwarenessStart, awareness); }
             return WithinReach(setup, preference);
+        }
+
+        /// <summary>GATE-18 q22: the cast's party keys, in the setup's order.</summary>
+        private static string[] CastKeys(Setup setup)
+        {
+            var keys = new string[setup.Parties.Length];
+            for (int i = 0; i < keys.Length; i++) { keys[i] = setup.Parties[i].Name; }
+            return keys;
         }
 
         /// <summary>

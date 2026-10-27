@@ -65,8 +65,164 @@ namespace PoliSim.Elections
         /// <summary>§684: the layer by the rule in force, for a country's keys - the one entry the idle prediction and the backtests call.</summary>
         public static double[] ApplyFor(double[] preference, double[] prior, CountryId country, IReadOnlyList<string> keys, double[] awareness)
         {
+            // GATE-18 q22: every created party enters the layer as an entrant, and a Regional party reaches its own region's voters alone; with none
+            // registered, the very prior and the very awareness
+            prior = LayerPrior(country, keys, prior);
+            awareness = RegionalAwareness(country, keys, awareness);
             if (Active == Rule.SimilarityForAll) { return EntrantSimilarity.Apply(preference, prior, EntrantSimilarity.For(country, keys), awareness); }
             return Apply(preference, prior, PartyFamilies.For(country, keys), awareness, GroupingOf(country, keys));
+        }
+
+        // -----------------------------------------------------------------------------------------------------------------------------
+        // GATE-18 q22 (Elias's ruling of 2026-10-18, `docs/RULINGS_2026-10-18.md`; the audit's GA-4-2 and GA-4-3): "a created party with no campaign
+        // stays below the threshold whatever its origin; origin sets its reach [AUTHORED-DRAFT]. A Regional party's vote comes from its own regional
+        // base." Three terms, each inert with no created party registered (the very arrays returned):
+        // - every created party is an ENTRANT here, a Splinter too - it stands for the first time, its parent's slice the prior its preference reads,
+        //   so its share is reached through its awareness and drawn first from its family as every created party's is (`LayerPrior`);
+        // - a Regional party reaches the voters of its own region alone: its awareness is scaled by the region's share of the valid vote, and the
+        //   count spreads its vote over that region only (`SwedishRegions.Regions`), so inside it it holds what the preference gives it (`RegionalAwareness`);
+        // - THE REACH: its share is held at its origin's reach of the line that binds it (`PartyOrigins.Reach`), lifted by the awareness a campaign buys
+        //   (`Ceiling`), the excess going to the real parties by size - after the government's record moves the vote, so no record pushes it over
+        //   the line either (`HoldToReach`).
+        // -----------------------------------------------------------------------------------------------------------------------------
+
+        /// <summary>GATE-18 q22: a created party of <paramref name="country"/> by its key, or null.</summary>
+        public static CreatedParty CreatedOf(CountryId country, string key)
+        {
+            foreach (CreatedParty c in CreatedParties.Of(country)) { if (c.Key == key) { return c; } }
+            return null;
+        }
+
+        /// <summary>GATE-18 q22: a created party by its key among every country's registrations - the campaign's cast carries no country; its opening
+        /// awareness below one is what marks a created party there (every real party opens at one).</summary>
+        private static CreatedParty CreatedAnywhere(string key)
+        {
+            foreach (CreatedParty c in CreatedParties.All()) { if (c.Key == key) { return c; } }
+            return null;
+        }
+
+        /// <summary>GATE-18 q22: the prior the layer reads to mark its entrants - a created party's at 0 (a Splinter's slice stays in the prior its
+        /// preference read). The very array where no created party holds a prior.</summary>
+        public static double[] LayerPrior(CountryId country, IReadOnlyList<string> keys, double[] prior) =>
+            !CreatedParties.Any(country) ? prior : LayerPrior(keys, prior, k => CreatedOf(country, k), null);
+
+        /// <summary>GATE-18 q22: the same for a campaign's cast, its opening awareness marking the created parties.</summary>
+        public static double[] LayerPrior(IReadOnlyList<string> keys, double[] prior, double[] opening) =>
+            opening == null ? prior : LayerPrior(keys, prior, CreatedAnywhere, opening);
+
+        private static double[] LayerPrior(IReadOnlyList<string> keys, double[] prior, Func<string, CreatedParty> created, double[] opening)
+        {
+            if (prior == null || keys == null) { return prior; }
+            double[] marked = null;
+            for (int i = 0; i < prior.Length && i < keys.Count; i++)
+            {
+                if (prior[i] <= 0.0 || (opening != null && (i >= opening.Length || opening[i] >= 1.0)) || created(keys[i]) == null) { continue; }
+                marked ??= (double[])prior.Clone();
+                marked[i] = 0.0;
+            }
+            return marked ?? prior;
+        }
+
+        /// <summary>GATE-18 q22: the share of the valid vote a created party's own region casts - a Regional party's base; 1 for every other party, and
+        /// for a Regional party whose region the country's regions do not name (only Sweden's valkretsar are offered, `PartyCreationFlow.Regions`).</summary>
+        public static double RegionalBase(CreatedParty c)
+        {
+            if (c == null || c.Origin != PartyOrigin.Regional || c.Country != CountryId.Sweden) { return 1.0; }
+            return SwedishRegions.TryWeightShare(c.Region, out double share) ? share : 1.0;
+        }
+
+        /// <summary>GATE-18 q22: a created party's share of the vote before any campaign, at most - its origin's reach of its country's threshold; a
+        /// Regional party's, at most its reach of the regional route's line inside its region, as a share of the nation's vote (and never above the
+        /// national figure). NaN where its country counts no national line (no cap).</summary>
+        public static double OpeningCeiling(CreatedParty c)
+        {
+            if (c == null) { return double.NaN; }
+            double reach = PartyOrigins.ReachOf(c.Origin);
+            double national = reach * NationalElection.ThresholdOf(c.Country);
+            double regionalBase = RegionalBase(c);
+            double regionalLine = NationalElection.RegionalThresholdOf(c.Country);
+            if (regionalBase < 1.0 && !double.IsNaN(regionalLine))
+            {
+                double inRegion = reach * regionalLine * regionalBase;
+                return double.IsNaN(national) ? inRegion : Math.Min(national, inRegion);
+            }
+            return national;
+        }
+
+        /// <summary>GATE-18 q22: the cap on a created party's share once its awareness stands at <paramref name="awareness"/> - the opening ceiling at
+        /// its opening awareness, lifted in step with the awareness a campaign buys: <c>c0 + (1 - c0) · (a - a0) / (1 - a0)</c>, no cap (1) at full
+        /// awareness, and none where there is no opening ceiling or the party opened fully known.</summary>
+        public static double Ceiling(double openingCeiling, double openingAwareness, double awareness)
+        {
+            if (double.IsNaN(openingCeiling) || openingCeiling >= 1.0) { return 1.0; }
+            double a0 = Clamp01(openingAwareness);
+            if (a0 >= 1.0) { return 1.0; }
+            double lift = Math.Max(0.0, Math.Min(1.0, (Clamp01(awareness) - a0) / (1.0 - a0)));
+            return openingCeiling + (1.0 - openingCeiling) * lift;
+        }
+
+        /// <summary>GATE-18 q22: the awareness the layer reads - a Regional party's scaled by its region's share of the vote (it reaches that region's
+        /// voters alone); every other key as given. The very array where no Regional party is in the keys.</summary>
+        public static double[] RegionalAwareness(CountryId country, IReadOnlyList<string> keys, double[] awareness) =>
+            !CreatedParties.Any(country) ? awareness : RegionalAwareness(keys, awareness, k => CreatedOf(country, k), null);
+
+        /// <summary>GATE-18 q22: the same for a campaign's cast, its opening awareness marking the created parties.</summary>
+        public static double[] RegionalAwareness(IReadOnlyList<string> keys, double[] awareness, double[] opening) =>
+            opening == null ? awareness : RegionalAwareness(keys, awareness, CreatedAnywhere, opening);
+
+        private static double[] RegionalAwareness(IReadOnlyList<string> keys, double[] awareness, Func<string, CreatedParty> created, double[] opening)
+        {
+            if (keys == null) { return awareness; }
+            double[] scaled = null;
+            for (int i = 0; i < keys.Count; i++)
+            {
+                if (opening != null && (i >= opening.Length || opening[i] >= 1.0)) { continue; }
+                double regionalBase = RegionalBase(created(keys[i]));
+                if (regionalBase >= 1.0) { continue; }
+                if (scaled == null)
+                {
+                    scaled = new double[keys.Count];
+                    for (int j = 0; j < scaled.Length; j++) { scaled[j] = awareness != null && j < awareness.Length ? awareness[j] : 1.0; }
+                }
+                scaled[i] *= regionalBase;
+            }
+            return scaled ?? awareness;
+        }
+
+        /// <summary>GATE-18 q22: the shares with every created party held within its reach (`Ceiling` at its awareness - the opening awareness
+        /// where <paramref name="awareness"/> is null: no campaign), the excess spread over the real parties by their size. The very array where no cap binds.</summary>
+        public static double[] HoldToReach(CountryId country, IReadOnlyList<string> keys, double[] shares, double[] awareness) =>
+            shares == null || !CreatedParties.Any(country) ? shares : Hold(keys, shares, NationalElection.EntrantAwareness(country, keys), awareness, k => CreatedOf(country, k));
+
+        /// <summary>GATE-18 q22: the same for a campaign's cast - its opening awareness and today's.</summary>
+        public static double[] HoldToReach(IReadOnlyList<string> keys, double[] shares, double[] opening, double[] awareness) =>
+            shares == null || opening == null ? shares : Hold(keys, shares, opening, awareness, CreatedAnywhere);
+
+        private static double[] Hold(IReadOnlyList<string> keys, double[] shares, double[] opening, double[] awareness, Func<string, CreatedParty> created)
+        {
+            if (keys == null || opening == null) { return shares; }
+            double[] held = null;
+            var isCreated = new bool[shares.Length];
+            double excess = 0.0;
+            for (int i = 0; i < shares.Length && i < keys.Count && i < opening.Length; i++)
+            {
+                if (opening[i] >= 1.0) { continue; }
+                CreatedParty c = created(keys[i]);
+                if (c == null) { continue; }
+                isCreated[i] = true;
+                double now = awareness != null && i < awareness.Length ? awareness[i] : opening[i];
+                double cap = Ceiling(OpeningCeiling(c), opening[i], now);
+                if (shares[i] <= cap) { continue; }
+                held ??= (double[])shares.Clone();
+                excess += shares[i] - cap;
+                held[i] = cap;
+            }
+            if (held == null) { return shares; }
+            double room = 0.0;
+            for (int i = 0; i < held.Length; i++) { if (!isCreated[i]) { room += held[i]; } }
+            if (room <= 0.0) { return held; }
+            for (int i = 0; i < held.Length; i++) { if (!isCreated[i]) { held[i] += excess * held[i] / room; } }
+            return held;
         }
 
         /// <summary>The layer. <paramref name="preference"/> sums to 1; <paramref name="prior"/> marks the entrants (0); <paramref name="family"/> the

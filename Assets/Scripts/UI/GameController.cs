@@ -6693,10 +6693,15 @@ namespace PoliSim.UI
                     previousLabel = "THE PREVIOUS ELECTION";
                 }
 
-                // Item 3: who governs - the formation on the chamber the election just set, the same one the verdict was read from,
-                // on the election's own declarations (PS-2, §619).
+                // Item 3: who governs - GATE-18 q20 (Elias's ruling of 2026-10-18: "one formation code. The night's line names a projection"): what the
+                // country's own procedure is expected to form on the chamber the election just set, projected by the procedure's code from tonight
+                // (`SimulationManager.ProjectFormation`: the Speaker's round, the Bundestag's first ballot) on the election's own declarations (PS-2, §619;
+                // §653) - never a second formation beside it, and nothing installed: office changes when the procedure completes.
                 System.DateTime pollingDay = _simulationManager.CurrentDate;
-                GovernmentFormation.View government = GovernmentFormation.ViewOf(_playerCountry, PoliSim.Elections.DeclarationReading.OfElection(PlayerCountryId, pollingDay));   // §653
+                PoliSim.Elections.FormationProjection projection = _simulationManager.ProjectFormation(_playerCountry, pollingDay);
+                GovernmentFormation.View government = projection?.View
+                    ?? new GovernmentFormation.View { HasGovernment = false, Reason = "no procedure forms this country's government in the game" };
+                if (projection != null) { Debug.Log("FORMATION: the night projects " + projection.Describe() + " | " + string.Join(" | ", projection.Steps)); }
 
                 // §7 of the political-system spec (PS-2, §619): HISTORY AS THE REFERENCE - what actually happened at this election, where the
                 // record holds it (the first election of a Sweden game is 13 September 2026, K-1's sourced result); a later one has no history.

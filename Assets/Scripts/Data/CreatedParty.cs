@@ -114,6 +114,30 @@ namespace PoliSim.Data
         public static readonly double[] ActivistShare = { 0.05, 0.15, 0.30, 0.50, 0.80 };
         public static readonly double[] LeaderAttribute = { 0.30, 0.40, 0.50, 0.60, 0.70 };
 
+        /// <summary>GATE-18 q22 (Elias's ruling of 2026-10-18: "a created party with no campaign stays below the threshold whatever its origin; origin
+        /// sets its reach [AUTHORED-DRAFT]"): [AUTHORED-DRAFT] EACH ORIGIN'S REACH - how far toward the line that binds it the origin's name carries a
+        /// created party before any campaign, as a share of that line. Below one for every origin, so no origin seats a party that has not campaigned;
+        /// the line is the country's national threshold (`NationalElection.ThresholdOf`), a Regional party's the regional route's line in its own region
+        /// where the country has one. The cap it sets lifts with the awareness a campaign buys, to none at full awareness (`EntrantLayer.Ceiling`).
+        /// The order follows the spec's profiles (§2.2: the Splinter carries its parent's Recognition, the Protest movement draws coverage, the
+        /// Grassroots movement is the hardest start); the figures are drafts on the play-calibration list.</summary>
+        public static readonly (PartyOrigin Origin, double Share)[] Reach =
+        {
+            (PartyOrigin.Grassroots, 0.25),
+            (PartyOrigin.Splinter, 0.75),
+            (PartyOrigin.Protest, 0.65),
+            (PartyOrigin.BusinessTechnocrats, 0.45),
+            (PartyOrigin.SingleIssue, 0.55),
+            (PartyOrigin.Regional, 0.65),
+        };
+
+        /// <summary>The origin's reach (`Reach`); NaN for an origin the table does not carry.</summary>
+        public static double ReachOf(PartyOrigin origin)
+        {
+            foreach ((PartyOrigin o, double share) in Reach) { if (o == origin) { return share; } }
+            return double.NaN;
+        }
+
         public static double Pip(double[] table, int pips) => table[Math.Max(1, Math.Min(5, pips)) - 1];
         public static int Pip(int[] table, int pips) => table[Math.Max(1, Math.Min(5, pips)) - 1];
     }
