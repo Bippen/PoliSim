@@ -7650,10 +7650,11 @@ namespace PoliSim.Testing
             return country.TaxLines[0];
         }
 
-        /// <summary>§647's premise 2, exactly (s918): a partner refuses FOR THE POSTS - offered none of those Gamson's law allocates it, its payoff weighed
-        /// against the formation's elsewhere. Only that branch of `FormationProposal.Answer` fills `Alternative`; a red line's refusal leaves it zero.</summary>
+        /// <summary>§647's premise 2, exactly (s918): a partner refuses FOR THE POSTS - offered none of those Gamson's law allocates it, K124's refusal
+        /// (`Formateur.NoPostRefusal`), not a red line's.</summary>
         private static bool RefusesForThePosts(PartyAnswer answer) =>
-            answer != null && !answer.Accepts && answer.PostsOffered == 0 && answer.PostsExpected > 0 && answer.Alternative > 0.0;
+            answer != null && !answer.Accepts && answer.PostsOffered == 0 && answer.PostsExpected > 0
+            && answer.Reason != null && answer.Reason.StartsWith(Formateur.NoPostRefusal, StringComparison.Ordinal);
 
         private static void ResetScrolls(object target) => SetScrolls(target, 0f);
 

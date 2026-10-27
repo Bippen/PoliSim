@@ -68,7 +68,7 @@ namespace PoliSim.Elections
     /// model, never from an authored willingness (premise 3):
     /// <list type="bullet">
     /// <item>A PARTNER refuses a cabinet a red line falls inside of, and - K-1f - a party whose own leader is its declared candidate sits only in a cabinet it leads, refusing a
-    /// partner's seat under any other formateur. Otherwise it weighs its payoff - the formation's (<see cref="CoalitionFormation.Payoff"/>: its seat share of the
+    /// partner's seat under any other formateur. K124: a partner Gamson's law allocates posts to refuses a seat that offers it none. Otherwise it weighs its payoff - the formation's (<see cref="CoalitionFormation.Payoff"/>: its seat share of the
     /// cabinet, scaled by the cabinet's cohesion), scaled down by the posts offered against the posts Gamson's law allocates it in this cabinet
     /// (<see cref="GovernmentRecord.GamsonPosts"/>; premise 2: offering less lowers acceptance, and offering more buys nothing above the law) - against
     /// the best payoff a government the formation would settle on gives it (<see cref="CoalitionFormation.Holding"/>), refusing where that is better by more than the formation's own margin
@@ -84,6 +84,9 @@ namespace PoliSim.Elections
     /// </summary>
     public static class Formateur
     {
+        /// <summary>K124: the opening of a partner's refusal of a cabinet seat that offers it no post.</summary>
+        public const string NoPostRefusal = "refuses: offered no post";
+
         /// <summary>The prepared chamber for a country's sitting seats and a vintage's declarations (with any refusal lines a motion or a decline made).</summary>
         public static CoalitionFormation.Chamber ChamberOf(Country country, ElectionVintage vintage, IReadOnlyList<RedLine> extraLines, out IReadOnlyList<PoliticalParty> parties) =>
             ChamberOf(country, DeclarationReading.OfVintage(vintage), extraLines, out parties);
@@ -173,6 +176,11 @@ namespace PoliSim.Elections
                 else if (candidacies.Contains(key))
                 {
                     answer.Reason = "refuses: its own leader is its declared candidate, and it sits only in a cabinet its candidate leads (K-1f)";
+                }
+                else if (answer.PostsOffered == 0 && answer.PostsExpected > 0)
+                {
+                    // K124 (Elias, 2026-10-27): a partner Gamson's law allocates posts to refuses a seat with none, whatever the formation offers it elsewhere
+                    answer.Reason = string.Format(CultureInfo.InvariantCulture, "{0} - Gamson's law allocates it {1} here (K124)", NoPostRefusal, answer.PostsExpected);
                 }
                 else
                 {

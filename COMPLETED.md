@@ -41663,3 +41663,17 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** n918b 7 of 7 (after n918 1 of 20: MetaTextCheck); dump918 (family g18d) BYTE-IDENTICAL to form on both seeds, no sentinel move; slrt918 exit 0; the dry films drys918b (Sweden, Germany, Poland 0 failed), drys918c/d/e (Sweden: premise 2 named NOT STAGEABLE, 0 failed); REAL films on the final tree: Sweden 1280 real918Swf, 2560 real918Swwf; Germany real918Gef, real918Gewf; Poland real918Pof, real918Powg (real918Powf an engine Input System exception, rerun) - exit 0, no canvas clip; sim918b 77 of 77 (the money path's last change, text only, before it); cheap918f 141 of 141 on the final tree
 
 **Commit:** this one.
+
+## 919. K124-K127 (ELIAS, 2026-10-27, ON §918'S ASKS): A PARTNER OFFERED NO POST REFUSES; SWEDEN'S S-ALONE FORMATION STANDS; THE NIGHT'S WHO GOVERNS COLUMN SENT TO DESIGN (D-NIGHT); THE 12 % ROUTE TO BE FILMED (2026-10-27)
+
+**The rulings:** K124-K127 recorded in `docs/RULINGS_2026-10-23.md` (asked with options; all four answered).
+
+**Built:**
+- K124: `Formateur.Answer` - a partner Gamson's law allocates posts to refuses a cabinet seat that offers it none, before the payoff is weighed and whatever the formation offers it elsewhere (`Formateur.NoPostRefusal`, the reason's opening); the formation sheet film's premise 2 asserts that refusal (`RefusesForThePosts`). Sweden's sheet stages it again: S drafts alone, V seated with no post refuses ("offered no post - Gamson's law allocates it 3 here (K124)"); Germany's SPD the same; the named NOT STAGEABLE line no longer fires.
+- K125: no change (the §917 formation stands).
+- K126: sent to Design by Code - `uploads/D-NIGHT_ask/` (ASK.md, the clipped and the fitted frames, the zip with its manifest; the listing returns all seven at the local sizes) and a chat in the project panel (c56aa5d7-e09b-46dc-8ab5-b74371ce2c59). Waits on Design's return.
+- K127: open - the film of a campaigned Regional party crossing the 12 % valkrets route.
+
+**Bars:** n919 16 of 16 (the formateur, round, German, constructive-vote, confidence, motion-reach, projection, Gate18, blocs and fork diagnostics); dump919 (family k124) BYTE-IDENTICAL to form on both seeds - no sentinel move, so no review owed (the tier); drys919 Sweden and Germany 0 failed; real919Sw (Sweden 1280) exit 0, no canvas clip; cheap919 141 of 141; sim919 77 of 77.
+
+**Commit:** this one.
