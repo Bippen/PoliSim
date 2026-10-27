@@ -95,15 +95,43 @@ first passed and carry neither).**
   `poland/zus_wysokosc_skladek.html` (zus.pl) shows the same four rates in force and the 1,67 % accident
   rate for small payers.
 
-## Italy — STILL BILLED
+## Italy — TUIR art. 11, FETCHED 2026-10-27 (`italy/`, normattiva.it; fetched under K187, E-6)
 
-The Agenzia delle Entrate's portal and normattiva's article view are JavaScript shells that hand a batch
-fetch no article text (the TUIR art. 11 page fetched at 903 KB contained no "per cento"); the shell was
-not kept. **Second attempt, 2026-09-02:** normattiva's ELI and export endpoints return the same shell or
-an error page; the Gazzetta Ufficiale's article endpoint returns an 11 KB shell; and the Gazzetta's
-issue PDF of Legge 207/2024 (Supplemento ordinario n. 43 of 31 December 2024, 25.6 MB) is SCANNED —
-`pdftotext` yields 85 KB of front matter and no law text — so it needs OCR, which is not a tool here.
-The ask is a primary PDF with a text layer or a page that renders without a browser — a real errand.
+**What changed since the two failed attempts:** normattiva's article URN with the `!vig=` suffix (the
+point-in-time view) serves the article's text in the HTML a batch fetch receives; the bare URN and the ELI
+CONSOLIDATED endpoint still return the 903 KB shell without it. Fetched with curl, HTTP 200 each, saved
+byte for byte (`italy/fetch_log.txt`, `italy/SHA256SUMS.txt`; `.gitattributes` keeps them `-text`).
+Normattiva is the Istituto Poligrafico e Zecca dello Stato's consolidated text, not the Gazzetta itself.
+
+**In force 1-1-2026 to 31-12-2026** (`italy/normattiva_tuir_art11_vig_2026-10-27.html`, the page's own
+"Testo in vigore dal: 1-1-2026 al: 31-12-2026"), comma 1 verbatim:
+*"L'imposta lorda è determinata applicando al reddito complessivo, al netto degli oneri deducibili indicati
+nell'articolo 10, le seguenti aliquote per scaglioni di reddito: a) fino a 28.000 euro, 23 per cento;
+b) oltre 28.000 euro e fino a 50.000 euro, ((33 per cento)) ; c) oltre 50.000 euro, 43 per cento."*
+(the double parentheses are normattiva's mark of the latest amendment).
+
+**In force 1-1-2025 to 31-12-2025** (`italy/normattiva_tuir_art11_vig_2025-06-30.html`, "Testo in vigore
+dal: 1-1-2025 al: 31-12-2025"): *"a) ((fino a 28.000 euro, 23 per cento;)) b) ((oltre 28.000 euro e fino a
+50.000 euro, 35 per cento;)) c) ((oltre 50.000 euro, 43 per cento))"*, under the same opening words.
+
+**The amending acts** (`italy/normattiva_tuir_art11_aggiornamenti_v25.html`, the article's list of
+updates, entries 23 to 26 verbatim): *"Il DECRETO LEGISLATIVO 30 dicembre 2023, n. 216 (in G.U. 30/12/2023,
+n.303) ha disposto (con l'art. 1, comma 1) la modifica dell'art. 11, comma 1."* (for 2024 only, per the
+article's AGGIORNAMENTO (229)); *"Il DECRETO-LEGGE 9 agosto 2024, n. 113 ... la modifica dell'art. 11,
+comma 4."*; *"La LEGGE 30 dicembre 2024, n. 207 (in SO n.43, relativo alla G.U. 31/12/2024, n.305) ha
+disposto (con l'art. 1, comma 2, lettera a)) la modifica dell'art. 11, comma 1."* (the three brackets made
+standing); *"La LEGGE 30 dicembre 2025, n. 199 (in SO n.42, relativo alla G.U. 30/12/2025, n.301) ha
+disposto (con l'art. 1, comma 3) la modifica dell'art. 11, comma 1, lettera b)."* (35 → 33 per cento).
+
+⚠ **The errand's premise is one law behind:** E-6 asked for the text "as amended by Legge 207/2024"; the
+text in force for 2026 is the one Legge 199/2025 amended - the middle bracket is **33 %**, not 35 %. Both
+years are on disk; which one a seed reads is the seed vintage's question (one seed vintage per country,
+§621), not this folder's.
+
+*Not used:* the Agenzia delle Entrate and the Gazzetta Ufficiale were not re-tried - the normattiva text
+answered first. The earlier attempts' record: the Agenzia's portal and normattiva's article view without
+`!vig=` are JavaScript shells (the art. 11 page at 903 KB contains no "per cento"); the Gazzetta's article
+endpoint returns an 11 KB shell; its issue PDF of Legge 207/2024 (SO n. 43, 25.6 MB) is scanned.
 
 ## Sweden — the two layers (no file in this folder; sourced in `POLISIM_TAX_SPECLET.md` §2)
 
@@ -120,7 +148,8 @@ central (the state layer net of the credits it pays) - over 32.38.
 `964f5bee61b994d8` economie.gouv.fr tranches · `741a32d757bc2502` service-public F1419 ·
 `053bfcfc2ba961a3` §32a EStG · `6426b64c1d497d9a` podatki.gov.pl stawki · `e9ada115fb43a4af` rp-25-32.pdf ·
 `2fd045566387c0c6` urssaf taux · `4d2754905fbbe1f1` fr-2025-19763 · `eca28a1b7394b2d0` PIT act (U) ·
-`307adbff35f42174` SUS act (U) · `bc28df6bf65b55e5` zus.pl składki
+`307adbff35f42174` SUS act (U) · `bc28df6bf65b55e5` zus.pl składki ·
+`b2f8531830f2c0fb` normattiva TUIR art. 11 (2026) · `5f7dc488c1849941` (2025) · `84b7147e18349826` its updates list
 
 ## The income tax REALISED, per country (F4-5, fetched 2026-09-16)
 

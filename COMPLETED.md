@@ -41730,3 +41730,15 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** none owed (documents only).
 
 **Commit:** this one.
+
+## 924. K187-K188: E-44 AND E-6 FETCHED BY CODE; SWEDEN 2026'S GOVERNMENT STILL NOT ON RECORD (2026-10-27)
+
+**What was owed.** K187: E-44 (IRENA's *Renewable Power Generation Costs in 2025*) and E-6 (TUIR art. 11 as a text a batch fetch can read) fetched by Code where public. K188: Sweden 2026's government of record sourced from the Riksdag's prime-minister vote, GATE-18 re-run when it lands.
+
+**Built** (a sourcing implementer on `wave/src1` eb9d5856, squash-merged; every digest re-checked on main). E-44: irena.org answered curl with HTTP 200 (a 403 on 2026-09-10): the report (73 385 028 bytes, sha256 38c8c70b848187c8...), its annex (cdf47bcb93b2f2a9...), the executive summary (2046b4146b69197a...) and the publication page (68e23cba4cc8f0a6...) under `PoliSim-captures/sources/energy/irena_rpgc_2025/` with `SHA256SUMS.txt` and `fetch_log.txt`; digests in the new `EnergyData/raw/out_of_tree.txt` and `docs/data/ENERGY_LAYER_SPINE.md` §12, whose CAPEX row reads FETCHED, NOT YET READ BY CODE and names where the figures are (Figure S1 p. 14; Tables 2.1-2.3, 3.1-3.2; the annex's Tables A1, A3, A4, A6). The per-project data file sits behind a registration form - not fetched. E-6: normattiva's article URN with the point-in-time suffix `!vig=` serves the text the bare URN hides: TUIR art. 11 in force 2026 - 23 % to 28 000 €, 33 % to 50 000 €, 43 % above - and in force 2025 at 23 / 35 / 43, with the article's amendment list (L. 207/2024 art. 1 c. 2 lett. a; L. 199/2025 art. 1 c. 3), byte-exact under `ElectionsData/tax/italy/` (`-text` in `.gitattributes`), quoted in `ElectionsData/tax/README.md`. K188: nothing added - on 2026-10-15 the Riksdag rejected the talman's first proposal, Magdalena Andersson (S) alone, 99 yes / 248 no / 0 abstaining / 2 absent; a sounding mandate to Elisabeth Thand Ringqvist (C) on 2026-10-19 reported on 2026-10-26 with the next step still to come. The caretaker (M+KD+L) stands as `WorldClock` records it. (The record's first proposal is the game's §917 formation: S asked first, S alone - here rejected.)
+
+**Declared.** No figure wired. E-6's premise was one law behind: 2026's middle bracket is L. 199/2025's 33 %; which year the seed reads is the seed vintage's ruling (§621), owed before `TaxSchedule` reads Italy. IRENA's edition is 2025, one newer than the 2024 that ENERGY_SPEC row 13, `EnergyFleet.CapexBill` and `AiEnergyMinistry` name; its figures are 2025 USD (annex O&M 2024 USD).
+
+**Bars:** doc924 23 of 23; cheap924 141 of 141; sim924 77 of 77 (the tier asks the simulation bar for any ElectionsData or EnergyData change; data and documents only, no baseline can move)
+
+**Commit:** this one.

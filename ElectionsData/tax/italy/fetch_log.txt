@@ -1,0 +1,6 @@
+time_utc	http	bytes	file	url
+2026-10-27T22:55:40Z	200	173939	normattiva_tuir_art11_vig_2026-10-27.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:presidente.repubblica:decreto:1986-12-22;917~art11!vig=2026-10-27
+2026-10-27T22:55:41Z	200	32568	normattiva_tuir_art11_aggiornamenti_v26.html	https://www.normattiva.it/do/atto/vediAggiornamentiAllArticolo?art.dataPubblicazioneGazzetta=1986-12-31%2000:00:00.0&art.codiceRedazionale=086U0917&art.flagTipoArticolo=0&art.idArticolo=11&art.idSottoArticolo=1&art.idSottoArticolo1=10&art.versione=26
+2026-10-27T22:55:41Z	200	174046	normattiva_tuir_art11_vig_2025-06-30.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:presidente.repubblica:decreto:1986-12-22;917~art11!vig=2025-06-30
+2026-10-27T22:55:42Z	200	32568	normattiva_tuir_art11_aggiornamenti_v25.html	https://www.normattiva.it/do/atto/vediAggiornamentiAllArticolo?art.dataPubblicazioneGazzetta=1986-12-31%2000:00:00.0&art.codiceRedazionale=086U0917&art.flagTipoArticolo=0&art.idArticolo=11&art.idSottoArticolo=1&art.idSottoArticolo1=10&art.versione=25
+# note: the v26 request (the same endpoint with art.versione=26) returned bytes identical to v25 (sha256 84b7147e...); the endpoint lists the whole history of art. 11 for the session regardless of the version parameter, so one copy is kept (normattiva_tuir_art11_aggiornamenti_v25.html)

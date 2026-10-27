@@ -71,7 +71,7 @@ closing either needs a lexer rather than a regex — which is the honest reason 
 
 ---
 
-## E-6 · Italy's IRPEF, as a text a batch fetch can read — OPEN (2026-09-02)
+## E-6 · Italy's IRPEF, as a text a batch fetch can read — CLOSED 2026-10-27 (K187, §924: fetched by Code from normattiva's `!vig=` article view into `ElectionsData/tax/italy/`; in force 2026 23/33/43 by L. 199/2025, 2025 23/35/43 by L. 207/2024; what remains is a ruling, the seed vintage `TaxSchedule` reads)
 
 **The ask:** one primary document with the current IRPEF *scaglioni* (TUIR art. 11 as amended by Legge
 207/2024, art. 1 comma 2) that has a **text layer** — a PDF saved from normattiva's or the Agenzia delle

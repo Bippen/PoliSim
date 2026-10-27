@@ -11,3 +11,5 @@ Assets/Scripts/Elections/Generated/EventSalienceFit.cs -text
 ElectionsData/macro/raw/fiscal_balance/** -text
 ElectionsData/macro/fiscal_balance.csv -text
 ElectionsData/poland/raw/governments_2015_2019/** -text
+# K187 / E-6 (2026-10-27): TUIR art. 11 as normattiva served it, byte-exact as fetched (digests in the folder's SHA256SUMS.txt)
+ElectionsData/tax/italy/** -text

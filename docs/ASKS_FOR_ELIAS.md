@@ -496,7 +496,7 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 ### GATE-18 piece two (§913): for your information
 
 - **Germany's out-of-sample miss is large.** Without the record's factors the idle game hands AfD 9.6 % against its 21.7 % and BSW 13.3 % against 5.2 % (a mean miss of 5.11 pp; Sweden 1.15, Poland 1.45). The factors absorb it, so the record is reproduced, but a game started in 2024 that runs past 2025 carries the model's own German shares, not the record's.
-- **Sweden 2026's government is not on record yet**, so the gate asserts nothing for it (NOT ON RECORD). Once the Riksdag's prime-minister vote is sourced and added, the gate checks it with no code change, and may turn red if the idle game forms otherwise.
+- **Sweden 2026's government is not on record yet** (checked 2026-10-27, §924: Andersson (S) rejected 99-248 on 15 October, the talman's first of four proposals; Thand Ringqvist (C)'s sounding reported 26 October, no next step announced), so the gate asserts nothing for it (NOT ON RECORD). Once the Riksdag's prime-minister vote is sourced and added, the gate checks it with no code change, and may turn red if the idle game forms otherwise.
 - **The factors also carry the idle player's lack of campaigning** (K108): a player who campaigns hard as the prime minister's party lands above the record on that day by their campaign's own effect.
 
 ### The Fed chair (§914): for your information

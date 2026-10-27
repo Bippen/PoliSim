@@ -152,7 +152,7 @@ The audit's questions are cited qN, numbered as in `docs/audit/AUDIT_FOR_ARCHITE
 | # | item | unlocks |
 |---|---|---|
 | E-SW | Play Sweden after PS-2 | the campaign constants; the next design decisions |
-| E-44 | IRENA's *Renewable Power Generation Costs in 2025* full report into `PoliSim-captures/sources/energy/` | building a power plant stops being free |
+| E-44 ✅ | IRENA's *Renewable Power Generation Costs in 2025* - **FETCHED by Code 2026-10-27 (K187, §924)**: report, annex and summary in `PoliSim-captures/sources/energy/irena_rpgc_2025/` (digests in `EnergyData/raw/out_of_tree.txt`) | pricing a build is now a code item plus a ruling on vintage and unit (2025 USD), not an errand |
 | — | **Strike anything, at any time.** Each phase's close report carries its films; nothing waits on a gate unless Elias adds one | — |
 
 **Size:** Phases 0–4, which make Sweden fully playable in every role with created parties and a front door, are roughly 20–30 sessions; Phases 5–6 grow with the countries.
