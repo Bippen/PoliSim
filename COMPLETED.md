@@ -41716,3 +41716,17 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** cheap921 141 of 141 and sim921 77 of 77 on afabde17 (no code since); the four real films and two dry films above.
 
 **Commit:** this one.
+
+## 923. THE REMAINING WORKLIST SURVEYED AND RULED (K130-K189); ITS BOARDS ASKED OF DESIGN IN ONE ASK (D-WORKLIST) (2026-10-27)
+
+**The survey:** three read-only agents read every remaining item - COAL-1, COAL-2, MF-13, MF-14..28; PS-7/D-IT, PS-8, SP-5, PL-C, SP-6b, SP-8/D-PR; regional 5a (K83), phone banking and the siting picker; every open ask in `docs/ASKS_FOR_ELIAS.md`, the open errands and every Design request without a return. Phone banking and the siting picker were found BUILT at §908 (row 52's and A_LOOP_PLAN's owed note corrected in §922).
+
+**Ruled:** Elias answered thirteen rounds of options (all as recommended but one: the debt crisis splits by country, a default for the USA and a programme for the EU countries), then said "just do recommended for all from now on"; the last four lines (K186-K189) are Code's recommendations under that instruction. All sixty in `docs/RULINGS_2026-10-23.md` K130-K189.
+
+**Asked of Design** (by Code over the channel): `uploads/D-WORKLIST_ask/` - ASK.md (ten sections in build order: the debt crisis; the top strip in every country; D-IT; the campaign HQ with regional 5a and a review of the q4 verbs built without a board; D-CP against v3.5 with SP-5's steps; the world calendar and a foreign result card; SP-6b's ballot-access map; France's run-off night and cohabitation; COAL-2's verbs; the leftovers, D-EN withdrawn), seven context frames from today's real films, the zip with its manifest; the listing returns all ten at the local sizes; chat 28ca345f-2435-4b67-8f70-852e30f0f4bf. D-NIGHT (§919) stands on its own.
+
+**Errands closed or moved by the rulings:** E-3 is Code's (K186); E-44 and E-6 Code fetches where public (K187); Sweden 2026's government of record Code sources (K188). Still Elias's: E-50 (Unity support on the analytics module), E-40 (Playtest 6 findings), E-39 / E-SW (the Sweden play protocol from a re-staged save).
+
+**Bars:** none owed (documents only).
+
+**Commit:** this one.
