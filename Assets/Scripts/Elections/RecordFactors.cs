@@ -39,14 +39,14 @@ namespace PoliSim.Elections
         /// </summary>
         private static readonly (ElectionVintage Election, string Party, double Factor)[] Fitted =
         {
-            (ElectionVintage.Sweden2026, "S", 0.98827675673482007),
-            (ElectionVintage.Sweden2026, "SD", 0.85595592772742213),
-            (ElectionVintage.Sweden2026, "M", 0.97022736669177079),
-            (ElectionVintage.Sweden2026, "V", 1.3106660154721415),
-            (ElectionVintage.Sweden2026, "C", 1.1960413899289797),
-            (ElectionVintage.Sweden2026, "KD", 0.90446657162949518),
-            (ElectionVintage.Sweden2026, "MP", 1.2158436534551924),
-            (ElectionVintage.Sweden2026, "L", 1.0664020113911648),
+            (ElectionVintage.Sweden2026, "S", 0.99933090719699225),
+            (ElectionVintage.Sweden2026, "SD", 0.85595592772742224),
+            (ElectionVintage.Sweden2026, "M", 0.97022736669177057),
+            (ElectionVintage.Sweden2026, "V", 1.3250626916285613),
+            (ElectionVintage.Sweden2026, "C", 1.2061067444425941),
+            (ElectionVintage.Sweden2026, "KD", 0.904466571629495),
+            (ElectionVintage.Sweden2026, "MP", 1.1186258162371281),
+            (ElectionVintage.Sweden2026, "L", 1.066402011391163),
             (ElectionVintage.Germany2025, "CDU", 1.4561571854783546),
             (ElectionVintage.Germany2025, "AfD", 2.2700389247046266),
             (ElectionVintage.Germany2025, "SPD", 0.7113541479026001),
@@ -91,6 +91,31 @@ namespace PoliSim.Elections
             double sum = 0.0;
             foreach (double s in latest) { sum += s; }
             return sum > 0.0 && sum <= 100.0 ? sum / 100.0 : 1.0;
+        }
+
+        /// <summary>GATE-18 q3: each counted valkrets's (<paramref name="regionNames"/>, matched by name) roster share of its valid vote at
+        /// <paramref name="election"/>, by that election's own returns per valkrets (the lists the catalog carries over its valid vote, DERIVED) - the base
+        /// Sweden's 12 % line reads the counted valkretsar on that day, as `RosterShareOfVote` is the 4 % line's. Null for any other election, or where a
+        /// name is not in the returns.</summary>
+        public static double[] RosterShareByRegion(ElectionVintage election, IReadOnlyList<string> regionNames)
+        {
+            if (regionNames == null) { return null; }
+            string[] names;
+            long[][] votes;
+            long[] valid;
+            if (election == ElectionVintage.Sweden2026) { names = Generated.SwedishValkretsReturns2026.Names; votes = Generated.SwedishValkretsReturns2026.Votes; valid = Generated.SwedishValkretsReturns2026.Valid; }
+            else if (election == ElectionVintage.Sweden2022) { names = Generated.SwedishValkretsReturns2022.Names; votes = Generated.SwedishValkretsReturns2022.Votes; valid = Generated.SwedishValkretsReturns2022.Valid; }
+            else { return null; }
+            var share = new double[regionNames.Count];
+            for (int r = 0; r < share.Length; r++)
+            {
+                int at = Array.IndexOf(names, regionNames[r]);
+                if (at < 0 || valid[at] <= 0) { return null; }
+                long roster = 0;
+                foreach (long v in votes[at]) { roster += v; }
+                share[r] = (double)roster / valid[at];
+            }
+            return share;
         }
 
         /// <summary>The stored factors of <paramref name="election"/> by party key, NaN where none is patched in.</summary>

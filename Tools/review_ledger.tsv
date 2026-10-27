@@ -337,3 +337,4 @@ file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	aa1e5320b3d72
 file	Assets/Scripts/Simulation/SimulationManager.cs	6124af141344862b580223472df4ccf9006713a829dd62f0bc1e95051a86203b	reviewed	2026-10-24	s914	Reviews/2026-10-24_fed_integrator_delta.md	-
 file	Assets/Scripts/Elections/Generated/UsCampaignSpending.cs	14d8fdcadafc28e7d0194473c8d45b4ff12624d28f722264c19c597dd6adb30b	reviewed	2026-10-24	s915	Reviews/2026-10-24_usdata_review2.md	-
 file	Assets/Scripts/Simulation/SpatialBudgetVote.cs	e5cc5b5beee22ffc34ce14c5ea35bb64f839a5ef39ad78049064d877066af6fd	reviewed	2026-10-24	s915	Reviews/2026-10-24_usdata_review3.md	-
+file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	8e7652662ed926f2b41a398f02fdfbf45ae83c09866bcbe9ac5cb1e1e2d5f7c2	reviewed	2026-10-25	s917	Reviews/2026-10-24_g18c_integrator_delta.md	-

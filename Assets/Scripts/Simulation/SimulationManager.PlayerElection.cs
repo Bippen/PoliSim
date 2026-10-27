@@ -130,16 +130,18 @@ namespace PoliSim.Simulation
             // no staging): the prediction, as before.
             Dictionary<string, double> shareByParty = null;
             CampaignRun.Result campaign = PlayerCampaignResult;
+            Poll? belief = null;   // GATE-18 q25: what the tactical layer believed, kept on the held count
+            int beliefPolls = 0;
             if (campaign != null && CampaignRecord != null
                 && CampaignRecord.ElectionDate == CurrentDate   // PS-2 (§619): the campaign that ran up to TODAY, the polling day
                 && PlayerCampaign != null)
             {
                 var keys = new string[PlayerCampaign.Setup.Parties.Length];
                 for (int i = 0; i < keys.Length; i++) { keys[i] = PlayerCampaign.Setup.Parties[i].Name; }
-                // D-10 (a): the tactical layer (§23) over the campaign's shares, believing the last
-                // PUBLISHED tracker - the poll the electorate saw - about who clears the threshold.
-                shareByParty = NationalElection.SharesFromCampaign(id, keys, campaign.FinalShares,
-                    PlayerCampaign.PublicPoll, out TacticalResult tactical, on: CurrentDate);   // §707: the Länder derived on the polling day
+                // D-10 (a): the tactical layer (§23) over the campaign's shares, believing the PUBLISHED
+                // polls - what the electorate saw - about who clears the threshold; GATE-18 q25: their mean, not the last tracker alone
+                shareByParty = NationalElection.SharesOnPublishedPolls(id, keys, campaign.FinalShares, PlayerCampaign, CurrentDate,
+                    out TacticalResult tactical, out belief, out beliefPolls);   // §707: the Länder derived on the polling day
                 if (!IsCounterfactual)
                 {
                     Debug.Log($"ELECTION: counted the campaign's shares for {id} - " + string.Join(" ", System.Array.ConvertAll(campaign.FinalShares, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
@@ -152,7 +154,7 @@ namespace PoliSim.Simulation
                             flows.Append(keys[f.From]).Append(f.Rescue ? " lends " : " abandons to ").Append(keys[f.To]).Append(' ')
                                 .Append((f.Share * 100.0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)).Append(" pp; ");
                         }
-                        Debug.Log($"ELECTION: tactical layer (D-10 (a)) on the last tracker - " + (flows.Length > 0 ? flows.ToString() : "no flows") + " -> counted "
+                        Debug.Log($"ELECTION: tactical layer (D-10 (a)) on the polls' mean ({beliefPolls} published tracker(s) over {NationalElection.TacticalBeliefWindowDays} days, GATE-18 q25) - " + (flows.Length > 0 ? flows.ToString() : "no flows") + " -> counted "
                             + string.Join(" ", System.Array.ConvertAll(tactical.Preference, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
                     }
                 }
@@ -190,6 +192,7 @@ namespace PoliSim.Simulation
             {
                 Day = CurrentDate, BeforeFactors = beforeFactors, Handed = shareByParty, Factors = factors, Election = factoredElection,
                 Setup = campaignRan ? PlayerCampaign.Setup : (CampaignRun.Setup?)null, Gotv = campaignRan ? campaign.Gotv : null, Counted = counted,
+                Belief = belief, BeliefPolls = beliefPolls,
             };
             if (counted != null)
             {
@@ -198,7 +201,9 @@ namespace PoliSim.Simulation
             }
 
             // GATE-18 piece two: on the polling day of record the threshold reads the record's base - the shares are the roster's vote, the lists it does not carry the rest
-            ElectionRecord record = NationalElection.Run(id, CurrentTurn, shareByParty, CurrentDate, factors != null ? RecordFactors.RosterShareOfVote(factoredElection) : 1.0);
+            // GATE-18 q3: Sweden's chamber on the counted valkretsar by the Riksdag's own law, the 12 % line on each valkrets's record base that day too
+            ElectionRecord record = NationalElection.Run(id, CurrentTurn, shareByParty, CurrentDate, factors != null ? RecordFactors.RosterShareOfVote(factoredElection) : 1.0,
+                counted, factors != null ? RecordFactors.RosterShareByRegion(factoredElection, counted?.RegionNames) : null, logFallback: !IsCounterfactual);
             country.ElectionHistory.Add(record);
             if (!IsCounterfactual) { Debug.Log($"ELECTION: held for {id} on {CurrentDate:yyyy-MM-dd} (turn {CurrentTurn}) by {record.Method}" + (PlayerCampaignResult != null ? " (a campaign result exists)" : " (no campaign result)")); }
             if (NationalElection.CountsParliament(record.Method))   // PS-6 K74: the parliamentary methods

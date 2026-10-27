@@ -29,8 +29,9 @@ namespace PoliSim.Elections
     /// <item><description><b>The noise at zero for the gate.</b> GATE-18 measures an idle game's reproduction of a record with the noise at zero
     /// (`NoiseAtZero`, a scope its measurement opens): at σ 0 with no doors the count returns the shares it was handed to the rounding of a vote, so
     /// the gate measures the vote model and the factors, not a draw. Play counts at the declared σ.</description></item>
-    /// <item><description><b>Seats.</b> The counted national shares are what the chamber is allocated on, by each country's law as before
-    /// (`NationalElection.Run`): Sweden's and Germany's allocations are national; Poland's spreads the counted national vote back over the okregi by
+    /// <item><description><b>Seats.</b> The count is what the chamber is allocated on, by each country's law (`NationalElection.Run`): Sweden's on the
+    /// counted valkretsar themselves since GATE-18 q3 (the 12 % route and the fixed and adjustment seats per valkrets, `SeatConversion`); Germany's
+    /// on the counted national shares; Poland's spreads the counted national vote back over the okregi by
     /// the same swing, so its chamber and its night stay one count (§902) and the okregi's noise reaches the Sejm through the national vote alone
     /// (DECLARED). Sweden's and Germany's readout becomes the regions as counted, so the night's constituencies add up to the counted headline.</description></item>
     /// </list>
@@ -64,6 +65,16 @@ namespace PoliSim.Elections
             /// <summary>Poland: the same count at sigma 0 with no doors, by party key - the okregi's spread of the shares handed, which the hand-back
             /// subtracts; null for a country whose regions are counted on their own electorate.</summary>
             public Dictionary<string, double> StillShares;
+            /// <summary>GATE-18 q3: the counted regions themselves - each region's whole votes per party in <c>RegionKeys</c>' order - for a country whose
+            /// regions are counted on their own electorate (Sweden, Germany); null for Poland. Sweden's chamber is allocated on them (`NationalElection.Run`).</summary>
+            public ElectionDay.Result Regional;
+            /// <summary>The party keys the counted regions' votes are indexed by (ordinal order).</summary>
+            public List<string> RegionKeys;
+            /// <summary>The counted regions' names, in the count's order.</summary>
+            public string[] RegionNames;
+            /// <summary>GATE-18 q3: Sweden's allocation of this count by the Riksdag's law, per valkrets - set by `NationalElection.Run` when it allocates
+            /// the count; null until then, and for every other country.</summary>
+            public SeatConversion.Result Riksdag;
         }
 
         /// <summary>GATE-18 piece two: the player's count as the day held it - the day, the shares handed before and after the record's factors (`RecordFactors`;
@@ -79,6 +90,10 @@ namespace PoliSim.Elections
             public CampaignRun.Setup? Setup;
             public RegionalMobilization Gotv;
             public Result Counted;
+            /// <summary>GATE-18 q25: the poll the tactical layer believed that day - the published trackers' mean (`NationalElection.TacticalBelief`) - and
+            /// how many trackers it read; null and zero where no campaign ran or none was published in the window.</summary>
+            public Poll? Belief;
+            public int BeliefPolls;
         }
 
         /// <summary>CONVENTION: the smallest ground-game move the count line names, in points - a reading floor, not a figure about the world.</summary>
@@ -179,6 +194,7 @@ namespace PoliSim.Elections
                 Shares = new Dictionary<string, double>(), Handed = new Dictionary<string, double>(), GroundPp = new Dictionary<string, double>(), GroundBoundPp = new Dictionary<string, double>(),
                 Turnout = hasElectorate ? counted.NationalTurnout : double.NaN, TurnoutWithoutGround = hasElectorate ? idle.NationalTurnout : double.NaN,
                 Regions = n, SigmaPp = sigma, NoiseSeed = seed, Digest = counted.Digest,
+                Regional = hasElectorate ? counted : null, RegionKeys = keys, RegionNames = names,
             };
             double highest = 0.0;
             // Poland's hand-back, held at zero and renormalised so the 5 % and 8 % lines are read on shares summing to one (the review 2's L2)

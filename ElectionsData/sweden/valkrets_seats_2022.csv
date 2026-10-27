@@ -1,0 +1,37 @@
+# Sweden Riksdag 2022 - seats per valkrets and party, fixed + adjustment together [SOURCED]
+# source: Valmyndigheten's 2026 result files ElectionsData/sweden/2026/raw/resultat_val2026_RD_NN_S.json (NN 01..29, byte-exact, digests in
+#   raw/SHA256SUMS.results.txt): partiMandat.antalMandatForegaendeVal, each file's seats per party at its previous election (tidigareValdatum
+#   2022-09-11); 'fixed' = the column 'Fasta mandat 2022' of raw/fordelning-av-mandat-2022-och-2026.xlsx (Valmyndigheten, the rows 'Val till Riksdagen').
+# WRITTEN BY Tools/riksdag_seats_prep.pl, never by hand. The same 29 units and row order as valkrets_votes_2022.csv / valkrets_votes_2026.csv.
+# VERIFIED by the tool: fixed sums to 310 and the seats to 349; per party S 107; M 68; SD 73; C 24; V 24; KD 19; L 16; MP 18.
+# The previous-election fields carry no split into fixed and adjustment seats, so none is given here.
+valkrets;fixed;total;S;M;SD;C;V;KD;L;MP
+Stockholms län;40;43;11;10;8;3;3;2;3;3
+Stockholms kommun;29;34;9;6;4;3;4;1;3;4
+Uppsala län;12;13;4;2;2;1;1;1;1;1
+Södermanlands län;9;11;4;2;2;1;1;0;0;1
+Östergötlands län;14;17;5;3;4;1;1;1;1;1
+Jönköpings län;11;13;4;2;3;1;1;1;1;0
+Kronobergs län;6;6;2;2;2;0;0;0;0;0
+Kalmar län;8;8;3;2;2;0;0;1;0;0
+Gotlands län;2;2;1;1;0;0;0;0;0;0
+Blekinge län;5;5;2;1;2;0;0;0;0;0
+Skåne läns västra;9;10;3;2;3;1;0;0;1;0
+Skåne läns södra;12;14;3;3;3;1;1;1;1;1
+Skåne läns norra och östra;10;10;3;2;4;0;0;1;0;0
+Malmö kommun;10;11;3;2;2;1;1;0;1;1
+Hallands län;10;12;3;2;3;1;0;1;1;1
+Västra Götalands läns västra;11;14;3;3;3;1;1;1;1;1
+Västra Götalands läns norra;8;8;3;2;2;0;0;1;0;0
+Västra Götalands läns södra;7;8;2;2;2;1;0;1;0;0
+Västra Götalands läns östra;8;9;3;2;2;1;0;1;0;0
+Göteborgs kommun;17;18;5;3;3;1;2;1;1;2
+Värmlands län;9;11;4;2;2;1;1;1;0;0
+Örebro län;9;12;3;2;2;1;1;1;1;1
+Västmanlands län;8;8;3;2;2;0;1;0;0;0
+Dalarnas län;9;11;3;2;3;1;1;1;0;0
+Gävleborgs län;9;11;4;2;2;1;1;1;0;0
+Västernorrlands län;8;9;4;1;2;1;1;0;0;0
+Jämtlands län;4;4;2;1;1;0;0;0;0;0
+Västerbottens län;8;9;4;1;1;1;1;0;0;1
+Norrbottens län;8;8;4;1;2;0;1;0;0;0

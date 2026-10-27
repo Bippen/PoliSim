@@ -244,7 +244,7 @@ namespace PoliSim.EditorTools
         {
             // the game builds the no-policy shadow beside a new world (GameController.Start), in both runs, so the played world's sequence is one
             var g = new Game { Sim = s, World = w, Player = player, None = new ShadowBaseline(SimulationRandom.MasterSeed) };
-            if (ticking) { g.Ledger = new PolicyImpactLedger(g.None); }
+            if (ticking) { g.Ledger = new PolicyImpactLedger(g.None); s.ImpactLedger = g.Ledger; }   // attached as the game attaches it (GameController), so the played world's answers replay into the forks (§917: unattached, a round that asked the player parted them)
             return g;
         }
 

@@ -109,7 +109,10 @@ namespace PoliSim.EditorTools
                 // ---- (d) the election reads them ----
                 string election = SourceText.ReadWithoutComments(Path.Combine("Assets", "Scripts", "Elections", "NationalElection.cs"));
                 string night = SourceText.ReadWithoutComments(Path.Combine("Assets", "Scripts", "Simulation", "SimulationManager.PlayerElection.cs"));
-                Check(election.Contains("SwedenBlocsOn(keys, on.Value)") && Regex.IsMatch(night, @"SharesFromCampaign\([^;]*on:\s*CurrentDate\)"), "(d) SharesFromCampaign's tactical spec reads the sides standing on its polling day (SwedenBlocsOn on the day passed in), and the live night passes its own day (on: CurrentDate)");
+                // GATE-18 q25 (L-3 of its review): the night reaches the layer through SharesOnPublishedPolls, which hands SharesFromCampaign the day it is given
+                Check(election.Contains("SwedenBlocsOn(keys, on.Value)") && Regex.IsMatch(night, @"SharesOnPublishedPolls\([^;]*CurrentDate")
+                        && election.Contains("SharesFromCampaign(country, keys, finalShares, belief, out tactical, on: pollingDay)"),
+                    "(d) SharesFromCampaign's tactical spec reads the sides standing on its polling day (SwedenBlocsOn on the day passed in), and the live night passes its own day (SharesOnPublishedPolls on CurrentDate, which hands SharesFromCampaign on: pollingDay)");
                 double[] planted = { 0.33, 0.19, 0.20, 0.08, 0.04, 0.055, 0.06, 0.045 };   // PLANTED: C at the threshold, so its fate is in play
                 var moe = new double[Keys.Length];
                 for (int i = 0; i < moe.Length; i++) { moe[i] = 1.0; }

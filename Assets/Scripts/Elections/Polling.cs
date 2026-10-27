@@ -173,6 +173,43 @@ namespace PoliSim.Elections
             if (days <= 0) { return 1.0; }
             return Math.Pow(0.5, days / halfLifeDays);
         }
+
+        /// <summary>
+        /// GATE-18 q25 (Elias, 2026-10-18: "the tactical layer reads the polls' mean, not one tracker"), §22's "Polling should have a moving average":
+        /// <b>THE POLLS' MEAN</b> - every poll of <paramref name="polls"/> fielded in the <paramref name="windowDays"/> days up to and including
+        /// <paramref name="asOf"/>, each party's share their plain mean (each poll one weight), the sample their pooled size, and each margin of error the
+        /// pooled sample's at the mean share - the sampling error of k polls of n is that of one of k·n (DECLARED: a house's lean is not averaged out
+        /// by it). The field date is the newest included poll's, the house names the mean. Null where no poll
+        /// falls in the window, or the polls do not cover the same parties.
+        /// </summary>
+        public static Poll? Mean(System.Collections.Generic.IReadOnlyList<Poll> polls, DateTime asOf, int windowDays, out int included)
+        {
+            included = 0;
+            if (polls == null || windowDays <= 0) { return null; }
+            DateTime from = asOf.Date.AddDays(-windowDays);
+            double[] sum = null;
+            int sample = 0;
+            DateTime newest = DateTime.MinValue;
+            foreach (Poll poll in polls)
+            {
+                if (poll.FieldDate.Date <= from || poll.FieldDate.Date > asOf.Date) { continue; }
+                if (sum == null) { sum = new double[poll.PartyCount]; }
+                if (poll.PartyCount != sum.Length) { included = 0; return null; }
+                for (int i = 0; i < sum.Length; i++) { sum[i] += poll.Share(i); }
+                sample += poll.SampleSize;
+                if (poll.FieldDate > newest) { newest = poll.FieldDate; }
+                included++;
+            }
+            if (included == 0 || sample <= 0) { return null; }
+            var shares = new double[sum.Length];
+            var moe = new double[sum.Length];
+            for (int i = 0; i < sum.Length; i++)
+            {
+                shares[i] = sum[i] / included;
+                moe[i] = MarginOfErrorPp(shares[i], sample);
+            }
+            return new Poll(newest, sample, "the published trackers' mean", shares, moe);
+        }
     }
 
     /// <summary>

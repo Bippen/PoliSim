@@ -41621,3 +41621,23 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** cheap916 138 of 138; the films real at 1280 and 2560 for both winners (usj_dem_1280c, usj_dem_2560c, usj_rep_1280d, usj_rep_2560c) and the Polish nights (real916plc, real916plwc) after the width fix, exit 0; dryusj_rep/dryusj_dem and drys916pl 0 failed; no dump owed (test code and a layout width only)
 
 **Commit:** this one.
+
+## 917. GATE-18 PIECE THREE PART ONE (q3, q25; K115-K117, K121): SWEDEN'S LIVE COUNT BY THE RIKSDAG'S OWN LAW ON ITS COUNTED VALKRETSAR - THE 12 % ROUTE, THE DECIDED FIXED SEATS, THE RETURN IN THE STATUTE'S ORDER, THE ADJUSTMENT SEATS' FIRST DIVISOR ONE; THE TACTICAL LAYER BELIEVES THE PUBLISHED TRACKERS' MEAN; SWEDEN 2026 REFIT (2026-10-25)
+
+**The rulings:** q3 and q25 of 2026-10-18 (`docs/RULINGS_2026-10-18.md`; GA-0-21, GA-5-2); then on the branch's asks K115 (the 28-day window), K116 (the tracker keeps the shared stream), K117 (2026's fixed seats carried forward) and K121 (GATE-18's added wiring line asserted, recorded as added after the prereg).
+
+**Built** (an implementer on `wave/g18c`: c6324151 q3, 538ac9e0 q25, ad63c434, 90ac36e6; the review's round afc81fce, 2a6f8843, 70addb1a, 3b3d7295; the delta review's 6b10f344; squash-merged on §916):
+- q3: `Tools/riksdag_seats_prep.pl` reads Valmyndigheten's workbook and the 29 result files byte-exact (checked against the digest sheet) into `Generated/SwedishFixedSeats.cs` and `valkrets_seats_2022.csv`; `SeatConversion.Sweden` on the statute's bases (RF 3 kap. 7 §: the 4 % and 12 % lines on all valid votes), the return of fixed seats with 14 kap. 4 a §'s three-seat floor and in 4 b §'s order (all returned seats together, largest comparison number first), an excess no valkrets may return set aside with the rest re-divided so the chamber stays 349 (DECLARED: 5 § första stycket and RF 3 kap. 2 §), the adjustment seats' first divisor one (14 kap. 5 §); the player's count keeps its valkretsar and `NationalElection.Run` allocates them by the law - the 4 % line on the record's base as §913, the 12 % line on each valkrets's record base that day.
+- q25: the published trackers kept (`CampaignRun.State.PublishedPolls`, rebuilt on replay, never saved); `PollingSystem.Mean`; `NationalElection.TacticalBelief`, the mean over 28 days, reached through `SharesOnPublishedPolls` on the player's polling day.
+- `SwedishRiksdagAllocationDiagnostic` (cheap) and `TacticalBeliefDiagnostic` (simulation) registered; `Gate18Diagnostic` asserts the q3 wiring (K121) and reports the seats per valkrets and the belief; `SwedenBlocsDiagnostic` (d) reads the new call site.
+- The integrator: `ForkDayTickDiagnostic` attaches its ledger to the played manager as the game does - unattached, the harness's answers to a Speaker's round that asks the player were never replayed into the fork, which the new outcome exposed (the bisect in `Reviews/2026-10-24_g18c_integrator_delta.md`).
+
+**Measured:** 2022 (S 107, M 68, SD 73, C 24, V 24, KD 19, L 16, MP 18) and 2026 (S 99, M 70, SD 62, C 25, V 30, KD 22, L 19, MP 22) seat for seat and per valkrets, 232 of 232 cells each, independently re-derived by the reviewer in perl; the old 1.2 divisor misplaced 10 and 14 cells. Sweden 2026 refit: the gate holds, out of sample 1.15 -> 1.07 pp; the idle game's belief 3 trackers over 28 days (pooled sample 1800). Under the mean the idle Swedish game's Speaker's round installs M alone where the last tracker gave SD+M+KD+L.
+
+**Evidence:** `Reviews/2026-10-24_g18c_review.md` (independent: READY - M-1 the asserted q3 line outside the prereg (ruled K121), M-2 the refit; L-1..L-9); `_g18c_review2.md` (the delta: NOT READY - H-1 SwedenBlocsDiagnostic's source pattern, M-1 a planted case passing under both orders; fixed in 6b10f344); `Reviews/2026-10-24_g18c_integrator_delta.md`; ledger row s917.
+
+**Declared:** the bases above; 2026's decision carried forward (K117) and a polling day reading its own year's decision; the per-valkrets seats on the held count only (the night's cartogram still sizes by the derived column); the mean's equal weights and pooled sample; a call to `Run` with no count keeps the totalfördelning; played Swedish worlds move on the polling day (the tactical flows under the mean).
+
+**Bars:** g18c1 (Gate18 with the Sweden refit: the gate holds, out of sample 1.15 -> 1.07 pp); dump917 (family g18c) BYTE-IDENTICAL to form on both seeds, no sentinel move; slrt917 and stage917 exit 0; n917 2 of 18 failed (ForkDayTickDiagnostic case 2 - the harness's unattached ledger, bisected and fixed, fdt917f 1 of 1 clean; ReviewLedgerCheck before the s917 row) ; cheap917b 139 of 139 and sim917c 77 of 77 on the fixed tree
+
+**Commit:** this one.

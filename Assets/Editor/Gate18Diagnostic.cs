@@ -42,6 +42,8 @@ namespace PoliSim.EditorTools
     /// history is the one E1's factors are fitted on): every first-round candidate of record within `TolerancePp` of the PKW's, the run-off electing the
     /// record's winner with his share of the two within `TolerancePp` of the record's. Beside it, the first round at factor one (the candidates with no roster
     /// party at their share of record, as E1 rules their base) and the run-off it leads to.</description></item>
+    /// <item><description><b>Piece three</b> (q3, q25): Sweden's count allocated by the Riksdag's own law on its counted valkretsar - asserted as wiring; its seats
+    /// per valkrets, and the out-of-sample count's, against the record's seat table REPORTED; the polls' mean the tactical layer believed, REPORTED.</description></item>
     /// </list>
     /// Prints `=== Gate18Diagnostic: the gate holds ===` and exits 0 when every clause holds. Run:
     /// `Unity.exe -batchmode -nographics -projectPath &lt;path&gt; -executeMethod PoliSim.EditorTools.Gate18Diagnostic.Run -logFile &lt;path&gt;`.
@@ -184,7 +186,9 @@ namespace PoliSim.EditorTools
                     // the out-of-sample prediction: the same count of the same handed shares at factor one
                     ParliamentaryCount.Result oos = ParliamentaryCount.Count(id, poll, held.BeforeFactors, held.Setup, held.Gotv, writeReadout: false);
                     ElectionRecord gameRecord = country.ElectionHistory.LastOrDefault(r => r.Date == poll);
-                    Dictionary<string, int> oosSeats = oos != null ? NationalElection.Run(id, 0, oos.Shares, poll, RecordFactors.RosterShareOfVote(election)).Seats : null;
+                    // GATE-18 q3: the out-of-sample count allocated as the game's is - Sweden's on its counted valkretsar by the Riksdag's law
+                    Dictionary<string, int> oosSeats = oos != null ? NationalElection.Run(id, 0, oos.Shares, poll, RecordFactors.RosterShareOfVote(election),
+                        oos, RecordFactors.RosterShareByRegion(election, oos.RegionNames)).Seats : null;
                     Dictionary<string, int> recordSeats = PartySystems.InitialSeats(id, election);
                     double worst = 0.0, oosAbs = 0.0, gameAbs = 0.0;
                     string worstKey = null;
@@ -213,11 +217,67 @@ namespace PoliSim.EditorTools
                         RecordFactors.RosterShareOfVote(election), held.Factors != null ? ", read by the count's allocation" : ", NOT read - no factors carried", string.Join(" ", seatedRecord), string.Join(" ", seatedGame),
                         new HashSet<string>(seatedRecord).SetEquals(seatedGame) ? "the same lists" : "REPORTED: THE LISTS DIFFER"));
 
+                    // GATE-18 piece three, q3: Sweden's chamber by the Riksdag's own law on the counted valkretsar - the wiring asserted (not a pass rule of q18's
+                    // registration), the seats per valkrets against the record's REPORTED (printed, not asserted: no registration names a seat-level pass)
+                    if (id == CountryId.Sweden)
+                    {
+                        Check(held.Counted.Riksdag != null && gameRecord != null && gameRecord.Method == ElectionMethod.SwedenTwoTier,
+                            "q3: the idle game's count was allocated by the Riksdag's own law on its counted valkretsar (the 12 % route, the fixed and adjustment seats per valkrets)");
+                        RiksdagLines(election, "the game", held.Counted);
+                        RiksdagLines(election, "out of sample", oos);
+                    }
+                    // GATE-18 piece three, q25 (REPORTED): what the tactical layer believed on the polling day
+                    if (held.Setup.HasValue)
+                    {
+                        _sb.Append(F("      q25: the tactical layer believed the polls' mean - {0} published tracker(s) over the {1} days to the polling day{2}\n", held.BeliefPolls,
+                            NationalElection.TacticalBeliefWindowDays, held.Belief.HasValue ? F(" (pooled sample {0})", held.Belief.Value.SampleSize) : ", none in the window: the layer was skipped"));
+                    }
+
                     // the record's government formed
                     Government(s, w, country, id, poll);
                 }
                 finally { UnityEngine.Object.DestroyImmediate(host); }
             }
+        }
+
+        /// <summary>GATE-18 q3 (REPORTED, printed): a Swedish count's seats per valkrets by the Riksdag's law against the record's seat table of that election
+        /// (`ElectionsData/sweden/2026/valkrets_seats_2026.csv` for 2026) - the cells that agree, the seats placed elsewhere, the lists seated by the 12 % route alone.</summary>
+        private static void RiksdagLines(ElectionVintage election, string what, ParliamentaryCount.Result count)
+        {
+            if (count?.Riksdag == null) { _sb.Append(F("      q3 ({0}): no allocation by the Riksdag's law was kept on the count\n", what)); return; }
+            string table = election == ElectionVintage.Sweden2026 ? System.IO.Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "2026", "valkrets_seats_2026.csv") : null;
+            PoliticalParty[] all = PartySystems.For(CountryId.Sweden).ToArray();
+            var twelveOnly = new List<string>();
+            for (int p = 0; p < all.Length; p++) { if (!count.Riksdag.NationallyEligible[p] && count.Riksdag.Seats[p] > 0) { twelveOnly.Add(all[p].Abbrev + " " + count.Riksdag.Seats[p]); } }
+            if (table == null || !System.IO.File.Exists(table))
+            {
+                _sb.Append(F("      q3 ({0}): {1} seat(s) returned; by the 12 % route alone: {2}; no per-valkrets seat table of record on disk for {3}\n", what, count.Riksdag.SeatsReturned,
+                    twelveOnly.Count > 0 ? string.Join(", ", twelveOnly) : "none", election));
+                return;
+            }
+            string[] head = null;
+            int cells = 0, same = 0, elsewhere = 0, valkretsar = 0, whole = 0;
+            foreach (string line in System.IO.File.ReadAllLines(table, Encoding.UTF8))
+            {
+                if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal)) { continue; }
+                string[] f = line.Split(';');
+                if (head == null) { head = f; continue; }
+                int r = Array.IndexOf(count.RegionNames, f[0]);
+                if (r < 0) { continue; }
+                valkretsar++;
+                bool all8 = true;
+                for (int c = 0; c < head.Length; c++)
+                {
+                    int p = Array.FindIndex(all, q => q.Abbrev == head[c]);
+                    if (p < 0) { continue; }
+                    int record = int.Parse(f[c], CultureInfo.InvariantCulture);
+                    cells++;
+                    if (count.Riksdag.RegionSeats[r][p] == record) { same++; } else { all8 = false; elsewhere += Math.Max(0, count.Riksdag.RegionSeats[r][p] - record); }
+                }
+                if (all8) { whole++; }
+            }
+            _sb.Append(F("      q3 ({0}), REPORTED: the seats per valkrets against the record's - {1} of {2} cells agree, {3} of {4} valkretsar whole, {5} seat(s) placed elsewhere; {6} returned; by the 12 % route alone: {7}\n",
+                what, same, cells, whole, valkretsar, elsewhere, count.Riksdag.SeatsReturned, twelveOnly.Count > 0 ? string.Join(", ", twelveOnly) : "none"));
         }
 
         /// <summary>The fit at the count's fixed point: start from the record over the handed share, then each factor times the record over the counted share,

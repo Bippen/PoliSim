@@ -8,7 +8,8 @@ namespace PoliSim.Elections
     {
         /// <summary>No live path for this country's electoral system yet. The chamber is left exactly as it was.</summary>
         NotImplemented,
-        /// <summary>Sweden: modified Sainte-Lague 1.2 at a 4 % national threshold - the totalfordelning that fixes each party's national entitlement. W-D2 reproduces the 2022 chamber seat-for-seat through the full two-tier path.</summary>
+        /// <summary>Sweden: modified Sainte-Lague 1.2 at a 4 % national threshold - the totalfordelning that fixes each party's national entitlement; since GATE-18 q3 the live count
+        /// is allocated by the full two-tier procedure on its counted valkretsar (the 12 % route, the fixed and adjustment seats per valkrets, `SeatConversion.Sweden`).</summary>
         SwedenTwoTier,
         /// <summary>Germany: 630 seats allocated purely on nationwide Zweitstimmen by Sainte-Lague/Schepers, 5 % threshold.</summary>
         GermanyNationalProportional,
@@ -255,10 +256,40 @@ namespace PoliSim.Elections
 
         /// <summary>
         /// [AUTHORED-DRAFT] the share of voters who reason strategically about the threshold at all
-        /// (§23), 0–1 — the tactical layer's one unsourced figure, the harness's staging value since
+        /// (§23), 0–1 — an unsourced figure of the tactical layer, the harness's staging value since
         /// W-A4; W-F4's groups would carry it per group.
         /// </summary>
         public const double TacticalAwareness = 0.5;
+
+        /// <summary>
+        /// GATE-18 q25 [AUTHORED-DRAFT]: the window of the polls' mean the tactical layer believes, in days up to the polling day - §22's "Polling
+        /// should have a moving average", read at the month its own example gives a shock to be gone in ("After one month: +0.0%",
+        /// `docs/specs/ELECTIONS_CAMPAIGN_SPEC.md` §22). No source for an aggregator's window is on disk; asked.
+        /// </summary>
+        public const int TacticalBeliefWindowDays = 28;
+
+        /// <summary>
+        /// GATE-18 q25 (Elias, 2026-10-18: "the tactical layer reads the polls' mean, not one tracker"; GA-5-2): what the tactical layer believes about
+        /// who clears the threshold - the mean of every tracker the campaign <paramref name="campaign"/> published in the `TacticalBeliefWindowDays` days
+        /// up to <paramref name="pollingDay"/> (`PollingSystem.Mean`: the published series only, never a party's commissioned poll - the electorate
+        /// sees what is published), in place of the last tracker alone. Null where no tracker falls in the window (the layer is then skipped, as it was
+        /// with no tracker); <paramref name="included"/> counts the trackers the mean read.
+        /// </summary>
+        public static Poll? TacticalBelief(CampaignRun.State campaign, System.DateTime pollingDay, out int included)
+        {
+            included = 0;
+            return campaign?.PublishedPolls == null ? null : PollingSystem.Mean(campaign.PublishedPolls, pollingDay, TacticalBeliefWindowDays, out included);
+        }
+
+        /// <summary>GATE-18 q25: the player's polling-day count of a campaign - the tactical layer over <paramref name="finalShares"/> believing
+        /// `TacticalBelief` of <paramref name="campaign"/> on <paramref name="pollingDay"/>, the regional readout derived on that day. The one path the
+        /// player's chamber election takes (`TacticalBeliefDiagnostic` holds it to the mean and reads the call site).</summary>
+        public static Dictionary<string, double> SharesOnPublishedPolls(CountryId country, string[] keys, double[] finalShares, CampaignRun.State campaign, System.DateTime pollingDay,
+            out TacticalResult tactical, out Poll? belief, out int beliefPolls)
+        {
+            belief = TacticalBelief(campaign, pollingDay, out beliefPolls);
+            return SharesFromCampaign(country, keys, finalShares, belief, out tactical, on: pollingDay);
+        }
 
         /// <summary>
         /// D-10 (a) (2026-09-02): the blocs the tactical layer lends within, for Sweden's 2022 parties —
@@ -516,8 +547,12 @@ namespace PoliSim.Elections
         /// `UsCongress` (the US Congress, elected and seated on the day loop, where no parliamentary formation follows).</summary>
         public static bool CountsParliament(ElectionMethod method) => method != ElectionMethod.NotImplemented && method != ElectionMethod.UsCongress;
 
-        /// <summary>Runs the country's own procedure on a set of national vote shares, or reports that the model does not implement it.</summary>
-        public static ElectionRecord Run(CountryId country, int turn, IReadOnlyDictionary<string, double> shares, System.DateTime date = default, double rosterShareOfVote = 1.0)
+        /// <summary>Runs the country's own procedure on a set of national vote shares, or reports that the model does not implement it. GATE-18 q3: where
+        /// <paramref name="counted"/> carries Sweden's counted valkretsar (`ParliamentaryCount.Count`), the Riksdag is allocated on them by its own law and
+        /// the allocation is kept on the count (`ParliamentaryCount.Result.Riksdag`); <paramref name="regionRosterShare"/> is each counted valkrets's
+        /// roster share of its valid vote on the polling day of an election of record (`RecordFactors.RosterShareByRegion`), null on every other day.</summary>
+        public static ElectionRecord Run(CountryId country, int turn, IReadOnlyDictionary<string, double> shares, System.DateTime date = default, double rosterShareOfVote = 1.0,
+            ParliamentaryCount.Result counted = null, double[] regionRosterShare = null, bool logFallback = true)
         {
             var record = new ElectionRecord { Turn = turn, Date = date, CountryId = country.ToString() };
 
@@ -531,12 +566,15 @@ namespace PoliSim.Elections
 
                 case CountryId.Sweden:
                     record.Method = ElectionMethod.SwedenTwoTier;
-                    // Sweden's full two-tier procedure needs votes PER CONSTITUENCY, which a national
-                    // share vector does not carry. What runs here is the same modified Sainte-Lague
-                    // at the same 4 % threshold that the two-tier procedure's own totalfordelning
-                    // uses to fix each party's national entitlement - and that entitlement IS the
-                    // chamber's composition. Placing those seats across the 29 valkretsar is
-                    // SeatConversion.Sweden, and it needs a regional count to do it.
+                    // GATE-18 q3 (Elias, 2026-10-18: "wire Sweden's 12 % route and per-valkrets seats into the live count"): a count that carries its
+                    // valkretsar is allocated by the Riksdag's own law on them
+                    if (counted != null && counted.Regional != null && counted.RegionKeys != null && AllocateRiksdag(record, shares, date, rosterShareOfVote, counted, regionRosterShare, logFallback))
+                    {
+                        return record;
+                    }
+                    // A call with no count (the backtests, the harnesses) carries no votes PER CONSTITUENCY. What runs then is the same modified
+                    // Sainte-Lague at the same 4 % threshold that the two-tier procedure's own totalfordelning uses to fix each party's national
+                    // entitlement - the chamber's composition whenever no list takes seats by the 12 % route alone.
                     Allocate(record, country, shares, PartySystems.ChamberSeats(country),
                         SeatConversion.NationalThreshold, SeatAllocation.ModifiedSainteLagueDivisor, rosterShareOfVote);
                     return record;
@@ -621,6 +659,67 @@ namespace PoliSim.Elections
             {
                 record.Seats[keys[i]] = seats[i];
             }
+        }
+
+        /// <summary>
+        /// GATE-18 q3: the Riksdag by its own law on the count's own valkretsar - each counted valkrets's whole votes per list (`ParliamentaryCount.Result.Regional`),
+        /// the fixed seats Valmyndigheten decided for the polling day's election (`SeatConversion.DecidedFixedSeats`; the statute's own rule over the count's
+        /// electorate where no decision on disk names the valkretsar), then `SeatConversion.Sweden`: the 4 % national line or 12 % in a valkrets for its
+        /// fixed seats, the fixed seats per valkrets, the totalfördelning, the return and the adjustment seats.
+        /// <para><b>The bases</b> (regeringsformen 3 kap. 7 §: shares of all the votes): the 4 % line reads the count's national vote over the record's base
+        /// on the polling day of an election of record, as §913 has it (<paramref name="rosterShareOfVote"/>, `RecordFactors.RosterShareOfVote`: the counted
+        /// vote is the roster's, the lists it does not carry the rest); the 12 % line reads each counted valkrets's votes over that valkrets's own record base
+        /// that day (<paramref name="regionRosterShare"/>, the roster's share of the valkrets's valid vote by the same election's returns per valkrets -
+        /// DECLARED: the per-valkrets form of §913's reading), and over the valkrets's counted votes on every other day, when the game's lists are the whole
+        /// vote. False, with nothing written, where the count carries no electorate to fall back on.</para>
+        /// </summary>
+        private static bool AllocateRiksdag(ElectionRecord record, IReadOnlyDictionary<string, double> shares, System.DateTime date, double rosterShareOfVote,
+            ParliamentaryCount.Result counted, double[] regionRosterShare, bool logFallback)
+        {
+            IReadOnlyList<PoliticalParty> parties = PartySystems.For(CountryId.Sweden);
+            ElectionDay.Result regional = counted.Regional;
+            int regions = regional.Regions.Length;
+            if (regions == 0) { return false; }
+            int[] fixedSeats = SeatConversion.DecidedFixedSeats(date, counted.RegionNames);
+            if (fixedSeats == null)
+            {
+                var eligible = new double[regions];
+                double electorate = 0.0;
+                for (int r = 0; r < regions; r++) { eligible[r] = regional.Regions[r].EligibleVoters; electorate += eligible[r]; }
+                if (!(electorate > 0.0)) { return false; }
+                fixedSeats = SeatConversion.FixedSeatsPerRegion(eligible);
+                // the review's L-5: the fallback says so - a renamed valkrets or a day before any decision on disk would otherwise pass unseen; the played world only (the review2 L-3: the shadow and the forks count the same day)
+                if (logFallback) { UnityEngine.Debug.Log($"COUNT: Sweden on {date:yyyy-MM-dd} - no decided fixed-seat table names the counted valkretsar for this polling day; the fixed seats were drawn by the statute's 310th-part rule over the count's electorate"); }
+            }
+
+            var column = new int[parties.Count];
+            for (int p = 0; p < parties.Count; p++) { column[p] = counted.RegionKeys.IndexOf(parties[p].Abbrev); }
+            var votes = new long[regions][];
+            var regionBase = new long[regions];
+            long total = 0;
+            for (int r = 0; r < regions; r++)
+            {
+                double[] v = regional.Regions[r].Votes;
+                double all = 0.0;
+                foreach (double x in v) { all += x; }   // every list the count carries is in the valkrets's valid vote, seated or not
+                votes[r] = new long[parties.Count];
+                for (int p = 0; p < parties.Count; p++) { votes[r][p] = column[p] >= 0 ? (long)System.Math.Round(v[column[p]]) : 0L; }
+                long sum = (long)System.Math.Round(all);
+                double rho = regionRosterShare != null && r < regionRosterShare.Length && regionRosterShare[r] > 0.0 && regionRosterShare[r] < 1.0 ? regionRosterShare[r] : 1.0;
+                regionBase[r] = rho == 1.0 ? sum : (long)System.Math.Round(sum / rho);
+                total += sum;
+            }
+            long nationalBase = rosterShareOfVote == 1.0 ? total : (long)System.Math.Round(total / rosterShareOfVote);
+
+            SeatConversion.Result law = SeatConversion.Sweden(votes, fixedSeats, nationalBase, regionBase);
+            for (int p = 0; p < parties.Count; p++)
+            {
+                string key = parties[p].Abbrev;
+                record.Shares[key] = shares != null && shares.TryGetValue(key, out double s) ? s : 0.0;
+                record.Seats[key] = law.Seats[p];
+            }
+            counted.Riksdag = law;
+            return true;
         }
     }
 }

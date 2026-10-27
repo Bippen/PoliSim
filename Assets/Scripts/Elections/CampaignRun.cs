@@ -371,6 +371,9 @@ namespace PoliSim.Elections
             public MediaInterest.BookingLedger BookingLedger;
             public List<double>[] BookedReach;
             public Poll? PublicPoll;
+            /// <summary>GATE-18 q25: every tracker the campaign published, in the order fielded - the series the polls' mean is taken over
+            /// (`NationalElection.TacticalBelief`). Rebuilt by a replay as `PublicPoll` is; never saved.</summary>
+            public List<Poll> PublishedPolls;
             public double BestOutletReach;
             public PartyLedger[] Ledgers;
             public ResourcePool[] Pools;
@@ -539,7 +542,7 @@ namespace PoliSim.Elections
                 Debates = debates, Scandals = scandals, PendingScandals = pendingScandals, Stories = stories, Credibility = credibility, PendingCoverage = pendingCoverage,
                 PartyCount = partyCount, IssueCount = issueCount, Prior = prior, Pressure = pressure,
                 TruePreference = truePreference, Baseline = baseline, Momentum = momentum, MomentumPp = momentumPp,
-                Coverage = coverage, BookingLedger = bookingLedger, BookedReach = bookedReach, PublicPoll = publicPoll,
+                Coverage = coverage, BookingLedger = bookingLedger, BookedReach = bookedReach, PublicPoll = publicPoll, PublishedPolls = new List<Poll>(),
                 BestOutletReach = bestOutletReach, Ledgers = ledgers, Pools = pools, LatestPoll = latestPoll, Issues = issues,
                 LastOwnPollDay = lastOwnPollDay, Reserve = reserve, VolunteerHoursLeft = volunteerHoursLeft, RegionEligible = regionEligible,
                 Gotv = gotv, Offices = offices, OfficeHoursLeft = officeHoursLeft, Staff = staff, Activity = activity,
@@ -620,6 +623,7 @@ namespace PoliSim.Elections
                     Poll tracker = PollingSystem.Conduct(momentum.Apply(truePreference), setup.PublicHouse, today, random);
                     publicPolls++;
                     publicPoll = tracker;
+                    s.PublishedPolls?.Add(tracker);   // GATE-18 q25: the series the polls' mean reads
                     for (int p = 0; p < partyCount; p++) { latestPoll[p] = tracker; }
                 }
 
