@@ -340,6 +340,7 @@ namespace PoliSim.Elections
                 null, PartyFamilies.For(CountryId.USA, cast), NationalElection.EntrantAwareness(CountryId.USA, cast), EntrantLayer.GroupingOf(CountryId.USA, cast), EntrantSimilarity.For(CountryId.USA, cast),
                 stands, targeting,   // PS-6 US-31: the AI weighs its local acts where the declared rule says (R-US16 (b))
                 doorCacePp: eligible > 0.0 ? GotvTurnout.UsDoorCacePp(national / eligible) : 0.0);   // K18: the US count reads 5b at Gerber & Green's band (K7); the AI values a door at the band of the national base turnout (DECLARED: one figure a staging, as Europe's)
+            setup = WithOffsets(setup, CountryId.USA, cal.ElectionDate, played);   // Regional 5a (K149): the states' offsets a regional poll reads
             return true;
         }
 
@@ -443,10 +444,10 @@ namespace PoliSim.Elections
                 regions.Length, national, FlatIssueMatch, FlatCredibility, WarChest));
             double electorateLoyalty = LoyaltyModel.WeightedMeanLoyalty(loyalty, prior);
             note = sb.ToString();
-            return new CampaignRun.Setup(cal, parties, prior, loyalty, compatibility, salience,
+            return WithOffsets(new CampaignRun.Setup(cal, parties, prior, loyalty, compatibility, salience,
                 national, regions, publicHouse, PublicPollEveryDays, internalHouse, electorateLoyalty, null, null, scandals, liveScandalRate,
                 null, PartyFamilies.For(CountryId.Germany, cast), NationalElection.EntrantAwareness(CountryId.Germany, cast), EntrantLayer.GroupingOf(CountryId.Germany, cast), EntrantSimilarity.For(CountryId.Germany, cast),
-                stands, doorCacePp: GotvTurnout.EuropeanDoorCacePp);   // A-LOOP q24 5b: the count reads an opened door at [CP20]'s turnout CACE (K7)
+                stands, doorCacePp: GotvTurnout.EuropeanDoorCacePp), CountryId.Germany, opening, played);   // A-LOOP q24 5b: the count reads an opened door at [CP20]'s turnout CACE (K7)
         }
 
         /// <summary>Sweden's campaign staging from the runtime tables - on the seated election (2026's) in the game; on 2022's where a harness
@@ -535,10 +536,25 @@ namespace PoliSim.Elections
                 "    strategies (W-B6): prof SwingVoter, pop Populist, est BroadAppeal, grass BaseMobilization, chaos NegativeCampaign; electorate loyalty {0:F1} (one group, W-A1 weighted mean)\n",
                 electorateLoyalty));
             note = sb.ToString();
-            return new CampaignRun.Setup(calendar ?? CampaignCalendar.Sweden2026, parties, prior, loyalty, compatibility, salience,
+            var staged = new CampaignRun.Setup(calendar ?? CampaignCalendar.Sweden2026, parties, prior, loyalty, compatibility, salience,
                 national, regions, publicHouse, PublicPollEveryDays, internalHouse, electorateLoyalty, null, null, scandals, liveScandalRate,
                 null, PartyFamilies.For(CountryId.Sweden, cast), NationalElection.EntrantAwareness(CountryId.Sweden, cast), EntrantLayer.GroupingOf(CountryId.Sweden, cast), EntrantSimilarity.For(CountryId.Sweden, cast),   // §681, §684: the entrant layer - inert with no entrant
                 doorCacePp: GotvTurnout.EuropeanDoorCacePp);   // A-LOOP q24 5b: the count reads an opened door at [CP20]'s turnout CACE (K7)
+            // Regional 5a (K149): the valkretsar's offsets a regional poll reads, on the count's own derivation (`NationalElection.RegionalOf`, the catalog the
+            // count reads) whatever vintage the prior is staged on. ⚠ The first form staged none on a 2022 vintage, meaning a harness that pins 2022 - but the
+            // chamber seated before the 2026 election IS 2022's, so the game's own Swedish campaign carried no offsets and no regional poll could be bought
+            // (RegionalCampaignDiagnostic's first run, 2026-10-28). The offsets move nothing until a poll is bought.
+            return WithOffsets(staged, CountryId.Sweden, staged.Calendar.CampaignStart, played);
+        }
+
+        /// <summary>Regional 5a (K149): <paramref name="s"/> with each region's offset at its prior (`RegionalPolling.OffsetsFor`, the count's own derivation on
+        /// <paramref name="on"/>), so a regional poll can be bought; the staging as it came where the derivation cannot be read (no regional poll is then on sale).</summary>
+        private static CampaignRun.Setup WithOffsets(CampaignRun.Setup s, CountryId country, DateTime on, Country played)
+        {
+            var keys = new string[s.Parties.Length];
+            for (int p = 0; p < keys.Length; p++) { keys[p] = s.Parties[p].Name; }
+            double[][] offset = RegionalPolling.OffsetsFor(country, keys, s.PriorShares, on, s.Regions, s.Stands, played, out string _);
+            return offset == null ? s : s.WithRegionalOffset(offset);
         }
 
         /// <summary>The 29 valkretsar as campaign regions: name and VALID votes (the audience a local action can address), from the runtime catalog

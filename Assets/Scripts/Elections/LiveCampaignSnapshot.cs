@@ -131,6 +131,10 @@ namespace PoliSim.Elections
                 notes.AddRange(others);
             }
 
+            // Regional 5a (K83): intelligence as information - the party's field reports and its regional polls' readings (`RegionalPolling.Intelligence`), after the day's events
+            if (playerRun) { notes.AddRange(RegionalPolling.Intelligence(s, p)); }
+
+
             // CL-2: the story waiting for the player's answer, with the answer queued for the morning if any.
             PendingScandalView? pending = null;
             if (playerRun)
@@ -191,10 +195,11 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
-        /// CL-2: the campaign map over the LIVE run - board 4a's cartogram as the region picker. Every valkrets reads as
-        /// UNKNOWN, honestly: regional detail is not on sale in the live run (W-E4's ladder is the film's), and §36 says the
-        /// map must not tell the player where the race is close until they have paid to find out. What the sheet CAN say it
-        /// says - the party's own offices, framed, with their volunteers; the region picked; where the next local act goes.
+        /// CL-2: the campaign map over the LIVE run - board 4a's cartogram as the region picker. Since Regional 5a (K149, K83) a region
+        /// the party bought a poll of carries its newest reading - the index, the leader, too close to call where the lead is inside
+        /// its own error - and every other region reads as UNKNOWN, honestly: §36 says the map must not tell the player where the race
+        /// is close until they have paid to find out. The sheet also says the party's own offices, framed, with their volunteers; the
+        /// region picked; where the next local act and the next regional poll go.
         /// </summary>
         public static CampaignMapSnapshot? BuildMap(CampaignRun.State s, Country country, double perceivedEconomyIndex, PlayerCampaignRecord record, int pickedRegion)
         {
@@ -202,25 +207,60 @@ namespace PoliSim.Elections
             if (!campaign.HasValue) { return null; }
             int p = campaign.Value.PlayerPartyIndex;
             CampaignRun.Setup setup = s.Setup;
-            double national = 0.0;
-            foreach (RegionAudience r in setup.Regions) { national += r.Audience; }
-            var regions = new MapRegionReading[setup.Regions.Length];
+            // Regional 5a (K149, K83): every region UNKNOWN unless the party bought a poll of it, else its newest poll's reading - the index, the leader,
+            // too close to call where the lead is inside its own error (`RegionalPolling.Readings`)
+            MapRegionReading[] regions = RegionalPolling.Readings(s, p);
             var volunteers = new int[setup.Regions.Length];
+            int measured = 0;
             for (int r = 0; r < regions.Length; r++)
             {
-                regions[r] = SwingRegions.Unknown(setup.Regions[r].Name, national > 0.0 ? setup.Regions[r].Audience / national : 0.0);
                 volunteers[r] = -1;
+                if (regions[r].Measured) { measured++; }
             }
             foreach (CampaignOffice office in s.Offices[p].Offices)
             {
                 if (office.Region >= 0 && office.Region < volunteers.Length) { volunteers[office.Region] = office.Volunteers; }
             }
-            const string offer = "NO REGIONAL POLL CAN BE BOUGHT IN THIS CAMPAIGN - EVERY VALKRETS READS AS UNKNOWN, AND THE SHEET DOES NOT GUESS FOR YOU. " +
-                                 "THE MAP IS YOUR PICKER: A TILE SETS WHERE THE NEXT LOCAL ACT GOES.";
+            string offer = OfferLine(s, country, p);
             // the heavy frame is where the next local act goes - the pick, else the one-region rule's region, as the ledger names it
             int nextLocalAct = pickedRegion >= 0 && pickedRegion < setup.Regions.Length ? pickedRegion : StrongestRegion(s, p, out _);
-            return new CampaignMapSnapshot(campaign.Value, regions, campaign.Value.PartyNames, p, "", 0, s.Today, offer,
+            return new CampaignMapSnapshot(campaign.Value, regions, campaign.Value.PartyNames, p, measured > 0 ? "REGIONAL POLLS" : "", measured > 0 ? NewestSample(regions) : 0, s.Today, offer,
                 live: true, nextLocalActRegion: nextLocalAct, officeVolunteers: volunteers);
+        }
+
+        /// <summary>Regional 5a (review L-r3): the sample of the newest regional poll the map reads (the largest field date's), as fielded - the pollster's boost in.</summary>
+        private static int NewestSample(MapRegionReading[] regions)
+        {
+            int sample = 0;
+            System.DateTime newest = System.DateTime.MinValue;
+            foreach (MapRegionReading r in regions) { if (r.Measured && r.Poll.FieldDate >= newest) { newest = r.Poll.FieldDate; sample = r.Poll.SampleSize; } }
+            return sample;
+        }
+
+        /// <summary>
+        /// Regional 5a (K149): the live map's offer - what a regional poll costs and buys (its sample as it would be fielded today, the pollster's boost in, and its ± at a share of one half by the binomial formula),
+        /// against the interviews the national commission holds in the region the next poll would go to; or, where the staging carries no regional offsets,
+        /// that none is on sale. Every figure from the staging and `RegionalPolling`, nothing typed.
+        /// </summary>
+        private static string OfferLine(CampaignRun.State s, Country country, int p)
+        {
+            if (s.Setup.RegionalOffset == null)
+            {
+                return "NO REGIONAL POLL CAN BE BOUGHT IN THIS CAMPAIGN - EVERY REGION READS AS UNKNOWN, AND THE SHEET DOES NOT GUESS FOR YOU. " +
+                       "THE MAP IS YOUR PICKER: A TILE SETS WHERE THE NEXT LOCAL ACT GOES.";
+            }
+            string purse = country.Id == CountryId.Sweden ? "KR" : EnergyLayer.CurrencyCode(country.Id);
+            double national = 0.0;
+            foreach (RegionAudience r in s.Setup.Regions) { national += r.Audience; }
+            int at = StrongestRegion(s, p, out _);
+            double weight = at >= 0 && national > 0.0 ? s.Setup.Regions[at].Audience / national : 0.0;
+            int sub = RegionalPolling.SubSample(s.Staff[p].Improve(s.Setup.InternalHouse).SampleSize, weight);
+            int sample = s.Staff[p].Improve(RegionalPolling.House(string.Empty)).SampleSize;   // review L-r3: what the poll would be fielded at today, the pollster's boost in
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                "A REGIONAL POLL: {0:N0} INTERVIEWS IN ONE REGION FOR {1:N0} {2}, ±{3:0.0} PP AT A SHARE OF ONE HALF - THE NATIONAL COMMISSION HOLDS SOME {4:N0} OF ITS INTERVIEWS THERE (±{5:0.0} PP). " +
+                "THE MAP IS YOUR PICKER: A TILE SETS WHERE THE NEXT LOCAL ACT AND THE NEXT REGIONAL POLL GO; A REGION NOT POLLED READS AS UNKNOWN.",
+                sample, RegionalPolling.Cost * LiveCampaignSetup.PursePerUnit(country.Id), purse, RegionalPolling.MarginOfErrorPp(0.5, sample),
+                sub, RegionalPolling.MarginOfErrorPp(0.5, sub));
         }
 
         /// <summary>

@@ -287,7 +287,7 @@ namespace PoliSim.Elections
     /// <see cref="ShareEffects(double, double)"/> turns into each party's share effect through the sourced CACEs (`CampaignPersuasion`).
     /// The campaign no longer writes compatibility: the 40 000-per-point conversion and its clamp at 100 left the vote path with 5a.
     /// </summary>
-    public sealed class CampaignPressure
+    public sealed partial class CampaignPressure
     {
         private readonly double[] _persuasion;
         private readonly double[] _enthusiasm;
@@ -363,7 +363,10 @@ namespace PoliSim.Elections
         /// (the attacker keeps 1 − share of the contact's persuasion, the target loses the share). The target's received sums are kept for the
         /// readers of `Exposure` and `Against`.
         /// </summary>
-        public void AddAttack(int attacker, int target, CampaignActions.ChainTrace trace, double share)
+        public void AddAttack(int attacker, int target, CampaignActions.ChainTrace trace, double share) => AddAttack(attacker, target, trace, share, -1);
+
+        /// <summary>Regional 5a (K147): as the four-argument form, the contact landing in <paramref name="region"/> - the region a local act was held in, or −1 for a national act, which lands on every region where the attacker stands in proportion to its audience (`RegionalShareEffects`).</summary>
+        public void AddAttack(int attacker, int target, CampaignActions.ChainTrace trace, double share, int region)
         {
             if (share < 0.0 || share > 1.0) { throw new ArgumentException("an attack's share of its contact lies in [0, 1]"); }
             if (attacker < 0 || attacker >= _persuasion.Length || target < 0 || target >= _persuasion.Length || attacker == target) { throw new ArgumentException("an attack is one party's contact against another party"); }
@@ -381,6 +384,7 @@ namespace PoliSim.Elections
             int c = (int)CampaignPersuasion.ClassOf(trace.Kind);
             _againstExposure[target][c] += trace.Exposure * share;
             _againstQuality[target][c] += Quality(trace) * share;
+            AddLocalAttack(attacker, target, slot, trace.Exposure, Quality(trace), share, region);   // Regional 5a: where it landed
         }
 
         /// <summary>K66: the attacks <paramref name="attacker"/> made on <paramref name="target"/> in one class, exposure and quality summed over its slots - what an independent recomputation reads.</summary>
@@ -407,7 +411,10 @@ namespace PoliSim.Elections
             return a;
         }
 
-        public void Add(int partyIndex, CampaignActions.ChainTrace trace)
+        public void Add(int partyIndex, CampaignActions.ChainTrace trace) => Add(partyIndex, trace, -1);
+
+        /// <summary>Regional 5a (K147): as the two-argument form, the contact landing in <paramref name="region"/> - the region a local act was held in, or −1 for a national act, spread over every region where the party stands in proportion to its audience.</summary>
+        public void Add(int partyIndex, CampaignActions.ChainTrace trace, int region)
         {
             _persuasion[partyIndex] += trace.Persuasion;
             _enthusiasm[partyIndex] += trace.Enthusiasm;
@@ -415,6 +422,7 @@ namespace PoliSim.Elections
             if (slot < 0 || Quality(trace) <= 0.0) { return; }   // §42: a zero anywhere in the chain is a contact that persuades nobody - it enters no tally
             _exposure[partyIndex][slot] += trace.Exposure;
             _quality[partyIndex][slot] += Quality(trace);
+            AddLocal(partyIndex, slot, trace.Exposure, Quality(trace), region);   // Regional 5a: where it landed
         }
 
         /// <summary>C-N1's coverage as the press carried it (`MediaSystem.ResolveCoverage`): pressure as <see cref="Add"/>, tallied in its own slot (earned).</summary>
@@ -471,6 +479,7 @@ namespace PoliSim.Elections
         /// <summary>K92 (2026-10-24): as the four-argument form, with each party's attack losses (<paramref name="attackLoss"/>, received, positive - already netted in the effects) and the attackers' takings (<paramref name="attackGain"/>, the same amounts), fractions of the vote - what `CampaignPersuasion.ApplyCampaign` moves directly from target to attacker.</summary>
         public double[] ShareEffects(double electorate, double norm, Func<int, int, bool> include, Func<int, int, int, bool> includeAttack, out double[] attackLoss, out double[] attackGain)
         {
+            if (Regional) { return RegionalShareEffects(norm, include, includeAttack, out attackLoss, out attackGain); }   // Regional 5a (K147): the regions' effects, electorate-weighted
             int n = _persuasion.Length;
             var effects = new double[n];
             attackLoss = new double[n];
@@ -543,6 +552,7 @@ namespace PoliSim.Elections
         /// <summary>q24 5a, the plan's (4)(b), with K66: each party's bound in points - Σ_class upper × its own part of its coverage, plus, for every attack it received, the upper × the attacker's coverage × the attack's part of it × the reaches' overlap - which |effect| can never pass.</summary>
         public double[] BoundsPp(double electorate)
         {
+            if (Regional) { return RegionalBoundsPp(); }   // Regional 5a (review L1): the regions' bounds, weighted, as the effect is
             int n = _persuasion.Length;
             var bounds = new double[n];
             int classes = CampaignPersuasion.ClassCount;

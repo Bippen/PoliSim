@@ -103,12 +103,19 @@ namespace PoliSim.Elections
         /// applied - the coalition value the Shapley sweep is taken over. Everything outside the
         /// subset is simply not there, which is what "this source's contribution" has to mean.
         /// </summary>
-        private static double Value(Inputs input, int party, int subset, double[] baseShares, CampaignPersuasion.Absorption absorption)
+        private static double Value(Inputs input, int party, int subset, double[] baseShares, CampaignPersuasion.Absorption absorption, CampaignPressure.RegionalAbsorption regional = null)
         {
             // A-LOOP q24 5a: compatibility is the campaign's positioning and never moves; the subset's contacts move the shares as the run does.
             double[] shares = baseShares;
             if (input.Pressure != null)
             {
+                if (regional != null)
+                {
+                    // Regional 5a (K147): the coalition's contacts region by region, on each region's absorption, as the run (`CampaignPressure.ApplyRegional`)
+                    shares = input.Pressure.ApplyRegional(shares, input.PersuasionNorm, (p, slot) => Admits(subset, party, p, slot),
+                        (attacker, slot, target) => AdmitsAttack(subset, party, attacker, slot, target), regional);
+                    return (input.Standing != null ? input.Standing(shares) : shares)[party];
+                }
                 // K65 with K81: the balanced absorption, as the run (its matrix built once per ledger - the base shares are every coalition's); K66: an attack admitted by its target's received-attacks bit when the target is the party, by its own slot's bit when the attacker is, by the opponents' bit otherwise
                 double[] effects = input.Pressure.ShareEffects(input.Electorate, input.PersuasionNorm, (p, slot) => Admits(subset, party, p, slot),
                     (attacker, slot, target) => AdmitsAttack(subset, party, attacker, slot, target), out double[] attackLoss, out double[] attackGain);
@@ -167,7 +174,8 @@ namespace PoliSim.Elections
             var value = new double[all + 1];
             double[] baseShares = PreferenceModel.Preference(input.BaseCompatibility, input.PriorShares, input.LoyaltyPerParty);
             CampaignPersuasion.Absorption absorption = input.Pressure != null ? CampaignPersuasion.BalancedAbsorption(baseShares, ReachOf(input.Pressure), input.Pressure.OverlapMatrix) : null;
-            for (int subset = 0; subset <= all; subset++) { value[subset] = Value(input, party, subset, baseShares, absorption); }
+            CampaignPressure.RegionalAbsorption regional = input.Pressure != null && input.Pressure.Regional ? input.Pressure.AbsorptionFor(baseShares) : null;   // Regional 5a: built once, every coalition's
+            for (int subset = 0; subset <= all; subset++) { value[subset] = Value(input, party, subset, baseShares, absorption, regional); }
 
             var ledger = new Ledger
             {

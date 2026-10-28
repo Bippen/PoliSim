@@ -191,7 +191,7 @@ namespace PoliSim.EditorTools
                         !fitted ? "nothing stored to compare" : moved <= RefitReportFloor ? "the stored factors are the fit" : F("the stored factors are DUE A REFIT (the largest relative move {0:0.0e+0}) - reported, the gate reads the shares", moved)));
 
                     // the out-of-sample prediction: the same count of the same handed shares at factor one
-                    ParliamentaryCount.Result oos = ParliamentaryCount.Count(id, poll, held.BeforeFactors, held.Setup, held.Gotv, writeReadout: false);
+                    ParliamentaryCount.Result oos = ParliamentaryCount.Count(id, poll, held.BeforeFactors, held.Setup, held.Gotv, writeReadout: false, regionalShift: held.RegionalShift);
                     ElectionRecord gameRecord = country.ElectionHistory.LastOrDefault(r => r.Date == poll);
                     // GATE-18 q3: the out-of-sample count allocated as the game's is - Sweden's on its counted valkretsar by the Riksdag's law
                     Dictionary<string, int> oosSeats = oos != null ? NationalElection.Run(id, 0, oos.Shares, poll, RecordFactors.RosterShareOfVote(election),
@@ -302,7 +302,7 @@ namespace PoliSim.EditorTools
             iterations = 0;
             for (int i = 0; i < FitIterations; i++)
             {
-                ParliamentaryCount.Result r = ParliamentaryCount.Count(id, held.Day, RecordFactors.Apply(basis, f), held.Setup, held.Gotv, writeReadout: false);
+                ParliamentaryCount.Result r = ParliamentaryCount.Count(id, held.Day, RecordFactors.Apply(basis, f), held.Setup, held.Gotv, writeReadout: false, regionalShift: held.RegionalShift);
                 if (r == null) { break; }
                 iterations = i + 1;
                 miss = 0.0;

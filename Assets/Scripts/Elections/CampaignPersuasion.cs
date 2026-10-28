@@ -247,6 +247,45 @@ namespace PoliSim.Elections
             return result;
         }
 
+        /// <summary>
+        /// Regional 5a (K147): `ApplyBalanced`'s movement alone - each party's Δ_p = e_p − Σ_q W_pq e_q + g_p − l_p, with a zero-share party's effect
+        /// read against the held field's as there - before the floor at zero and the renormalisation, so one region's movements can be summed over the
+        /// regions (`CampaignPressure.RegionalShifts`). The columns of W sum to one over the held parties, so the movements sum to zero.
+        /// </summary>
+        public static double[] Moved(double[] shares, double[] effects, Absorption a, double[] attackLoss = null, double[] attackGain = null)
+        {
+            int n = shares.Length;
+            var own = new double[n];
+            for (int p = 0; p < n; p++) { own[p] = effects[p] + (attackLoss != null && p < attackLoss.Length ? attackLoss[p] : 0.0); }
+            double mean = 0.0, weight = 0.0;
+            for (int p = 0; p < n; p++) { if (a.Held[p] && a.Reach[p] > 0.0) { mean += shares[p] * own[p] / a.Reach[p]; weight += shares[p]; } }
+            mean = weight > 0.0 ? mean / weight : 0.0;
+            for (int z = 0; z < n; z++) { if (!a.Held[z]) { own[z] = Math.Max(0.0, own[z] - a.Reach[z] * mean); } }
+            var moved = new double[n];
+            for (int p = 0; p < n; p++)
+            {
+                double absorbed = 0.0;
+                for (int q = 0; q < n; q++) { if (q != p && own[q] != 0.0) { absorbed += a.W[p][q] * own[q]; } }
+                moved[p] = own[p] - absorbed;
+                if (attackGain != null && p < attackGain.Length) { moved[p] += attackGain[p]; }
+                if (attackLoss != null && p < attackLoss.Length) { moved[p] -= attackLoss[p]; }
+            }
+            return moved;
+        }
+
+        /// <summary>Regional 5a: <paramref name="shift"/> (a movement per party, fractions) laid on <paramref name="shares"/> - a share pushed below zero held at
+        /// zero and the vector renormalised, as `ApplyBalanced` closes; the shares themselves when nothing moved.</summary>
+        public static double[] ApplyShift(double[] shares, double[] shift)
+        {
+            if (shares == null || shift == null || !AnyNonZero(shift)) { return shares; }
+            var result = (double[])shares.Clone();
+            double total = 0.0;
+            for (int i = 0; i < result.Length; i++) { result[i] += i < shift.Length ? shift[i] : 0.0; if (result[i] < 0.0) { result[i] = 0.0; } total += result[i]; }
+            if (total <= 0.0) { return shares; }
+            for (int i = 0; i < result.Length; i++) { result[i] /= total; }
+            return result;
+        }
+
         /// <summary>CONVENTION: the alternating scaling's iterations and the residual it must reach to count as balanced - a numerical solver's limits, not a model figure.</summary>
         private const int BalanceIterations = 5000;
         private const double BalanceTolerance = 1e-12;

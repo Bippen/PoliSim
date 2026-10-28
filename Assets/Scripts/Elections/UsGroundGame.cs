@@ -66,6 +66,10 @@ namespace PoliSim.Elections
             public double[] DemocratContacts;
             public double[] RepublicanContacts;
             public double BaseTurnout;
+            /// <summary>Regional 5a (K147): the campaign's persuasion pattern per jurisdiction, one column per count share - the Democratic nominee's party, the Republican's,
+            /// every other party together - each jurisdiction's movement (`CampaignRun.Result.RegionalShift`) less its audience-weighted mean over the jurisdictions, so
+            /// each column sums to zero over the country and each jurisdiction's three to zero; null where the campaign's tally was national (or no campaign ran).</summary>
+            public double[] DemocratShift, RepublicanShift, OthersShift;
 
             /// <summary>K18: a jurisdiction's own base turnout - its votes cast of record over its electorate (5b reads each region at its own, as
             /// `ParliamentaryCount` does); 0 where it has no electorate.</summary>
@@ -85,6 +89,7 @@ namespace PoliSim.Elections
                 DemocratDoors = (double[])DemocratDoors.Clone(), RepublicanDoors = (double[])RepublicanDoors.Clone(), DemocratCalls = (double[])DemocratCalls.Clone(),
                 RepublicanCalls = (double[])RepublicanCalls.Clone(), DemocratContacts = (double[])DemocratContacts.Clone(), RepublicanContacts = (double[])RepublicanContacts.Clone(),
                 BaseTurnout = BaseTurnout,
+                DemocratShift = (double[])DemocratShift?.Clone(), RepublicanShift = (double[])RepublicanShift?.Clone(), OthersShift = (double[])OthersShift?.Clone(),
             };
         }
 
@@ -118,7 +123,55 @@ namespace PoliSim.Elections
                 eligible += setup.Regions[r].Eligible;
             }
             c.BaseTurnout = eligible > 0.0 ? audience / eligible : 0.0;
+            if (result.RegionalShift != null && result.RegionalShift.Length == n)
+            {
+                // Regional 5a (K147): the persuasion pattern - each jurisdiction's movement less the country's audience-weighted mean, per count column
+                c.DemocratShift = new double[n]; c.RepublicanShift = new double[n]; c.OthersShift = new double[n];
+                for (int r = 0; r < n; r++)
+                {
+                    double[] row = result.RegionalShift[r];
+                    for (int p = 0; p < row.Length; p++) { if (p == dem) { c.DemocratShift[r] += row[p]; } else if (p == rep) { c.RepublicanShift[r] += row[p]; } else { c.OthersShift[r] += row[p]; } }
+                }
+                Centre(c.DemocratShift, c.Audience); Centre(c.RepublicanShift, c.Audience); Centre(c.OthersShift, c.Audience);
+            }
             return c;
+        }
+
+        /// <summary>Regional 5a: <paramref name="v"/> less its <paramref name="weight"/>-weighted mean, in place.</summary>
+        private static void Centre(double[] v, double[] weight)
+        {
+            double sum = 0.0, all = 0.0;
+            for (int r = 0; r < v.Length; r++) { sum += weight[r] * v[r]; all += weight[r]; }
+            double mean = all > 0.0 ? sum / all : 0.0;
+            for (int r = 0; r < v.Length; r++) { v[r] -= mean; }
+        }
+
+        /// <summary>Regional 5a: a jurisdiction's derived shares with the campaign's persuasion pattern there (`Campaign.DemocratShift` and its two siblings) - each share held at
+        /// zero and the three renormalised; the derived shares themselves where the campaign carries none. DECLARED (review L4): where no other candidate is on the
+        /// state's ballot the Others column's movement is REDISTRIBUTED to the two nominees in proportion to their derived shares, so the state's three movements
+        /// still sum to zero and the renormalisation rescales nothing but a floor. DECLARED (review L-r4): the columns are centred BEFORE this hand-over
+        /// (`Centre`), so in effect the nominees' columns drift off zero nationally by Σ over the states with no other candidate of the state's weight × its
+        /// Others movement × the nominee's share - non-zero only where a third party campaigns, and no worse than the Others column breaking instead.</summary>
+        public static double[] WithPattern(double[] derived, Campaign campaign, int r)
+        {
+            if (campaign.DemocratShift == null || campaign.RepublicanShift == null || campaign.OthersShift == null) { return derived; }
+            var moved = (double[])derived.Clone();
+            moved[ElectoralCollege.ShareDemocrat] += campaign.DemocratShift[r];
+            moved[ElectoralCollege.ShareRepublican] += campaign.RepublicanShift[r];
+            if (derived[ElectoralCollege.ShareOthers] > 0.0) { moved[ElectoralCollege.ShareOthers] += campaign.OthersShift[r]; }
+            else
+            {
+                // no other candidate on this ballot: the Others movement goes to the two nominees by their derived shares, so the row still sums to zero
+                double two = derived[ElectoralCollege.ShareDemocrat] + derived[ElectoralCollege.ShareRepublican];
+                double toDemocrat = two > 0.0 ? derived[ElectoralCollege.ShareDemocrat] / two : 0.5;
+                moved[ElectoralCollege.ShareDemocrat] += campaign.OthersShift[r] * toDemocrat;
+                moved[ElectoralCollege.ShareRepublican] += campaign.OthersShift[r] * (1.0 - toDemocrat);
+            }
+            double total = 0.0;
+            for (int i = 0; i < moved.Length; i++) { if (moved[i] < 0.0) { moved[i] = 0.0; } total += moved[i]; }
+            if (!(total > 0.0)) { return derived; }
+            for (int i = 0; i < moved.Length; i++) { moved[i] /= total; }
+            return moved;
         }
 
         /// <summary>The seed a count's regional noise is drawn on - <see cref="SimulationRandom.RegionalElectionNoiseSeedOn"/>, keyed, never counted.</summary>
@@ -177,7 +230,9 @@ namespace PoliSim.Elections
                 if (baseTurnout[r] <= 0.0) { why = names[r] + " has no base turnout (no votes cast of record or no electorate)"; return null; }
                 if (baseTurnout[r] + (GotvTurnout.DoorCaceUpperPp(CountryId.USA, baseTurnout[r]) + GotvTurnout.PhoneCaceUpperPp) / 100.0 >= 1.0) { why = names[r] + ": a reached supporter's turnout would reach one"; return null; }
             }
-            ElectionDay.Result count = ElectionDay.Count(names, preference, gotv, baseTurnout, cace, new System.Random(noiseSeed), sigmaPp);   // 5b's count in play, the scaled noise (K34)
+            var patterned = new double[n][];
+            for (int r = 0; r < n; r++) { patterned[r] = WithPattern(preference[r], campaign, r); }   // Regional 5a (K147): the jurisdictions the campaign's contacts landed in carry them
+            ElectionDay.Result count = ElectionDay.Count(names, patterned, gotv, baseTurnout, cace, new System.Random(noiseSeed), sigmaPp);   // 5b's count in play, the scaled noise (K34)
             return EffectsOf(names, preference, count, out why);
         }
 

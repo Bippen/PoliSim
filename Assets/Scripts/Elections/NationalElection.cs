@@ -466,7 +466,13 @@ namespace PoliSim.Elections
         /// <summary>GATE-18 q2: the regional breakdown `DeriveRegional` writes into the readout, returned instead - each region's shares in
         /// <paramref name="keys"/>' order, its name and its valid-vote weight - for the count that starts from it (`ParliamentaryCount`); null for a
         /// country with no regions wired (Germany without a date).</summary>
-        internal static double[][] RegionalOf(CountryId country, IReadOnlyList<string> keys, double[] preference, System.DateTime on, out string[] names, out double[] weights)
+        internal static double[][] RegionalOf(CountryId country, IReadOnlyList<string> keys, double[] preference, System.DateTime on, out string[] names, out double[] weights) =>
+            RegionalOf(country, keys, preference, on, out names, out weights, null);
+
+        /// <summary>Regional 5a (K147): as the five-argument form, each region's prior moved first by <paramref name="priorShift"/> (the region's name and a key's index
+        /// give the campaign's movement there, a fraction; each moved share held at zero and the row rescaled to its sum before the movement) - so the uniform swing, re-solved to the national shares, carries the
+        /// campaign's regional pattern: the region a contact landed in keeps it, and the regions still sum to the national shares. Null shift: the form above.</summary>
+        internal static double[][] RegionalOf(CountryId country, IReadOnlyList<string> keys, double[] preference, System.DateTime on, out string[] names, out double[] weights, System.Func<string, int, double> priorShift)
         {
             names = null;
             weights = null;
@@ -475,6 +481,28 @@ namespace PoliSim.Elections
             if (country == CountryId.Sweden) { regions = SwedishRegions.Regions(keys); prior = SwedishRegions.PriorShares(keys); }
             else if (country == CountryId.Germany) { regions = GermanRegions.Regions(keys, on); prior = GermanRegions.PriorShares(keys, on); }
             else { return null; }
+            if (priorShift != null)
+            {
+                // DECLARED (reviews L3 and L-r1): a share the movement would push below zero is held at zero, and where any was the region's row is rescaled to the
+                // sum it had before the movement - the row's sum is kept, so the movement adds no vote to the region. The clamped party's unrealised movement is NOT
+                // kept there: the national shares handed still carry the campaign's whole movement, so the swing's re-solve spreads the part the clamp withheld over
+                // every region where that party stands (and the rescale takes the region's excess from all its parties in proportion, the gainer's included). With
+                // no clamp the arithmetic is the plain sum, bit for bit.
+                for (int r = 0; r < regions.Length; r++)
+                {
+                    double before = 0.0, after = 0.0;
+                    bool clamped = false;
+                    for (int p = 0; p < keys.Count; p++)
+                    {
+                        before += prior[r][p];
+                        double v = prior[r][p] + priorShift(regions[r].Name, p);
+                        if (v < 0.0) { v = 0.0; clamped = true; }
+                        prior[r][p] = v;
+                        after += v;
+                    }
+                    if (clamped && after > 0.0) { for (int p = 0; p < keys.Count; p++) { prior[r][p] *= before / after; } }
+                }
+            }
             double[][] shares = RegionalVoteModel.RegionalSharesByUniformSwing(preference, regions, prior, out double _);
             names = new string[regions.Length];
             weights = new double[regions.Length];

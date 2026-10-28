@@ -1,0 +1,2 @@
+7565b8fa5102f64c0435e994ad11369672a1948987ed639b12ad82da72005b03 *wyniki_gl_na_listy_po_okregach_sejm_csv.zip
+275b0617e81bf1643f0139d279873cbec8d8fb6c14b6fd3657345dd3d26e5a1c *okregi_sejm_csv.zip

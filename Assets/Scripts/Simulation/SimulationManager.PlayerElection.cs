@@ -187,11 +187,12 @@ namespace PoliSim.Simulation
                 shareByParty = RecordFactors.Apply(RecordFactors.Based(factoredElection, beforeFactors), factors);   // K109: a list handed nothing on its share of record
                 if (!IsCounterfactual) { Debug.Log($"FACTORS: {id} on {CurrentDate:yyyy-MM-dd} - " + RecordFactors.Line(factoredElection, beforeFactors, shareByParty, factors)); }
             }
-            ParliamentaryCount.Result counted = ParliamentaryCount.Count(id, CurrentDate, shareByParty, campaignRan ? PlayerCampaign.Setup : (CampaignRun.Setup?)null, campaignRan ? campaign.Gotv : null);
+            ParliamentaryCount.Result counted = ParliamentaryCount.Count(id, CurrentDate, shareByParty, campaignRan ? PlayerCampaign.Setup : (CampaignRun.Setup?)null, campaignRan ? campaign.Gotv : null,
+                regionalShift: campaignRan ? campaign.RegionalShift : null);   // Regional 5a (K147): the region a contact landed in carries it
             LastPlayerCount = new ParliamentaryCount.Held
             {
                 Day = CurrentDate, BeforeFactors = beforeFactors, Handed = shareByParty, Factors = factors, Election = factoredElection,
-                Setup = campaignRan ? PlayerCampaign.Setup : (CampaignRun.Setup?)null, Gotv = campaignRan ? campaign.Gotv : null, Counted = counted,
+                Setup = campaignRan ? PlayerCampaign.Setup : (CampaignRun.Setup?)null, Gotv = campaignRan ? campaign.Gotv : null, RegionalShift = campaignRan ? campaign.RegionalShift : null, Counted = counted,
                 Belief = belief, BeliefPolls = beliefPolls,
             };
             if (counted != null)

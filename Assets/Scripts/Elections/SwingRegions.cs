@@ -46,14 +46,27 @@ namespace PoliSim.Elections
             }
 
             double gapPp = runnerUp >= 0 ? 100.0 * (poll.Share(leader) - poll.Share(runnerUp)) : 100.0;
-            // The gap's own uncertainty: the two shares' sampling errors, combined.
-            double gapErrorPp = runnerUp >= 0
-                ? Math.Sqrt(poll.MarginOfErrorPp(leader) * poll.MarginOfErrorPp(leader) + poll.MarginOfErrorPp(runnerUp) * poll.MarginOfErrorPp(runnerUp))
-                : 0.0;
+            // The gap's own uncertainty (Regional 5a review M2): the two shares come from ONE sample, so they covary - <see cref="LeadMarginOfErrorPp"/>.
+            double gapErrorPp = runnerUp >= 0 ? LeadMarginOfErrorPp(poll.Share(leader), poll.Share(runnerUp), poll.SampleSize) : 0.0;
             return new MapRegionReading(name, weight, poll, leader, runnerUp, gapPp, gapErrorPp, Index(gapPp));
         }
 
         public static MapRegionReading Unknown(string name, double weight) => new MapRegionReading(name, weight);
+
+        /// <summary>
+        /// The 95 % margin of error of the lead between two shares of ONE poll of <paramref name="sample"/> interviews, in points:
+        /// 1.96 × 100 × √((s_L + s_R − (s_L − s_R)²) / n). DERIVED (the multinomial variance of a difference of two shares from one sample:
+        /// Var(p̂_L − p̂_R) = (p_L(1 − p_L) + p_R(1 − p_R) + 2 p_L p_R) / n, since cov(p̂_L, p̂_R) = −p_L p_R / n). Until the Regional 5a review (M2) the two
+        /// margins were summed as if from independent samples, which understates it - 600 interviews at 33.5 against 28.0 read ±5.2 where the lead's
+        /// own margin is ±6.2, too close to call. Zero for a sample that is not positive.
+        /// </summary>
+        public static double LeadMarginOfErrorPp(double leader, double runnerUp, int sample)
+        {
+            if (sample <= 0) { return 0.0; }
+            double d = leader - runnerUp;
+            double v = (leader + runnerUp - d * d) / sample;
+            return v > 0.0 ? 100.0 * PollingSystem.ConfidenceZ * Math.Sqrt(v) : 0.0;
+        }
     }
 
     /// <summary>What the map knows about one valkrets: a poll of it, or nothing (§36).</summary>

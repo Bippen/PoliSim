@@ -1029,6 +1029,15 @@ namespace PoliSim.UI
                         _simulationManager.QueueCampaignDecision(CampaignActionKind.CommissionPolling, -1, null, running.Setup.InternalHouse.Cost, out string pollRefusal);
                         if (pollRefusal != null) { Debug.Log("CAMPAIGN QUEUE: " + pollRefusal); }
                     }
+                    // Regional 5a (K149, K83): a poll of ONE region - where the local acts go (the map's pick, else the one-region rule's) - at its own [AUTHORED-DRAFT]
+                    // price and sample; offered only where the staging carries the regions' offsets
+                    float regionPollWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent("POLL REGION")).x) + Mathf.Round(12f * ux);
+                    bool regionPollLegal = pollLegal && running.Setup.RegionalOffset != null && LocalActRegion() >= 0;
+                    if (DrawDeskChipButton(NextChip(regionPollWidth), "POLL REGION", chipCaption, selected: false, disabled: !regionPollLegal) && regionPollLegal)
+                    {
+                        _simulationManager.QueueCampaignDecision(CampaignActionKind.CommissionPolling, LocalActRegion(), null, RegionalPolling.Cost, out string regionPollRefusal);
+                        if (regionPollRefusal != null) { Debug.Log("CAMPAIGN QUEUE: " + regionPollRefusal); }
+                    }
                     // K82 (2026-10-23): the phone bank - the party's volunteers call its own supporters where its local acts go, the final week only
                     float phoneWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent("PHONES")).x) + Mathf.Round(12f * ux);
                     bool phoneLegal = s.DaysUntilElection <= GotvTurnout.PhoneFinalWeekDays && CampaignLegality.IsLegal(CampaignActionKind.PhoneBank, s.Phase);

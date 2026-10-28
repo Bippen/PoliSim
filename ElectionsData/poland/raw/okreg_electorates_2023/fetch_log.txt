@@ -1,0 +1,5 @@
+# fetch_log for ElectionsData/poland/raw/okreg_electorates_2023/ - Regional 5a (K146: each okreg's electorate fetched from the PKW), 2026-10-28
+# columns: utc_timestamp  http_status(final, curl -L)  bytes_downloaded  saved_as  url
+# curl -s -L -o <saved_as> <url>; no re-encoding. The Krajowe Biuro Wyborcze (the PKW's office) official election-data service danewyborcze.kbw.gov.pl, 'Parlament 2023'.
+2026-10-28T10:45:08Z 200 4729 wyniki_gl_na_listy_po_okregach_sejm_csv.zip https://danewyborcze.kbw.gov.pl/dane/2023/sejmsenat/wyniki_gl_na_listy_po_okregach_sejm_csv.zip
+2026-10-28T10:45:08Z 200 3115 okregi_sejm_csv.zip https://danewyborcze.kbw.gov.pl/dane/2023/sejmsenat/okregi_sejm_csv.zip

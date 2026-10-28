@@ -41954,3 +41954,23 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nnt (FormationProjection + Sweep unmoved, MetaText, PartyInk, UiLeverVerb, NumberLocale clean); drysnt Sweden + Germany + Italy 1280; realntse/realntse25 Sweden's night 1280/2560, realntsei, realntde, realntde25 clean (0 Canvas violations, 0 plan mismatches); cheapnt 3 failures (provenance, unwired, cache false positive) - fixed 2280a94f; realntse2 / realntse25b clean, the 88 px gap closed; cheapnt2 clean but the ledger row (added).
 
 **Commit:** this one.
+
+## 936. REGIONAL 5a (K146-K149, UNBLOCKING K83; K235-K237): A CONTACT MOVES THE REGION IT LANDS IN; THE BOUGHT REGIONAL POLL, THE SWING MAP AS POLLED, FIELD REPORTS - THE CAMPAIGN FAMILY `reg5a` (2026-10-28)
+
+**What was owed:** K146-K149 (Elias, 2026-10-27) with K83: targeting, the poll's breakdowns, the swing index and intelligence waited for a regional 5a with regional polling, built first.
+
+**Built** (an implementer on `wave/reg5a`: abad7ac4; review READY (M2: the map's lead margin treated two shares of one poll as independent samples); the rework 1d809333; review 2 READY; 7ed9628b after the integrator's first merged run - the count's tolerance rebuilt on the re-solve's own arithmetic, and the REAL BUG that no Swedish staging carried its valkrets offsets, so no regional poll was ever on sale in the 2026 campaign; c3e5f2c0 after the second, the poll's charge read at day 5's close):
+- K146 `RegionLayer` in `RegionalCampaign.cs`: Sweden's valkretsar, Germany's Länder, the US states and Poland's okregi (the PKW's 2023 electorates byte-exact, `Tools/okreg_electorates_prep.pl` held to 29,532,595 eligible and 21,596,674 valid); Italy and France national.
+- K147 the regional tally (`CampaignPressureRegional.cs`): a local act lands in its region, a door in the ground game's, a national act spread by audience; 5a's formula and K81's absorption per region; the national movement the regions' weighted sum (a national-only campaign the old result exactly); the count lays the regional shift on the regions' priors before the swing; the US states carry the centred pattern; the night's attribution and the AI read the regional path.
+- K148/K149 the bought regional poll (600 interviews, 60,000, [AUTHORED-DRAFT]; the pollster's boost; one a day; the binomial margin and the lead's one-sample margin 1.96 sqrt((sL + sR - (sL - sR)^2)/n)); the swing map unknown / polled / too close to call; the HQ's POLL REGION chip; field reports as intelligence. Not built: focus groups (K148, groups wait), a Polish campaign staging, the outlet choice (the K149 search found no per-outlet campaign effect: DellaVigna & Kaplan 2007 and Martin & Yurukoglu 2017 measure an outlet's own slant).
+- `RegionalCampaignDiagnostic` (simulation, registered by the integrator); `CampaignPersuasionDiagnostic`'s regional by-hand branch; the US model card's US-9 block regenerated.
+
+**Measured** (`Reviews/2026-10-28_reg5a_integrator.md`): the no-policy dump BYTE-IDENTICAL to `mf28`; one regional poll of Stockholms län bought on day 5 takes 60,000 off the chest against its twin and reads TOO CLOSE TO CALL; Sweden 29, Germany 16 and the USA 51 regions on sale; Gate18 passes and reports the stored record factors DUE A REFIT (largest move 2.8 %), owed as its own step.
+
+**Evidence:** `Reviews/2026-10-28_reg5a_review.md`, `_review2.md`, `_integrator.md`; ledger row s936 (`SimulationManager.PlayerElection.cs`).
+
+**Declared:** K235-K237. Owed: the record factors' refit; a Polish campaign staging (the okregi layer is unused until then, and the Polish count does not yet read the regional shift); the four hand-run campaign harnesses' digests re-declared as `reg5a` when next run.
+
+**Bars:** nreg (5 failures in the new diagnostic - the count tolerance and Sweden's missing offsets, fixed 7ed9628b); nreg3 (the poll's charge read at the close, fixed c3e5f2c0); nreg4 11/11 (RegionalCampaignDiagnostic PASS, Gate18 PASS with a refit reported); dump reg5a4 byte-identical to mf28; drysreg4 Sweden + USA + Germany 1280 and realreg4 Sweden 1280 clean; simreg4 87/87; cheapreg4 clean but the ledger row (added).
+
+**Commit:** this one.

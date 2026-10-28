@@ -375,3 +375,4 @@ file	Assets/Scripts/Simulation/EnergyLedger.cs	5f07cbf33a35143df819b4b4bab9f13d3
 file	Assets/Scripts/Simulation/EnergyMarket.cs	4fa8a41809b52f0da670946c92b2db655a80252c7b134e1e991980f39e3e87e7	reviewed	2026-10-28	s933	Reviews/2026-10-28_q26_integrator.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	b59fd3fec0bf353f58d4c327e4f75771df09ea68039cbf6292eee37bfc3ecadc	reviewed	2026-10-28	s933	Reviews/2026-10-28_q26_integrator.md	-
 file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	d71c302c0185dd4fc05ca314fa8ca1257c9debb90dd9768b527d3fd36048784b	reviewed	2026-10-28	s935	Reviews/2026-10-28_dnight_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	c92cf880908e9253338b6348030bc13d33f6461803f1698a23c075400eb0d199	reviewed	2026-10-28	s936	Reviews/2026-10-28_reg5a_integrator.md	-

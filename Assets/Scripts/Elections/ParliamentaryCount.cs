@@ -72,6 +72,10 @@ namespace PoliSim.Elections
             public List<string> RegionKeys;
             /// <summary>The counted regions' names, in the count's order.</summary>
             public string[] RegionNames;
+            /// <summary>Regional 5a (K147): whether the campaign's regional movement was laid on the regions' priors before the swing (a staged campaign's regions matched by
+            /// name), and how many regions it moved; false and 0 where none was handed or the country's regions are not counted on their own electorate.</summary>
+            public bool CampaignRegional;
+            public int CampaignRegionsMoved;
             /// <summary>GATE-18 q3: Sweden's allocation of this count by the Riksdag's law, per valkrets - set by `NationalElection.Run` when it allocates
             /// the count; null until then, and for every other country.</summary>
             public SeatConversion.Result Riksdag;
@@ -89,6 +93,8 @@ namespace PoliSim.Elections
             public ElectionVintage Election;
             public CampaignRun.Setup? Setup;
             public RegionalMobilization Gotv;
+            /// <summary>Regional 5a: the campaign's regional movement the count laid on the regions (`CampaignRun.Result.RegionalShift`); null where none.</summary>
+            public double[][] RegionalShift;
             public Result Counted;
             /// <summary>GATE-18 q25: the poll the tactical layer believed that day - the published trackers' mean (`NationalElection.TacticalBelief`) - and
             /// how many trackers it read; null and zero where no campaign ran or none was published in the window.</summary>
@@ -127,7 +133,7 @@ namespace PoliSim.Elections
         /// campaign ran - counts no doors), at `SigmaPp`. Pure but for the readout, which a Swedish or German count sets to its counted
         /// regions (<paramref name="writeReadout"/>). Null, with nothing written, for a country not counted here or shares it cannot spread.
         /// </summary>
-        public static Result Count(CountryId country, DateTime pollingDay, IReadOnlyDictionary<string, double> shares, CampaignRun.Setup? setup, RegionalMobilization gotv, bool writeReadout = true)
+        public static Result Count(CountryId country, DateTime pollingDay, IReadOnlyDictionary<string, double> shares, CampaignRun.Setup? setup, RegionalMobilization gotv, bool writeReadout = true, double[][] regionalShift = null)
         {
             if (!CountsIn(country) || shares == null || shares.Count == 0) { return null; }
             // the review 2's L6: every count runs on the party keys in ordinal order, so a party's noise draw is tied to its key, not to the order a
@@ -143,8 +149,12 @@ namespace PoliSim.Elections
             double[][] preference;
             double[] eligible, baseTurnout;
             bool hasElectorate;
+            int regionalMoved = 0;
             if (country == CountryId.Poland || country == CountryId.Italy)
             {
+                // Regional 5a (review L-r6): this branch does not read the campaign's regional movement (`regionalShift`) - no Polish or Italian campaign is staged.
+                // Poland's okregi already carry the keys a staging would match ("okreg N", `PolishOkregElectorates2023`); laying the movement here, as the
+                // Swedish and German branch does through `NationalElection.RegionalOf`, is owed with a Polish staging.
                 // PS-7 (K205): Italy's Camera colleges on K150's swing (`ItalianCount.SwungVotes`), counted as Poland's okregi are - a college with no list vote
                 // (Valle d'Aosta's, its seat held by record) is no counted region; MAIE and UV stand in no college, so the hand-back keeps their shares as handed. L5' (DECLARED): the regions are keyed by college and the frame base is one, so a staged Italian campaign's doors would match no region and count nothing - an Italian staging (SP-5 Italy) must key its regions to the colleges and bring their electorates first
                 names = null;
@@ -166,7 +176,10 @@ namespace PoliSim.Elections
             }
             else
             {
-                preference = NationalElection.RegionalOf(country, keys, national, pollingDay, out names, out double[] valid);
+                // Regional 5a (K147): the campaign's movement per region (its regions and parties found by name) laid on each region's prior before the swing
+                Func<string, int, double> priorShift = ShiftOf(setup, regionalShift, keys, out HashSet<int> matched);
+                preference = NationalElection.RegionalOf(country, keys, national, pollingDay, out names, out double[] valid, priorShift);
+                regionalMoved = matched?.Count ?? 0;   // review L2: the staged regions whose movement a counted region's name actually matched
                 if (preference == null) { return null; }
                 eligible = new double[names.Length];
                 baseTurnout = new double[names.Length];
@@ -198,6 +211,7 @@ namespace PoliSim.Elections
                 Turnout = hasElectorate ? counted.NationalTurnout : double.NaN, TurnoutWithoutGround = hasElectorate ? idle.NationalTurnout : double.NaN,
                 Regions = n, SigmaPp = sigma, NoiseSeed = seed, Digest = counted.Digest,
                 Regional = hasElectorate ? counted : null, RegionKeys = keys, RegionNames = names,
+                CampaignRegional = regionalMoved > 0, CampaignRegionsMoved = regionalMoved,
             };
             double highest = 0.0;
             // Poland's hand-back, held at zero and renormalised so the 5 % and 8 % lines are read on shares summing to one (the review 2's L2)
@@ -249,6 +263,33 @@ namespace PoliSim.Elections
             }
             result.Line = LineOf(country, result, keys, gotv != null);
             return result;
+        }
+
+        /// <summary>Regional 5a (K147): the campaign's movement as the swing reads it - (region name, key index) to the movement of the staged party of that key in the
+        /// staged region of that name, 0 for either not staged; null where no campaign or no movement was handed. <paramref name="matched"/> collects, as the
+        /// swing reads it, every staged region whose non-zero movement a counted region's name matched (review L2: what `Result.CampaignRegionsMoved` counts).</summary>
+        private static Func<string, int, double> ShiftOf(CampaignRun.Setup? setup, double[][] regionalShift, List<string> keys, out HashSet<int> matched)
+        {
+            matched = null;
+            int moved = 0;
+            if (regionalShift == null || !setup.HasValue || setup.Value.Regions == null || setup.Value.Parties == null) { return null; }
+            CampaignRun.Setup s = setup.Value;
+            var regionAt = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (int r = 0; r < s.Regions.Length && r < regionalShift.Length; r++) { regionAt[s.Regions[r].Name] = r; }
+            var partyAt = new int[keys.Count];
+            for (int i = 0; i < keys.Count; i++) { partyAt[i] = -1; for (int p = 0; p < s.Parties.Length; p++) { if (s.Parties[p].Name == keys[i]) { partyAt[i] = p; break; } } }
+            foreach (double[] row in regionalShift) { if (row == null) { continue; } foreach (double v in row) { if (v != 0.0) { moved++; break; } } }
+            if (moved == 0) { return null; }
+            var hits = new HashSet<int>();
+            matched = hits;
+            return (name, key) =>
+            {
+                if (!regionAt.TryGetValue(name, out int r) || key < 0 || key >= partyAt.Length || partyAt[key] < 0) { return 0.0; }
+                double[] row = regionalShift[r];
+                double v = row != null && partyAt[key] < row.Length ? row[partyAt[key]] : 0.0;
+                if (v != 0.0) { hits.Add(r); }
+                return v;
+            };
         }
 
         /// <summary>PS-7: the Camera's colleges with list votes, their swung votes in <paramref name="keys"/>' order (`ItalianCount.SwungVotes`).</summary>

@@ -245,6 +245,9 @@ namespace PoliSim.Elections
         public readonly double DoorCacePp;
         /// <summary>K66: the party's own attack exposure so far per contact class, over every target - its own books; its attacks share its class coverage, so a contact is valued on the coverage left to its own part. Null = none.</summary>
         public readonly double[] OwnAttackExposureByClass;
+        /// <summary>Regional 5a (K147): the party's own tally per region and class, and each region's weight and audience (`CampaignPressure.RegionalOwnView`) - so a contact is valued
+        /// at the coverage it adds WHERE IT LANDS, the run's own regional class-effect difference; null = a national tally, valued as before.</summary>
+        public readonly CampaignPressure.RegionalOwn RegionalOwn;
 
         public double AttacksOnMe
         {
@@ -259,8 +262,9 @@ namespace PoliSim.Elections
             double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0, double televisionFund = 0.0,
             double[] regionPressure = null, double[] regionPush = null, double[] attackersOnMe = null, double pressReach = 0.0, double nationalReachShare = 1.0,
             double persuasionNorm = 0.0, double[] ownExposureByClass = null, double[] ownQualityByClass = null, int[] ruleRegions = null,
-            double[] ownDoorContactsByRegion = null, double doorCacePp = 0.0, double[] ownAttackExposureByClass = null)
+            double[] ownDoorContactsByRegion = null, double doorCacePp = 0.0, double[] ownAttackExposureByClass = null, CampaignPressure.RegionalOwn regionalOwn = null)
         {
+            RegionalOwn = regionalOwn;
             OwnAttackExposureByClass = ownAttackExposureByClass;
             RuleRegions = ruleRegions;
             OwnDoorContactsByRegion = ownDoorContactsByRegion;
@@ -780,7 +784,7 @@ namespace PoliSim.Elections
                 issue.HasValue && topIssue.HasValue && issue.Value == topIssue.Value));
 
             Band(view, spec, audience, view.OwnCredibility, spend, measured, salience, salienceError, match, matchError,
-                profile, m, out double expectedPts, out double spanPts, out double lowPts, out double highPts);
+                profile, m, RegionOfContact(view, spec, regionIndex), out double expectedPts, out double spanPts, out double lowPts, out double highPts);
 
             // ⚠ A-LOOP q24 5b (GATE-18 q2): THE TURNOUT TERM, VALUED ON THE COUNT'S OWN ARITHMETIC. Until 5b it was worth zero (5a's review H1: nothing
             // in the live count read turnout). Now polling day counts each region's doors at the sourced turnout CACE (`GotvTurnout`, `ParliamentaryCount`),
@@ -853,7 +857,7 @@ namespace PoliSim.Elections
             if (spend > smallestSpend && smallestSpend > 0.0)
             {
                 Band(view, spec, audience, view.OwnCredibility, smallestSpend, measured, salience, salienceError, match, matchError,
-                    profile, m, out double smallExpected, out _, out double smallLow, out double smallHigh);
+                    profile, m, RegionOfContact(view, spec, regionIndex), out double smallExpected, out _, out double smallLow, out double smallHigh);
                 double smallSuccess = smallHigh > 0 ? 0.5 + 0.5 * (smallLow / smallHigh) : 0.5;
                 double smallValue = smallExpected * importance * smallSuccess;
                 double efficiency = smallValue / smallestSpend;   // points per krona at the smallest outlay
@@ -873,15 +877,15 @@ namespace PoliSim.Elections
 
         /// <summary>§42's band at this spend, read in points at the personality's optimism; blind = a flat prior over both unmeasured inputs.</summary>
         private static void Band(AiView view, CampaignActions.ActionSpec spec, double audience, double credibility, double spend, bool measured,
-            double salience, double salienceError, double match, double matchError, PersonalityProfile profile, StrategyModifiers m,
+            double salience, double salienceError, double match, double matchError, PersonalityProfile profile, StrategyModifiers m, int region,
             out double expectedPts, out double spanPts, out double lowPts, out double highPts)
         {
             CampaignActions.ChainBand band = measured
                 ? CampaignActions.ResolveBand(spec, audience, salience, salienceError, match, matchError, credibility, spend)
                 : CampaignActions.ResolveBand(spec, audience, 0.5, 0.5, 0.5, 0.5, credibility, spend);
 
-            lowPts = Points(view, band.Low, profile, m);
-            highPts = Points(view, band.High, profile, m);
+            lowPts = Points(view, band.Low, profile, m, region);
+            highPts = Points(view, band.High, profile, m, region);
             expectedPts = lowPts + profile.Optimism * (highPts - lowPts);
             spanPts = highPts - lowPts;
         }
@@ -896,7 +900,7 @@ namespace PoliSim.Elections
         /// and never chosen. Turnout is not here: since q24 5b a door's turnout is `DoorTurnoutValuePp`, added beside it. The personality's weights
         /// reach the score through its importance, cost and risk terms, as before.
         /// </summary>
-        private static double Points(AiView view, CampaignActions.ChainTrace trace, PersonalityProfile profile, StrategyModifiers m)
+        private static double Points(AiView view, CampaignActions.ChainTrace trace, PersonalityProfile profile, StrategyModifiers m, int region = -1)
         {
             double linear = m.ReachMultiplier * m.CredibilityMultiplier;
             double weight = CampaignActions.Spec(trace.Kind).PersuasionWeight;
@@ -910,6 +914,7 @@ namespace PoliSim.Elections
             // K66: a negative campaign's contact is split as the run splits it - the opponent's share into the attack tally, the rest its own,
             // sharing one class coverage - and the AI values its OWN part (the attack's harm to the target is not in its score, as before K66)
             double alpha = m.OpponentShare > 0.0 && view.PolledLeaderOtherThanSelf >= 0 ? m.OpponentShare : 0.0;
+            if (view.RegionalOwn != null) { return view.RegionalOwn.ValuePp(c, exposure, quality, alpha, region, view.PersuasionNorm); }   // Regional 5a (K147): valued where it lands
             if (alpha > 0.0 || a0 > 0.0)
             {
                 return CampaignPersuasion.SharedClassEffectPp(c, e0 + exposure * (1.0 - alpha), q0 + quality * (1.0 - alpha), a0 + exposure * alpha, view.NationalAudience, view.PersuasionNorm, view.NationalReachShare)
@@ -917,6 +922,20 @@ namespace PoliSim.Elections
             }
             return CampaignPersuasion.ClassEffectPp(c, e0 + exposure, q0 + quality, view.NationalAudience, view.PersuasionNorm, view.NationalReachShare)
                    - CampaignPersuasion.ClassEffectPp(c, e0, q0, view.NationalAudience, view.PersuasionNorm, view.NationalReachShare);
+        }
+
+        /// <summary>Regional 5a (K147, review L6): the region a candidate contact lands in, as the run tallies it (`CampaignRun.DoorRegion`) - a door-to-door act's
+        /// region (where none is named, the largest electorate among the regions where the party stands, read off its own view), any other local act's own, a
+        /// national act none (−1, spread over the regions where the party stands).</summary>
+        private static int RegionOfContact(AiView view, CampaignActions.ActionSpec spec, int regionIndex)
+        {
+            if (spec.Kind != CampaignActionKind.DoorToDoor || regionIndex >= 0) { return regionIndex; }
+            int best = -1;
+            for (int r = 0; view.Regions != null && r < view.Regions.Length; r++)
+            {
+                if (view.Regions[r].Stands && (best < 0 || view.Regions[r].Eligible > view.Regions[best].Eligible)) { best = r; }   // review L-r2: the electorate, as the run ranks it (the view's audience is office-scaled)
+            }
+            return best < 0 ? 0 : best;
         }
 
         /// <summary>q24 5a (the review's H1/M5): what the AI values one contact at, in points of share - `Points` as the scorer reads it, for a diagnostic to hold per country.</summary>

@@ -240,7 +240,9 @@ namespace PoliSim.EditorTools
 
             double norm = CampaignPersuasion.ElectorateMean(setup);
             double[] rebuiltEffects = r.Pressure.ShareEffects(setup.NationalAudience, norm, null, null, out double[] rebuiltLoss, out double[] rebuiltGain);
-            double[] rebuilt = CampaignRun.CloseStanding(s)(CampaignPersuasion.ApplyCampaign(PreferenceModel.Preference(setup.Compatibility, s.Prior, setup.LoyaltyPerParty), rebuiltEffects,
+            double[] rebuilt = r.Pressure.Regional
+                ? CampaignRun.CloseStanding(s)(r.Pressure.ApplyRegional(PreferenceModel.Preference(setup.Compatibility, s.Prior, setup.LoyaltyPerParty), norm))   // Regional 5a: the run's own path
+                : CampaignRun.CloseStanding(s)(CampaignPersuasion.ApplyCampaign(PreferenceModel.Preference(setup.Compatibility, s.Prior, setup.LoyaltyPerParty), rebuiltEffects,
                 setup.Stands == null ? null : Enumerable.Range(0, setup.Parties.Length).Select(p => setup.StandingShare(p)).ToArray(), setup.OverlapMatrix(), rebuiltLoss, rebuiltGain));
             double worstRebuild = Enumerable.Range(0, rebuilt.Length).Max(p => Math.Abs(rebuilt[p] - r.FinalShares[p]));
             Check(worstRebuild <= Exact, F("(c, the plumbing) the final shares are the STAGING's compatibility through the preference model, the share effects and the count's standing (largest difference {0:E2}); the staging's own compatibility above {1:0}: {2} of {3}",
@@ -355,6 +357,7 @@ namespace PoliSim.EditorTools
             double electorate = setup.NationalAudience, norm = CampaignPersuasion.ElectorateMean(setup);
             double[] cace = { 0.58, 0.28, 100.0 / 800.0 }, upper = { 1.66, 0.83, 100.0 / 175.0 };   // [KB18] pp. 153, 159-160, re-read here so the recomputation shares no constant with the run
             int[] classOfSlot = { 0, 0, 0, 1, 1, 1, 2, 2, 2 };
+            if (r.Pressure.Regional) { return PredictedRegionalMovesPp(setup, r, cace, upper, classOfSlot, norm); }   // Regional 5a: the same arithmetic, region by region
             var own = new double[n];
             var transfer = new double[n];
             double[][] overlap = OverlapByHand(setup);
@@ -398,6 +401,71 @@ namespace PoliSim.EditorTools
                 double d = own[p] + transfer[p];
                 for (int q = 0; q < n; q++) { if (q != p) { d -= w[p][q] * own[q]; } }
                 moves[p] = 100.0 * d;
+            }
+            return moves;
+        }
+
+        /// <summary>
+        /// Regional 5a (K147), by hand: the moves a regional tally implies - in each region its own tally (the pressure's per-region slots and attacks), the
+        /// sourced CACEs held at their upper limits, the coverage over the region's audience at reach one for every party standing there, an attack taking
+        /// only where its target stands; the region's absorption by hand over its standing parties (`BalancedByHand`, the parties meeting in full); the
+        /// national move each region's weighted by its audience over all the regions'. Shares no arithmetic with the run but the tally's spreading.
+        /// </summary>
+        private static double[] PredictedRegionalMovesPp(CampaignRun.Setup setup, CampaignRun.Result r, double[] cace, double[] upper, int[] classOfSlot, double norm)
+        {
+            int n = setup.Parties.Length;
+            double all = setup.Regions.Sum(x => x.Audience);
+            double[] baseShares = r.BaselineShares;
+            var moves = new double[n];
+            for (int x = 0; x < setup.Regions.Length; x++)
+            {
+                double electorate = setup.Regions[x].Audience, wx = all > 0.0 ? electorate / all : 0.0;
+                if (wx <= 0.0) { continue; }
+                var own = new double[n];
+                var transfer = new double[n];
+                for (int p = 0; p < n; p++)
+                {
+                    if (!setup.StandsIn(p, x)) { continue; }
+                    var e = new double[3]; var q = new double[3];
+                    for (int slot = 0; slot < classOfSlot.Length; slot++) { r.Pressure.RegionalSlot(p, slot, x, out double se, out double sq); e[classOfSlot[slot]] += se; q[classOfSlot[slot]] += sq; }
+                    double pp = 0.0;
+                    for (int c = 0; c < 3; c++)
+                    {
+                        double made = 0.0;
+                        for (int t = 0; t < n; t++) { r.Pressure.RegionalAttack(p, t, (ContactClass)c, x, out double te, out _); made += te; }
+                        double sent = e[c] + made;
+                        pp += made <= 0.0 ? ClassPp(cace[c], upper[c], e[c], q[c], electorate, norm, 1.0)
+                                          : PerContact(cace[c], upper[c], e[c], q[c], norm) * Cover(sent, electorate, 1.0) * (e[c] > 0.0 ? e[c] / sent : 0.0);
+                        for (int t = 0; t < n; t++)
+                        {
+                            r.Pressure.RegionalAttack(p, t, (ContactClass)c, x, out double ae, out double aq);
+                            if (ae <= 0.0 || !setup.StandsIn(t, x)) { continue; }
+                            double taken = PerContact(cace[c], upper[c], ae, aq, norm) * Cover(sent, electorate, 1.0) * (ae / sent) / 100.0;
+                            transfer[t] -= taken;
+                            transfer[p] += taken;
+                        }
+                    }
+                    own[p] = pp / 100.0;
+                }
+                var masked = new double[n]; var reach = new double[n]; var meet = new double[n][];
+                for (int p = 0; p < n; p++)
+                {
+                    bool here = setup.StandsIn(p, x);
+                    masked[p] = here ? baseShares[p] : 0.0; reach[p] = here ? 1.0 : 0.0;
+                    meet[p] = new double[n];
+                    for (int q = 0; q < n; q++) { meet[p][q] = here && setup.StandsIn(q, x) ? 1.0 : 0.0; }
+                }
+                double mean = 0.0, weight = 0.0;
+                for (int p = 0; p < n; p++) { if (masked[p] > 0.0 && reach[p] > 0.0) { mean += masked[p] * own[p] / reach[p]; weight += masked[p]; } }
+                mean = weight > 0.0 ? mean / weight : 0.0;
+                for (int z = 0; z < n; z++) { if (!(masked[z] > 0.0 && reach[z] > 0.0)) { own[z] = Math.Max(0.0, own[z] - reach[z] * mean); } }
+                double[][] w = BalancedByHand(masked, reach, meet);
+                for (int p = 0; p < n; p++)
+                {
+                    double d = own[p] + transfer[p];
+                    for (int q = 0; q < n; q++) { if (q != p) { d -= w[p][q] * own[q]; } }
+                    moves[p] += 100.0 * wx * d;
+                }
             }
             return moves;
         }

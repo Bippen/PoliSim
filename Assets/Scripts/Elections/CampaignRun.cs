@@ -121,6 +121,9 @@ namespace PoliSim.Elections
             /// <summary>A-LOOP q24 5b: the turnout CACE (points among the reached) an opened door earns on this staging's count - `GotvTurnout`, the figure
             /// the AI values a door at; 0 = the staging's count reads no 5b turnout (a harness's own staging; the USA's reads it since K18).</summary>
             public readonly double DoorCacePp;
+            /// <summary>Regional 5a (K149): each region's offset from the national shares at the staging's prior ([region][party], fractions: the count's own derivation of the
+            /// prior's regions less the prior) - what a bought regional poll reads the region's truth through (`RegionalPolling.TruthIn`); null = no regional poll can be bought.</summary>
+            public readonly double[][] RegionalOffset;
 
             /// <summary>§697: whether <paramref name="party"/> stands in <paramref name="region"/> - everywhere where no candidacy is staged.</summary>
             public bool StandsIn(int party, int region) => Stands == null || party < 0 || party >= Stands.Length || Stands[party] == null || region < 0 || region >= Stands[party].Length || Stands[party][region];
@@ -163,19 +166,24 @@ namespace PoliSim.Elections
 
             /// <summary>PS-3k (§638): this setup with the government's record applied.</summary>
             public Setup WithRecordShift(double[] shift) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping, Positions, Stands, Targeting, DoorCacePp);
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping, Positions, Stands, Targeting, DoorCacePp, RegionalOffset);
+
+            /// <summary>Regional 5a: this setup with each region's offset from the national shares (<see cref="RegionalOffset"/>).</summary>
+            public Setup WithRegionalOffset(double[][] offset) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, Families, AwarenessStart, Grouping, Positions, Stands, Targeting, DoorCacePp, offset);
 
             /// <summary>§681: this setup with the entrant layer's families and opening awareness.</summary>
             public Setup WithEntrants(int[] families, double[] awarenessStart, double[] grouping, double[][] positions) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, families, awarenessStart, grouping, positions, Stands, Targeting, DoorCacePp);
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, families, awarenessStart, grouping, positions, Stands, Targeting, DoorCacePp, RegionalOffset);
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
                 PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0,
                 MediaOutlet[] outlets = null, int[] debateDays = null, (int Day, int Party, Scandal Scandal)[] scandals = null,
                 double liveScandalRatePerPartyDay = 0.0, double[] recordShift = null, int[] families = null, double[] awarenessStart = null, double[] grouping = null, double[][] positions = null,
-                bool[][] stands = null, RegionTargeting targeting = null, double doorCacePp = 0.0)
+                bool[][] stands = null, RegionTargeting targeting = null, double doorCacePp = 0.0, double[][] regionalOffset = null)
             {
+                RegionalOffset = regionalOffset;   // Regional 5a: the regions' offsets a regional poll reads; null = none on sale
                 DoorCacePp = doorCacePp;   // A-LOOP q24 5b: the staging's door CACE; 0 wherever the count reads none
                 Targeting = targeting;   // PS-6 US-31: the USA's targeting rule; null everywhere else
                 Stands = stands;   // §697: the candidacy fact per party and region; null everywhere
@@ -335,6 +343,11 @@ namespace PoliSim.Elections
             public string[] RegionNames;
             /// <summary>Review 2's L2: why the run's absorption fell back to the proportional form (the equal-effort balancing could not be met on its shares and candidacies), or null - the game logs it.</summary>
             public string AbsorptionFallback;
+            /// <summary>Regional 5a (K147): each region's movement at the close ([region][party], fractions of the region's vote, in <see cref="RegionNames"/>' order; each row sums
+            /// to zero) - what the count lays on the regions' priors (`ParliamentaryCount`); null for a national tally (fewer than two regions).</summary>
+            public double[][] RegionalShift;
+            /// <summary>Regional 5a (K149): every regional poll each party bought - the day, the region and the poll - in the order bought; never saved (a replay buys them again).</summary>
+            public List<(int Day, int Region, Poll Poll)>[] RegionalPolls;
             /// <summary>A deterministic digest of every decision and the final shares — two runs of one seed must print the same one.</summary>
             public string Digest;
         }
@@ -388,6 +401,8 @@ namespace PoliSim.Elections
             public PublicActivity Activity;
             public int[] LastDefence, LastAnswer;
             public PersonalityProfile[] Profiles;
+            /// <summary>Regional 5a (K149): every regional poll each party bought - (day, region, poll), in the order bought. Rebuilt by a replay; never saved.</summary>
+            public List<(int Day, int Region, Poll Poll)>[] RegionalPolls;
             public StringBuilder Digest;
             public int PublicPolls, TotalDays, Day;
             public string[] Names;
@@ -428,6 +443,7 @@ namespace PoliSim.Elections
             var reach = new double[partyCount];
             for (int p = 0; p < partyCount; p++) { reach[p] = setup.StandingShare(p); }   // q24 5a: coverage over where each party stands (1 everywhere in Sweden)
             var pressure = new CampaignPressure(partyCount, reach, setup.OverlapMatrix());   // review M2: an attack lands where its target stands, region by region
+            pressure.ConfigureRegions(RegionAudiences(setup), setup.Stands);   // Regional 5a (K147): a contact moves the region it lands in (two regions or more)
             double[] truePreference = CurrentPreference(setup, prior, pressure, null);   // §681: day 0 - awareness at its opening, no coverage yet
             double[] baseline = (double[])truePreference.Clone();
 
@@ -548,6 +564,7 @@ namespace PoliSim.Elections
                 Gotv = gotv, Offices = offices, OfficeHoursLeft = officeHoursLeft, Staff = staff, Activity = activity,
                 LastDefence = lastDefence, LastAnswer = lastAnswer, Profiles = profiles, Digest = digest,
                 PublicPolls = publicPolls, TotalDays = totalDays, Day = 0, Names = names,
+                RegionalPolls = NewPollLists(partyCount),
             };
         }
 
@@ -758,6 +775,31 @@ namespace PoliSim.Elections
                         Append(digest, day, p, CampaignActionKind.CommissionPolling, setup.InternalHouse.Name, setup.InternalHouse.Cost);
                         return true;
                     }
+                    // Regional 5a (K149): a poll of ONE region, priced information as K2's is - its sample and price [AUTHORED-DRAFT] (`RegionalPolling`), fielded on the region's truth
+                    // (the national truth with the momentum, the region's offset at the prior, the campaign's movement there less its national movement), ONE A DAY (a
+                    // second queued the same day is refused, as K2's poll is), refused where the staging carries no offsets; it moves no vote. The pollster's sample
+                    // boost (`StaffRoster.Improve`) reaches it as it reaches the national commission; the price stays the poll's. Only a scripted party buys one: no AI
+                    // personality is given a regional cadence.
+                    bool BuyRegionalPoll(int region)
+                    {
+                        if (setup.RegionalOffset == null || region >= setup.Regions.Length) { ledger.Refused.Add((day, CampaignActionKind.CommissionPolling, "no regional poll is on sale in this staging")); return false; }
+                        List<(int Day, int Region, Poll Poll)> filed = s.RegionalPolls[p];
+                        if (filed.Count > 0 && filed[filed.Count - 1].Day == day) { ledger.Refused.Add((day, CampaignActionKind.CommissionPolling, "one regional poll a day")); return false; }
+                        if (!pools[p].TrySpend(RegionalPolling.Cost, CampaignAi.PollingHours, out ResourcePool afterRegional)) { ledger.Refused.Add((day, CampaignActionKind.CommissionPolling, "the chest or the day's hours cannot pay")); return false; }
+                        double[] national = momentum.Apply(truePreference);
+                        double[][] shifts = pressure.Regional ? pressure.RegionalShifts(PreferenceModel.Preference(setup.Compatibility, prior, setup.LoyaltyPerParty), CampaignPersuasion.ElectorateMean(setup)) : null;
+                        double[] truth = RegionalPolling.TruthIn(setup, national, shifts?[region], pressure.NationalShift(shifts), region);
+                        if (truth == null) { ledger.Refused.Add((day, CampaignActionKind.CommissionPolling, "the region has no truth to poll")); return false; }
+                        pools[p] = afterRegional;
+                        reserve[p] -= RegionalPolling.Cost;
+                        PollingHouse house = staff[p].Improve(RegionalPolling.House(setup.Regions[region].Name));
+                        s.RegionalPolls[p].Add((day, region, PollingSystem.Conduct(truth, house, today, random)));
+                        ledger.PollsBought++;
+                        ledger.PollMoney += RegionalPolling.Cost;
+                        ledger.Log.Add(new DecisionRecord(day, CampaignActionKind.CommissionPolling, house.Name, RegionalPolling.Cost, 0.0, false));
+                        Append(digest, day, p, CampaignActionKind.CommissionPolling, house.Name, RegionalPolling.Cost);
+                        return true;
+                    }
                     if (setup.Parties[p].Script == null && CampaignAi.WantsPoll(view, profiles[p], setup.InternalHouse)) { BuyPoll(); }
 
                     view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity, pressure, ruleRegions, gotv);
@@ -848,6 +890,8 @@ namespace PoliSim.Elections
                             // outlets decide on the day (W-B9). With no booking it is SKIPPED, the rest of
                             // the day's queue stands; the AI never queues one unbooked (Evaluate filters).
                             if (d.Kind == CampaignActionKind.Interview && bookedReach[p].Count == 0) { continue; }
+                            // Regional 5a (K149): a queued poll with a region is a REGIONAL poll of it - bought, conducted and filed; no contact, no chain
+                            if (d.Kind == CampaignActionKind.CommissionPolling && d.Target.RegionIndex >= 0) { BuyRegionalPoll(d.Target.RegionIndex); continue; }
                             // §697: nor does a local act land where the party does not stand - skipped, the rest of the day's queue stands
                             if (d.Target.RegionIndex >= 0 && !setup.StandsIn(p, d.Target.RegionIndex)) { continue; }
                             // K2: a queued poll is bought (one a day, if the chest and the hours allow), conducted and filed - no contact, no chain
@@ -907,7 +951,7 @@ namespace PoliSim.Elections
                         // a region. W-B3's placeholder reach fraction no longer applies to it.
                         if (d.Kind == CampaignActionKind.DoorToDoor)
                         {
-                            int doorRegion = d.Target.RegionIndex >= 0 ? d.Target.RegionIndex : 0;
+                            int doorRegion = DoorRegion(setup, p, d.Target.RegionIndex);
                             audience = gotv.Operate(doorRegion, p, GotvOperation.DoorKnocking, d.Spend, volunteerHoursLeft[p] + officeHoursLeft[p][doorRegion], out _, out double doorHours);
                             double fromOffice = Math.Min(doorHours, officeHoursLeft[p][doorRegion]);   // W-B4: the office's volunteers first, headquarters' after
                             officeHoursLeft[p][doorRegion] -= fromOffice;
@@ -950,13 +994,15 @@ namespace PoliSim.Elections
                         {
                             attackTarget = view.PolledLeaderOtherThanSelf; attackShare = modifiers.OpponentShare; seenAs = modifiers.OpponentShare;
                         }
+                        // Regional 5a (K147): the region the contact lands in - a local act's own (the doors' region as the ground game booked them), a national act none (spread by audience)
+                        int tallyRegion = d.Kind == CampaignActionKind.DoorToDoor ? DoorRegion(setup, p, d.Target.RegionIndex) : d.Target.RegionIndex;
                         if (attackTarget >= 0)
                         {
-                            pressure.AddAttack(p, attackTarget, trace, attackShare);
+                            pressure.AddAttack(p, attackTarget, trace, attackShare, tallyRegion);
                             activity.ObserveAttack(p, attackTarget, seenAs);
                             ledgers[attackTarget].PersuasionAgainstMe += trace.Persuasion * attackShare;   // W-D4
                         }
-                        else { pressure.Add(p, trace); }
+                        else { pressure.Add(p, trace, tallyRegion); }
 
                         // W-C2: a local act is public - the press was there; a rally counts one, the rest half.
                         if (spec.IsLocal && d.Target.RegionIndex >= 0)
@@ -1126,7 +1172,9 @@ namespace PoliSim.Elections
                 CampaignEffectPp = Array.ConvertAll(pressure.ShareEffects(s.Setup.NationalAudience, CampaignPersuasion.ElectorateMean(s.Setup)), e => 100.0 * e),
                 CampaignBoundPp = pressure.BoundsPp(s.Setup.NationalAudience),
                 RegionNames = names,
-                AbsorptionFallback = CampaignPersuasion.BalancedAbsorption(PreferenceModel.Preference(s.Setup.Compatibility, s.Prior, s.Setup.LoyaltyPerParty), ReachShares(s.Setup), s.Pressure.OverlapMatrix).Fallback,
+                AbsorptionFallback = pressure.Regional ? pressure.AbsorptionFor(PreferenceModel.Preference(s.Setup.Compatibility, s.Prior, s.Setup.LoyaltyPerParty))?.Fallback : CampaignPersuasion.BalancedAbsorption(PreferenceModel.Preference(s.Setup.Compatibility, s.Prior, s.Setup.LoyaltyPerParty), ReachShares(s.Setup), s.Pressure.OverlapMatrix).Fallback,
+                RegionalShift = pressure.RegionalShifts(PreferenceModel.Preference(s.Setup.Compatibility, s.Prior, s.Setup.LoyaltyPerParty), CampaignPersuasion.ElectorateMean(s.Setup)),   // Regional 5a: what the count lays on the regions
+                RegionalPolls = s.RegionalPolls,
                 Debates = debates,
                 Scandals = scandals,
                 Digest = Fnv1a64(digest.ToString()),
@@ -1182,7 +1230,7 @@ namespace PoliSim.Elections
                 MediaSystem.PressReach(setup.Outlets),   // C-N7: a public fact about the media, like bestOutletReach
                 setup.StandingShare(party),   // §699: the party's own reach of the national audience - where it stands
                 CampaignPersuasion.ElectorateMean(setup),   // q24 5a: the scale the sourced CACEs are read against, one figure per staging
-                pressure?.OwnExposureByClass(party), pressure?.OwnQualityByClass(party), ruleRegions, ownDoors, setup.DoorCacePp, pressure?.OwnAttackExposureByClass(party));   // K66: its attacks share its coverage   // and its pooled quality (review 881b's N3): the AI differences the run's own class effect   // q24 5a (the review's M3): the party's own contacts so far per class - its own books - so it values the next one's MARGINAL coverage
+                pressure?.OwnExposureByClass(party), pressure?.OwnQualityByClass(party), ruleRegions, ownDoors, setup.DoorCacePp, pressure?.OwnAttackExposureByClass(party), pressure?.RegionalOwnView(party));   // Regional 5a: its own tally where each contact lands   // K66: its attacks share its coverage   // and its pooled quality (review 881b's N3): the AI differences the run's own class effect   // q24 5a (the review's M3): the party's own contacts so far per class - its own books - so it values the next one's MARGINAL coverage
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B8: how each personality answers a scandal, on the evidence as it sees it: the professional explains, the establishment apologises, the grassroots party apologises, the populist attacks the source, the chaotic denies - and every one of them denies when the evidence looks weak enough (below 0.3 as seen), because that is what §17 says a denial is for.</summary>
@@ -1271,9 +1319,45 @@ namespace PoliSim.Elections
             // A-LOOP q24 5a: compatibility is positioning again - the campaign leaves it alone and moves the shares directly, by the sourced
             // CACEs times each class's coverage, absorbed by the other parties (K65: each relative to the share-weighted mean of every party's, so equal effort moves nothing); nothing it does passes through the clamp at 100.
             double[] preference = PreferenceModel.Preference(setup.Compatibility, prior, setup.LoyaltyPerParty);
+            if (pressure.Regional)
+            {
+                // Regional 5a (K147): each region's effects on its own absorption, the national movement their audience-weighted sum (`CampaignPressure`'s note)
+                preference = pressure.ApplyRegional(preference, CampaignPersuasion.ElectorateMean(setup));
+                return Standing(setup, prior, preference, setup.Families != null ? AwarenessToday(setup, pressure, coverage) : null);
+            }
             double[] effects = pressure.ShareEffects(setup.NationalAudience, CampaignPersuasion.ElectorateMean(setup), null, null, out double[] attackLoss, out double[] attackGain);
             preference = CampaignPersuasion.ApplyCampaign(preference, effects, ReachShares(setup), pressure.OverlapMatrix, attackLoss, attackGain);   // K65, K81, K91, K92: the share-aware balanced absorption, an attack target to attacker
             return Standing(setup, prior, preference, setup.Families != null ? AwarenessToday(setup, pressure, coverage) : null);
+        }
+
+        /// <summary>Regional 5a: each region's audience, in the staging's order - what the tally weighs a region by (`CampaignPressure.ConfigureRegions`).</summary>
+        private static double[] RegionAudiences(Setup setup)
+        {
+            if (setup.Regions == null) { return null; }
+            var a = new double[setup.Regions.Length];
+            for (int r = 0; r < a.Length; r++) { a[r] = setup.Regions[r].Audience; }
+            return a;
+        }
+
+        /// <summary>Regional 5a (review L6): where a door-to-door act knocks - its own region, else (none named, as a player's queue may send it) the largest
+        /// electorate (review L-r2: the field the AI view carries unscaled, so the two agree) among the regions where the party has a list, so a regionless door never lands where the party cannot be voted for; region 0 where it
+        /// stands nowhere (as before).</summary>
+        internal static int DoorRegion(Setup setup, int party, int regionIndex)
+        {
+            if (regionIndex >= 0) { return regionIndex; }
+            int best = -1;
+            for (int r = 0; r < setup.Regions.Length; r++)
+            {
+                if (setup.StandsIn(party, r) && (best < 0 || setup.Regions[r].Eligible > setup.Regions[best].Eligible)) { best = r; }
+            }
+            return best < 0 ? 0 : best;
+        }
+
+        private static List<(int Day, int Region, Poll Poll)>[] NewPollLists(int partyCount)
+        {
+            var lists = new List<(int Day, int Region, Poll Poll)>[partyCount];
+            for (int p = 0; p < partyCount; p++) { lists[p] = new List<(int Day, int Region, Poll Poll)>(); }
+            return lists;
         }
 
         /// <summary>K65: each party's share of the electorate where it stands (`CampaignRun.Setup.StandingShare`) - the reach its field-relative effect is read over; null where no candidacy is staged (every reach 1).</summary>
