@@ -5318,6 +5318,187 @@ namespace PoliSim.Testing
 
             if (modelScreen.Root != null) { UnityEngine.Object.Destroy(modelScreen.Root); }
             yield return null;
+
+            yield return CaptureNightColumn(controller, modelSim, modelCountry, modelState, keys, previousSeats);
+        }
+
+        /// <summary>
+        /// D-NIGHT (the review's M3, THE CANVAS FILM RULE): the redrawn column on film where the fixtures above cannot show it -
+        /// (a) the model's Swedish night with the column the PROCEDURE projects (`SimulationManager.ProjectFormation` on the model night's chamber: the
+        /// round's cells, each party's side), not `GovernmentFormation.ViewOf`'s aggregate fallback - the live country's seats swapped for the model night's
+        /// for the projection's one call and put back at once (a projection moves no state, FormationProjectionDiagnostic); (b) that night with the † view open
+        /// (`SetDense(true)`, restored); (c) Italy's column STAGED twice - a government expected with support, and none expected - on the seated chambers'
+        /// seats, a one-region count, the sides by a stated staging rule (a layout fixture: no Italian count is filmed here, and no Italian night is reachable
+        /// in this film's game).
+        /// </summary>
+        private IEnumerator CaptureNightColumn(GameController controller, SimulationManager sim, Country sweden, NightState state, List<string> keys, int[] previousSeats)
+        {
+            if (sim == null || sweden == null)
+            {
+                Debug.LogError("SHOT: D-NIGHT - no game in hand, so the projected column (e6_election_night_projected, e6_election_night_dagger) is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            FormationProjection projected = null;
+            var savedSeats = new Dictionary<string, int>(sweden.ParliamentSeats);
+            try
+            {
+                sweden.ParliamentSeats.Clear();
+                for (int k = 0; k < keys.Count; k++) { sweden.ParliamentSeats[keys[k]] = state.SeatsOnCounted[k]; }
+                projected = sim.ProjectFormation(sweden, WorldClock.LatestElectionDay(CountryId.Sweden));
+            }
+            catch (Exception e) { Debug.LogError($"SHOT: D-NIGHT - the projection THREW ({e.GetType().Name}: {e.Message}); the projected column is NOT filmed."); }
+            finally
+            {
+                sweden.ParliamentSeats.Clear();
+                foreach (KeyValuePair<string, int> kv in savedSeats) { sweden.ParliamentSeats[kv.Key] = kv.Value; }
+            }
+            GovernmentFormation.View view = projected?.View;
+            if (view == null || view.Votes.Count == 0 || view.Round.Count == 0)
+            {
+                Debug.LogError("SHOT: D-NIGHT - the projection carried no vote or no round" + (projected != null ? " (" + projected.Describe() + ")" : string.Empty) + "; the projected column is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            Debug.Log("SHOT: D-NIGHT - the projected column: " + projected.Describe());
+
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+            ElectionNightScreen screen = ElectionNightScreen.Build(state, keys.ToArray(), "SWEDEN", WorldClock.LatestElectionDay(CountryId.Sweden).AddHours(20), 349, previousLabel: "SWEDEN 2026",
+                previousByConstituency: SwedishRegions.PreviousVotes(keys), previousSeats: previousSeats, government: view, inkCountry: CountryId.Sweden,
+                ledger: sim.PlayerCampaignLedger, ledgerParty: sim.PlayerCampaignLedgerParty);
+            if (screen == null) { Debug.LogError("SHOT: D-NIGHT - the board did not build for the projected column; nothing filmed."); _failed++; yield break; }
+            yield return Settle();
+            Claim("electionnight");
+            yield return Capture("e6_election_night_projected");
+            RecordCanvasTextAssert("e6_election_night_projected", controller);
+            LogNight("projected", state, keys.ToArray(), screen, view);
+
+            screen.SetDense(true);
+            yield return Settle();
+            Claim("electionnight");
+            yield return Capture("e6_election_night_dagger");
+            RecordCanvasTextAssert("e6_election_night_dagger", controller);
+            if (!screen.DenseShown) { Debug.LogError("SHOT: e6_election_night_dagger - the † view did not open."); _failed++; }
+            screen.SetDense(false);
+            if (screen.Root != null) { UnityEngine.Object.Destroy(screen.Root); }
+            yield return Settle();
+
+            Country italy = sim.World?.GetCountry(CountryId.Italy);
+            if (italy == null || italy.ParliamentSeats == null || italy.ParliamentSeats.Count == 0)
+            {
+                Debug.LogError("SHOT: D-NIGHT - the game holds no seated Italian chamber; Italy's staged column is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            foreach (bool expected in new[] { true, false })
+            {
+                string stem = expected ? "e6_election_night_italy_support_staged" : "e6_election_night_italy_none_staged";
+                GovernmentFormation.View staged = StagedItalianView(italy, expected, out List<string> italianKeys);
+                NightState italianState = StagedItalianCount(italy, italianKeys);
+                PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+                ElectionNightScreen it = ElectionNightScreen.Build(italianState, italianKeys.ToArray(), "ITALY  ·  STAGED", WorldClock.LatestElectionDay(CountryId.Italy).AddHours(23), StagedSeats(italy),
+                    government: staged, inkCountry: CountryId.Italy);   // review 2's N7: STAGED on the masthead; no ledger (the game holds no Italian campaign), so Why says so rather than drawing another country's
+                if (it == null) { Debug.LogError("SHOT: " + stem + " - the board did not build; nothing filmed."); _failed++; continue; }
+                yield return Settle();
+                Claim("electionnight");
+                yield return Capture(stem);
+                RecordCanvasTextAssert(stem, controller);
+                LogNight(stem, italianState, italianKeys.ToArray(), it, staged);
+                if (it.Root != null) { UnityEngine.Object.Destroy(it.Root); }
+                yield return Settle();
+            }
+        }
+
+        private static int StagedSeats(Country italy) { int n = 0; foreach (int s in italy.ParliamentSeats.Values) { n += s; } return n; }
+
+        /// <summary>D-NIGHT: Italy's seated Camera as a one-region count - each party's seats as its votes (x 1 000), declared at once. A layout fixture.</summary>
+        private static NightState StagedItalianCount(Country italy, List<string> keys)
+        {
+            var votes = new long[keys.Count];
+            long valid = 0;
+            for (int k = 0; k < keys.Count; k++) { votes[k] = 1000L * italy.ParliamentSeats[keys[k]]; valid += votes[k]; }
+            int seats = 0;
+            foreach (int s in italy.ParliamentSeats.Values) { seats += s; }
+            return ElectionNight.At(0, new[] { "ITALIA" }, new[] { votes }, new[] { valid }, new[] { valid + valid / 3 }, new[] { 0 }, seats, 0.03, keys.ToArray());
+        }
+
+        /// <summary>
+        /// D-NIGHT: Italy's column STAGED (the staging rule, stated - a layout fixture, never a projection): the seated chambers' parties by Camera seats, largest
+        /// first. EXPECTED WITH SUPPORT - the cabinet the largest parties while under two fifths of the Camera, the next party from outside, then more from outside
+        /// until the for side carries in both chambers; every other party against; mandate 1 current. NONE EXPECTED - three mandates refused, the last the
+        /// third-largest party alone, every other party against it. Each chamber's line is art. 64's: against + 1. The player's party is the largest's, read by
+        /// the AI's rule (K119), so the tallest rows are drawn.
+        /// </summary>
+        private static GovernmentFormation.View StagedItalianView(Country italy, bool expected, out List<string> keys)
+        {
+            IReadOnlyDictionary<string, int> camera = italy.ParliamentSeats;
+            IReadOnlyDictionary<string, int> senato = italy.SecondChamberSeats != null && italy.SecondChamberSeats.Count > 0 ? italy.SecondChamberSeats : italy.ParliamentSeats;
+            keys = new List<string>();
+            foreach (KeyValuePair<string, int> kv in camera) { if (kv.Value > 0) { keys.Add(kv.Key); } }
+            keys.Sort((a, b) => camera[b].CompareTo(camera[a]));
+            int total = 0;
+            foreach (string k in keys) { total += camera[k]; }
+            var cabinet = new List<string>();
+            var support = new List<string>();
+            if (expected)
+            {
+                int cum = 0;
+                foreach (string k in keys) { if (cabinet.Count == 0 || cum + camera[k] < total * 2 / 5) { cabinet.Add(k); cum += camera[k]; } else { break; } }
+                bool Carries(IReadOnlyDictionary<string, int> chamber)
+                {
+                    int f = 0, a = 0;
+                    foreach (KeyValuePair<string, int> kv in chamber) { if (cabinet.Contains(kv.Key) || support.Contains(kv.Key)) { f += kv.Value; } else { a += kv.Value; } }
+                    return f > a;
+                }
+                foreach (string k in keys)
+                {
+                    if (cabinet.Contains(k)) { continue; }
+                    if (support.Count > 0 && Carries(camera) && Carries(senato)) { break; }
+                    support.Add(k);
+                }
+            }
+            else { cabinet.Add(keys[Math.Min(2, keys.Count - 1)]); }
+
+            var view = new GovernmentFormation.View
+            {
+                HasGovernment = expected, Outcome = expected ? CoalitionOutcomeKind.ConfidenceAndSupply : CoalitionOutcomeKind.NewElection, TotalSeats = total, Majority = total / 2 + 1,
+                NegativeRule = false, DeclarationsSourced = DeclaredRedLines.IsSourced(CountryId.Italy), PlayerParty = keys[0], ReadsPlayersAnswer = true, ProjectionVote = "BOTH CHAMBERS VOTE CONFIDENCE",
+                ProjectionStep = expected ? "MANDATE 1 OF AT MOST 3 · CONFIDENCE OF BOTH CHAMBERS (STAGED)" : null, RoundLimit = 3,
+                NoneWords = expected ? null : "THE MANDATES FAIL - DISSOLUTION", Reason = expected ? null : "three mandates fail - the chambers are dissolved (art. 88) - staged",
+            };
+            foreach (string k in cabinet) { view.Cabinet.Add((k, camera[k])); view.CabinetSeats += camera[k]; }
+            foreach (string k in support) { view.Support.Add((k, camera[k])); }
+            view.PlayerInCabinet = cabinet.Contains(keys[0]);
+            view.PlayerSupports = support.Contains(keys[0]);
+            if (expected)
+            {
+                view.Round.Add(new GovernmentFormation.RoundCell(cabinet[0], GovernmentFormation.RoundCellState.Current));
+                view.Round.Add(new GovernmentFormation.RoundCell(null, GovernmentFormation.RoundCellState.NotReached));
+                view.Round.Add(new GovernmentFormation.RoundCell(null, GovernmentFormation.RoundCellState.NotReached));
+            }
+            else
+            {
+                view.Round.Add(new GovernmentFormation.RoundCell(keys[0], GovernmentFormation.RoundCellState.Refused));
+                view.Round.Add(new GovernmentFormation.RoundCell(keys.Count > 1 ? keys[1] : keys[0], GovernmentFormation.RoundCellState.Refused));
+                view.Round.Add(new GovernmentFormation.RoundCell(cabinet[0], GovernmentFormation.RoundCellState.LastRefused));
+            }
+            foreach ((string name, IReadOnlyDictionary<string, int> chamber) in new[] { ("Camera", camera), ("Senato", senato) })
+            {
+                var vote = new GovernmentFormation.NightVote { Chamber = name };
+                foreach (KeyValuePair<string, int> kv in chamber)
+                {
+                    if (kv.Value <= 0) { continue; }
+                    CoalitionFormation.InvestitureSide side = cabinet.Contains(kv.Key) ? CoalitionFormation.InvestitureSide.InCabinet : support.Contains(kv.Key) ? CoalitionFormation.InvestitureSide.Supports : CoalitionFormation.InvestitureSide.Against;
+                    vote.Sides.Add(new GovernmentFormation.VoteSide { Abbrev = kv.Key, Seats = kv.Value, Side = side, Reason = "staged" });
+                    vote.Members += kv.Value;
+                    if (side == CoalitionFormation.InvestitureSide.Against) { vote.Against += kv.Value; } else { vote.For += kv.Value; }
+                }
+                vote.Needed = vote.Against + 1;
+                vote.Carried = vote.For >= vote.Needed;
+                view.Votes.Add(vote);
+                if (name == "Camera") { view.SupportedSeats = vote.For; view.OpposedSeats = vote.Against; }
+            }
+            return view;
         }
 
         private IEnumerator CaptureElectionNight(GameController controller)

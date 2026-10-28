@@ -67,11 +67,12 @@ namespace PoliSim.EditorTools
              + "NO area accent, which is clause 2 satisfied by construction rather than by inspection: the Laws page's accent "
              + "(Sectors) is drawn by GameController.cs, a different file."),
             ("ElectionNightScreen.cs",
-             "election night items 2-3 (2026-09-10): the valkrets map fills each declared constituency in its WINNER's laddered "
-             + "ink and the government bar draws the cabinet and its supporters in theirs - who won where, and who governs, is "
-             + "party identity as the whole subject, the chamber's own argument. The ink is the chamber's accessor, so the map, the "
-             + "arc and the bar cannot disagree about a colour; the file draws NO area accent (clause 2 by construction). The map's "
-             + "tiles are painted by ValkretsCartogramView, which is handed the colours and names no accessor itself."),
+             "election night items 2-3 (2026-09-10): the valkrets map and the Länder map fill each declared constituency in its WINNER's "
+             + "laddered ink - who won where is party identity as the whole subject, the chamber's own argument. The ink is the chamber's "
+             + "accessor, so the maps and the arc cannot disagree about a colour; the file draws NO area accent (clause 2 by construction). "
+             + "The map's tiles are painted by ValkretsCartogramView, which is handed the colours and names no accessor itself. D-NIGHT "
+             + "(31a-31c): WHO GOVERNS no longer draws a party ink - its vote bar is the division grammar (GOOD, tan, BAD) and its parties "
+             + "are named by their marks (ElectionNightScreen.Governs.cs draws none)."),
             ("ElectionNightScreen.Poland.cs",
              "D-PL (2026-10-23, boards 28a-28d): the same screen's Polish half, split into its own file of the partial class - the okregi cells in the "
              + "seats' inks, the count's lanes, the chamber bar and the run-off bar draw party identity as the whole subject, the argument of "

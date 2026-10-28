@@ -170,8 +170,8 @@ namespace PoliSim.UI
             ElectionNightScreen screen = Shell(out Transform content, out RectTransform contentRect);
             if (screen == null) { return null; }
 
-            BuildMasthead(content, state, countryName, pollsClosed, totalSeats);
-            ValkretsCartogramView map = BuildBody(content, state, partyNames, totalSeats, previous, ledger, ledgerParty,
+            BuildMasthead(content, state, countryName, pollsClosed, totalSeats, screen);   // D-NIGHT: the † cell at its right
+            ValkretsCartogramView map = BuildBody(screen, content, state, partyNames, totalSeats, previous, ledger, ledgerParty,
                 standingBudget, standingBudgetCitation, government, inkCountry, reference, out LaenderTileView laender);
             BuildFooter(content, verdict, screen, continueLabel, speaker, screen.Root.transform);
 
@@ -263,14 +263,15 @@ namespace PoliSim.UI
 
         /// <summary>§A.14: institution + title left, timestamp and the declared chip right.</summary>
         private static void BuildMasthead(Transform parent, NightState state, string countryName,
-            DateTime pollsClosed, int totalSeats)
+            DateTime pollsClosed, int totalSeats, ElectionNightScreen dagger = null)
         {
             Masthead(parent, countryName, pollsClosed.AddMinutes(state.Minute).ToString("HH:mm", CultureInfo.InvariantCulture) + "  ·  POLLS CLOSED " + pollsClosed.ToString("HH:mm", CultureInfo.InvariantCulture),
-                string.Format(CultureInfo.InvariantCulture, countryName.Equals("GERMANY", StringComparison.OrdinalIgnoreCase) ? "{0} OF {1} LÄNDER DECLARED" : "{0} OF {1} CONSTITUENCIES DECLARED", state.DeclaredCount, state.TotalConstituencies));
+                string.Format(CultureInfo.InvariantCulture, countryName.Equals("GERMANY", StringComparison.OrdinalIgnoreCase) ? "{0} OF {1} LÄNDER DECLARED" : "{0} OF {1} CONSTITUENCIES DECLARED", state.DeclaredCount, state.TotalConstituencies), dagger);
         }
 
-        /// <summary>The masthead with its two right-hand lines given (D-PL: the Sejm's night counts okregi, the President's night the nation).</summary>
-        private static void Masthead(Transform parent, string countryName, string timestamp, string chipLine)
+        /// <summary>The masthead with its two right-hand lines given (D-PL: the Sejm's night counts okregi, the President's night the nation). D-NIGHT
+        /// ("For Code" 6): <paramref name="dagger"/> given, the † cell at the chip's right - the night-wide toggle of the column's full lines.</summary>
+        private static void Masthead(Transform parent, string countryName, string timestamp, string chipLine, ElectionNightScreen dagger = null)
         {
             var mast = new GameObject("Masthead");
             mast.transform.SetParent(parent, false);
@@ -315,14 +316,26 @@ namespace PoliSim.UI
             // The chip §A.14 names: "N OF M SEATS DECLARED". It counts CONSTITUENCIES declared,
             // because seats are national in this system and are not declared one at a time - the
             // chip says what is actually true rather than what the mock-up's wording implied.
+            Transform chipParent = right.transform;
+            if (dagger != null)
+            {
+                Transform chipRow = CanvasRows.HRow(right.transform, "ChipRow", Px(20f), Px(6f));
+                chipRow.GetComponent<HorizontalLayoutGroup>().childAlignment = TextAnchor.MiddleRight;
+                chipParent = chipRow;
+            }
             var chip = new GameObject("DeclaredChip");
-            chip.transform.SetParent(right.transform, false);
+            chip.transform.SetParent(chipParent, false);
             chip.AddComponent<RectTransform>().sizeDelta = new Vector2(300f, 22f);
             chip.AddComponent<Image>().color = PoliSimTheme.Hex(0x5D564A);
             chip.AddComponent<LayoutElement>().minHeight = 22f;
             Text chipText = CanvasChrome.MakeTextRealWeight(chip.transform, "ChipText", chipLine,
                 PoliSimTheme.Display, 11, PoliSimTheme.Hex(0xF4ECDC), TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch(chipText.GetComponent<RectTransform>());
+            if (dagger != null)
+            {
+                chip.GetComponent<LayoutElement>().flexibleWidth = 1f;
+                DaggerCell(chipParent, dagger);
+            }
         }
 
         /// <summary>
@@ -331,7 +344,7 @@ namespace PoliSim.UI
         /// ledger and the inherited budget's estimate. ⚠ The constituency list is gone: it printed a raw count per valkrets,
         /// which the map now says better (the winner in its ink, the margin, the change), so the list yields to it whole.
         /// </summary>
-        private static ValkretsCartogramView BuildBody(Transform parent, NightState state, string[] partyNames, int totalSeats,
+        private static ValkretsCartogramView BuildBody(ElectionNightScreen screen, Transform parent, NightState state, string[] partyNames, int totalSeats,
             Previous previous, VoteAttribution.Ledger ledger, string ledgerParty,
             IReadOnlyList<DivisionEffect> standingBudget, string standingBudgetCitation,
             GovernmentFormation.View government, CountryId inkCountry, Reference reference, out LaenderTileView laender)
@@ -352,7 +365,7 @@ namespace PoliSim.UI
             // notes stood taller than the body (small-pixel text wraps sooner and leads taller than at 2560, on a canvas of the same
             // units), so the layout compressed every text in it below its own height. The column takes width from the map, which had
             // spare height under it (1.8 : 1.2 - at 1.6 : 1.4 the narrower tiles dropped their labels), and the effects plate and the
-            // column's line gap yield the rest (BuildEstimate, below): 19 clipped texts at 1280 to none.
+            // column's line gap yielded the rest: 19 clipped texts at 1280 to none. D-NIGHT (31a-31c) replaced that column whole: its blocks are planned to its 516 px rect (`PlanColumn`, ElectionNightScreen.Governs.cs).
             if (inkCountry == CountryId.Germany)
             {
                 // §707 (D-DE, boards 24a-24b): Germany's night is Sweden's sheet as built with the Länder at its centre - the count with the 5 %
@@ -365,9 +378,9 @@ namespace PoliSim.UI
                 Transform centreDe = Column(body.transform, "MapColumn", 1.8f);
                 laender = BuildLaenderMap(centreDe, state, partyNames, previous, inkCountry);
                 Transform rightDe = Column(body.transform, "Governs", 1.2f);
-                rightDe.GetComponent<VerticalLayoutGroup>().spacing = 1f;
-                BuildChamberGermany(rightDe, state, partyNames, totalSeats, inkCountry, government);   // GATE-18 q20: the first ballot projected
-                BuildLedger(rightDe, ledger, ledgerParty);
+                // D-NIGHT (31a-31c): the column in v3.5 - the first ballot projected (GATE-18 q20) as the round's first cell and the vote, WHY as Sweden's
+                BuildGoverns(screen, rightDe, new GovernsNight { State = state, PartyNames = partyNames, Government = government, Country = inkCountry, TotalSeats = totalSeats,
+                    Ledger = ledger, LedgerParty = ledgerParty, BudgetBlock = false, Overlay = screen.Root.transform });
                 return null;
             }
             Transform count = Column(body.transform, "Count", 1.0f);
@@ -379,10 +392,11 @@ namespace PoliSim.UI
             ValkretsCartogramView map = BuildMap(centre, state, partyNames, previous, inkCountry);
 
             Transform right = Column(body.transform, "Governs", 1.2f);
-            right.GetComponent<VerticalLayoutGroup>().spacing = 1f;   // PF-16 (§609): the column holds ~35 lines; 1 unit between them, not 2, is the rest of what it was short
-            BuildGovernment(right, state, government, inkCountry);
-            BuildLedger(right, ledger, ledgerParty);   // P2-4.3
-            BuildEstimate(right, standingBudget, standingBudgetCitation);   // board 5c
+            // D-NIGHT (Design's 31a-31c): WHO GOVERNS in v3.5 in the built column's rect - the projection, the vote, you, why (P2-4.3, 13b) and the
+            // budget (5c); the long wording in the slips and the † view
+            BuildGoverns(screen, right, new GovernsNight { State = state, PartyNames = partyNames, Government = government, Country = inkCountry, TotalSeats = totalSeats,
+                Ledger = ledger, LedgerParty = ledgerParty, BudgetBlock = true, StandingBudget = standingBudget, StandingBudgetCitation = standingBudgetCitation,
+                Overlay = screen.Root.transform });
             return map;
         }
 
@@ -539,104 +553,6 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// §707 (24a ⑧, ⑤): WHO GOVERNS on a German night is the chamber alone - the Bundestag elects the chancellor under Art. 63 weeks later
-        /// (§705), so nothing is drawn in a formation's place: the bar by Fraktion (the Union one block, the CSU hairlined inside it), largest first,
-        /// the tick at a majority of the members. During the count the chamber waits with the seats. GATE-18 q20: once the count is complete, under the bar,
-        /// what the chancellor's election is EXPECTED TO FORM, projected to its first ballot by the election's own code (`BuildExpectedGermany`).
-        /// </summary>
-        private static void BuildChamberGermany(Transform parent, NightState state, string[] partyNames, int totalSeats, CountryId inkCountry, GovernmentFormation.View government = null)
-        {
-            Heading(parent, "WHO GOVERNS — THE NEW BUNDESTAG");
-            int majority = totalSeats / 2 + 1;
-            Row(parent, "THE BUNDESTAG ELECTS THE CHANCELLOR", string.Format(CultureInfo.InvariantCulture, "{0} of {1}", majority, totalSeats), 12, PoliSimTheme.TextPrimary, bold: true);
-            if (state == null || !state.Complete)
-            {
-                Row(parent, "the chamber waits with the seats, owed until the last Land declares", "—", 11, PoliSimTheme.TextMuted);
-                return;
-            }
-            // the Fraktionen: the Union's two lists one block (§ 10 Abs. 1 GO-BT), every other seated list its own
-            var blocks = new List<(string Name, List<(string Abbrev, int Seats)> Lists)>();
-            int cdu = Array.IndexOf(partyNames, "CDU"), csu = Array.IndexOf(partyNames, "CSU");
-            if (cdu >= 0 && csu >= 0 && state.SeatsOnCounted[cdu] > 0 && state.SeatsOnCounted[csu] > 0)
-            {
-                blocks.Add(("UNION", new List<(string, int)> { ("CDU", state.SeatsOnCounted[cdu]), ("CSU", state.SeatsOnCounted[csu]) }));
-            }
-            for (int p = 0; p < partyNames.Length; p++)
-            {
-                if (state.SeatsOnCounted[p] <= 0) { continue; }
-                if (blocks.Count > 0 && blocks[0].Name == "UNION" && (p == cdu || p == csu)) { continue; }
-                blocks.Add((PartySystems.ShortName(inkCountry, partyNames[p]).ToUpperInvariant(), new List<(string, int)> { (partyNames[p], state.SeatsOnCounted[p]) }));
-            }
-            int BlockSeats((string Name, List<(string Abbrev, int Seats)> Lists) b) { int n = 0; foreach ((string _, int s) in b.Lists) { n += s; } return n; }
-            blocks.Sort((a, b) => BlockSeats(b).CompareTo(BlockSeats(a)));
-            var line = new List<string>();
-            foreach (var b in blocks) { line.Add(b.Name + " " + BlockSeats(b).ToString(CultureInfo.InvariantCulture)); }
-            Wrapped(parent, string.Join(" · ", line), 11, PoliSimTheme.TextPrimary);
-
-            const int w = 480, h = 22;
-            var texture = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
-            var pixels = new Color32[w * h];
-            Color32 paper = PoliSimTheme.CardInset;
-            for (int i = 0; i < pixels.Length; i++) { pixels[i] = paper; }
-            float perSeat = totalSeats > 0 ? w / (float)totalSeats : 0f;
-            float x = 0f;
-            foreach (var b in blocks)
-            {
-                for (int l = 0; l < b.Lists.Count; l++)
-                {
-                    (string abbrev, int seats) = b.Lists[l];
-                    Color32 ink = PoliSimTheme.PartyLaddered(inkCountry, abbrev);
-                    int from = Mathf.RoundToInt(x), to = Mathf.RoundToInt(x + seats * perSeat);
-                    for (int px = from; px < to && px < w; px++) { for (int py = 0; py < h; py++) { pixels[py * w + px] = ink; } }
-                    if (l > 0 && from >= 0 && from < w) { for (int py = 0; py < h; py++) { pixels[py * w + from] = PoliSimTheme.Hairline; } }   // the CSU hairlined inside the Union
-                    x += seats * perSeat;
-                }
-                int edge = Mathf.RoundToInt(x) - 1;
-                if (edge >= 0 && edge < w) { for (int py = 0; py < h; py++) { pixels[py * w + edge] = paper; } }
-            }
-            int tick = Mathf.Clamp(Mathf.RoundToInt(majority * perSeat), 1, w - 2);
-            for (int py = 0; py < h; py++) { pixels[py * w + tick] = PoliSimTheme.TextPrimary; pixels[py * w + tick - 1] = PoliSimTheme.TextPrimary; }
-            texture.SetPixels32(pixels);
-            texture.Apply();
-            var art = new GameObject("ChamberBar");
-            art.transform.SetParent(parent, false);
-            art.AddComponent<RectTransform>();
-            LayoutElement element = art.AddComponent<LayoutElement>();
-            element.minHeight = 22f;
-            element.preferredHeight = 22f;
-            RawImage image = art.AddComponent<RawImage>();
-            image.texture = texture;
-            image.raycastTarget = false;
-            Wrapped(parent, string.Format(CultureInfo.InvariantCulture, "a block per Fraktion, largest first · the tick is {0} of {1} · the Bundespräsident proposes, the Bundestag elects once it convenes (Art. 63 GG)",
-                majority, totalSeats), 10, PoliSimTheme.TextMuted);
-            BuildExpectedGermany(parent, government);
-        }
-
-        /// <summary>GATE-18 q20: the German night's EXPECTED TO FORM - the chancellor's election projected to its first ballot (Art. 63 Abs. 1-2 GG) by its own
-        /// code: the Bundespräsident's candidate's government where the first ballot elects it, else the ballot's shortfall and the fourteen days that
-        /// follow. Nothing where no projection was handed (a staged fixture).</summary>
-        private static void BuildExpectedGermany(Transform parent, GovernmentFormation.View government)
-        {
-            if (government == null) { return; }
-            if (government.HasGovernment)
-            {
-                Row(parent, "EXPECTED TO FORM  " + Parties(government.Cabinet), string.Format(CultureInfo.InvariantCulture, "{0} of {1}", government.CabinetSeats, government.TotalSeats), 12, PoliSimTheme.TextPrimary, bold: true);
-                if (!string.IsNullOrEmpty(government.ProjectionStep)) { Wrapped(parent, government.ProjectionStep, 10, PoliSimTheme.TextSecondary); }
-            }
-            else
-            {
-                Row(parent, "NOT EXPECTED AT THE FIRST BALLOT", "—", 12, PoliSimTheme.Caution, bold: true);
-                Wrapped(parent, government.Reason ?? string.Empty, 10, PoliSimTheme.TextSecondary);
-            }
-            Wrapped(parent, ProjectionFoot(government, "THE BUNDESTAG ELECTS"), 10, PoliSimTheme.TextMuted);
-        }
-
-        /// <summary>GATE-18 q20: the projection's foot - office changes only when the vote is won; where the projection read a wait on the player, it says the
-        /// player's own answer can change it (K119) - one line, so Sweden's Governs column holds at 1280 (s918's real film clipped the three-line foot).</summary>
-        private static string ProjectionFoot(GovernmentFormation.View government, string vote) =>
-            government.ReadsPlayersAnswer ? "A PROJECTION - YOUR ANSWER CAN CHANGE IT; OFFICE ON THE VOTE" : "A PROJECTION - OFFICE CHANGES ONLY WHEN " + vote;
-
-        /// <summary>
         /// Item 2: board 4a's cartogram - 29 tiles, area = fixed mandates, eleven bands - each declared valkrets in its
         /// winner's ink. The mandates are OUR column (`SeatConversion.FixedSeatsPerRegion` over each valkrets' eligible
         /// electorate, 310 in all), computed here from the night's own constituencies rather than passed in, so the map
@@ -719,193 +635,11 @@ namespace PoliSim.UI
             return s;
         }
 
-        /// <summary>
-        /// Item 3: WHO GOVERNS. A count that does not say who won is not a result - so the formation (W-D3) is run on the new
-        /// chamber and drawn: the outcome by its own name, the cabinet and who carries it from outside, the investiture the
-        /// chamber's own rule sets, and one line for the player by C-R4's rule (D-5 (a): office is cabinet membership, and
-        /// support from outside is not office). ⚠ On a PARTIAL count nothing is formed: a government on projected seats is a
-        /// forecast, and the section says the formation waits for the last constituency. GATE-18 q20 (ruled 2026-10-18): what is drawn is what the
-        /// country's procedure is EXPECTED TO FORM, projected by the procedure's own code (`SimulationManager.ProjectFormation`), with the step it comes
-        /// from - never a government in office: office changes when the procedure completes.
-        /// </summary>
-        private static void BuildGovernment(Transform parent, NightState state, GovernmentFormation.View government, CountryId inkCountry)
-        {
-            if (state != null && !state.Complete)
-            {
-                Heading(parent, "WHO GOVERNS - WHEN THE COUNT IS COMPLETE");
-                Row(parent, "the chamber is not final until the last valkrets declares", "—", 11, PoliSimTheme.TextMuted);
-                return;
-            }
-            Heading(parent, "WHO GOVERNS - EXPECTED TO FORM");   // GATE-18 q20: the procedure's projection, never a government in office
-            if (government == null)
-            {
-                Row(parent, "no formation was run for this night", "—", 11, PoliSimTheme.TextMuted);
-                return;
-            }
-            if (!government.HasGovernment)
-            {
-                Row(parent, "NO GOVERNMENT EXPECTED TO FORM", government.NoneWords ?? (government.Partial ? "THE BALLOTS GO ON" : "THE ROUND BREAKS OFF"), 13, PoliSimTheme.Bad, bold: true);   // PS-7: Italy's words where it carries them
-                Wrapped(parent, government.Reason ?? string.Empty, 11, PoliSimTheme.TextSecondary);
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(government.ProjectionStep)) { Wrapped(parent, government.ProjectionStep, 10, PoliSimTheme.TextSecondary); }   // q20: the step it comes from
-                Row(parent, OutcomeName(government.Outcome), string.Format(CultureInfo.InvariantCulture, "{0} of {1} seats in cabinet",
-                    government.CabinetSeats, government.TotalSeats), 13, PoliSimTheme.TextPrimary, bold: true);
-                Row(parent, "IN CABINET  " + Parties(government.Cabinet), government.CabinetSeats.ToString(CultureInfo.InvariantCulture), 12, PoliSimTheme.TextPrimary);
-                Row(parent, government.Support.Count > 0 ? "SUPPORT FROM OUTSIDE  " + Parties(government.Support) : "NO DECLARED SUPPORT FROM OUTSIDE",
-                    government.Support.Count > 0 ? string.Format(CultureInfo.InvariantCulture, "{0} with support", government.SupportedSeats) : "—",
-                    12, PoliSimTheme.TextSecondary);
-                BuildGovernmentBar(parent, government, inkCountry);
-                Wrapped(parent, government.NegativeRule
-                        ? string.Format(CultureInfo.InvariantCulture, "INVESTITURE BY THE NEGATIVE RULE: {0} AGAINST, {1} TO REFUSE IT", government.OpposedSeats, government.Majority)
-                        : string.Format(CultureInfo.InvariantCulture, "INVESTITURE BY A MAJORITY FOR: {0} seats for it, {1} needed", government.SupportedSeats, government.Majority),
-                    11, PoliSimTheme.TextSecondary);
-                if (!government.DeclarationsSourced)
-                {
-                    Wrapped(parent, "projected on DERIVED red lines only - this country's declared refusals are not sourced", 10, PoliSimTheme.TextMuted);
-                }
-            }
-            if (!string.IsNullOrEmpty(government.ProjectionStep) || !government.HasGovernment) { Wrapped(parent, ProjectionFoot(government, government.ProjectionVote ?? "THE RIKSDAG VOTES"), 10, PoliSimTheme.TextMuted); }   // q20; PS-7: Italy's vote where it carries one
-
-            // The player's outcome, by C-R4's rule, in one plain line.
-            if (government.PlayerParty == null)
-            {
-                Row(parent, "NO PLAYER'S PARTY ON THIS BALLOT", "—", 11, PoliSimTheme.TextMuted);
-            }
-            else if (!government.HasGovernment)
-            {
-                Row(parent, "YOU - " + government.PlayerParty, "THE OUTGOING GOVERNMENT SERVES ON", 13, PoliSimTheme.Caution, bold: true);
-            }
-            else if (government.PlayerInCabinet)
-            {
-                Row(parent, "YOU - " + government.PlayerParty + " IN THE CABINET", "EXPECTED IN OFFICE", 14, PoliSimTheme.Good, bold: true);
-            }
-            else
-            {
-                Row(parent, "YOU - " + government.PlayerParty + (government.PlayerSupports ? " SUPPORTS IT FROM OUTSIDE" : " IN OPPOSITION"),
-                    "EXPECTED OUT OF OFFICE", 14, PoliSimTheme.Bad, bold: true);
-                if (government.PlayerSupports)
-                {
-                    Wrapped(parent, "support is not office - the rule (C-R4, D-5 (a)) counts cabinet seats only", 10, PoliSimTheme.TextMuted);
-                }
-            }
-        }
-
-        private static string OutcomeName(CoalitionOutcomeKind kind)
-        {
-            switch (kind)
-            {
-                case CoalitionOutcomeKind.MajorityCoalition: return "A MAJORITY GOVERNMENT";
-                case CoalitionOutcomeKind.ConfidenceAndSupply: return "A MINORITY GOVERNMENT WITH SUPPORT";
-                case CoalitionOutcomeKind.MinorityGovernment: return "A MINORITY GOVERNMENT";
-                default: return kind.ToString().ToUpperInvariant();
-            }
-        }
-
-        private static string Parties(List<(string Abbrev, int Seats)> list)
-        {
-            var parts = new List<string>(list.Count);
-            foreach ((string abbrev, int seats) in list) { parts.Add(abbrev + " " + seats.ToString(CultureInfo.InvariantCulture)); }
-            return string.Join(" · ", parts);
-        }
-
-        /// <summary>The government drawn as one bar across the chamber: the cabinet's parties in their inks, the parties carrying it
-        /// from outside in their inks at half strength, the rest paper, and the majority line as a dark tick.</summary>
-        private static void BuildGovernmentBar(Transform parent, GovernmentFormation.View government, CountryId inkCountry)
-        {
-            const int w = 480, h = 22;
-            var texture = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
-            var pixels = new Color32[w * h];
-            Color32 paper = PoliSimTheme.CardInset;
-            for (int i = 0; i < pixels.Length; i++) { pixels[i] = paper; }
-            float perSeat = government.TotalSeats > 0 ? w / (float)government.TotalSeats : 0f;
-            float x = 0f;
-            void Paint(List<(string Abbrev, int Seats)> list, bool support)
-            {
-                foreach ((string abbrev, int seats) in list)
-                {
-                    Color ink = PoliSimTheme.PartyLaddered(inkCountry, abbrev);
-                    int from = Mathf.RoundToInt(x), to = Mathf.RoundToInt(x + seats * perSeat);
-                    for (int px = from; px < to && px < w; px++)
-                    {
-                        for (int py = 0; py < h; py++)
-                        {
-                            bool hatch = support && ((px + py) % 4) < 2;
-                            pixels[py * w + px] = hatch ? (Color32)Color.Lerp(ink, PoliSimTheme.CardInset, 0.55f) : (Color32)ink;
-                        }
-                    }
-                    if (to - 1 >= 0 && to - 1 < w) { for (int py = 0; py < h; py++) { pixels[py * w + to - 1] = paper; } }
-                    x += seats * perSeat;
-                }
-            }
-            Paint(government.Cabinet, false);
-            Paint(government.Support, true);
-            int tick = Mathf.Clamp(Mathf.RoundToInt(government.Majority * perSeat), 1, w - 2);
-            for (int py = 0; py < h; py++) { pixels[py * w + tick] = PoliSimTheme.TextPrimary; pixels[py * w + tick - 1] = PoliSimTheme.TextPrimary; }
-            texture.SetPixels32(pixels);
-            texture.Apply();
-
-            var art = new GameObject("GovernmentBar");
-            art.transform.SetParent(parent, false);
-            art.AddComponent<RectTransform>();
-            LayoutElement element = art.AddComponent<LayoutElement>();
-            element.minHeight = 22f;
-            element.preferredHeight = 22f;
-            RawImage image = art.AddComponent<RawImage>();
-            image.texture = texture;
-            image.raycastTarget = false;
-            Wrapped(parent, string.Format(CultureInfo.InvariantCulture, "cabinet solid · support hatched · the tick a majority, {0} of {1}",
-                government.Majority, government.TotalSeats), 10, PoliSimTheme.TextMuted);
-        }
-
         private static void Wrapped(Transform parent, string text, int size, Color ink)
         {
             Text t = CanvasChrome.MakeTextRealWeight(parent, "Note", text, PoliSimTheme.Document, size, ink, TextAnchor.UpperLeft);
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.gameObject.AddComponent<LayoutElement>().minHeight = size + 6f;
-        }
-
-        /// <summary>
-        /// Board 5c (D11 row 3): the effects plate at the right of the count - the same renderer the signing
-        /// takeover paints (CanvasPaint.Arrows), titled for the chamber's first budget if unchanged, with the
-        /// figures in their arrows' inks and the scope line verbatim. The estimate is the one that travelled
-        /// with the standing budget act as enacted - not a forecast made tonight - and the citation says whose.
-        /// </summary>
-        private static void BuildEstimate(Transform parent, IReadOnlyList<DivisionEffect> standingBudget, string citation)
-        {
-            Heading(parent, EffectArrowsRenderer.PlateTitleInherited);
-            if (standingBudget == null || standingBudget.Count == 0)
-            {
-                Row(parent, "NO ENACTED BUDGET CARRIES AN ESTIMATE - NOTHING IS DRAWN IN ITS PLACE", "—", 11, PoliSimTheme.TextMuted);
-                return;
-            }
-
-            var arrows = new List<EffectArrow>(standingBudget.Count);
-            foreach (DivisionEffect e in standingBudget) { arrows.Add(new EffectArrow(e.Name, e.Value, e.Neutral ? (bool?)null : e.HigherIsBetter, e.Figure)); }
-
-            var art = new GameObject("Arrows");
-            art.transform.SetParent(parent, false);
-            art.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 88f);
-            LayoutElement element = art.AddComponent<LayoutElement>();
-            element.minHeight = 70f;
-            element.preferredHeight = 84f;   // PF-16 (§609): at 110 the column's texts were compressed at 1280; the plate yields first, its floor (70) unchanged. UI-1 (§888): 88 clipped 88n's Figures by 0.5 px at 1280 with the state pins (realse888) - the plate yields 4 more
-            Texture2D texture = CanvasPaint.Arrows(420, 120, arrows, PoliSimTheme.Hex(0xF2EADB));
-            Image image = art.AddComponent<Image>();
-            image.sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100f);
-            image.preserveAspect = true;
-            image.raycastTarget = false;
-
-            Text figures = CanvasChrome.MakeTextRealWeight(parent, "Figures", EffectArrowsRenderer.FiguresLine(arrows), PoliSimTheme.Document, 11, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
-            figures.horizontalOverflow = HorizontalWrapMode.Wrap;
-            figures.gameObject.AddComponent<LayoutElement>().minHeight = 18f;
-            if (!string.IsNullOrEmpty(citation))
-            {
-                Wrapped(parent, "AS ENACTED - " + citation, 11, PoliSimTheme.TextSecondary);   // one line that wraps: as a two-cell row its key broke letter by letter in the narrower column (2026-09-10)
-            }
-            Text scope = CanvasChrome.MakeTextRealWeight(parent, "Scope", EffectArrowsRenderer.ScopeLine, PoliSimTheme.Document, 10, PoliSimTheme.TextSecondary, TextAnchor.UpperLeft);
-            scope.horizontalOverflow = HorizontalWrapMode.Wrap;
-            scope.gameObject.AddComponent<LayoutElement>().minHeight = 28f;
         }
 
         private static void Heading(Transform parent, string text)
@@ -1053,97 +787,6 @@ namespace PoliSim.UI
         /// still outstanding, so the panel states it flatly; where nothing is safe yet it says that
         /// too, rather than showing a projection dressed as a call.
         /// </summary>
-        /// <summary>
-        /// P2-4.3 (2026-09-02): the campaign's attribution beside the count - W-E7's "why, line by line" for the
-        /// player's party, the largest lines first, from the ledger the simulation kept when the live run finished
-        /// (SimulationManager.PlayerCampaignLedger). Absent when no live campaign ran to this election, and the
-        /// column says so rather than drawing zeros.
-        /// </summary>
-        /// <summary>
-        /// Board 13b (D19 item 2, 2026-09-10): the ledger as a BRIDGE - the glance - with the eleven rows in the same fixed
-        /// order beneath it as the read. The bridge is `AttributionBridge`'s geometry painted by `CanvasPaint.Bridge`: baseline
-        /// tick, one step per source in the enum's order (never re-sorted), solid up, dashed-outline down, the level carried
-        /// between steps, the close tick heavier; 1 pp = 20 px at 1×, the range the path's own excursion; a zero term drawn as
-        /// nothing and its abbreviation struck. The move prints once, in Caution when negative. ⚠ Two deviations from 13b,
-        /// stated: the bridge takes the right column's width rather than the 425 the board sets (13a, which lays that column,
-        /// is stopped - §449), and the rows stay on the page beneath the bridge rather than behind a `†`, because the night
-        /// has no provenance tab. Without a ledger the lane is 13a's empty state: paper with a dashed baseline.
-        /// </summary>
-        private static void BuildLedger(Transform parent, VoteAttribution.Ledger ledger, string party)
-        {
-            if (ledger == null || ledger.Lines.Count == 0)
-            {
-                Heading(parent, ledger == null ? "WHY — NO CAMPAIGN LEDGER FOR THIS NIGHT" : "WHY — NO ATTRIBUTION FOR THIS PARTY");
-                Paint(parent, "BridgeEmpty", CanvasPaint.DashedBaseline(420, 36, PoliSimTheme.Hex(0xF2EADB), PoliSimTheme.Hairline), 36f);
-                Row(parent, ledger == null ? "no live campaign was run to this election" : "the ledger carries no lines", "—", 11, PoliSimTheme.TextMuted);
-                return;
-            }
-
-            AttributionBridge.Geometry g;
-            try { g = AttributionBridge.Build(ledger); }
-            catch (InvalidOperationException e)
-            {
-                Heading(parent, $"WHY — {party.ToUpperInvariant()}: THE LINES DO NOT SUM TO THE MOVE");
-                Wrapped(parent, e.Message, 11, PoliSimTheme.Bad);
-                return;
-            }
-
-            Heading(parent, string.Format(CultureInfo.InvariantCulture, "WHY — {0} · BASELINE (AT THE CLOSE'S AWARENESS) {1:F1} → CLOSE {2:F1} · 1 pp = {3:F0} px",
-                party.ToUpperInvariant(), g.BaselinePoints, g.ClosePoints, AttributionBridge.PixelsPerPoint));
-
-            // The move, once, signed - the one number the player is looking for.
-            Row(parent, "THE MOVE", string.Format(CultureInfo.InvariantCulture, "{0:+0.0;-0.0;0.0} pp", g.MovePoints), 14,
-                g.MovePoints < 0 ? PoliSimTheme.Caution : PoliSimTheme.TextPrimary, bold: true);
-
-            float height = Mathf.Clamp(g.HeightPixels + 8f, 36f, 120f);
-            Paint(parent, "Bridge", CanvasPaint.Bridge(420, Mathf.RoundToInt(height), g, AttributionBridge.PixelsPerPoint, PoliSimTheme.Hex(0xF2EADB),
-                PoliSimTheme.TextPrimary, PoliSimTheme.Caution, PoliSimTheme.Hairline, PoliSimTheme.TextPrimary), height);
-
-            // The abbreviations under their slots - a zero term struck through.
-            var strip = new GameObject("BridgeLabels");
-            strip.transform.SetParent(parent, false);
-            strip.AddComponent<RectTransform>();
-            strip.AddComponent<LayoutElement>().minHeight = 16f;   // PF-16: a label's line is 15.2 units at 1280 (14 clipped it)
-            var cells = strip.AddComponent<HorizontalLayoutGroup>();
-            cells.childControlWidth = true; cells.childForceExpandWidth = true; cells.childControlHeight = true; cells.childForceExpandHeight = true;
-            Label(strip.transform, string.Format(CultureInfo.InvariantCulture, "{0:F1}", g.BaselinePoints), PoliSimTheme.TextSecondary, false);
-            foreach (AttributionBridge.Step s in g.Steps) { Label(strip.transform, s.Abbreviation, s.Zero ? PoliSimTheme.TextMuted : PoliSimTheme.TextPrimary, s.Zero); }
-            Label(strip.transform, string.Format(CultureInfo.InvariantCulture, "{0:F1}", g.ClosePoints), PoliSimTheme.TextPrimary, false);
-
-            // The read: the same eleven, the same order, with their figures.
-            foreach (AttributionBridge.Step s in g.Steps)
-            {
-                Row(parent, s.Abbreviation + "  " + System.Text.RegularExpressions.Regex.Replace(s.Source.ToString(), "([a-z])([A-Z])", "$1 $2").ToUpperInvariant(),
-                    s.Zero ? "0.0" : string.Format(CultureInfo.InvariantCulture, "{0:+0.00;-0.00} pp", s.Points), 11,
-                    s.Zero ? PoliSimTheme.TextMuted : PoliSimTheme.TextPrimary);
-            }
-        }
-
-        private static void Paint(Transform parent, string name, Texture2D texture, float height)
-        {
-            var art = new GameObject(name);
-            art.transform.SetParent(parent, false);
-            art.AddComponent<RectTransform>();
-            LayoutElement element = art.AddComponent<LayoutElement>();
-            element.minHeight = height; element.preferredHeight = height;
-            RawImage image = art.AddComponent<RawImage>();
-            image.texture = texture;
-            image.raycastTarget = false;
-        }
-
-        private static void Label(Transform parent, string text, Color ink, bool struck)
-        {
-            Text t = CanvasChrome.MakeTextRealWeight(parent, "L", text, PoliSimTheme.Document, 9, ink, TextAnchor.MiddleCenter);
-            t.raycastTarget = false;
-            if (!struck) { return; }
-            var line = new GameObject("Strike");
-            line.transform.SetParent(t.transform, false);
-            Image bar = line.AddComponent<Image>();
-            bar.color = ink; bar.raycastTarget = false;
-            RectTransform rt = bar.rectTransform;
-            rt.anchorMin = new Vector2(0.15f, 0.5f); rt.anchorMax = new Vector2(0.85f, 0.5f); rt.sizeDelta = new Vector2(0f, 1f);
-        }
-
         /// <summary>
         /// Item 1 (2026-09-10): a call is news when it LANDS. While the night runs, each call prints with the constituency count
         /// at which it became safe (the model stamps it - `ElectionNight.StampLandings`), in the order they landed. Once the count

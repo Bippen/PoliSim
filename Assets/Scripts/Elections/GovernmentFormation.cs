@@ -193,6 +193,106 @@ namespace PoliSim.Elections
             public string NoneWords;
             public bool ReadsPlayersAnswer;
             public bool Partial;
+            /// <summary>D-NIGHT (Design's boards 31a-31c, its "For Code" 1): the vote office turns on, party by party - each party's side and reason as the
+            /// procedure's own code weighed them (`CoalitionFormation.Evaluate`'s <see cref="CoalitionFormation.InvestitureSide"/> and reasons, the Bundestag's
+            /// ballot tally, art. 94's division) - one per chamber that votes (Italy's two). Where no government is expected, the last vote the procedure took.
+            /// Empty where the view is a staged fixture's: the board then draws the aggregate counts and names no party on a side.</summary>
+            public readonly List<NightVote> Votes = new List<NightVote>();
+            /// <summary>D-NIGHT ("For Code" 2): the procedure's steps as the round's cells, in order, padded to <see cref="RoundLimit"/> with the steps not
+            /// reached - the Speaker's proposals (RF 6 kap. 5 §, four), the Bundestag's ballots (Art. 63 GG, three), Italy's mandates (three). Empty where the
+            /// view is a staged fixture's.</summary>
+            public readonly List<RoundCell> Round = new List<RoundCell>();
+            public int RoundLimit;
+        }
+
+        /// <summary>D-NIGHT: one cell of the round - the party asked (the proposal's formateur, the ballot's candidate's party, the mandate's prime minister's
+        /// party; null where the step is not reached or names none) and what became of it.</summary>
+        public enum RoundCellState { Current, Refused, LastRefused, NotReached }
+
+        public struct RoundCell
+        {
+            public string Asked;
+            public RoundCellState State;
+
+            public RoundCell(string asked, RoundCellState state)
+            {
+                Asked = asked;
+                State = state;
+            }
+        }
+
+        /// <summary>D-NIGHT: one party's side at the vote, with its seats and the procedure's own reason.</summary>
+        public struct VoteSide
+        {
+            public string Abbrev;
+            public int Seats;
+            public CoalitionFormation.InvestitureSide Side;
+            public string Reason;
+        }
+
+        /// <summary>D-NIGHT: one chamber's vote as the night draws it - for, abstaining, against, and the line the chamber's rule counts:
+        /// <see cref="CountsAgainst"/> where it is a refusal counted from the against end (the Riksdag's negative rule, RF 6 kap. 4 §: 175 against refuses),
+        /// else the votes for that elect or carry (the Bundestag's 316 of 630, art. 94's majority in each Italian chamber).</summary>
+        public sealed class NightVote
+        {
+            /// <summary>Null for the night's one chamber; "Camera" / "Senato" on Italy's night.</summary>
+            public string Chamber;
+            public int Members;
+            public int Needed;
+            public bool CountsAgainst;
+            public int For;
+            public int Abstain;
+            public int Against;
+            public bool Carried;
+            public readonly List<VoteSide> Sides = new List<VoteSide>();
+            /// <summary>The review's M2: the drafted partners that declined their seats - the proposal falls on their answer, not on the vote; drawn abstaining.</summary>
+            public readonly List<string> Decliners = new List<string>();
+            /// <summary>Why the proposal fell, in the procedure's words (`ProposalVerdict.Reason`); null where it carried.</summary>
+            public string Fell;
+            /// <summary>The review-2 N8: the Bundestag elected the candidate and no government can be drawn on its party - a carried vote with no government, marked.</summary>
+            public bool ElectedWithoutGovernment;
+
+            /// <summary>The review's M2: <paramref name="party"/> declines its drafted seat - it leaves "for" and is drawn as it stands, abstaining, with its own
+            /// answer as the reason; the counts move with it, so the sides still sum to the chamber and against is untouched. False where it holds no side for.</summary>
+            public bool Decline(string party, string reason)
+            {
+                for (int i = 0; i < Sides.Count; i++)
+                {
+                    VoteSide s = Sides[i];
+                    if (s.Abbrev != party || (s.Side != CoalitionFormation.InvestitureSide.InCabinet && s.Side != CoalitionFormation.InvestitureSide.Supports)) { continue; }
+                    Sides[i] = new VoteSide { Abbrev = s.Abbrev, Seats = s.Seats, Side = CoalitionFormation.InvestitureSide.Abstains, Reason = "declines its seat in the cabinet - " + reason };
+                    For -= s.Seats;
+                    Abstain += s.Seats;
+                    if (!Decliners.Contains(party)) { Decliners.Add(party); }
+                    return true;
+                }
+                return false;
+            }
+
+            /// <summary>Review 3's N9: the supporters whose refusal made the proposal fall - drawn as they stand, with their own answer.</summary>
+            public readonly List<string> Withdrew = new List<string>();
+
+            /// <summary>Review 3's N9: <paramref name="party"/>, invited to support from outside, refuses. It is drawn as it stands in the investiture (never "for":
+            /// a side still counted for is moved to abstaining, with the counts), its own answer the reason. False where it holds no side.</summary>
+            public bool Withdraw(string party, string reason)
+            {
+                for (int i = 0; i < Sides.Count; i++)
+                {
+                    VoteSide s = Sides[i];
+                    if (s.Abbrev != party) { continue; }
+                    CoalitionFormation.InvestitureSide side = s.Side;
+                    if (side == CoalitionFormation.InvestitureSide.InCabinet || side == CoalitionFormation.InvestitureSide.Supports)
+                    {
+                        side = CoalitionFormation.InvestitureSide.Abstains;
+                        For -= s.Seats;
+                        Abstain += s.Seats;
+                    }
+                    Sides[i] = new VoteSide { Abbrev = s.Abbrev, Seats = s.Seats, Side = side, Reason = "withdraws its support - " + reason };
+                    if (!Withdrew.Contains(party)) { Withdrew.Add(party); }
+                    return true;
+                }
+                return false;
+            }
         }
 
         /// <summary>PS-3i-2c (§653): the formation on the country's current chamber under a named reading - an election's (`DeclarationReading.OfElection`,

@@ -69,6 +69,10 @@ namespace PoliSim.Simulation
             // each ask as the round makes it (AdvanceSpeakerRound, AskNext): an ask that tables nothing passes to the next party without a rejection; the
             // asks are bounded so a round in which no party can ever table ends the projection rather than the frame
             int asks = 0, maxAsks = (SpeakerRound.ProposalLimit + 1) * round.Order.Count;
+            // D-NIGHT ("For Code" 2): the round's cells - one per proposal the Riksdag votes on, in the order it votes - and the last refused vote, which the
+            // night draws where none is expected ("For Code" 1)
+            var cells = new List<GovernmentFormation.RoundCell>();
+            ProposalVerdict lastRefused = null;
             while (round.Rejections < SpeakerRound.ProposalLimit && asks < maxAsks)
             {
                 string asked = round.Order[asks % round.Order.Count];
@@ -108,15 +112,24 @@ namespace PoliSim.Simulation
                 if (verdict.Passes)
                 {
                     projection.Steps.Add(Pf("proposal {0}: {1} - the Riksdag approves it ({2})", number, Describe(proposal), verdict.Reason));
-                    return Expect(country, projection, proposal, verdict, Pf("THE SPEAKER'S PROPOSAL {0} OF AT MOST {1} - {2} ASKED", number, SpeakerRound.ProposalLimit, PartySystems.ShortName(country.Id, asked).ToUpperInvariant()));
+                    Expect(country, projection, proposal, verdict, Pf("THE SPEAKER'S PROPOSAL {0} OF AT MOST {1} - {2} ASKED", number, SpeakerRound.ProposalLimit, PartySystems.ShortName(country.Id, asked).ToUpperInvariant()));
+                    cells.Add(new GovernmentFormation.RoundCell(asked, GovernmentFormation.RoundCellState.Current));
+                    Cells(projection.View, cells, SpeakerRound.ProposalLimit);
+                    AddVote(projection.View, VoteOf(country, verdict, projection.View));
+                    return projection;
                 }
                 round.Rejections++;
+                cells.Add(new GovernmentFormation.RoundCell(asked, GovernmentFormation.RoundCellState.Refused));
+                lastRefused = verdict;
                 projection.Steps.Add(Pf("proposal {0}: {1} - rejected ({2}); {3} of {4} (RF 6 kap. 5 §)", number, Describe(proposal), verdict.Reason, round.Rejections, SpeakerRound.ProposalLimit));
             }
             projection.Reason = round.Rejections >= SpeakerRound.ProposalLimit
                 ? Pf("the Riksdag rejects {0} proposals - the procedure breaks off (RF 6 kap. 5 §)", SpeakerRound.ProposalLimit)
                 : "no party asked can table a proposal - the Speaker's round finds none";
             projection.View = NoneView(country, projection);
+            if (round.Rejections >= SpeakerRound.ProposalLimit && cells.Count > 0) { cells[cells.Count - 1] = new GovernmentFormation.RoundCell(cells[cells.Count - 1].Asked, GovernmentFormation.RoundCellState.LastRefused); }
+            Cells(projection.View, cells, SpeakerRound.ProposalLimit);
+            AddVote(projection.View, VoteOf(country, lastRefused, projection.View));
             return projection;
         }
 
@@ -128,16 +141,22 @@ namespace PoliSim.Simulation
             CoalitionFormation.Chamber chamber = Formateur.ChamberOf(country, reading, lines, out IReadOnlyList<PoliticalParty> parties);
             Dictionary<string, string> committed = Commitments(country, round, proposal);
             var candidates = new List<string> { proposal.Formateur };
-            Dictionary<string, int> votes = Tally(country, round, chamber, parties, candidates, out List<(string Party, string For, string Reason)> _, committed);
+            Dictionary<string, int> votes = Tally(country, round, chamber, parties, candidates, out List<(string Party, string For, string Reason)> cast, committed);
             int majority = MajorityOf(country);
             int got = votes.TryGetValue(proposal.Formateur, out int v) ? v : 0;
+            // D-NIGHT ("For Code" 8): Art. 63's three steps as the round's cells - the first ballot, the fourteen days, the last ballot; the projection reaches
+            // the first alone
+            var cells = new List<GovernmentFormation.RoundCell> { new GovernmentFormation.RoundCell(proposal.Formateur, got >= majority ? GovernmentFormation.RoundCellState.Current : GovernmentFormation.RoundCellState.Refused) };
             if (got >= majority)
             {
                 FormationProposal government = ElectedGovernment(country, round, proposal.Formateur, proposal, out ProposalVerdict verdict, out bool _);
                 if (government != null && verdict?.Investiture != null)
                 {
                     projection.Steps.Add(Pf("the Bundespräsident proposes {0} candidate; the Bundestag elects at the first ballot, {1} of the {2} a majority of the members needs - {3}", PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true), got, majority, Describe(government)));
-                    return Expect(country, projection, government, verdict, Pf("THE BUNDESPRÄSIDENT'S CANDIDATE - ELECTED AT THE FIRST BALLOT, {0} VOTES, {1} NEEDED", got, majority));
+                    Expect(country, projection, government, verdict, Pf("THE BUNDESPRÄSIDENT'S CANDIDATE - ELECTED AT THE FIRST BALLOT, {0} VOTES, {1} NEEDED", got, majority));
+                    Cells(projection.View, cells, BundestagBallots);
+                    AddVote(projection.View, BallotOf(chamber, parties, cast, proposal.Formateur, projection.Cabinet, majority));
+                    return projection;
                 }
                 projection.Reason = Pf("{0} candidate is elected at the first ballot, and no government can be drawn on its party", PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true));
             }
@@ -148,7 +167,121 @@ namespace PoliSim.Simulation
             projection.Partial = true;
             projection.Steps.Add(projection.Reason);
             projection.View = NoneView(country, projection);
+            Cells(projection.View, cells, BundestagBallots);
+            GovernmentFormation.NightVote ballot = BallotOf(chamber, parties, cast, proposal.Formateur, proposal.CabinetParties, majority);
+            ballot.ElectedWithoutGovernment = ballot.Carried;   // the review-2 N8: elected, and no government drawn on its party - marked, never inferred
+            if (ballot.ElectedWithoutGovernment) { projection.View.NoneWords = "ELECTED - NO GOVERNMENT DRAWN ON ITS PARTY"; }   // N3: the board's words, not "the ballots go on"
+            AddVote(projection.View, ballot);
             return projection;
+        }
+
+        /// <summary>SOURCED - Art. 63 GG, its three phases. D-NIGHT ("For Code" 8): the chancellor's election as the night's cells - Art. 63 Abs. 2 (the first ballot), Abs. 3 (the fourteen days), Abs. 4 (the last ballot).</summary>
+        private const int BundestagBallots = 3;
+
+        /// <summary>D-NIGHT: the round's cells onto the board's view, padded with the steps not reached.</summary>
+        private static void Cells(GovernmentFormation.View view, List<GovernmentFormation.RoundCell> cells, int limit)
+        {
+            if (view == null) { return; }
+            view.Round.AddRange(cells);
+            while (view.Round.Count < limit) { view.Round.Add(new GovernmentFormation.RoundCell(null, GovernmentFormation.RoundCellState.NotReached)); }
+            view.RoundLimit = limit;
+        }
+
+        private static void AddVote(GovernmentFormation.View view, GovernmentFormation.NightVote vote)
+        {
+            if (view != null && vote != null) { view.Votes.Add(vote); }
+        }
+
+        /// <summary>D-NIGHT ("For Code" 1): a Riksdag proposal's investiture as the night draws it - every seated party's side and reason as
+        /// `CoalitionFormation.Evaluate` weighed them (the cabinet's and its accepted supporters' votes for it, the red-lined and hold-outs against, the rest
+        /// abstaining), the refusal line at a majority of the members against it (RF 6 kap. 4 §). Null where the proposal faced no investiture.</summary>
+        private static GovernmentFormation.NightVote VoteOf(Country country, ProposalVerdict verdict, GovernmentFormation.View view)
+        {
+            CoalitionFormation.CabinetEvaluation e = verdict?.Investiture;
+            if (e == null || e.Sides == null) { return null; }
+            IReadOnlyList<PoliticalParty> parties = verdict.Parties ?? PartySystems.For(country.Id);
+            if (parties == null || parties.Count != e.Sides.Length) { return null; }
+            var vote = new GovernmentFormation.NightVote
+            {
+                Members = view.TotalSeats, Needed = view.Majority, CountsAgainst = view.NegativeRule, Carried = verdict.Passes, Fell = verdict.Passes ? null : verdict.Reason,
+            };
+            for (int p = 0; p < parties.Count; p++)
+            {
+                int seats = SeatsOf(country, parties[p].Abbrev);
+                if (seats <= 0) { continue; }
+                vote.Sides.Add(new GovernmentFormation.VoteSide { Abbrev = parties[p].Abbrev, Seats = seats, Side = e.Sides[p], Reason = e.Reasons?[p] });
+                switch (e.Sides[p])
+                {
+                    case CoalitionFormation.InvestitureSide.InCabinet:
+                    case CoalitionFormation.InvestitureSide.Supports: vote.For += seats; break;
+                    case CoalitionFormation.InvestitureSide.Against: vote.Against += seats; break;
+                    default: vote.Abstain += seats; break;
+                }
+            }
+            // the review's M2 (N1): a drafted partner that declines its seat leaves "for" - the proposal falls on its answer, not on a majority against; it is
+            // drawn as it stands (abstaining: it neither sits in the cabinet nor votes against it - the round counts the refusal, RF 6 kap. 5 §), its own answer
+            // the reason. Against is untouched, so it stays the investiture's OpposedSeats.
+            // review 3's N9: a refusing supporter likewise - drawn as it stands, with its own reason
+            var refusals = new List<string>();
+            foreach (PartyAnswer answer in verdict.Answers)
+            {
+                if (answer.Accepts) { continue; }
+                if (answer.InCabinet) { vote.Decline(answer.Party, answer.Reason); } else { vote.Withdraw(answer.Party, answer.Reason); }
+                refusals.Add(PartySystems.ShortName(country.Id, answer.Party) + ": " + answer.Reason);
+            }
+            // review 3's N12: the fall in the model's own specific words - each refusing party's answer, where the verdict names only "an invited party refuses"
+            if (!verdict.Passes && refusals.Count > 0) { vote.Fell = string.Join("; ", refusals); }
+            return vote;
+        }
+
+        /// <summary>D-NIGHT ("For Code" 1): the Bundestag's first ballot as the night draws it - the ballot's own tally (`Tally`), each party for the
+        /// candidate (in the government it forms, or from outside it) or not (the tally casts no "no": a party that refuses every candidate abstains, the
+        /// game's premise), the line at a majority of the members for (Art. 63 Abs. 2).</summary>
+        private static GovernmentFormation.NightVote BallotOf(CoalitionFormation.Chamber chamber, IReadOnlyList<PoliticalParty> parties, List<(string Party, string For, string Reason)> cast,
+            string candidate, IReadOnlyList<string> cabinet, int majority)
+        {
+            var vote = new GovernmentFormation.NightVote { Needed = majority };
+            foreach (int s in chamber.Seats) { vote.Members += s; }
+            foreach ((string party, string votedFor, string reason) in cast)
+            {
+                int p = -1;
+                for (int i = 0; i < parties.Count; i++) { if (parties[i].Abbrev == party) { p = i; break; } }
+                if (p < 0 || chamber.Seats[p] <= 0) { continue; }
+                int seats = chamber.Seats[p];
+                bool votesFor = votedFor != null && votedFor == candidate;
+                CoalitionFormation.InvestitureSide side = !votesFor ? CoalitionFormation.InvestitureSide.Abstains
+                    : cabinet != null && Contains(cabinet, party) ? CoalitionFormation.InvestitureSide.InCabinet : CoalitionFormation.InvestitureSide.Supports;
+                vote.Sides.Add(new GovernmentFormation.VoteSide { Abbrev = party, Seats = seats, Side = side, Reason = reason });
+                if (votesFor) { vote.For += seats; } else { vote.Abstain += seats; }
+            }
+            vote.Carried = vote.For >= majority;
+            return vote;
+        }
+
+        /// <summary>D-NIGHT ("For Code" 1, 8): one Italian chamber's confidence vote (art. 94) as the night draws it - the division's own sides
+        /// (`ConfidenceProcedure.Article94`), its members and the votes it needs.</summary>
+        private static GovernmentFormation.NightVote MotionOf(ConfidenceProcedure.MotionVote motion, IReadOnlyList<string> cabinet)
+        {
+            if (motion == null) { return null; }
+            var vote = new GovernmentFormation.NightVote
+            {
+                Chamber = motion.ChamberName, Members = motion.Members, Needed = motion.Needed, For = motion.For, Against = motion.Against, Carried = motion.Carried,
+            };
+            vote.Abstain = Math.Max(0, motion.Members - motion.For - motion.Against);
+            foreach (DivisionSide s in motion.Sides)
+            {
+                if (s == null || s.Seats <= 0) { continue; }
+                CoalitionFormation.InvestitureSide side = s.Side < 0 ? CoalitionFormation.InvestitureSide.Against : s.Side == 0 ? CoalitionFormation.InvestitureSide.Abstains
+                    : cabinet != null && Contains(cabinet, s.Abbrev) ? CoalitionFormation.InvestitureSide.InCabinet : CoalitionFormation.InvestitureSide.Supports;
+                vote.Sides.Add(new GovernmentFormation.VoteSide { Abbrev = s.Abbrev, Seats = s.Seats, Side = side, Reason = s.Reason });
+            }
+            return vote;
+        }
+
+        private static bool Contains(IReadOnlyList<string> keys, string key)
+        {
+            foreach (string k in keys) { if (k == key) { return true; } }
+            return false;
         }
 
         private FormationProjection ProjectSejm(Country country, DateTime pollingDay)
@@ -243,6 +376,9 @@ namespace PoliSim.Simulation
                 view.Outcome = granted.View.Outcome;
                 view.ProjectionVote = ItalianVote;
                 projection.View = view;
+                MandateCells(view, mandates);
+                AddVote(view, MotionOf(granted.Camera, projection.Cabinet));   // art. 94: once per chamber
+                AddVote(view, MotionOf(granted.Senato, projection.Cabinet));
                 return projection;
             }
             bool barred = Dissolution(firstSitting, out DateTime dissolvedOn, out DateTime polling);
@@ -254,7 +390,33 @@ namespace PoliSim.Simulation
             none.ProjectionVote = ItalianVote;
             none.NoneWords = "THE MANDATES FAIL - DISSOLUTION";
             projection.View = none;
+            MandateCells(none, mandates);
+            ItalianFormation.Mandate voted = null;
+            foreach (ItalianFormation.Mandate m in mandates) { if (m.Camera != null && m.Senato != null) { voted = m; } }   // the last the chambers voted on
+            if (voted != null)
+            {
+                var cabinet = Keys(voted.View.Cabinet);
+                AddVote(none, MotionOf(voted.Camera, cabinet));
+                AddVote(none, MotionOf(voted.Senato, cabinet));
+            }
             return projection;
+        }
+
+        /// <summary>D-NIGHT ("For Code" 2, 8): Italy's mandates as the round's cells - each tried mandate under its prime minister's party (none where it formed no
+        /// government), the granted one current, three failed the last struck in the refusal's ink.</summary>
+        private static void MandateCells(GovernmentFormation.View view, List<ItalianFormation.Mandate> mandates)
+        {
+            var cells = new List<GovernmentFormation.RoundCell>();
+            foreach (ItalianFormation.Mandate m in mandates)
+            {
+                string asked = m.Camera?.PmParty ?? (m.View != null && m.View.Cabinet.Count > 0 ? m.View.Cabinet[0].Abbrev : null);
+                cells.Add(new GovernmentFormation.RoundCell(asked, m.Granted ? GovernmentFormation.RoundCellState.Current : GovernmentFormation.RoundCellState.Refused));
+            }
+            if (cells.Count >= ConfidenceProcedure.ItalianMandates && cells[cells.Count - 1].State == GovernmentFormation.RoundCellState.Refused)
+            {
+                cells[cells.Count - 1] = new GovernmentFormation.RoundCell(cells[cells.Count - 1].Asked, GovernmentFormation.RoundCellState.LastRefused);
+            }
+            Cells(view, cells, ConfidenceProcedure.ItalianMandates);
         }
 
         /// <summary>PS-7: the vote office changes on in Italy, in the board's foot ("A PROJECTION - OFFICE CHANGES ONLY WHEN ...").</summary>

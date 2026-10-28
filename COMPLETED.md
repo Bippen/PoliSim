@@ -41935,3 +41935,22 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** ncr 8/8 (TopStripCrisisDiagnostic clean); dryscr/realcrse/realcrus exit 1 on OVERFLOW (text rects px+2, an 8 px bar figure) - fixed 6962e47f; dryscr2 Sweden + USA + Germany 1280, realcrse2 Sweden 1280, realcrus2 USA 1280 clean, no CALENDAR FIT error, every staging restored; cheapcr2 clean. UI tier only (no simulation path).
 
 **Commit:** this one.
+
+## 935. D-NIGHT BUILT (K126; K231-K234): THE ELECTION NIGHT'S WHO GOVERNS REDRAWN TO DESIGN'S BOARDS 31a-31c - THE VOTE IN THE DIVISION GRAMMAR, THE TICK WHERE THE RULE COUNTS, THE ROUND AS CELLS, EVERY LONG LINE IN THE SLIPS AND † (2026-10-28)
+
+**What was owed:** K126's ask (D-NIGHT, sent 2026-10-27, §919), answered in Design's return of 2026-10-28: the column in v3.5 inside the built 330 x 516 rect, the long wording kept whole in slips and a night-wide † view, and the correction that the bar's tick sits where the rule counts - 175 from the AGAINST end under Sweden's negative rule, not a majority for.
+
+**Built** (an implementer on `wave/dnight`: 0387734a; three reviews - NOT READY (Italy overflowing 516 px; art. 64 misstated; a declining partner's refusal contradicting its bar), NOT READY (the decline producer reported but never committed), READY; the reworks c7963b4e, 7f60d6cd, 8086c3fc, 110c3b82, 396a6102, and 2280a94f after the integrator's films and cheap bar):
+- `GovernmentFormation.View` gains `Votes` (per chamber: each party's side and reason from the procedure's own code - the Riksdag's `CoalitionFormation.Evaluate`, the Bundestag first ballot's tally, Italy's art. 94 divisions; decliners and a withdrawing supporter drawn as they stand) and `Round` (the round's cells), filled by `ProjectFormation`, read-only of the verdict.
+- `ElectionNightScreen.Governs.cs` and `NightColumnPlan.cs`: head with PROJECTED; the Speaker's round (Sweden four, Germany three, Italy's three mandates); outcome and support; the vote bar (cabinet GOOD, support hatched, abstain tan, against BAD, the tick at the rule's line; Italy one block with two lanes at art. 64's line); You with its stamp and K119's line; Why with the bridge, the eleven-act strip, the largest fall and rise; the budget's outcomes; a planned column with a stated shrink order that never overflows 516 px; the † cell swapping the column for every line in full.
+- `FormationProjectionDiagnostic`'s D-NIGHT clauses, each with a plant (sides sum to the counts and the chamber; the line is the rule's; the round's order; carried against government; against equals the investiture's opposition; the declines; Italy per chamber; the column's worst cases within 516). Films `e6_election_night_projected`, `_dagger`, `_italy_support_staged`, `_italy_none_staged`.
+
+**Measured** (`Reviews/2026-10-28_dnight_integrator.md`): the formation sweep UNMOVED; Sweden's night filmed at 1280 and 2560 with no Canvas violation and no plan mismatch; on film the projected column reads a majority government of 198, 151 against with 175 needed to refuse, S expected out of office, and Italy's staged night three failed mandates with both chambers' lanes. The model's own sides confirm Design's DERIVED Swedish split (M, KD, V, MP against; SD, C, L abstaining).
+
+**Evidence:** `Reviews/2026-10-28_dnight_review.md`, `_review2.md`, `_review3.md`, `_integrator.md`; ledger row s935 (`SimulationManager.FormationProjection.cs`).
+
+**Declared:** K231-K234. Poland's Sejm night unchanged (it draws no projection vote). Italy's `-shotinterrupts` film reaches no night (no Italian campaign is held), so Italy's column is filmed staged.
+
+**Bars:** nnt (FormationProjection + Sweep unmoved, MetaText, PartyInk, UiLeverVerb, NumberLocale clean); drysnt Sweden + Germany + Italy 1280; realntse/realntse25 Sweden's night 1280/2560, realntsei, realntde, realntde25 clean (0 Canvas violations, 0 plan mismatches); cheapnt 3 failures (provenance, unwired, cache false positive) - fixed 2280a94f; realntse2 / realntse25b clean, the 88 px gap closed; cheapnt2 clean but the ledger row (added).
+
+**Commit:** this one.

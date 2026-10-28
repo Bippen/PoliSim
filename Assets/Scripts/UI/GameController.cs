@@ -6704,6 +6704,15 @@ namespace PoliSim.UI
                 GovernmentFormation.View government = projection?.View
                     ?? new GovernmentFormation.View { HasGovernment = false, Reason = "no procedure forms this country's government in the game" };
                 if (projection != null) { Debug.Log("FORMATION: the night projects " + projection.Describe() + " | " + string.Join(" | ", projection.Steps)); }
+                foreach (GovernmentFormation.NightVote vote in government.Votes)
+                {
+                    // D-NIGHT ("For Code" 1): the vote the night draws, party by party, as the procedure weighed it - the log a film is read against
+                    var sides = new System.Collections.Generic.List<string>();
+                    foreach (GovernmentFormation.VoteSide s in vote.Sides) { sides.Add(s.Abbrev + " " + s.Seats.ToString(System.Globalization.CultureInfo.InvariantCulture) + " " + s.Side + " (" + s.Reason + ")"); }
+                    Debug.Log("FORMATION: the night's vote" + (vote.Chamber != null ? " in the " + vote.Chamber : string.Empty) + string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        " - {0} for, {1} abstaining, {2} against; {3} {4} of {5}; carried {6} | {7}", vote.For, vote.Abstain, vote.Against, vote.Needed, vote.CountsAgainst ? "against refuses" : "for carries", vote.Members, vote.Carried, string.Join(" | ", sides)));
+                }
+                if (government.Round.Count > 0) { Debug.Log("FORMATION: the night's round - " + string.Join(" · ", government.Round.ConvertAll(c => (c.Asked ?? "-") + " " + c.State))); }
 
                 // §7 of the political-system spec (PS-2, §619): HISTORY AS THE REFERENCE - what actually happened at this election, where the
                 // record holds it (the first election of a Sweden game is 13 September 2026, K-1's sourced result); a later one has no history.
