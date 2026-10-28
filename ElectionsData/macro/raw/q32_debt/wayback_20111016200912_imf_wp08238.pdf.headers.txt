@@ -1,0 +1,38 @@
+HTTP/1.1 200 OK
+Server: nginx
+Date: Wed, 28 Oct 2026 04:23:38 GMT
+Content-Type: application/pdf
+Content-Length: 632324
+Connection: keep-alive
+x-archive-orig-content-length: 632324
+content-location: https://web.archive.org/web/20111016200912id_/http://www.imf.org/external/pubs/ft/wp/2008/wp08238.pdf
+x-archive-orig-last-modified: Tue, 07 Oct 2008 13:42:23 GMT
+x-archive-orig-accept-ranges: bytes
+x-archive-orig-etag: "eafe46878228c91:2c2"
+x-archive-orig-server: Microsoft-IIS/6.0
+x-archive-orig-x-powered-by: ASP.NET
+x-archive-orig-date: Sun, 16 Oct 2011 20:09:13 GMT
+x-archive-orig-connection: close
+cache-control: max-age=1800
+accept-ranges: bytes
+memento-datetime: Sun, 16 Oct 2011 20:09:12 GMT
+link: <http://www.imf.org/external/pubs/ft/wp/2008/wp08238.pdf>; rel="original", <https://web.archive.org/web/timemap/link/http://www.imf.org/external/pubs/ft/wp/2008/wp08238.pdf>; rel="timemap"; type="application/link-format", <https://web.archive.org/web/http://www.imf.org/external/pubs/ft/wp/2008/wp08238.pdf>; rel="timegate"
+content-security-policy: default-src 'self' 'unsafe-eval' 'unsafe-inline' data: blob: archive.org web.archive.org web-static.archive.org wayback-api.archive.org athena.archive.org analytics.archive.org pragma.archivelab.org wwwb-events.archive.org
+x-archive-src: imf-nli-im83-item-22/IM_NLI_elections_102011_domain-20111016200738-00568.arc.gz
+server-timing: captures_list;dur=0.546735, exclusion.robots;dur=0.050267, exclusion.robots.policy;dur=0.037185, esindex;dur=0.008442, cdx.remote;dur=37.320934, LoadShardBlock;dur=136.154923, PetaboxLoader3.datanode;dur=135.945240, load_resource;dur=105.591963, PetaboxLoader3.resolve;dur=52.076655
+x-app-server: wwwb-app262
+x-ts: 200
+x-tr: 305
+server-timing: TR;dur=0,Tw;dur=1000,Tc;dur=4
+set-cookie: wb-p-b-SERVER=wwwb-app262; path=/
+cache-control: private
+X-RL: 0
+X-NA: 0
+X-Page-Cache: BYPASS
+Server-Timing: BYPASS
+X-NID: Telenor Sverige AB
+Referrer-Policy: no-referrer-when-downgrade
+Permissions-Policy: interest-cohort=()
+X-sd: 1
+X-location: _pdf
+

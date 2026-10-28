@@ -10,8 +10,8 @@ namespace PoliSim.Simulation
     /// build it from debt-to-GDP, deficit trajectory and growth - all three already tracked here. So
     /// this is computed on demand from existing state, exactly like <see cref="DerivedStats"/>: no new
     /// fields, no mean-reverting variable of its own, nothing folding into any combined ceiling. It
-    /// therefore cannot desync from the fiscal reality it describes, and cannot change a simulation
-    /// number.
+    /// therefore cannot desync from the fiscal reality it describes. Since MF q33 the standing rating
+    /// has one reader in the simulation: the debt crisis fires when a review leaves it at CCC (K141).
     ///
     /// **Built out of order (before C1-C3), deliberately.** C4 consumes no seed data from the earlier
     /// batches and their blocker is external. See the roadmap's resolved Open Question for why that is
@@ -225,6 +225,15 @@ namespace PoliSim.Simulation
             if (debtNow.HasValue && debtPrior.HasValue && gdpNow.Value > 0f)
             {
                 deficitPercent = debtNow.Value - debtPrior.Value * (gdpPrior.Value / gdpNow.Value);
+                // MF q33 (the q32 review's H1): a default's haircut lowers the stock without a surplus - added back where it fell inside the year the two
+                // closings span (DECLARED: read as the year to the review day) - exact on the scheduled review days, which are quarter starts; a haircut taken mid-quarter (only a first-day review can take one) is misplaced by the daily outlook refresh until its quarter closes (the q32 review 2's N3, declared), so the deficit is the flow's alone
+                if (country.Crisis?.Haircuts != null)
+                {
+                    foreach (DatedAmount h in country.Crisis.Haircuts)
+                    {
+                        if (h.Date >= date.Date.AddYears(-1) && h.Date < date.Date) { deficitPercent += h.Billions / gdpNow.Value * 100f; }
+                    }
+                }
             }
         }
 

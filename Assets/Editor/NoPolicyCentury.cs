@@ -30,6 +30,11 @@ namespace PoliSim.EditorTools
         /// <summary>One year's readouts of the player's country, taken after that year's turn.</summary>
         public sealed class Year
         {
+            /// <summary>MF q32: the debt ratio after the year's turn, per cent of GDP, the crisis phase then and the crises entered so far
+            /// (`DebtPathHoldDiagnostic`).</summary>
+            public float DebtToGdpRatio;
+            public CrisisPhase CrisisPhase;
+            public int Crises;
             public float RoadQuality;
             public float TreatableMortality;
             public float TrendIndex;
@@ -99,6 +104,9 @@ namespace PoliSim.EditorTools
                     sim.AdvanceTurn(decisions);
                     years[year - 1] = new Year
                     {
+                        DebtToGdpRatio = c.State.DebtToGdpRatio,
+                        CrisisPhase = c.Crisis != null ? c.Crisis.Phase : CrisisPhase.None,
+                        Crises = c.Crisis != null ? c.Crisis.Crises : 0,
                         RoadQuality = c.State.RoadQuality,
                         TreatableMortality = c.State.TreatableMortality,
                         TrendIndex = c.Health.TrendIndex,

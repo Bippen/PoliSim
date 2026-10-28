@@ -300,7 +300,8 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>Debt change = deficit, daily, in the money inventory's form (1e): the debt falls by the day's balance and the running budget rises by
-        /// it, so `GovernmentDebt + Budget` stays where it was - except on a day the debt's clamp binds (at -10x or +3x nominal GDP), which is named,
+        /// it, so `GovernmentDebt + Budget` stays where it was (MF q33: plus the default's haircut written off, `SovereignCrisisState.HaircutBillions`, the
+        /// one booked write to the stock off the balance) - except on a day a runaway guard binds (at -10x or +10x nominal GDP since MF q33), which is named,
         /// not failed. The yearly ledger audit is the game's own (`ATTRIB:` in the log, counted as a logged error). And the fund (GA-2-1), on consecutive
         /// days of one period, from the changes in the period's accruals: the day's draw is never larger than the fund held the evening before; the
         /// budget books the figure the period accrues (the day's total spending less the spending beside the fund's - the plan changes only at a
@@ -313,13 +314,13 @@ namespace PoliSim.EditorTools
             foreach (Country c in world.Countries)
             {
                 EconomyState s = c.State;
-                double sum = (double)s.GovernmentDebt + s.Budget;
+                double sum = (double)s.GovernmentDebt + s.Budget + (c.Crisis != null ? c.Crisis.HaircutBillions : 0f);   // MF q33: the haircut is booked, not lost
                 double nominal = Math.Max(1e-9, (double)s.NominalGdp);
                 // The engine's clamp bounds the debt on the nominal GDP its day's step reads (`ApplyRevenueAndSpending`), and the day's output and
                 // prices move after it: so the clamp binds against the last evening's figure as well as tonight's. Read on tonight's alone it bound
                 // "a hair under 300 %" - area 12's x_de_x09, 1,426 false breaches at 299.94-299.98 % (§820, the harness's own).
                 double morning = _nominalEvening.TryGetValue(c.Id, out double lastEvening) ? Math.Max(1e-9, lastEvening) : nominal;
-                bool Binds(double gdp) => Math.Abs(s.GovernmentDebt - 3.0 * gdp) <= 1e-4 * gdp || Math.Abs(s.GovernmentDebt + 10.0 * gdp) <= 1e-4 * gdp;
+                bool Binds(double gdp) => Math.Abs(s.GovernmentDebt - 10.0 * gdp) <= 1e-4 * gdp || Math.Abs(s.GovernmentDebt + 10.0 * gdp) <= 1e-4 * gdp;   // MF q33: the 3x ceiling retired, a 10x guard in its place
                 bool clamped = Binds(nominal) || Binds(morning);
                 _nominalEvening[c.Id] = nominal;
                 if (_twoBooks.TryGetValue(c.Id, out double previous) && !clamped)
@@ -345,7 +346,8 @@ namespace PoliSim.EditorTools
                     Turn = sm.CurrentTurn,
                     Contribution = period.AccruedSwfContribution,
                     TotalSpending = period.AccruedTotalSpending,
-                    OtherSpending = (double)period.AccruedMandatorySpending + period.AccruedUnemploymentBenefitCost + period.AccruedInterestOnDebt + period.AccruedWelfareCost,
+                    OtherSpending = (double)period.AccruedMandatorySpending + period.AccruedUnemploymentBenefitCost + period.AccruedInterestOnDebt + period.AccruedWelfareCost
+                        - (c.Crisis != null ? c.Crisis.CutBillions : 0f),   // MF q33: a closed market's cut comes off the spending beside the fund's (its day's change is what the period's spending lost)
                     Assets = fund.TotalAssets,
                     Returns = period.AccruedSwfReturns,
                 };

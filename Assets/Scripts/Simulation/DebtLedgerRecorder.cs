@@ -76,11 +76,13 @@ namespace PoliSim.Simulation
         public static void RecordDay(Country country, DateTime date, float debtBefore, float debtAfter,
             float erosionFactor, float revenue, float totalSpending, float interestOnDebt,
             float interestAtIssuance, float budgetBalance, float fiscalReactionMultiplier,
-            float issuanceRate, float effectiveRate, bool clampBound)
+            float issuanceRate, float effectiveRate, bool clampBound, float revenueOutsideStance = 0f)
         {
             DebtAttribution ledger = EnsureAccruing(country, date, debtBefore);
 
-            double stanceOneRevenue = fiscalReactionMultiplier > 0f ? revenue / (double)fiscalReactionMultiplier : revenue;
+            // MF q33, K213: the fund's draw is booked whole, outside the stance (`SimulationManager.ApplyRevenueAndSpending`) - only the rest is divided by m
+            double insideStance = (double)revenue - revenueOutsideStance;
+            double stanceOneRevenue = (fiscalReactionMultiplier > 0f ? insideStance / fiscalReactionMultiplier : insideStance) + revenueOutsideStance;
             double reactionEffect = revenue - stanceOneRevenue;
             double nonInterestSpending = (double)totalSpending - interestOnDebt;
             double primaryBalance = stanceOneRevenue - nonInterestSpending;
@@ -117,7 +119,7 @@ namespace PoliSim.Simulation
         /// scenario seed) as a dated Class B event. Zero deltas are skipped - a writer that moved
         /// nothing still moved nothing. Opens the ledger at the PRE-write value if this is the
         /// period's first touch.</summary>
-        public static void RecordEvent(Country country, DateTime date, string label, float debtBefore, float debtAfter, string source = null)
+        public static void RecordEvent(Country country, DateTime date, string label, float debtBefore, float debtAfter, string source = null, bool stockWriteOff = false)
         {
             float appliedDelta = debtAfter - debtBefore;
             if (appliedDelta == 0f)
@@ -130,7 +132,8 @@ namespace PoliSim.Simulation
                 Date = date,
                 Label = label,
                 Source = source,
-                AppliedDelta = appliedDelta
+                AppliedDelta = appliedDelta,
+                StockWriteOff = stockWriteOff   // MF q33 (H1): the haircut - in the audit, out of the year's balance
             });
         }
 

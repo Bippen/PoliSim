@@ -144,20 +144,22 @@ only affect the budget and debt stock, with no feedback into GDP/unemployment/in
   riskPremium * RiskPremiumSensitivity) / 100`, a new spending line. `baseRate` is
   `Country.BaseDebtInterestRateOverride` if set (≥ 0), otherwise `CurrencyZone.InterestRate` — see
   "Reserve-Currency Debt Interest Treatment" below for why the USA overrides this. The risk premium
-  (`SimulationManager.GetDebtRiskPremium`) is `DebtRiskPremiumRate` per point of `DebtToGdpRatio`
-  above `RiskFreeDebtToGdpPercent` (60%, the conventional EU Stability & Growth Pact benchmark),
-  capped at `MaxDebtRiskPremium` — uncapped, the premium (which itself scales with Debt/GDP)
-  multiplying Debt again makes `InterestOnDebt` quadratic in Debt, which can diverge to float
-  infinity within a couple dozen turns rather than just running up a large-but-finite number. Scaled
+  (`SimulationManager.GetDebtRiskPremium`) is, since MF q32 (2026-10-28), the CONVEX spread of Pamies,
+  Carnot and Patarau (2021, European Economy DP 141, Table 1 regression (2)): the quadratic's rise above
+  its minimum, uncapped. The linear rate above 60 % and its cap are retired; the loss of market access
+  at CCC (`SovereignCrisis`, MF q33) is what stops a debt run now. It reprices at issuance only (the
+  maturity rate-lag below), and a programme's loans carry none of it. Scaled
   by `Country.RiskPremiumSensitivity` (1.0 for every country except the USA) before being added to
   `baseRate` — see "Reserve-Currency Debt Interest Treatment" below.
 - **Budget balance and debt** (`SimulationManager.ApplyRevenueAndSpending`): `BudgetBalance =
   GetTotalTaxRevenue − (GovernmentSpending + UnemploymentBenefitCost + InterestOnDebt)`.
-  `GovernmentDebt` grows by the deficit and shrinks by any surplus each turn, hard-clamped to
-  `[0, MaxDebtToGdpPercent]` (300%) — a structural primary deficit (a country's spending exceeding its
-  tax-portfolio revenue) with no policy response for many turns is a real, not-a-bug scenario this
-  model can produce, and the ceiling keeps it a bounded fiscal-stress signal instead of an unbounded
-  one. Replacing the flat `TaxRate` with the portfolio changed every country's revenue-to-GDP ratio
+  `GovernmentDebt` grows by the deficit and shrinks by any surplus each day. Since MF q33 (2026-10-28)
+  no clamp absorbs a deficit: the 300 % ceiling is retired, the stock is stored inside two runaway
+  guards set where nothing should reach (`SimulationManager.StoreDebt`, which books anything they cut),
+  and a structural deficit with no policy response can end in the debt crisis - a default (the USA) or an
+  official programme (the EU countries) at the loss of market access (`SovereignCrisis`, K141-K144).
+  The fund's ceiling refuses a contribution at booking and pays out what stands above it.
+  Replacing the flat `TaxRate` with the portfolio changed every country's revenue-to-GDP ratio
   simultaneously (from a uniform 25% to each country's own sum of `Rate * BaseShareOfGdp` across its
   active lines — see "Tax Portfolio" below for the resulting figures) - re-validated in the standalone
   harness the same way the original debt/fiscal work was, before porting.

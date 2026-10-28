@@ -127,7 +127,9 @@ namespace PoliSim.UI
             if (OneOffsLine(closedYear) is string oneOffs)
             {
                 book.Anchors[OneOffsAnchor] = new SlipContent("THE YEAR'S BALANCE, ONE-OFFS COUNTED").Add(oneOffs)
-                    .Add("THE DEBT'S CHANGE IS THE DEFICIT").Add("EACH ONE-OFF IS A NAMED LINE OF THE BUDGET PAGE'S CLOSED-YEAR BOOK");
+                    .Add(closedYear.WriteOffs > 0f   // MF q33 (the q32 review 2's N1): a default's haircut is no deficit, and the debt fell by it as well
+                        ? "THE DEBT'S CHANGE IS THE DEFICIT LESS THE DEFAULT'S WRITE-OFF OF " + UiFormat.Money(closedYear.WriteOffs, MoneyUnit.Billions)
+                        : "THE DEBT'S CHANGE IS THE DEFICIT").Add("EACH ONE-OFF IS A NAMED LINE OF THE BUDGET PAGE'S CLOSED-YEAR BOOK");
             }
 
             // ---- the sectors (23a ⑧) --------------------------------------------------------------------------------------------------------

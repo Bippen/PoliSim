@@ -17,6 +17,10 @@ namespace PoliSim.Data
         /// none (the drawdown, whose label names it) and in a save from before the field.</summary>
         public string Source;
         public float AppliedDelta;
+        /// <summary>MF q33 (the q32 review's H1): a write-off of the stock - the default's haircut - not a settlement of the year: the debt ledger's audit counts
+        /// it, and the year's balance, its one-offs, the fiscal vote and the rating's settled deficit do not (ESA 2010 books a restructuring as an other change
+        /// in volume, not as revenue). False for every other event.</summary>
+        public bool StockWriteOff;
     }
 
     /// <summary>

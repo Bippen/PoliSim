@@ -358,3 +358,9 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	46193a88717f1b1734e7b8abee3a
 file	Assets/Scripts/Data/EconomyState.cs	f1890ea940cdf324b8363a55369238a9f7bfcf8895e794d17eab13df0440d8bb	reviewed	2026-10-28	s929	Reviews/2026-10-28_q29_integrator.md	-
 baseline	777	2ab67ccd2bba608ecb4c184a4ce1f52962ecae324529aec12d1a811e8932f67a	reviewed	2026-10-28	s929	Reviews/2026-10-28_q29_integrator.md	-
 baseline	424242	2c0cf9fa81176565ee180795f44d17fe3d75955e516e0f96cf51763fce477e4c	reviewed	2026-10-28	s929	Reviews/2026-10-28_q29_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	53851ea0d2d67c2f7ddcfe48a6fca713dfa20a08cdbfa29593c04776ca8967d3	reviewed	2026-10-28	s930	Reviews/2026-10-28_q32_integrator.md	-
+baseline	777	c8594fa0901763025e106edf76a4f0ee3ae97b06c3f0e01fef98f6476e69e8ab	reviewed	2026-10-28	s930	Reviews/2026-10-28_q32_integrator.md	-
+baseline	424242	b00f7a61b6a028b2f0c9ec958a04ed0e3c4aee31b87ed20ade2fac393a826991	reviewed	2026-10-28	s930	Reviews/2026-10-28_q32_integrator.md	-
+file	Assets/Scripts/Simulation/DebtLedgerRecorder.cs	a068474563077352ed009f1c8bccc1c6bb8b353349da83a6bd5e3702d4929cf9	reviewed	2026-10-28	s930	Reviews/2026-10-28_q32_review2.md	-
+file	Assets/Scripts/Data/DebtAttribution.cs	8c25b26b627b2916c6ff2966d71e6a6e30298219fe9b964706a47193051628ad	reviewed	2026-10-28	s930	Reviews/2026-10-28_q32_review2.md	-
+file	Assets/Scripts/Elections/FiscalVote.cs	13e22cb57efbd4b85fceb8f8896b48b4fd81fbf58f11836c9a900a0573d0da78	reviewed	2026-10-28	s930	Reviews/2026-10-28_q32_review2.md	-

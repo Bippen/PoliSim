@@ -23,9 +23,10 @@ namespace PoliSim.Data
     /// real-world mechanism that prevents real-world thrash. "Between reviews the rating is unchanged"
     /// is the point of the design, not a limitation - and an unchanging value has to live somewhere.
     ///
-    /// **Nothing in the simulation reads this.** It is a derived output written by
-    /// `CreditRatingSystem.ReviewIfDue` and read by the UI. It feeds no model input, folds into no
-    /// ceiling, and draws no randomness, so it cannot move a trajectory.
+    /// **One reader in the simulation, since MF q33.** It is a derived output written by
+    /// `CreditRatingSystem.ReviewIfDue` and read by the UI, and the debt crisis reads it as its
+    /// trigger: a review that leaves it at CCC closes the market (K141, `SovereignCrisis`; the USA's read without its reserve discount, K212). Otherwise
+    /// it feeds no model input, folds into no ceiling, and draws no randomness.
     /// </summary>
     public class SovereignRatingState
     {

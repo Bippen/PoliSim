@@ -183,6 +183,31 @@ namespace PoliSim.UI
             return lines;
         }
 
+        /// <summary>MF q33 (K141-K144): the debt crisis in sentences for the debt tile's slip - empty while the country has the market. UI minimal: Design's
+        /// D-WORKLIST section 1 redraws it.</summary>
+        public static System.Collections.Generic.List<string> CrisisLines(Country country, System.DateTime today)
+        {
+            var lines = new System.Collections.Generic.List<string>();
+            SovereignCrisisState crisis = country?.Crisis;
+            if (crisis == null || crisis.Phase == CrisisPhase.None) { return lines; }
+            string since = Day(crisis.StartedOn);
+            if (crisis.Phase == CrisisPhase.Default)
+            {
+                lines.Add("In default since " + since + ", when its debt rated CCC without the reserve currency's discount and the market closed.");
+                lines.Add("A " + (SovereignCrisis.HaircutFraction * 100f).ToString("0", CultureInfo.InvariantCulture) + " % haircut wrote " + UiFormat.Money(crisis.HaircutBillions, MoneyUnit.Billions) + " off the debt.");
+                lines.Add("Shut out of the market through " + Day(crisis.EndsOn) + ": spending other than interest is cut to revenue less interest.");
+            }
+            else
+            {
+                lines.Add("In a programme with " + SovereignCrisis.FacilityOf(country.Id) + " since " + since + ", when the rating reached CCC and the market closed. It runs through " + Day(crisis.EndsOn) + ".");
+                lines.Add("This year's deficit target is " + SovereignCrisis.TargetFor(crisis.EntryDeficitPercent, crisis.ProgrammeYear).ToString("0.0", CultureInfo.InvariantCulture) + " % of GDP, reviewed on " + Day(crisis.NextReviewOn) + ".");
+                lines.Add("The programme's loans carry no market premium.");   // the q32 review's L2: K214's pricing holds in a withheld year too
+                if (SovereignCrisis.Unfinanced(country, today)) { lines.Add("A missed target withheld this year's loan through " + Day(crisis.WithheldThrough) + ": spending other than interest is cut to revenue less interest."); }
+            }
+            if (crisis.CutBillions > 0f) { lines.Add(UiFormat.Money(crisis.CutBillions, MoneyUnit.Billions) + " cut so far."); }
+            return lines;
+        }
+
         /// <summary>The debt tile's state's ground, PS-6 US-35 (board 30c, answer 4): amber a clock running, red the cut in force, the Neutral a limit set aside.</summary>
         public enum DebtLimitInk { Clock, Cut, SetAside }
 

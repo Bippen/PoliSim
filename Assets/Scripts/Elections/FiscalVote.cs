@@ -203,7 +203,7 @@ namespace PoliSim.Elections
             FiscalVoteBook book = country?.FiscalVoteRecord;
             if (book == null || book.OpenDays < 1 || country.State == null || !(country.State.NominalGdp > 0f)) { return null; }
             double oneOffs = 0.0;
-            if (country.FiscalLedgerAccruing?.Events != null) { foreach (DebtEventRecord e in country.FiscalLedgerAccruing.Events) { oneOffs -= e.AppliedDelta; } }
+            if (country.FiscalLedgerAccruing?.Events != null) { foreach (DebtEventRecord e in country.FiscalLedgerAccruing.Events) { if (!e.StockWriteOff) { oneOffs -= e.AppliedDelta; } } }   // MF q33 (H1): the default's haircut is no one-off of the year
             double annual = (double)book.OpenFlow * Simulation.SimulationManager.DaysPerTurn / book.OpenDays + oneOffs;
             return annual / country.State.NominalGdp;
         }

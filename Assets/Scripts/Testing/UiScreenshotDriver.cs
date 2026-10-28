@@ -2152,9 +2152,14 @@ namespace PoliSim.Testing
             };
             if (!UsMajorityReconciliation.TryOutPartyMajority(player, day, out string majority, out _) || majority != op)
             {
-                player.ParliamentSeats = SwappedSeats(house0, pp, op);
-                player.SecondChamberSeats = SwappedSeats(senate0, pp, op);
-                Debug.Log($"SHOT: 89k - {op} does not hold both chambers on the film's world; {pp}'s and {op}'s seats swapped in both chambers for this staging alone, restored after.");
+                // s930: swap only a chamber the opposition does not lead - since MF q29 the world's own count can split the Congress (one chamber each), and
+                // swapping both would hand the player the chamber the opposition already held
+                int Seats(Dictionary<string, int> chamber, string key) => chamber != null && chamber.TryGetValue(key, out int s) ? s : 0;
+                // by HOLDING, not by seats: a chamber equally divided goes to the vice president's party (Trump's), so a tie is broken by one seat moved to the opposition
+                if (Congress.HouseMajority(player) != op) { player.ParliamentSeats = Seats(house0, op) < Seats(house0, pp) ? SwappedSeats(house0, pp, op) : new Dictionary<string, int>(house0); if (Congress.HouseMajority(player) != op) { player.ParliamentSeats = MovedSeat(player.ParliamentSeats, pp, op); } }
+                if (Congress.SenateMajority(player, day) != op) { player.SecondChamberSeats = Seats(senate0, op) < Seats(senate0, pp) ? SwappedSeats(senate0, pp, op) : new Dictionary<string, int>(senate0); if (Congress.SenateMajority(player, day) != op) { player.SecondChamberSeats = MovedSeat(player.SecondChamberSeats, pp, op); } }
+                Debug.Log($"SHOT: 89k - {op} does not hold both chambers on the film's world; {pp}'s and {op}'s seats swapped in each chamber {op} did not lead, for this staging alone, restored after.");
+                Debug.Log($"SHOT: 89k - after the staging the House is held by {Congress.HouseMajority(player) ?? "no one"}, the Senate by {Congress.SenateMajority(player, day) ?? "no one"}.");
             }
             if (!Congress.PresidentOn(player, day, out string president, out _, out bool playerPresident) || !playerPresident || !UsMajorityReconciliation.TryOutPartyMajority(player, day, out majority, out _) || majority != op)
             {
@@ -2172,6 +2177,15 @@ namespace PoliSim.Testing
         }
 
         /// <summary>PS-6 US-21: two parties' seats swapped in a copy of a chamber's seating.</summary>
+        private static Dictionary<string, int> MovedSeat(Dictionary<string, int> seats, string from, string to)
+        {
+            var moved = new Dictionary<string, int>(seats);
+            moved.TryGetValue(from, out int nf);
+            moved.TryGetValue(to, out int nt);
+            if (nf > 0) { moved[from] = nf - 1; moved[to] = nt + 1; }
+            return moved;
+        }
+
         private static Dictionary<string, int> SwappedSeats(Dictionary<string, int> seats, string a, string b)
         {
             var swapped = new Dictionary<string, int>(seats);

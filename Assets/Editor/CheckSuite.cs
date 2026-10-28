@@ -519,6 +519,8 @@ namespace PoliSim.EditorTools
                 ("AggregationEquivalenceCheck", AggregationEquivalenceCheck.Run),
                 ("GermanCampaignDiagnostic", GermanCampaignDiagnostic.Run),   // §697 (PS-4): Germany's campaign on the Länder staged on the snap start and run whole - each party only where it stands, a scripted CSU rally in Hamburg skipped (and landing where the candidacy is lifted)
                 ("CreditRatingAnchorCheck", CreditRatingAnchorCheck.Run),
+                ("MoneyIdentityDiagnostic", MoneyIdentityDiagnostic.Run),   // MF q32/q33 (K141-K144, K212-K214, s930): the convex spread; the fund ceiling refuses at booking and pays out its overflow; the programme and the default at CCC (K212's undiscounted US trigger, review days only); the haircut a stock write-off out of the year's balance, the vote and the rating; the draw booked whole (K213); debt + budget + haircut constant every stressed day, no guard absorbing
+                ("DebtPathHoldDiagnostic", DebtPathHoldDiagnostic.Run),   // MF q32 (s930): the no-policy debt change against the EC DSM 2024 (to 2029 inside its fan, to 2035 by its baseline, from each start's year) and CBO's Feb 2026 extended baseline (10 and 30 years); misses as REGISTERED MISS lines until K218 (K217; prereg 8e07e1d9)
                 ("PublicationCadenceCheck", PublicationCadenceCheck.Run),
                 // C-N3 (2026-08-31): every player-facing lever must measurably move the model, or be named
                 // as retired. It belongs HERE rather than in the nine for this group's own stated reason -

@@ -56,13 +56,20 @@ namespace PoliSim.Simulation
         /// <summary>PS-6 US-24 (the review's M4): the non-interest outlays a binding debt limit cut in the period (`UsDebtLimit.CutToday`), NOMINAL billions -
         /// its own named line, so the parts less it are <see cref="TotalSpending"/>; 0 in every period the limit never bound.</summary>
         public float DebtLimitCut;
+        /// <summary>MF q33 (the q32 review's M3): the non-interest outlays a closed market cut in the period (`SovereignCrisis.CutToday` - default's exclusion,
+        /// a programme's withheld year), NOMINAL billions - its own named line beside <see cref="DebtLimitCut"/>; 0 in every period with the market open.</summary>
+        public float CrisisCut;
         /// <summary>
         /// ⚠ AF-17 (Elias's ruling q17, 2026-10-18): THE YEAR THE PLAYER READS - the period's accrued daily balances PLUS its one-time settlements
-        /// (<see cref="OneOffs"/>), so the closed year's deficit IS the debt's own change (the audit protocol's identity; GA-2-9). §220 built it as the
+        /// (<see cref="OneOffs"/>), so the closed year's deficit IS the debt's own change (the audit protocol's identity; GA-2-9) - less, since MF q33, any
+        /// stock write-off the year took (<see cref="WriteOffs"/>, the default's haircut, which is no balance). §220 built it as the
         /// flow alone and named the settlements only in a diagnostic; every surface, the deficit rule's ink, the annual series and the EU ministry's
         /// reading now see one figure. Revenue and TotalSpending stay the flow's; the one-offs are their own line beside them.
         /// </summary>
         public float BudgetBalance;
+        /// <summary>MF q33 (the q32 review 2's N1): the stock the year wrote off (the default's haircut, `DebtEventRecord.StockWriteOff`), NOMINAL billions,
+        /// positive - outside <see cref="BudgetBalance"/>, so the debt's change is minus the balance less this; 0 in every year without a default.</summary>
+        public float WriteOffs;
         /// <summary>
         /// AF-17 (the review's M2): the period's accrued daily balances ALONE - stored exactly as BudgetBalance was before AF-17 (`period.AccruedBudgetBalance`,
         /// one load and one store), never recovered as BudgetBalance − OneOffs, which is not the same float. The figure a FISCAL RULE reads: the AI ministry's
@@ -90,6 +97,15 @@ namespace PoliSim.Simulation
         /// <summary>Signed as the balance is: positive is money in (a windfall banked), negative a cost.</summary>
         public float Amount;
 
+        /// <summary>MF q33 (the q32 review 2's N1): the stock a period's ledger wrote off - its write-off events, positive; 0 for none.</summary>
+        public static float WriteOffsOf(DebtAttribution ledger)
+        {
+            float sum = 0f;
+            if (ledger?.Events == null) { return sum; }
+            foreach (DebtEventRecord e in ledger.Events) { if (e.StockWriteOff) { sum -= e.AppliedDelta; } }
+            return sum;
+        }
+
         /// <summary>The closing period's one-offs from its accruing debt ledger, in the order they landed; empty for none.</summary>
         public static List<FiscalOneOff> FromLedger(DebtAttribution ledger, out float sum)
         {
@@ -98,6 +114,7 @@ namespace PoliSim.Simulation
             if (ledger?.Events == null) { return lines; }
             foreach (DebtEventRecord e in ledger.Events)
             {
+                if (e.StockWriteOff) { continue; }   // MF q33 (the q32 review's H1): a write-off of the stock - the default's haircut - is no settlement of the year
                 lines.Add(new FiscalOneOff { Date = e.Date, Label = e.Label, Source = e.Source, Amount = -e.AppliedDelta });
                 sum += -e.AppliedDelta;
             }
@@ -169,6 +186,10 @@ namespace PoliSim.Simulation
         /// <summary>PS-6 K26 (Elias's ruling of 2026-10-23: "the budget preview shows the cut when the limit binds"): the non-interest outlays the binding debt
         /// limit cuts in the previewed year, NOMINAL billions - inside `SpendingEstimate` already; 0 wherever the day tick has not armed the cut.</summary>
         public float DebtLimitCut;
+        /// <summary>MF q33: the cut a closed market makes in the previewed year, NOMINAL billions - inside `SpendingEstimate` already. DECLARED (the q32 review's
+        /// L7): the preview reads whether the deficit is financed at TODAY and applies that to its whole year, so a year in which an exclusion or a withheld
+        /// year ends is previewed wholly cut, and one in which a crisis would begin wholly financed - a display figure, never booked.</summary>
+        public float CrisisCut;
         /// <summary>
         /// P2-3.4 (2026-09-02): the previewed year's end readings the Taylor rule reads, and the rule's reading on
         /// them - so the Riksbank panel's projected path is the rule evaluated on this projection and nothing
@@ -400,11 +421,11 @@ namespace PoliSim.Simulation
 
                     // Step C4's scheduled rating review, deliberately AFTER the day's closings are
                     // recorded above so a review landing on a period boundary reads that period's own
-                    // closing rather than the previous one. Same one-directional guarantee as
-                    // publishing: it reads State/Published and writes only Country.Rating, which nothing
-                    // in the simulation consumes, so it cannot influence the turn boundary computed
-                    // below. It draws no randomness either, so the seeded trajectory is unaffected.
+                    // closing rather than the previous one. It reads State/Published and writes only
+                    // Country.Rating, and draws no randomness. Since MF q33 one reader consumes the rating:
+                    // the debt crisis below, whose trigger is a review that leaves it at CCC (K141; the USA read without its reserve discount, K212).
                     CreditRatingSystem.ReviewIfDue(country, CurrentDate);
+                    SovereignCrisis.AdvanceDay(country, CurrentDate);   // MF q33 (K141-K144): the loss of market access at CCC, the default's or the programme's day
                     Elections.ApprovalVote.NoteGovernment(country, CurrentDate);   // A-LOOP q15 (§3 (2)): net approval marked the first day a government is seen - the approval term's reference; writes nothing else
 
                     // CONTINUOUS TIME PHASE 1 (2026-08-02): Sectors and Infrastructure now evolve DAILY.
@@ -508,6 +529,7 @@ namespace PoliSim.Simulation
                     UsLapse.RestoreOutput(country);   // PS-6 US-22b: yesterday's lapse overlay off before the identity reads GDP (nothing where none is applied)
                     float gdpBeforeMacroStep = country.State.GDP;
                     MacroSystem.ApplyEventShockDaily(country);   // FT-9 (§404): the year's event enters here, inside the increment Okun reads - the boundary no longer moves GDP
+                    SovereignCrisis.ApplyOutputCostDaily(country);   // MF q33 (the q32 review's M2): the default's output cost lands where the event's does
                     float anchoredPotential = macroPeriod.PotentialGdpAtPeriodOpen > 0f
                         ? macroPeriod.PotentialGdpAtPeriodOpen
                         : country.State.PotentialGDP;
@@ -572,19 +594,35 @@ namespace PoliSim.Simulation
 
         // --- Fiscal accounting: automatic stabilizers + sovereign risk premium on debt ---
 
-        /// <summary>Conventional "safe" debt-to-GDP benchmark (the EU Stability & Growth Pact reference value) above which lenders start charging extra.</summary>
-        private const float RiskFreeDebtToGdpPercent = 60f;
+        /// <summary>
+        /// MF q32 (ruled 2026-10-18 q32: "the premium cap is replaced by a sourced convex spread"): THE SOVEREIGN SPREAD IS CONVEX IN DEBT. Pamies, Carnot and
+        /// Patarau (2021), "Do fundamentals explain differences between euro area sovereign interest rates?", European Economy Discussion Paper 141 (stored as
+        /// `ElectionsData/macro/raw/q32_debt/ec_dp141_pamies_carnot_patarau_2021.pdf`), Table 1, regression (2), "Debt quadratic": the ten-year spread over
+        /// the Bund, in percentage points, carries -0.0281 times debt-to-GDP and 0.000300 times its square (euro area, 2000-19, generalised two-stage least
+        /// squares). The European Commission's Debt Sustainability Monitor 2024 bases its own financial-stress premium on the same paper.
+        /// SOURCED - Table 1, regression (2)'s debt coefficient (the paper's "gdebt_gdp").
+        /// DECLARED (the q32 review's L3): the regression is the euro area's, 2000-19, a spread over the Bund; it is applied to all six countries over each
+        /// one's own base rate - to the USA (scaled by its RiskPremiumSensitivity), Sweden and Poland over their own policy rates, and to Germany itself, the
+        /// paper's benchmark, as a spread over its own rate (a few hundredths of a point at its seed debt). No estimate for the four outside the sample is used.
+        /// </summary>
+        private const float SpreadDebtCoefficient = -0.0281f;
 
-        /// <summary>Extra interest-rate points charged per point of debt-to-GDP above the risk-free threshold.</summary>
-        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - that borrowing above a risk-free threshold costs more is uncontroversial; the points per point is a game figure.</remarks>
-        private const float DebtRiskPremiumRate = 0.02f;
+        /// <summary>SOURCED - Pamies, Carnot and Patarau (2021), Table 1, regression (2)'s squared-debt coefficient (the paper's "debt_sq"), as above.</summary>
+        private const float SpreadDebtSquaredCoefficient = 0.000300f;
 
-        /// <summary>Caps the risk premium - otherwise it scales with Debt/GDP while also multiplying Debt, making InterestOnDebt quadratic in Debt and able to diverge to infinity within a handful of turns.</summary>
-        /// <remarks>CONVENTION - a cap with a stated structural reason: uncapped, the premium scales with debt-to-GDP while also multiplying debt, making interest quadratic in debt. A bound on the arithmetic, not on the world.</remarks>
-        private const float MaxDebtRiskPremium = 5f;
+        /// <summary>DERIVED from the two coefficients: the debt ratio at which the quadratic's slope is zero, -b1 / (2 b2) - the paper's own reading, "the
+        /// reaction of spreads to government debt becomes positive only for debt ratios above about 50% of GDP". DECLARED: the premium is the quadratic's rise
+        /// above its minimum, so it is zero up to this ratio and convex beyond it; the paper's other regressors (the crisis dummy, the VIX, the ECB's purchases)
+        /// are not the model's and are not read.</summary>
+        private static readonly float SpreadFloorDebtToGdpPercent = -SpreadDebtCoefficient / (2f * SpreadDebtSquaredCoefficient);
 
-        /// <summary>Hard ceiling on debt-to-GDP - a sustained structural deficit with no policy response (e.g. this turn's GovernmentSpendingRate exceeding TaxRate) shouldn't be able to grow without bound.</summary>
-        private const float MaxDebtToGdpPercent = 300f;
+        /// <summary>
+        /// MF q33 (ruled 2026-10-18 q33: "the clamp no longer absorbs deficits"): the 300 % ceiling on debt is RETIRED - the debt crisis (`SovereignCrisis`,
+        /// K141-K144) does what it did. What stands on the positive side is a RUNAWAY GUARD the size of the net-creditor one, set where nothing should ever
+        /// reach it: CONVENTION - a bound on the arithmetic, not on the world. What it absorbs is booked (`SovereignCrisisState.GuardAbsorbedBillions`) and
+        /// `MoneyIdentityDiagnostic` fails on any of it - a guard that binds is a bug report.
+        /// </summary>
+        private const float DebtRunawayGuardPercent = 1000f;
 
         /// <summary>
         /// The fiscal reaction function's slope: how much the effective-revenue multiplier moves per
@@ -717,15 +755,17 @@ namespace PoliSim.Simulation
 
 
         /// <summary>
-        /// Ceiling on SovereignWealthFund.TotalAssets, as a percentage of GDP - matches
-        /// MaxDebtToGdpPercent's own number for consistency, a gameplay safety bound not a realistic
+        /// Ceiling on SovereignWealthFund.TotalAssets, as a percentage of GDP - it matched the retired
+        /// debt ceiling's number for consistency, a gameplay safety bound not a realistic
         /// target (found necessary during validation: sustained maximum contribution (10% of GDP)
         /// into 100% Equities, held for 500 turns with no rebalancing, compounds far faster than GDP
         /// forever since the fund's average return (9%) structurally exceeds trend GDP growth - left
         /// unclamped, this drove the budget's cumulative total to an astronomically large (still
-        /// finite, but unrealistic) figure within a few hundred turns. Mirrors GovernmentDebt's own
-        /// clamp exactly - the flow (this turn's contribution/returns) is still computed and reported
-        /// accurately even in a turn that hits the ceiling; only the STOCK stops compounding further.
+        /// finite, but unrealistic) figure within a few hundred turns. MF q33 (ruled 2026-10-18 q33:
+        /// "The fund ceiling refuses a contribution at booking"): it no longer clamps the stock - a
+        /// contribution that would carry the fund past it is refused at booking and stays in the budget
+        /// (SwfContributionRefused), and what a return or a fall in GDP leaves above it is paid out into
+        /// the budget with the structural draw; both are booked on the country (SovereignCrisisState).
         /// </summary>
         private const float MaxSwfToGdpPercent = 300f;
 
@@ -1032,6 +1072,11 @@ namespace PoliSim.Simulation
             public float AccruedBudgetBalance;
             /// <summary>PS-6 US-24 (the review's M4): the period's debt-limit cut, booked as its own line (inside AccruedTotalSpending, net).</summary>
             public float AccruedDebtLimitCut;
+            /// <summary>MF q33 (the q32 review's M3): the period's closed-market cut, its own line (inside AccruedTotalSpending, net).</summary>
+            public float AccruedCrisisCut;
+            /// <summary>MF q33: what left the fund for the budget in the period - the structural draw and what stood above the ceiling - so the fund's own
+            /// identity (assets at the close = at the open + contributions booked + returns landed - this) can be read off the period.</summary>
+            public float AccruedSwfDraw;
             /// <summary>Pass 5: the tariff portion of AccruedRevenue, kept separately so the
             /// FiscalTurnReport can show "of which tariffs" as a true reading of what accrued.</summary>
             public float AccruedTariffRevenue;
@@ -1050,6 +1095,8 @@ namespace PoliSim.Simulation
                 AccruedTotalSpending = 0f;
                 AccruedBudgetBalance = 0f;
                 AccruedDebtLimitCut = 0f;
+                AccruedCrisisCut = 0f;
+                AccruedSwfDraw = 0f;
                 AccruedTariffRevenue = 0f;
                 AccruedElectricityTaxRevenue = 0f;
             }
@@ -1060,6 +1107,7 @@ namespace PoliSim.Simulation
         /// <summary>PS-6 US-24 (the review's M4): the debt-limit cut the last ApplyRevenueAndSpending call took - the daily accrual books it as its own line. Not
         /// saved: written and read inside one day's step.</summary>
         private float _debtLimitCutToday;
+        private float _crisisCutToday;   // MF q33 (the q32 review's M3): the day's closed-market cut, read by the daily accrual right after ApplyRevenueAndSpending
 
         /// <summary>
         /// Political Systems Overhaul Part A: cabinet decisions rolled but not yet resolved by a
@@ -6791,9 +6839,11 @@ namespace PoliSim.Simulation
                 SwfReturns = period.AccruedSwfReturns,
                 TotalSpending = period.AccruedTotalSpending,
                 DebtLimitCut = period.AccruedDebtLimitCut,   // PS-6 US-24 (M4): the cut's own line
+                CrisisCut = period.AccruedCrisisCut,   // MF q33 (the q32 review's M3): the closed market's cut, its own line
                 BudgetBalance = period.AccruedBudgetBalance + oneOffs,
                 FlowBalance = period.AccruedBudgetBalance,   // AF-17 (M2): the pre-AF-17 store, unchanged - the rules read it
                 OneOffs = oneOffs,
+                WriteOffs = FiscalOneOff.WriteOffsOf(country.FiscalLedgerAccruing),   // MF q33 (N1): the haircut, outside the balance
                 OneOffLines = oneOffLines
             };
             // P2-0.4: the closed period's balance joins the annual series the sheet draws - observation only. AF-17: the year as read, one-offs counted.
@@ -7101,6 +7151,7 @@ namespace PoliSim.Simulation
             Country armedFor = _world?.GetCountry(countryId);
             if (armedFor != null && armedFor.DebtLimitCutFlowDay != System.DateTime.MinValue) { previewCountry.DebtLimitCutFlowDay = CurrentDate; }
             float debtLimitCutBefore = previewCountry.DebtLimitCutBillions;
+            float crisisCutBefore = previewCountry.Crisis.CutBillions;   // MF q33
 
             float gdpBeforeThisTurn = state.GDP;
             float unemploymentBefore = state.Unemployment;
@@ -7193,13 +7244,17 @@ namespace PoliSim.Simulation
             float swfReturns = 0f;
             float swfDraw = 0f;
             float swfUnpaid = 0f;   // GA-2-1: as the day's - a draw delivers what the fund holds, summed in at each use
+            float swfRefused = 0f;   // MF q33: as the day's - the ceiling refuses at booking
+            float swfOverflow = 0f;   // MF q33: as the day's - what stands above the ceiling leaves with the draw
             if (previewCountry.SovereignWealthFund != null)
             {
-                swfUnpaid = Mathf.Max(0f, -(previewCountry.SovereignWealthFund.TotalAssets + swfContribution));
-                previewCountry.SovereignWealthFund.TotalAssets += swfContribution + swfUnpaid;
-                swfReturns = SovereignWealthFundSystem.GetAverageReturnEstimate(previewCountry.SovereignWealthFund);
                 float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.NominalGdp;
-                previewCountry.SovereignWealthFund.TotalAssets = Mathf.Clamp(previewCountry.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
+                swfUnpaid = Mathf.Max(0f, -(previewCountry.SovereignWealthFund.TotalAssets + swfContribution));
+                swfRefused = SwfContributionRefused(previewCountry.SovereignWealthFund, swfContribution, maxSwfAssets);
+                previewCountry.SovereignWealthFund.TotalAssets += swfContribution + swfUnpaid - swfRefused;
+                swfReturns = SovereignWealthFundSystem.GetAverageReturnEstimate(previewCountry.SovereignWealthFund);
+                swfOverflow = Mathf.Max(0f, previewCountry.SovereignWealthFund.TotalAssets - maxSwfAssets);
+                previewCountry.SovereignWealthFund.TotalAssets = Mathf.Max(0f, previewCountry.SovereignWealthFund.TotalAssets - swfOverflow);
 
                 // Mirrors AdvanceTurn exactly: the budget sees the structural DRAW, not the return. The
                 // preview must model the same flow the turn will, or the estimate it shows is of a
@@ -7214,7 +7269,7 @@ namespace PoliSim.Simulation
             // Capturing them adds no arithmetic and no second estimate: the figures a draft's
             // fiscal impact is built from are the boundary's own, which is pass 5's lesson on the
             // Budget "Net" line (never a hand sum beside the model).
-            float previewRevenue = ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution + swfUnpaid, swfDraw, previewTariffRevenue, previewElectricityTaxRevenue, out float previewSpending, out _);
+            float previewRevenue = ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution + swfUnpaid - swfRefused, swfDraw + swfOverflow, previewTariffRevenue, previewElectricityTaxRevenue, out float previewSpending, out _);
 
             // AF-7 (q10, GA-0-53): THE PREVIEW IS DAMPED AS THE PROJECTION IS - the year runs at the rate the boundary sets, the head closing its speed's
             // share of the gap to the target (RatePathProjection.Move; EurozoneRateSystem.ApplyEurozoneRate), where it ran at the undamped target until now.
@@ -7284,10 +7339,11 @@ namespace PoliSim.Simulation
                 RevenueEstimate = previewRevenue,
                 SpendingEstimate = previewSpending,
                 DebtLimitCut = previewCountry.DebtLimitCutBillions - debtLimitCutBefore,   // PS-6 K26: the year's cut on the clone, inside the spending above
+                CrisisCut = previewCountry.Crisis.CutBillions - crisisCutBefore,   // MF q33: the closed market's cut on the clone, inside the spending above (L7: read at today, for the whole year)
                 PovertyRateChange = state.PovertyRate - povertyBefore,
                 LaborForceParticipationRateChange = state.LaborForceParticipationRate - laborForceParticipationBefore,
                 CrimeIndexChange = state.CrimeIndex - crimeIndexBefore,
-                SwfContributionEstimate = swfContribution + swfUnpaid,   // GA-2-1: the period's draw capped once, at the fund's assets today - the days cap it day by day, so the two agree unless the fund drains within the period
+                SwfContributionEstimate = swfContribution + swfUnpaid - swfRefused,   // MF q33: less what the ceiling refuses. GA-2-1: the period's draw capped once, at the fund's assets today - the days cap it day by day, so the two agree unless the fund drains within the period
                 SwfReturnsEstimate = swfReturns,
                 SectorDeltas = SectorDeltasSince(previewCountry, sectorsBefore),   // P4-B3
                 PreviewInflation = state.Inflation,
@@ -7582,6 +7638,7 @@ namespace PoliSim.Simulation
                 DebtLimitReachedOn = country.DebtLimitReachedOn,
                 DebtLimitCutFlowDay = country.DebtLimitCutFlowDay,   // read by the turn-form flows only on the day it is armed for, which the preview's own date is not (it runs on the day the tick armed the next)
                 DebtLimitCutBillions = country.DebtLimitCutBillions,
+                Crisis = country.Crisis?.Copy() ?? new SovereignCrisisState(),   // MF q33: the crisis state, the clone's own copy - the preview's issuance rate and its cut read it
                 DebtLimitRaises = country.DebtLimitRaises,
                 DebtLimitWithheldBy = country.DebtLimitWithheldBy,   // PS-6 K22: read only by the day tick's vote, which the preview never runs; a value, carried so the audit holds
                 DebtLimitLetBind = country.DebtLimitLetBind,   // PS-6 K90: read only by the day tick and the hold, which the preview never runs; a value, carried so the audit holds
@@ -8662,11 +8719,20 @@ namespace PoliSim.Simulation
             return country.BenefitRatePerUnemployed * state.Unemployment / 100f * state.NominalGdp;   // P5-B6: a nominal flow
         }
 
-        /// <summary>Sovereign risk premium: lenders charge more above a conventional "safe" debt-to-GDP benchmark, capped so it can't make InterestOnDebt quadratic in Debt.</summary>
+        /// <summary>Sovereign risk premium, percentage points: MF q32's convex spread (Pamies, Carnot and Patarau 2021, Table 1 regression (2)) - the quadratic's
+        /// rise above its minimum, b2 (d - d*)^2 for a debt ratio d above d* = -b1 / (2 b2), and zero below. UNCAPPED: the cap stopped interest running quadratic
+        /// in debt; the loss of market access (`SovereignCrisis`, at CCC) is what stops the run now.</summary>
         private float GetDebtRiskPremium(EconomyState state)
         {
-            float excessDebtToGdp = Mathf.Max(0f, state.DebtToGdpRatio - RiskFreeDebtToGdpPercent);
-            return Mathf.Min(MaxDebtRiskPremium, DebtRiskPremiumRate * excessDebtToGdp);
+            float excessDebtToGdp = Mathf.Max(0f, state.DebtToGdpRatio - SpreadFloorDebtToGdpPercent);
+            return SpreadDebtSquaredCoefficient * excessDebtToGdp * excessDebtToGdp;
+        }
+
+        /// <summary>MF q32: the premium the convex spread charges at <paramref name="debtToGdpPercent"/> - the same expression, for the diagnostics.</summary>
+        public static float ConvexSpreadAt(float debtToGdpPercent)
+        {
+            float excess = Mathf.Max(0f, debtToGdpPercent - SpreadFloorDebtToGdpPercent);
+            return SpreadDebtSquaredCoefficient * excess * excess;
         }
 
         /// <summary>
@@ -8696,10 +8762,30 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
             state.Budget += amount;
-            float maxDebt = MaxDebtToGdpPercent / 100f * state.NominalGdp;   // P5-B6: bounds on nominal GDP
-            float netCreditorGuard = NetCreditorRunawayGuardPercent / 100f * state.NominalGdp;
-            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - amount, -netCreditorGuard, maxDebt);
+            StoreDebt(country, state.GovernmentDebt - amount);   // MF q33: no ceiling - the runaway guards alone, and what they absorb booked
         }
+
+        /// <summary>MF q33 ("no money vanishes"): THE ONE STORE of the debt stock's new value - inside the two runaway guards (the net-creditor one and, since
+        /// the 300 % ceiling retired, its positive twin), which nothing should ever reach. Where a guard binds, what it cut is booked on the country
+        /// (`SovereignCrisisState.GuardAbsorbedBillions`) and logged as the bug report it is - never silently swallowed.</summary>
+        private static void StoreDebt(Country country, float unguarded)
+        {
+            EconomyState state = country.State;
+            float upper = DebtRunawayGuardPercent / 100f * state.NominalGdp;   // P5-B6: bounds on nominal GDP
+            float lower = -NetCreditorRunawayGuardPercent / 100f * state.NominalGdp;
+            float stored = Mathf.Clamp(unguarded, lower, upper);
+            state.GovernmentDebt = stored;
+            if (stored != unguarded)
+            {
+                if (country.Crisis == null) { country.Crisis = new SovereignCrisisState(); }
+                country.Crisis.GuardAbsorbedBillions += Mathf.Abs(unguarded - stored);
+                Debug.LogError($"MONEY: {country.Id} - a debt runaway guard bound: {unguarded:0.###} stored as {stored:0.###} (a bug report: the guard is set where nothing should reach it)");
+            }
+        }
+
+        /// <summary>MF q33: a debt stock at either runaway guard - the debt ledger's "clamp bound" day.</summary>
+        private static bool DebtAtGuard(EconomyState state, float debt) =>
+            debt >= DebtRunawayGuardPercent / 100f * state.NominalGdp || debt <= -NetCreditorRunawayGuardPercent / 100f * state.NominalGdp;
 
         /// <summary>
         /// THE MATURITY RATE-LAG (ruling R4): the rate NEW ISSUANCE prices at today - base rate
@@ -8729,6 +8815,7 @@ namespace PoliSim.Simulation
             float baseRate = country.BaseDebtInterestRateOverride >= 0f
                 ? country.BaseDebtInterestRateOverride
                 : country.CurrencyZone.InterestRate;
+            if (SovereignCrisis.OfficialLending(country)) { return baseRate; }   // MF q33 (K142, K144): a programme's loans carry no market premium
             return baseRate + GetDebtRiskPremium(country.State) * country.RiskPremiumSensitivity;
         }
 
@@ -8852,6 +8939,15 @@ namespace PoliSim.Simulation
             return seeded;
         }
 
+        /// <summary>MF q33 (ruled 2026-10-18 q33: "The fund ceiling refuses a contribution at booking"): the part of a positive <paramref name="contribution"/>
+        /// that would carry <paramref name="fund"/> past <paramref name="ceiling"/> - refused, so neither the fund nor the budget's spending books it and the
+        /// money stays in the budget. Zero for a draw (a negative contribution) and wherever the fund has the room.</summary>
+        private static float SwfContributionRefused(SovereignWealthFund fund, float contribution, float ceiling)
+        {
+            if (fund == null || contribution <= 0f) { return 0f; }
+            return Mathf.Max(0f, contribution - Mathf.Max(0f, ceiling - fund.TotalAssets));
+        }
+
         /// <summary>
         /// AF-35 (Elias's ruling q35, 2026-10-18: "a fund earns on what it holds"; GA-2-10, §814's review): the part of a day's slice of the period's return
         /// the fund does NOT earn. The return is drawn once on the period-open assets (<see cref="FiscalPeriod.SwfAssetsAtPeriodOpen"/>) and the day earns it
@@ -8864,10 +8960,10 @@ namespace PoliSim.Simulation
         /// fund emptied within a period earns nothing from the day it is empty (the balance itself, <paramref name="held"/>, at or below zero), where it used
         /// to earn the flat slice on assets it no longer had (and since §814 the next day's capped draw paid that slice to the budget). Zero while the
         /// principal is whole; the whole slice where the fund holds nothing; an older save's zero for the open assets reads as whole (the flat slice).
-        /// Where the zero floor or the ceiling binds, the period accrues what landed rather than the return intended (the second review's N2), so the
+        /// Where the zero floor binds, the period accrues what landed rather than the return intended (the second review's N2), so the
         /// principal stays the identity above; a dissolution zeroes the period's return figures (N3), so a fund created after it earns from the next boundary.
-        /// ⚠ STATED (the third review): where the ceiling binds because GDP fell under a fund already above it, the clamp's cut is booked as a negative return
-        /// (P3-2) - the landed change, as N2 books it; a dissolution's zeroing drops that period's earned returns from the year's reported `SwfReturns`
+        /// ⚠ STATED (the third review; MF q33): the ceiling cuts no return - what stands above it after the return (GDP fell under a fund already near it, or
+        /// the return carried it past) leaves as a draw, paid into the budget (<see cref="SwfContributionRefused"/> beside it); a dissolution's zeroing drops that period's earned returns from the year's reported `SwfReturns`
         /// (P3-3) - they reached the debt inside the assets the dissolution credited; and an emergency drawdown scales the period's accrued returns by the
         /// share of the holdings it leaves (P3-1, `ApplySwfDrawdownBillEffects`), so the principal keeps its ratio to the holdings and the drawn share of
         /// the year's returns leaves the year's `SwfReturns` with the assets.
@@ -8943,26 +9039,34 @@ namespace PoliSim.Simulation
             // SUMMED IN at each use like swfUnpaid, never written back into swfReturns: 0 for every fund whose principal is whole, so such a fund reads the
             // old expressions to the bit.
             float swfReturnUnearned = 0f;
-            bool swfReturnBound = false;   // N2: the floor or the ceiling bound the day's return
+            bool swfReturnBound = false;   // N2: the floor bound the day's return
             float swfReturnLanded = 0f;
+            float swfRefused = 0f;   // MF q33: the part of the day's contribution the ceiling refused at booking - it stays in the budget
+            float swfOverflow = 0f;   // MF q33: what stood above the ceiling after the return, paid out into the budget with the draw
             if (country.SovereignWealthFund != null)
             {
+                // MF q33 ("the fund ceiling refuses a contribution at booking"): the ceiling is read FIRST, and the part of a contribution that would carry
+                // the fund past it is refused - booked neither to the fund nor as spending, so the money stays in the budget
+                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.NominalGdp;
                 swfUnpaid = Mathf.Max(0f, -(country.SovereignWealthFund.TotalAssets + swfContribution));
-                country.SovereignWealthFund.TotalAssets += swfContribution + swfUnpaid;
+                swfRefused = SwfContributionRefused(country.SovereignWealthFund, swfContribution, maxSwfAssets);
+                country.SovereignWealthFund.TotalAssets += swfContribution + swfUnpaid - swfRefused;
 
                 swfReturns = period.PlannedSwfReturn * FiscalFlowPerDayFraction;
                 swfReturnUnearned = SwfReturnNotEarned(swfReturns, country.SovereignWealthFund.TotalAssets, country.SovereignWealthFund.TotalAssets - period.AccruedSwfReturns, period.SwfAssetsAtPeriodOpen);
                 float swfBeforeReturn = country.SovereignWealthFund.TotalAssets;
                 country.SovereignWealthFund.TotalAssets = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets + swfReturns - swfReturnUnearned);
 
-                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.NominalGdp;
-                country.SovereignWealthFund.TotalAssets = Mathf.Clamp(country.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
-                // AF-35 (the second review's N2): where the zero floor or the ceiling bound, the period accrues the change that LANDED, not the return
-                // intended, so the principal (TotalAssets - AccruedSwfReturns) stays the period-open assets plus contributions less draws - a loss the floor
-                // cut short is not counted as principal kept, and no later contribution goes into a loss on assets the fund no longer had. A branch: where
-                // neither binds the accrual below is the old expression to the bit.
+                // MF q33: what stands above the ceiling after the return (a return, or a fall in GDP, can carry the fund past it) is paid OUT into the budget with
+                // the structural draw - where the clamp used to delete it
+                swfOverflow = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets - maxSwfAssets);
+                country.SovereignWealthFund.TotalAssets -= swfOverflow;
+                // AF-35 (the second review's N2): where the zero floor bound, the period accrues the change that LANDED, not the return intended, so the
+                // principal (TotalAssets - AccruedSwfReturns) stays the period-open assets plus contributions less draws - a loss the floor cut short is not
+                // counted as principal kept, and no later contribution goes into a loss on assets the fund no longer had. Since MF q33 the ceiling cuts no
+                // return: the return lands whole and the overflow leaves as a draw.
                 bool swfFloored = country.SovereignWealthFund.TotalAssets == 0f && swfBeforeReturn > 0f && swfReturns - swfReturnUnearned < 0f;
-                if (swfFloored || country.SovereignWealthFund.TotalAssets >= maxSwfAssets)
+                if (swfFloored)
                 {
                     swfReturnBound = true;
                     swfReturnLanded = country.SovereignWealthFund.TotalAssets - swfBeforeReturn;
@@ -8971,6 +9075,8 @@ namespace PoliSim.Simulation
                 swfDraw = country.SovereignWealthFund.TotalAssets * SwfStructuralDrawPerTurnFraction() * FiscalFlowPerDayFraction;
                 swfDraw = Mathf.Clamp(swfDraw, 0f, country.SovereignWealthFund.TotalAssets);
                 country.SovereignWealthFund.TotalAssets -= swfDraw;
+                country.Crisis.SwfRefusedBillions += swfRefused;
+                country.Crisis.SwfOverflowBillions += swfOverflow;
             }
 
             // Step 2's third section (2026-08-25): the debt ledger observes THIS write. The three
@@ -8985,7 +9091,7 @@ namespace PoliSim.Simulation
             float interestAtIssuanceToday = debtBeforeWrite > 0f ? debtBeforeWrite * (issuanceRateToday / 100f) * FiscalFlowPerDayFraction : 0f;
             DebtLedgerRecorder.EnsureAccruing(country, CurrentDate, debtBeforeWrite);
 
-            float revenue = ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution + swfUnpaid, swfDraw, tariffRevenue, electricityTaxRevenue, out float totalSpending, out float budgetBalance, FiscalFlowPerDayFraction, period.PlannedFiscalReactionMultiplier);
+            float revenue = ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution + swfUnpaid - swfRefused, swfDraw + swfOverflow, tariffRevenue, electricityTaxRevenue, out float totalSpending, out float budgetBalance, FiscalFlowPerDayFraction, period.PlannedFiscalReactionMultiplier);
 
             period.AccruedRevenue += revenue;
             period.AccruedTariffRevenue += tariffRevenue;
@@ -8994,25 +9100,25 @@ namespace PoliSim.Simulation
             period.AccruedUnemploymentBenefitCost += unemploymentBenefitCost;
             period.AccruedInterestOnDebt += interestOnDebt;
             period.AccruedWelfareCost += welfareCost;
-            period.AccruedSwfContribution += swfContribution + swfUnpaid;   // GA-2-1: what was booked
-            if (swfReturnBound) { period.AccruedSwfReturns += swfReturnLanded; }   // N2: what landed where the floor or the ceiling bound
+            period.AccruedSwfContribution += swfContribution + swfUnpaid - swfRefused;   // GA-2-1: what was booked (MF q33: less what the ceiling refused)
+            if (swfReturnBound) { period.AccruedSwfReturns += swfReturnLanded; }   // N2: what landed where the floor bound
             else { period.AccruedSwfReturns += swfReturns - swfReturnUnearned; }   // AF-35: what the fund earned
+            period.AccruedSwfDraw += swfDraw + swfOverflow;   // MF q33: what left the fund for the budget
             period.AccruedTotalSpending += totalSpending;
             period.AccruedBudgetBalance += budgetBalance;
             period.AccruedDebtLimitCut += _debtLimitCutToday;   // PS-6 US-24 (the review's M4): the day's cut as its own line - 0 on every day the limit does not bind
+            period.AccruedCrisisCut += _crisisCutToday;   // MF q33 (the q32 review's M3): the closed market's cut as its own line - 0 on every financed day
 
             // The erosion factor is the ONE recomputation - the same expression as the stock
             // update's, on the same state - and the ledger's twin-drift detector is what keeps it
             // so. The clamp is detected by landing ON either bound, tested against the same two
-            // limits the update clamps to.
+            // limits the update clamps to (MF q33: the two runaway guards - the ceiling is retired).
             float erosionFactorApplied = 1f;   // P5-B6: no erosion - the book is nominal, and a nominal stock is not eroded by the prices it is written in
             float debtAfterWrite = state.GovernmentDebt;
-            float ceilingToday = MaxDebtToGdpPercent / 100f * state.NominalGdp;   // P5-B6: bounds on nominal GDP
-            float guardToday = NetCreditorRunawayGuardPercent / 100f * state.NominalGdp;
-            bool clampBoundToday = debtAfterWrite >= ceilingToday || debtAfterWrite <= -guardToday;
+            bool clampBoundToday = DebtAtGuard(state, debtAfterWrite);
             DebtLedgerRecorder.RecordDay(country, CurrentDate, debtBeforeWrite, debtAfterWrite, erosionFactorApplied,
                 revenue, totalSpending, interestOnDebt, interestAtIssuanceToday, budgetBalance,
-                period.PlannedFiscalReactionMultiplier, issuanceRateToday, effectiveRateToday, clampBoundToday);
+                period.PlannedFiscalReactionMultiplier, issuanceRateToday, effectiveRateToday, clampBoundToday, swfDraw + swfOverflow);   // K213: the draw sits outside the stance
         }
 
         /// <summary>
@@ -9036,21 +9142,24 @@ namespace PoliSim.Simulation
 
             float swfDraw = 0f;
             float swfUnpaid = 0f;   // GA-2-1: as the day's
+            float swfRefused = 0f;   // MF q33: as the day's
+            float swfOverflow = 0f;   // MF q33: as the day's
             if (country.SovereignWealthFund != null)
             {
-                swfUnpaid = Mathf.Max(0f, -(country.SovereignWealthFund.TotalAssets + swfContribution));
-                country.SovereignWealthFund.TotalAssets += swfContribution + swfUnpaid;
-                country.SovereignWealthFund.TotalAssets = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets + swfPeriodReturn);
-
                 float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.NominalGdp;
-                country.SovereignWealthFund.TotalAssets = Mathf.Clamp(country.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
+                swfUnpaid = Mathf.Max(0f, -(country.SovereignWealthFund.TotalAssets + swfContribution));
+                swfRefused = SwfContributionRefused(country.SovereignWealthFund, swfContribution, maxSwfAssets);
+                country.SovereignWealthFund.TotalAssets += swfContribution + swfUnpaid - swfRefused;
+                country.SovereignWealthFund.TotalAssets = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets + swfPeriodReturn);
+                swfOverflow = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets - maxSwfAssets);
+                country.SovereignWealthFund.TotalAssets -= swfOverflow;
 
                 swfDraw = country.SovereignWealthFund.TotalAssets * SwfStructuralDrawPerTurnFraction();
                 swfDraw = Mathf.Clamp(swfDraw, 0f, country.SovereignWealthFund.TotalAssets);
                 country.SovereignWealthFund.TotalAssets -= swfDraw;
             }
 
-            ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution + swfUnpaid, swfDraw, tariffRevenue, 0f, out _, out _);   // EN-7b: the equivalence bar runs no law - no electricity-tax flow on either side
+            ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution + swfUnpaid - swfRefused, swfDraw + swfOverflow, tariffRevenue, 0f, out _, out _);   // EN-7b: the equivalence bar runs no law - no electricity-tax flow on either side
         }
 
         /// <summary>
@@ -9141,7 +9250,7 @@ namespace PoliSim.Simulation
             // contribution to revenue either way, and renaming it across every call site would obscure
             // the diff that matters. The realised return no longer reaches the budget at all.
             //
-            // SWF INCOME IS INSIDE THE MULTIPLIER (2026-08-02, Elias's ruling: fix the cause).
+            // SWF INCOME WAS PUT INSIDE THE MULTIPLIER (2026-08-02, Elias's ruling: fix the cause) - superseded for the draw by K213, below.
             //
             // They used to be added AFTER it - `... * fiscalReactionMultiplier + swfReturns` - which put
             // the fastest-growing component of a net creditor's revenue permanently beyond the reach of
@@ -9156,16 +9265,28 @@ namespace PoliSim.Simulation
             // banking it - which is exactly what the fiscal reaction function already claims to model for
             // tax revenue. The symmetry holds at the other end too: a heavily indebted government leans
             // harder on its fund.
-            // Pass 5: the tariff flow sits with the fund draw - inside the multiplier, outside CE.
+            // Pass 5: the tariff flow sat with the fund draw - inside the multiplier, outside CE (since K213 the draw is outside it, below).
             // EN-7b: the electricity tax's change sits with them - inside the multiplier, outside CE (the seeded taxes are inside CE's coverage bridge). ONE
             // expression, the flow always summed (0 at no law): a ternary over the two expressions - and even a dead if-block writing actualRevenue a second
             // time - moved the no-policy budget by a float's last digit on turn 1 (the sentinel caught both, 2026-09-15; §402's class)
-            float actualRevenue = (theoreticalRevenue * effectiveCollectionEfficiency + swfReturns + tariffRevenue + electricityTaxRevenue) * fiscalReactionMultiplier;
+            //
+            // MF q33, K213 (2026-10-28, "q33 reaches fund draws"): THE DRAW IS BOOKED WHOLE - the budget receives exactly what left the fund, and the
+            // multiplier acts on the taxes and the tariff beside it, no longer on the draw. Read against the ruling above and declared: its measured
+            // runaway was the REALISED RETURN's (405 % of the reachable tax take), and the realised return stopped reaching the budget the same day (the
+            // structural draw, SwfStructuralDrawPercentPerYear) - the draw is a bounded share of the fund, so booking it whole cannot compound as the
+            // return did. The multiplier was to scale only the draw's demand effect, and the draw has none to scale: the national-accounts identity
+            // reads the period's planned government consumption, never revenue, so scaling the draw moved only the money booked - money that left the
+            // fund and never reached the budget. The stance keeps its whole reach on the taxes.
+            float actualRevenue = (theoreticalRevenue * effectiveCollectionEfficiency + tariffRevenue + electricityTaxRevenue) * fiscalReactionMultiplier + swfReturns;
             // PS-6 US-24 (R-US21 (iv)): on a day the binding debt limit's cut is armed, the non-interest outlays are cut pro rata to what revenue leaves after
             // interest (UsDebtLimit.CutToday) - 0 on every other day and in every other country, and summed in one expression (§501: x - 0 is exact)
             float debtLimitCut = UsDebtLimit.CutToday(country, CurrentDate, actualRevenue, interestOnDebt, governmentSpending + mandatorySpending + unemploymentBenefitCost + welfareCost + swfContribution);
-            totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution - debtLimitCut;
+            // MF q33 (K142): in default's exclusion, or in a programme year whose disbursement was withheld, no borrowing finances the deficit - the
+            // non-interest outlays left after the debt limit's cut are cut to revenue less interest (SovereignCrisis.CutToday) - 0 on every other day
+            float crisisCut = SovereignCrisis.CutToday(country, CurrentDate, actualRevenue, interestOnDebt, governmentSpending + mandatorySpending + unemploymentBenefitCost + welfareCost + swfContribution - debtLimitCut);
+            totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution - debtLimitCut - crisisCut;
             _debtLimitCutToday = debtLimitCut;   // the review's M4: read by the daily accrual right after this call, to book the cut as its own line
+            _crisisCutToday = crisisCut;   // MF q33 (the q32 review's M3): likewise for the closed market's cut
             budgetBalance = actualRevenue - totalSpending;
 
             state.Budget += budgetBalance;
@@ -9179,7 +9300,6 @@ namespace PoliSim.Simulation
             // a stock driven below zero was held at zero and then released, which is the exact shape of
             // a bimodal attractor. Sweden hit the floor on 67 of 120 baseline turns, France on 14, and
             // Germany only under `swfstress` - precisely the set whose SWF drives net position negative.
-            // The CEILING is retained and is not implicated: no country has ever reached it.
             //
             // THE NEGATIVE SIDE IS A RUNAWAY GUARD, NOT A BOUND (2026-08-02, Elias's ruling).
             //
@@ -9193,10 +9313,9 @@ namespace PoliSim.Simulation
             // a BUG REPORT, not a clamp doing its job - the guard has caught a runaway the stabiliser
             // should have prevented, and the correct response is to investigate rather than to widen it.
             //
-            // The CEILING is unchanged and is not a guard: MaxDebtToGdpPercent is a calibrated gameplay
-            // bound that no country has ever reached either, but it predates this and stays as it was.
-            float maxDebt = MaxDebtToGdpPercent / 100f * state.NominalGdp;   // P5-B6: bounds on nominal GDP (the ledger reads the same)
-            float netCreditorGuard = NetCreditorRunawayGuardPercent / 100f * state.NominalGdp;
+            // MF q33 (2026-10-28): THE CEILING IS RETIRED. The 300 % bound absorbed deficits once a country reached it (GA-12-1, the audit's deficit pole);
+            // the debt crisis at CCC does its work now, and the positive side carries a runaway guard of the same
+            // kind as this one (DebtRunawayGuardPercent, in StoreDebt).
 
             // THE EROSION TERM (2026-08-17; mechanism-report rulings R1-R3). The standard
             // debt-dynamics identity's −π·b, previously missing: per R2's DECLARATION (recorded in
@@ -9219,7 +9338,9 @@ namespace PoliSim.Simulation
             // its one nominal stock and bridged the two with −π·b; B6 makes the book nominal - revenue, spending and the balance
             // are in current prices - so the debt accrues nominal balances and the bridge would count inflation twice.
             // What erodes now is the debt-to-GDP RATIO, through nominal GDP, which is what the identity says.
-            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - budgetBalance, -netCreditorGuard, maxDebt);
+            // MF q33 (ruled 2026-10-18 q33: "the clamp no longer absorbs deficits"): the stock takes the whole balance - the 300 % ceiling is retired, the
+            // two runaway guards alone stand, and what they would absorb is booked (StoreDebt)
+            StoreDebt(country, state.GovernmentDebt - budgetBalance);
 
             return actualRevenue;
         }

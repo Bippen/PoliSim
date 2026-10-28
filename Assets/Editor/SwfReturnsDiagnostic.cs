@@ -100,7 +100,8 @@ namespace PoliSim.EditorTools
                     // INSIDE the multiplier, `Revenue - SwfReturns` is no longer the tax component: it is
                     // `tax*m + swf*(m-1)`, which goes negative whenever swf exceeds tax at m = 0.5. A
                     // negative "taxPart" in a post-fix run is an artefact of this arithmetic, NOT a model
-                    // defect - do not report it as one.
+                    // defect - do not report it as one. ⚠ MF q33 (K213, 2026-10-28): the fund's DRAW now sits outside the multiplier again, booked whole, and
+                    // the report's SwfReturns is the realised return (which never reaches the budget) - this decomposition reads neither, so it is history only.
                     float share = Mathf.Abs(taxPart) > 0.001f ? Mathf.Abs(swf) / taxPart * 100f : 0f;
                     if (share > maxSwfShare[c.Id]) { maxSwfShare[c.Id] = share; }
                     if (r.Revenue < 0f) { negativeRevenueTurns[c.Id]++; }

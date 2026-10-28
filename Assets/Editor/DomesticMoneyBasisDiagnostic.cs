@@ -280,7 +280,7 @@ namespace PoliSim.EditorTools
 
                             float tolerance = Mathf.Max(0.01f, 2e-4f * Mathf.Max(Mathf.Abs(ledger.DebtAtPeriodOpen), Mathf.Abs(ledger.DebtAtClose)));
                             float debtChange = ledger.DebtAtClose - ledger.DebtAtPeriodOpen;
-                            float readAsDeficit = -yearReport.BudgetBalance + ledger.Erosion + ledger.ClampLoss;
+                            float readAsDeficit = -yearReport.BudgetBalance - yearReport.WriteOffs + ledger.Erosion + ledger.ClampLoss;   // MF q33 (N1): less any stock write-off
                             sb.Append(F("  {0,-8} year {1}: debt change {2,9:+0.000;-0.000} | the year's balance {3,9:+0.000;-0.000}, of which one-offs {4,8:+0.000;-0.000} in {5} line(s); erosion {6:+0.000;-0.000}, clamp {7:+0.000;-0.000}\n",
                                 c.Id, yearsClosed, debtChange, yearReport.BudgetBalance, yearReport.OneOffs, yearReport.OneOffLines?.Count ?? -1, ledger.Erosion, ledger.ClampLoss));
                             failures += Assert(sb, $"{c.Id} year {yearsClosed}: AF-17 - the debt's change IS the closed year's deficit (beyond erosion and the clamp)",
@@ -289,22 +289,23 @@ namespace PoliSim.EditorTools
                             failures += Assert(sb, $"{c.Id} year {yearsClosed}: the report's FlowBalance (the EU ministry's reading) is the ledger's flow terms alone, sign flipped - net of the one-offs",
                                 Mathf.Abs(-yearReport.FlowBalance - flowTerms) <= tolerance && Mathf.Abs(yearReport.BudgetBalance - yearReport.FlowBalance - yearReport.OneOffs) <= tolerance,
                                 F("-flow {0:0.0000} vs terms-erosion {1:0.0000}; balance-flow {2:0.0000} vs one-offs {3:0.0000} (tol {4:0.0000})", -yearReport.FlowBalance, flowTerms, yearReport.BudgetBalance - yearReport.FlowBalance, yearReport.OneOffs, tolerance));
-                            float flowAndEvents = ledger.TermSum - ledger.Erosion + ledger.EventSum;
+                            float flowAndEvents = ledger.TermSum - ledger.Erosion + ledger.EventSum + yearReport.WriteOffs;   // MF q33 (N1): a write-off event is no part of the balance
                             failures += Assert(sb, $"{c.Id} year {yearsClosed}: the year's balance is the ledger's flow terms plus its dated events, sign flipped",
                                 Mathf.Abs(-yearReport.BudgetBalance - flowAndEvents) <= tolerance, F("-balance {0:0.0000} vs terms-erosion+events {1:0.0000} (tol {2:0.0000})", -yearReport.BudgetBalance, flowAndEvents, tolerance));
 
                             // itemised: one named line per event, as it landed, the lines summing to the one-offs
                             List<FiscalOneOff> lines = yearReport.OneOffLines;
-                            bool itemised = lines != null && lines.Count == ledger.Events.Count;
+                            List<DebtEventRecord> settlements = ledger.Events.FindAll(e => !e.StockWriteOff);   // MF q33 (N1): a write-off is no one-off line
+                            bool itemised = lines != null && lines.Count == settlements.Count;
                             float lineSum = 0f;
                             for (int i = 0; itemised && i < lines.Count; i++)
                             {
-                                itemised &= lines[i].Label == ledger.Events[i].Label && lines[i].Date == ledger.Events[i].Date && lines[i].Amount == -ledger.Events[i].AppliedDelta && !string.IsNullOrEmpty(lines[i].Label)
-                                    && lines[i].Source == ledger.Events[i].Source && (!lines[i].Label.StartsWith("Cabinet: AF-17 probe", StringComparison.Ordinal) || lines[i].Source == "AF-17 probe");   // L2: the decision's name rides the line
+                                itemised &= lines[i].Label == settlements[i].Label && lines[i].Date == settlements[i].Date && lines[i].Amount == -settlements[i].AppliedDelta && !string.IsNullOrEmpty(lines[i].Label)
+                                    && lines[i].Source == settlements[i].Source && (!lines[i].Label.StartsWith("Cabinet: AF-17 probe", StringComparison.Ordinal) || lines[i].Source == "AF-17 probe");   // L2: the decision's name rides the line
                                 lineSum += lines[i].Amount;
                             }
                             failures += Assert(sb, $"{c.Id} year {yearsClosed}: every one-off is its own named, dated line, as it landed on the debt, and the lines sum to the year's one-offs",
-                                itemised && Mathf.Abs(lineSum - yearReport.OneOffs) <= 1e-5f * Mathf.Max(1f, Mathf.Abs(yearReport.OneOffs)), F("{0} line(s) for {1} event(s); lines sum {2:0.0000}, one-offs {3:0.0000}", lines?.Count ?? -1, ledger.Events.Count, lineSum, yearReport.OneOffs));
+                                itemised && Mathf.Abs(lineSum - yearReport.OneOffs) <= 1e-5f * Mathf.Max(1f, Mathf.Abs(yearReport.OneOffs)), F("{0} line(s) for {1} event(s); lines sum {2:0.0000}, one-offs {3:0.0000}", lines?.Count ?? -1, settlements.Count, lineSum, yearReport.OneOffs));
                             failures += Assert(sb, $"{c.Id} year {yearsClosed}: the harness's {plantedThisYear} planted one-off(s) reached the year",
                                 lines != null && lines.Count >= plantedThisYear && (plantedThisYear == 0 || yearReport.OneOffs != 0f), F("{0} line(s), one-offs {1:0.0000}", lines?.Count ?? -1, yearReport.OneOffs));
                             sumNegBalance[c.Id] += -yearReport.BudgetBalance;

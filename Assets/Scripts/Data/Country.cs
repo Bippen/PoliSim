@@ -27,8 +27,9 @@ namespace PoliSim.Data
         /// <summary>
         /// The standing sovereign rating, set by scheduled review rather than recomputed every turn - see
         /// `CreditRatingSystem.ReviewIfDue` and Elias's A1 ruling (2026-08-02). A derived OUTPUT, sitting
-        /// beside Published for the same reason Published sits beside State: nothing in the simulation
-        /// reads it, it folds into no ceiling, and it draws no randomness.
+        /// beside Published for the same reason Published sits beside State: it folds into no ceiling and
+        /// draws no randomness, and its one reader in the simulation is the debt crisis's trigger at CCC
+        /// (MF q33, K141).
         /// </summary>
         public SovereignRatingState Rating = new SovereignRatingState();
 
@@ -1085,6 +1086,10 @@ namespace PoliSim.Data
         /// <summary>PS-6 US-24: the non-interest outlays the cut has taken since the measures ran out, NOMINAL billions - the slip's figure; 0 again when a raise
         /// becomes law.</summary>
         public float DebtLimitCutBillions;
+
+        /// <summary>MF q33 (K141-K144): the debt crisis - in the market, in default, or in a programme - and the money the retired clamps used to swallow, booked
+        /// (`SovereignCrisis`). Saved with the country; the preview's clone carries its own copy.</summary>
+        public SovereignCrisisState Crisis = new SovereignCrisisState();
 
         /// <summary>PS-6 US-24: the raises the game has made - by Congress's act or, where no Congress of the game votes, the AI-governed USA's (R-US21 (vi)).</summary>
         public int DebtLimitRaises;

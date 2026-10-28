@@ -202,6 +202,9 @@ namespace PoliSim.UI
             List<string> limitLines = FiscalRules.DebtLimitLines(_playerCountry, _simulationManager.CurrentDate, pendingRaise);
             if (limitLines.Count > 0) { debtSlip.Add("THE FEDERAL DEBT LIMIT"); }   // PS-6 US-35 (board 30c): the slip's section, its lines in sentence case
             foreach (string limitLine in limitLines) { debtSlip.Add(limitLine); }   // PS-6 US-24: the federal debt limit, live (nothing where the game holds no limit)
+            List<string> crisisLines = FiscalRules.CrisisLines(_playerCountry, _simulationManager.CurrentDate);   // MF q33: the debt crisis, live (nothing while the country has the market)
+            if (crisisLines.Count > 0) { debtSlip.Add("THE DEBT CRISIS"); }
+            foreach (string crisisLine in crisisLines) { debtSlip.Add(crisisLine); }
             // PS-6 US-35 (board 30c, answer 4): the tile keeps its figure, and one chip under the name gives the limit's state - or, below it, a muted line
             debt.Chip = FiscalRules.DebtLimitChip(_playerCountry, _simulationManager.CurrentDate, pendingRaise, out FiscalRules.DebtLimitInk limitInk, out debt.Sub);
             debt.ChipGround = limitInk == FiscalRules.DebtLimitInk.Cut ? PoliSimTheme.Bad : limitInk == FiscalRules.DebtLimitInk.SetAside ? PoliSimTheme.Neutral : PoliSimTheme.Caution;
@@ -873,6 +876,7 @@ namespace PoliSim.UI
                 rows.Add(("Interest", UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions), "ON DEBT, AUTOMATIC", neutral));
                 rows.Add(("Welfare", UiFormat.Money(report.WelfareCost, MoneyUnit.Billions), "PROGRAMMES", neutral));
                 if (report.DebtLimitCut != 0f) { rows.Add(("Debt-limit cut", UiFormat.MoneyDelta(-report.DebtLimitCut, MoneyUnit.Billions), "OUTLAYS CUT TO REVENUE", neutral)); }   // PS-6 US-24 (the review's M4): the cut's own line, so the lines add to the year's spending
+                if (report.CrisisCut != 0f) { rows.Add(("Debt-crisis cut", UiFormat.MoneyDelta(-report.CrisisCut, MoneyUnit.Billions), "NO BORROWING: OUTLAYS CUT TO REVENUE", neutral)); }   // MF q33 (the q32 review's M3): the closed market's cut, its own line
                 rows.Add(("Tariffs", UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions), "AT THE STATED RATES", neutral));
                 if (report.ElectricityTaxRevenue != 0f) { rows.Add(("Electricity tax", UiFormat.MoneyDelta(report.ElectricityTaxRevenue, MoneyUnit.Billions), "VS THE 2023 STATUTE", neutral)); }   // EN-7b
                 // AF-17 (q17): the year's one-offs itemised, each its own named line - they count in the balance below, so the debt's change is the deficit

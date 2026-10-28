@@ -1,0 +1,28 @@
+url	file	fetched_utc	http_status	bytes
+https://web.archive.org/web/20260211152810id_/https://www.cbo.gov/system/files/2026-02/51119-2026-02-LTBO-Budget.xlsx	wayback_20260211152810_cbo_51119-2026-02-LTBO-Budget.xlsx	2026-10-28T04:07:52Z	200	632036
+https://economy-finance.ec.europa.eu/document/download/581dbeab-4e86-44b9-afbe-6da8a1572491_en?filename=ip306_en.pdf	ec_dsm2024_ip306_en.pdf	2026-10-28T04:08:47Z	200	4912694
+https://economy-finance.ec.europa.eu/document/download/5d83c26d-dd1a-4fbc-8315-3dccbc4fa019_en?filename=DSM%202024%20country%20fiches%20tables%20and%20graphs%20-%20final.xlsx	ec_dsm2024_country_fiches_tables_and_graphs_final.xlsx	2026-10-28T04:08:48Z	200	4385392
+https://economy-finance.ec.europa.eu/document/download/4f8a3fef-4c59-48ce-bbd4-027eaaa3a3d5_en?filename=dp141_en.pdf	ec_dp141_pamies_carnot_patarau_2021.pdf	2026-10-28T04:09:42Z	200	3963963
+http://publications.europa.eu/resource/celex/32002R0332	eu_reg2002-332_bop_facility_cellar.xhtml	2026-10-28T04:14:48Z	200	14761
+https://ec.europa.eu/economy_finance/eu_borrower/mou/2011-05-18-mou-portugal_en.pdf	ec_mou_portugal_2011-05-18.pdf	2026-10-28T04:15:13Z	200	219554
+https://www.nber.org/system/files/working_papers/w18855/w18855.pdf	nber_w18855_tomz_wright.pdf	2026-10-28T04:19:40Z	200	436308
+https://web.archive.org/web/20111016200912id_/http://www.imf.org/external/pubs/ft/wp/2008/wp08238.pdf	wayback_20111016200912_imf_wp08238.pdf	2026-10-28T04:23:38Z	200	632324
+https://www.imf.org/external/pubs/ft/wp/2008/wp08238.pdf	REFUSED (imf.org), not kept - Borensztein and Panizza, IMF WP 08/238	2026-10-28T04:07Z	403	423
+https://web.archive.org/web/20111016200912id_/http://www.imf.org/external/pubs/ft/wp/2008/wp08238.pdf	REFUSED (429, the Archive's rate limit) on eight tries 04:08-04:22Z; the ninth (above) answered 200	2026-10-28T04:08Z	429	620
+https://www.elibrary.imf.org/downloadpdf/journals/001/2008/238/001.2008.issue-238-en.pdf	REFUSED (IMF eLibrary), not kept	2026-10-28T04:12Z	403	919
+https://papers.ssrn.com/sol3/Delivery.cfm?abstractid=1820058	REFUSED (SSRN; Borensztein and Panizza's IDB working paper), not kept	2026-10-28T04:13Z	403	896438
+https://publications.iadb.org/publications/english/document/The-Elusive-Costs-of-Sovereign-Defaults.pdf	REFUSED (IDB), not kept	2026-10-28T04:13Z	403	5726
+https://www.cesifo.org/DocDL/cesifo1_wp3604.pdf	REFUSED (an HTML page, not the paper; Cruces and Trebesch, CESifo WP 3604), not kept	2026-10-28T04:13Z	200	3038
+https://www.ifo.de/DocDL/cesifo1_wp3604.pdf	REFUSED (the same HTML page), not kept	2026-10-28T04:13Z	200	3038
+http://hdl.handle.net/10419/52478	REFUSED (EconStor's bot check; Cruces and Trebesch's CESifo WP), not kept	2026-10-28T04:17Z	200	(bot-check page)
+http://publications.europa.eu/resource/celex/02002R0332-20090526	REFUSED (not found - the consolidated Regulation 332/2002 as amended in 2009), not kept	2026-10-28T04:15Z	404	63
+https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02002R0332-20090526	REFUSED (EUR-Lex's WAF challenge, an empty 202), not kept	2026-10-28T04:14Z	202	0
+https://www.esm.europa.eu/sites/default/files/20150811_-_esm_treaty_-_en.pdf	REFUSED (not found - the ESM Treaty), not kept	2026-10-28T04:15Z	404	10285
+# curl -L -A "Mozilla/5.0", byte-exact; each kept file's response headers are beside it as <file>.headers.txt.
+# BILLED: (1) Cruces and Trebesch (2013), "Sovereign Defaults: The Price of Haircuts", AEJ: Macroeconomics 5(3) - its CESifo working paper could not
+#   be fetched (an HTML page in place of the PDF; EconStor's bot check); the mean SZ-haircut is read in Tomz and Wright (2013), NBER WP 18855, which
+#   quotes it ("Cruces and Trebesch (2012) estimate a 40% market haircut and a 37% SZ-haircut"). (2) Gelos, Sahay and Sandleris (2011), J. Int. Econ.
+#   - not sought separately; the exclusion years are read in Tomz and Wright (2013) as well. (3) The ESM Treaty and the consolidated Regulation
+#   332/2002 (the BoP facility's ceiling as amended) - the Regulation as adopted is stored; the programme's form (three years, the deficit path,
+#   disbursements conditional on compliance) is read in the Portugal MoU of 2011. (4) cbo.gov itself - not tried for this file: q29's fetch log
+#   records cbo.gov's JavaScript challenge the same morning; the Archive's capture of 11 February 2026 is CBO's February 2026 extended baseline.

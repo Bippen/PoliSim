@@ -1,0 +1,13 @@
+HTTP/1.1 200 OK
+Date: Wed, 28 Oct 2026 04:15:13 GMT
+Last-Modified: Fri, 27 Jan 2017 14:22:49 GMT
+ETag: "359a2-54714334aa040"
+Content-Length: 219554
+Content-Type: application/pdf
+Age: 0
+Accept-Ranges: bytes
+X-FPFIS: 253011063
+Server: Europa
+Connection: keep-alive
+Set-Cookie: rps=!VVVS3OVYKwDQk8gJ1l7j19/F6MRRhCx/IRMd7kBCNu4qc9PDS1zgsN9Yai+ut1ktbFndlqP2Rm2wyHIN07Sg+n9d66DKNS7Fgf//jpvb; path=/; Httponly; Secure
+

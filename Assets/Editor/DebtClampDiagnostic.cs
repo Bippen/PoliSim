@@ -34,7 +34,7 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class DebtClampDiagnostic
     {
-        private const float MaxDebtToGdpPercent = 300f;   // mirrors SimulationManager's own constant
+        private const float MaxDebtToGdpPercent = 1000f;   // MF q33: the retired 300 % ceiling's place is taken by SimulationManager's positive runaway guard (DebtRunawayGuardPercent), mirrored here
         private static readonly System.Globalization.CultureInfo Inv = System.Globalization.CultureInfo.InvariantCulture;
         private const int Turns = 120;
 
