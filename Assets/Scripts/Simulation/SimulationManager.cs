@@ -526,6 +526,7 @@ namespace PoliSim.Simulation
                     // than folding in event shocks, which land at boundaries and decay through the
                     // identity exactly as they always did.
                     FiscalPeriod macroPeriod = GetOrSeedFiscalPeriod(country);
+                    EnergyReliability.RestoreOutput(country);   // MF q26: yesterday's unserved-energy overlay off first (it went on after the lapse's), so the two come off exact
                     UsLapse.RestoreOutput(country);   // PS-6 US-22b: yesterday's lapse overlay off before the identity reads GDP (nothing where none is applied)
                     float gdpBeforeMacroStep = country.State.GDP;
                     MacroSystem.ApplyEventShockDaily(country);   // FT-9 (§404): the year's event enters here, inside the increment Okun reads - the boundary no longer moves GDP
@@ -548,6 +549,7 @@ namespace PoliSim.Simulation
                     float annualizedDailyGrowth = (country.State.GDP - gdpBeforeMacroStep) / Mathf.Max(openGdp, 1f) * 100f * DaysPerTurn;
                     MacroSystem.ApplyOkunsLawDaily(country, annualizedDailyGrowth, macroPeriod.UnemploymentAtPeriodOpen);
                     UsLapse.ApplyOutput(country, CurrentDate);   // PS-6 US-22b: CBO's output effect of a lapse, an overlay on the day's level after Okun has read the identity's growth (nothing where nothing is lapsed or owed)
+                    EnergyReliability.ApplyOutput(country);   // MF q26: the year's unserved energy costs output at the value of lost load - an overlay on the day's level, the lapse's form, after Okun has read the identity's growth (nothing where nothing is unserved)
                     // Pass 6: the period's tariff pass-through rides the level map for the whole
                     // period (a price-LEVEL stance planned at the boundary); what actually printed
                     // is kept on the period so the boundary's expectations step can look through it.
@@ -4063,7 +4065,7 @@ namespace PoliSim.Simulation
             Country country = _world?.GetCountry(countryId);
             if (country == null) { refusedBecause = "NO COUNTRY"; return false; }
             if (!PlayerMayIntroduce(countryId, out refusedBecause)) { return false; }
-            refusedBecause = mw > 0 ? EnergyFleet.CannotPlaceWhy(country, technology, mw, year) : EnergyFleet.CannotOrderWhy(countryId, technology);
+            refusedBecause = mw > 0 ? EnergyFleet.CannotPlaceWhy(country, technology, mw, year) : EnergyFleet.CannotOrderWhy(countryId, technology) ?? EnergyReliability.RefusalFor(country, technology, mw);   // MF q26: a retirement meets the AI ministry's reliability check (EnWG § 13b where the statute is sourced)
             if (refusedBecause != null) { return false; }
             // the orders EnergyFleet.Place places nothing for, refused here so no lever reaches the ledger: a zero order, a retirement with nothing left to retire
             if (System.Math.Abs(mw) < 1e-9) { refusedBecause = "NOTHING TO PLACE"; return false; }
@@ -6872,6 +6874,7 @@ namespace PoliSim.Simulation
             // measured from the GDP the closing period opened at - by the time a boundary runs, the
             // days have already moved GDP, so the old top-of-method snapshot would read ~zero. The
             // guard covers a pre-Phase-5 save whose restored period carries no opening GDP.
+            EnergyReliability.LiftOverlay(country);   // MF q26: the unserved-energy overlay lifted with the lapse's, for the same readings (nothing where none is applied)
             UsLapse.LiftOverlay(country);   // PS-6 US-22b (the review's M3): the year's realized growth, the tariff pass-through's denominator, the fiscal stance and the next period's opening GDP read the identity's level, not a lapse's overlay - put back after them (nothing where none is applied)
             float actualGrowthRate = period.GdpAtPeriodOpen > 0f
                 ? (state.GDP - period.GdpAtPeriodOpen) / Mathf.Max(period.GdpAtPeriodOpen, 1f) * 100f
@@ -6922,6 +6925,7 @@ namespace PoliSim.Simulation
             period.PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country);
             period.GdpAtPeriodOpen = state.GDP;
             UsLapse.LowerOverlay(country);   // PS-6 US-22b (M3): the overlay back on the level the day left
+            EnergyReliability.LowerOverlay(country);   // MF q26: and back on after it
             period.UnemploymentAtPeriodOpen = state.Unemployment;
             period.PotentialGdpAtPeriodOpen = state.PotentialGDP;
             // Q5: the gap the daily identity consumes now includes productivity's hoarding cycle,
@@ -7636,6 +7640,8 @@ namespace PoliSim.Simulation
                 LapseOutputWedge = country.LapseOutputWedge,
                 LapseOutputDays = country.LapseOutputDays,
                 LapseProfileQuarter = country.LapseProfileQuarter,
+                UnservedOutputLossRate = country.UnservedOutputLossRate,   // MF q26: the year's output loss and today's overlay - read only on the daily path, which the preview never runs; values, carried so the audit holds
+                UnservedOutputWedge = country.UnservedOutputWedge,
                 FurloughCountedMonth = country.FurloughCountedMonth,   // PS-6 US-22c: read only by the publication of the day, which the preview never runs; a value, carried so the audit holds
                 MajorityReconciliationYear = country.MajorityReconciliationYear,   // PS-6 US-23: read only by the day tick, which the preview never runs; a value, carried so the audit holds
                 DebtLimitUsd = country.DebtLimitUsd,   // PS-6 US-24: the debt limit - written by the day's bookkeeping and the day tick, which the preview never runs; values, carried so the audit holds

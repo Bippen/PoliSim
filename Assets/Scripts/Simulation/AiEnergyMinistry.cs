@@ -261,7 +261,7 @@ namespace PoliSim.Simulation
         /// The queue's pending retirements of EITHER fossil label are taken off first, each at its own p. The residual is the NET one across the country's zones (the
         /// links' limits are not read) and the clearing's as it stands - builds still in the queue are not credited: a veto errs toward the lights.
         /// </summary>
-        private static double PeakBlockSpareMw(Country country, int label, out double residual, out double flexible)
+        public static double PeakBlockSpareMw(Country country, int label, out double residual, out double flexible)
         {
             EnergyMarket.Result r = EnergyMarket.Clear(country);
             residual = 0;

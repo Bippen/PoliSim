@@ -112,8 +112,11 @@ namespace PoliSim.Simulation
             public double[] WaterValue;          // Sweden only, per block - the continental proxy AT SWEDEN'S PRICE LEVEL (FT-10 · P-B: kept in the seed's prices inside the market, written nominal here)
             /// <summary>FT-10 · P-B: the price index this clearing was made at - what a reader deflates its prices by (Sweden's water value reads Germany's and Poland's).</summary>
             public double PriceIndex;
-            /// <summary>Sweden only, per block: the chain's national unbalance, MW - the four balances' sum, which the exogenous exchange and the unmodelled losses leave a few tens of MW from zero; printed, never priced.</summary>
+            /// <summary>Sweden only, per block: the chain's national unbalance, MW - the four balances' sum, which the exogenous exchange and the unmodelled losses leave a few tens of MW from zero at the seed; since MF q27 a fall below the seed's goes unserved at the ceiling and a rise above it is booked as curtailed hydro at the water value (ClearSweden).</summary>
             public double[] ChainUnbalanceMw;
+            /// <summary>MF q27, Sweden only, per block: the national balance ABOVE the seed's, MW, booked as curtailed - the hydro it displaces (ClearSweden: priced at the
+            /// zones' own water value while the block's hydro can back it down, at the lowest offer only past that); zero at the seed and wherever the balance is at or below the seed's.</summary>
+            public double[] ChainCurtailedMw;
             public readonly double[] AnnualGwh = new double[8];
             public double DerivedCo2Mt;
             public double[] Adders;
@@ -526,9 +529,11 @@ namespace PoliSim.Simulation
             result.Zones = new BlockResult[n][];
             result.WaterValue = new double[3];
             result.ChainUnbalanceMw = new double[3];
+            result.ChainCurtailedMw = new double[3];
             result.Links = new LinkResult[n - 1];
             result.ReservoirDeficitShare = _swedenDeficitShare;
             double[] seedProxy = WaterValueAtSeed();
+            double[] seedUnbalance = SwedenSeedUnbalanceMw();   // MF q27: null only while the reference itself is being cleared
             for (int k = 0; k < n - 1; k++) { result.Links[k] = new LinkResult { From = chain[k], To = chain[k + 1] }; }
             for (int z = 0; z < n; z++) { result.Zones[z] = new BlockResult[3]; }
             for (int b = 0; b < 3; b++)
@@ -566,11 +571,39 @@ namespace PoliSim.Simulation
                     if (link.Binding[b])
                     {
                         if (cumulative > 0) { for (int z = 0; z <= k; z++) { price[z] = CurtailmentOffer; } cumulative = cap; }   // a surplus locked north of the cut sells at the lowest offer
-                        else { for (int z = 0; z <= k; z++) { price[z] = MaxClearingPrice; } cumulative = -cap; }                 // a deficit the link cannot fill is scarcity north of the cut
+                        else { for (int z = 0; z <= k; z++) { price[z] = MaxClearingPrice; } result.Zones[k][b].UnservedMw = -cumulative - cap; cumulative = -cap; }   // a deficit the link cannot fill is scarcity north of the cut - and (MF q27) what the link cannot carry goes unserved there
                     }
                 }
-                // the chain's end: the four balances' sum is the national unbalance the exogenous exchange and the unmodelled losses leave (tens of MW) - recorded, never priced
+                // the chain's end: the four balances' sum is the national unbalance the exogenous exchange and the unmodelled losses leave (tens of MW at the seed)
                 result.ChainUnbalanceMw[b] = cumulative + surplus[n - 1];
+                // MF q27 (Elias, 2026-10-18: "Sweden clears its gap as every other country does, unserved at the ceiling. Imports at neighbours' prices are a later
+                // energy stage for all countries"): a fall of the national balance below the SEED's own is a gap no Swedish plant answers - the exchange is exogenous -
+                // so it goes unserved at the chain's end, and the end zone and every zone priced with it (back to the first binding link) clear at the ceiling.
+                // DECLARED: the seed's own unbalance (the exchange's and the losses' residual, SwedenSeedUnbalanceMw) is the reference, so the record's fleet serves
+                // what it served and a megawatt retired below it is a megawatt unserved. THE SURPLUS HALF (the q26 reviews' M1 and N1; Code's recommendation under Elias's standing
+                // instruction, a K-line at merge): a balance ABOVE the seed's is BOOKED as curtailed (ChainCurtailedMw) - DECLARED: the hydro absorbs it, backing down at its
+                // own water value, so the zones keep their own clearing price (own[z], the water value) and nothing moves on the price. Only where the surplus exceeds
+                // what the block's hydro can back down - the four zones' hydro dispatch in the block, all of it (minimum flows and run-of-river are not told apart here,
+                // stated) - is there nothing left to displace, and then the zones priced with the chain's end clear at the curtailment offer, as ClearBlock prices a
+                // residual at or below zero. Exports at neighbours' prices are the later stage that would carry it instead. Zero at the seed by construction, either way.
+                double gap = seedUnbalance != null ? seedUnbalance[b] - result.ChainUnbalanceMw[b] : 0.0;
+                if (gap > 0.0)
+                {
+                    result.Zones[n - 1][b].UnservedMw += gap;
+                    for (int z = n - 1; z >= 0; z--) { price[z] = MaxClearingPrice; if (z > 0 && result.Links[z - 1].Binding[b]) { break; } }
+                }
+                else if (gap < 0.0)
+                {
+                    result.ChainCurtailedMw[b] = -gap;
+                    // the zones priced with the chain's end - back to the first binding link - are the ones whose hydro can back the surplus down (the q26 review 3's L1); north
+                    // of a link that binds on a surplus the zones already clear at the lowest offer and their own surplus past the link's capacity is locked there and spilled
+                    // (the clamp above, as before the q27 rule - DECLARED: neither booked in ChainCurtailedMw nor taken off the mix; each zone's CurtailedMw carries its own surplus)
+                    int first = SwedenEndGroupStart(result.Links, b);
+                    double hydroMw = 0.0;
+                    for (int z = first; z < n; z++) { hydroMw += EnergyLayerData.DispatchLevelMw[EnergyLayer.ZoneIndex(chain[z])][b][Hydro]; }
+                    result.AnnualGwh[Hydro] -= Math.Min(-gap, hydroMw) * EnergyLayerData.DispatchHours[EnergyLayer.ZoneIndex(chain[n - 1])][b] / 1000.0;   // the hydro backed down is energy not generated: the year's mix loses it (the coincident hours, read at the chain's end); the reservoirs' balance is not credited with the water kept, stated
+                    if (-gap > hydroMw) { for (int z = first; z < n; z++) { price[z] = CurtailmentOffer; } }   // past what the hydro can back down: the lowest offer
+                }
                 for (int z = 0; z < n; z++) { result.Zones[z][b].Price = price[z]; result.Zones[z][b].CurtailedMw = Math.Max(0, surplus[z]); }
                 for (int k = 0; k < n - 1; k++)
                 {
@@ -583,6 +616,52 @@ namespace PoliSim.Simulation
             // Sweden's own fossil fleet (69 MW of coal, 17 of gas, the oil inside "other") is heat-led CHP and is not dispatched: the merit order's
             // costs and caps are computed for it like any country's and left unused here, stated - its fossil categories read zero in the annual figures.
             _ = mc; _ = caps;
+        }
+
+        /// <summary>MF q27: the first zone of the group priced with Sweden's chain end in a block - the zone south of the last binding link, or the chain's first zone where
+        /// none binds; the q27 rule prices this group and its hydro absorbs a surplus.</summary>
+        public static int SwedenEndGroupStart(LinkResult[] links, int block)
+        {
+            int first = links.Length;
+            while (first > 0 && !links[first - 1].Binding[block]) { first--; }
+            return first;
+        }
+
+        private static double[] _swedenSeedUnbalance;   // MF q27: the seed's national balance per block, cleared once (ResetCalibration forgets it)
+        private static bool _clearingSeedUnbalance;
+
+        /// <summary>MF q27: Sweden's national balance per block AT THE SEED, MW - the record's fleet at the dated NTCs, the chain cleared by the same code that clears
+        /// every turn, so the reference and a turn on the record's fleet are the same doubles and the gap between them is exactly zero. What the exchange and the
+        /// unmodelled losses leave (tens of MW); a turn's balance below it goes unserved (<see cref="ClearSweden"/>). Physical: no price enters it.</summary>
+        public static double[] SwedenSeedUnbalanceMw()
+        {
+            if (_swedenSeedUnbalance != null || _clearingSeedUnbalance) { return _swedenSeedUnbalance; }
+            double scale = ProbeLinkCapacityScale;
+            _clearingSeedUnbalance = true; ProbeLinkCapacityScale = 1.0;
+            try
+            {
+                using (EnergyFleet.RecordOnly())
+                {
+                    Result seed = NewResult(CountryId.Sweden, new double[FossilCount]);
+                    ClearSweden(seed, new double[FossilCount], new double[FossilCount], WaterValueAtSeed(), 1.0);
+                    _swedenSeedUnbalance = seed.ChainUnbalanceMw;
+                }
+            }
+            finally { _clearingSeedUnbalance = false; ProbeLinkCapacityScale = scale; }
+            return _swedenSeedUnbalance;
+        }
+
+        /// <summary>MF q26: the energy a clearing leaves unserved over the year, GWh - every zone's blocks, each block's unserved MW over its own hours.</summary>
+        public static double UnservedGwh(Result r)
+        {
+            double gwh = 0.0;
+            if (r?.Zones == null) { return gwh; }
+            foreach (BlockResult[] zone in r.Zones)
+            {
+                if (zone == null) { continue; }
+                foreach (BlockResult block in zone) { if (block != null && block.UnservedMw > 0.0) { gwh += block.UnservedMw * EnergyLayerData.DispatchHours[EnergyLayer.ZoneIndex(block.Zone)][block.Block] / 1000.0; } }
+            }
+            return gwh;
         }
 
         // ---- the calibration ----------------------------------------------------------------------------------
@@ -718,6 +797,6 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Forget the calibration (a diagnostic that re-seeds the world calls it).</summary>
-        public static void ResetCalibration() { AdderCache.Clear(); GapCache.Clear(); SeedSpreadCache.Clear(); _waterValueSeed = null; }
+        public static void ResetCalibration() { AdderCache.Clear(); GapCache.Clear(); SeedSpreadCache.Clear(); _waterValueSeed = null; _swedenSeedUnbalance = null; }
     }
 }

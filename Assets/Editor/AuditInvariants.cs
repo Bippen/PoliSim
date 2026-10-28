@@ -412,9 +412,21 @@ namespace PoliSim.EditorTools
                         Breach("ENERGY", c.Id + "|chain|" + b, day, date, $"Sweden block {b}: the zones' surplus {surplus:F3} MW against the printed chain unbalance {r.ChainUnbalanceMw[b]:F3} MW");
                     }
 
-                    if (Math.Abs(r.ChainUnbalanceMw[b]) > 500.0)
+                    // MF q27: the chain's balance NET of what the rule books - the gap below the seed's balance unserved, the surplus above it curtailed (ChainCurtailedMw) -
+                    // is the seed's own residual, the exchange's and the losses' (EnergyMarket.SwedenSeedUnbalanceMw): the IDENTITY is held, so a booking of the wrong sign
+                    // or size fires (the q26 review 2's N2). CONVENTION - the tolerance is a millionth of a MW per MW of the residual's size (never under a millionth of a
+                    // MW): the booking is the residual's difference with the balance, exact but for the last bits of one subtraction. The seed residual itself keeps the
+                    // old reading: past 500 MW it is more than the losses it stands for.
+                    double unserved = r.Zones.Sum(z => z[b].UnservedMw), curtailed = r.ChainCurtailedMw != null ? r.ChainCurtailedMw[b] : 0.0;
+                    double net = r.ChainUnbalanceMw[b] + unserved - curtailed;
+                    double seedResidual = EnergyMarket.SwedenSeedUnbalanceMw()[b];
+                    if (Math.Abs(net - seedResidual) > 1e-6 * Math.Max(1.0, Math.Max(Math.Abs(seedResidual), Math.Abs(r.ChainUnbalanceMw[b]))))
                     {
-                        Breach("ENERGY", c.Id + "|unbalance|" + b, day, date, $"Sweden block {b}: the chain's unbalance {r.ChainUnbalanceMw[b]:F1} MW with no link binding - the losses it stands for are tens of MW");
+                        Breach("ENERGY", c.Id + "|unbalance|" + b, day, date, $"Sweden block {b}: the chain's unbalance {r.ChainUnbalanceMw[b]:F3} MW, net {net:F3} MW of the {unserved:F3} MW unserved and the {curtailed:F3} MW curtailed the q27 rule books, against the seed's residual {seedResidual:F3} MW, with no link binding");
+                    }
+                    if (Math.Abs(seedResidual) > 500.0)
+                    {
+                        Breach("ENERGY", c.Id + "|seedresidual|" + b, day, date, $"Sweden block {b}: the seed's chain residual {seedResidual:F1} MW - the losses it stands for are tens of MW");
                     }
                 }
 

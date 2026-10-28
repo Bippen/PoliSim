@@ -31,6 +31,33 @@ namespace PoliSim.UI
         /// <summary>§747: the Energy page's slips, built each frame as the page draws.</summary>
         private PeopleSlips.Book _energySlipBook = new PeopleSlips.Book();
 
+        /// <summary>MF q26: the last refusal of a plant tile's order, keyed by country and technology, as the manager's verb gave it, with the country object and the
+        /// queue's state it was given against - shown on the tile's slip only while both stand (UI state, not saved): a load (a new country object), a landed order
+        /// or a new turn retires the note, as does an order of that technology standing. The reliability check refuses a retirement the grid could not bear, and
+        /// the player reads why here.</summary>
+        private readonly System.Collections.Generic.Dictionary<string, (Country Country, string Stamp, string Why)> _energyFleetRefusals = new System.Collections.Generic.Dictionary<string, (Country Country, string Stamp, string Why)>();
+
+        /// <summary>MF q26: the queue's state a refusal was given against - the turn, the orders and how many have landed.</summary>
+        private string FleetStamp(Country c)
+        {
+            int landed = 0, all = c.FleetOrders?.Count ?? 0;
+            if (c.FleetOrders != null) { foreach (EnergyFleet.Order o in c.FleetOrders) { if (o != null && o.Landed) { landed++; } } }
+            return _simulationManager.CurrentTurn + "|" + all + "|" + landed;
+        }
+
+        /// <summary>MF q26: the standing refusal for a tile, or null where none stands against the queue as it is.</summary>
+        private string FleetRefusal(Country c, int k) =>
+            _energyFleetRefusals.TryGetValue(c.Id + ":" + k, out var r) && ReferenceEquals(r.Country, c) && r.Stamp == FleetStamp(c) ? r.Why : null;
+
+        /// <summary>MF q26: a plant tile's press through the manager's verb, its refusal kept for the slip (or cleared when the order stands).</summary>
+        private void PressFleetOrder(Country c, int k, double mw, int year)
+        {
+            string key = c.Id + ":" + k;
+            if (_simulationManager.PlaceFleetOrder(c.Id, k, mw, year, out string refused)) { _energyFleetRefusals.Remove(key); }
+            else if (!string.IsNullOrEmpty(refused)) { _energyFleetRefusals[key] = (c, FleetStamp(c), refused); }
+            _hasCachedPreview = false;
+        }
+
         private void DrawEnergyTab(float availableHeight, float availableWidth)
         {
             GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
@@ -560,10 +587,10 @@ namespace PoliSim.UI
             var minus = new Rect(inner.x, inner.yMax - bh, bw, bh);
             var plus = new Rect(inner.x + bw + V35.Px(6f), inner.yMax - bh, bw, bh);
             GUIStyle sign = V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true, TextAnchor.MiddleCenter);
-            if (DrawDeskChipButton(minus, "−", sign, false, !can || fleetLocked)) { _simulationManager.PlaceFleetOrder(c.Id, k, -step, year, out _); _hasCachedPreview = false; }   // §544: a retirement lands at the coming boundary; AF-11: the manager's verb
+            if (DrawDeskChipButton(minus, "−", sign, false, !can || fleetLocked)) { PressFleetOrder(c, k, -step, year); }   // §544: a retirement lands at the coming boundary; AF-11: the manager's verb
             string full = can ? EnergyConnectionQueue.FullText(c, k, year) : null;
             double up = can ? EnergyConnectionQueue.StepUpMw(c, k, step, year) : step;   // a step larger than the line's room is the room
-            if (DrawDeskChipButton(plus, "+", sign, false, !can || fleetLocked || full != null)) { _simulationManager.PlaceFleetOrder(c.Id, k, up, year, out _); _hasCachedPreview = false; }
+            if (DrawDeskChipButton(plus, "+", sign, false, !can || fleetLocked || full != null)) { PressFleetOrder(c, k, up, year); }
             string anchor = "en:plant:" + k;
             SlipAnchor(new Rect(tile.x, tile.y, tile.width, tile.height - bh - V35.Px(V35.CardPadY)), anchor);
             var slip = new SlipContent(name.ToUpperInvariant() + " · " + figure.ToUpperInvariant());
@@ -577,6 +604,8 @@ namespace PoliSim.UI
                 if (o.Technology != k) { continue; }
                 slip.Add((o.Mw > 0 ? "+" : "−") + EnergyConnectionQueue.Mw(Math.Abs(o.Mw)) + " MW · PLACED " + o.OrderedYear + " · " + (o.Landed ? (o.Mw > 0 ? "CONNECTED " : "LEFT ") : (o.Mw > 0 ? "CONNECTS " : "LEAVES ")) + o.OnlineYear);
             }
+            string refusedWhy = FleetRefusal(c, k);
+            if (refusedWhy != null) { slip.Add("REFUSED · " + refusedWhy); }   // MF q26: why the last press of this tile placed nothing
             if (fleetLocked) { slip.Add(fleetLockedWhy); }
             _energySlipBook.Anchors[anchor] = slip;
         }

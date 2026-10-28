@@ -308,12 +308,13 @@ namespace PoliSim.Simulation
         public static double AdvanceYear(Country country)
         {
             EnvironmentSeeds s = country.Environment;
-            if (s == null || !s.Seeded || !EnergyLayer.Has(country.Id)) { return 0.0; }
+            if (s == null || !s.Seeded || !EnergyLayer.Has(country.Id)) { if (country.UnservedOutputLossRate != 0f) { country.UnservedOutputLossRate = 0f; } return 0.0; }   // MF q26: no layer, no clearing, nothing unserved
             if (s.RetailMargin == null || s.RetailMargin.Length != ClassCount) { FitMargins(country); }   // a save from before this layer
             EnergyMarket.Result r = EnergyMarket.Clear(country);
             double credit = CreditFor(country);   // last year's rent above the seed's, billions (EN-3b: the seed's rent is inside the seed's tariff)
             Book b = Compute(country, r, Math.Max(0.0001f, country.State.PriceLevel), credit);
             Write(country, b, first: false);
+            EnergyReliability.SetYear(country, r);   // MF q26: the year's unserved energy, priced at the value of lost load, becomes the output loss the day step lays on GDP
             return b.ElectricityTaxRevenueChange;
         }
 

@@ -387,9 +387,10 @@ namespace PoliSim.EditorTools
 
         private DateTime _fleetActDate = DateTime.MinValue;
         private readonly HashSet<int> _fleetDone = new HashSet<int>();
+        private readonly Dictionary<int, string> _fleetRefused = new Dictionary<int, string>();   // MF q26: the last reliability refusal per technology, said once until it changes - the press is retried on later acts
 
         /// <summary>The Energy page's plant buttons as their bodies press them (`GameController.EnergyV35.cs` DrawEnergyPlantTile): − places a
-        /// retirement of one step (`EnergyFleet.Place` with minus the step), + a build of one step or the queue's room (`EnergyConnectionQueue.StepUpMw`),
+        /// retirement of one step (`SimulationManager.PlaceFleetOrder` with minus the step - MF q26: the reliability check refuses there), + a build of one step or the queue's room (`EnergyConnectionQueue.StepUpMw`),
         /// each only where the tile draws its button enabled (`EnergyFleet.CanOrder`, the government's `PlayerMayIntroduce`, the queue's `FullText`),
         /// the page's cached preview dropped as the body drops it. The plan's `energy=` names the presses, once a technology a day: retirefossil (coal
         /// and gas until nothing is left to retire), retirenuclear, buildgreen (wind and solar while the queue has room).</summary>
@@ -405,10 +406,17 @@ namespace PoliSim.EditorTools
             foreach (int k in retire)
             {
                 if (_fleetDone.Contains(k) || !EnergyFleet.CanOrder(c.Id, k)) { continue; }
-                EnergyFleet.Order o = EnergyFleet.Place(c, k, -step, year, _sm.CurrentTurn);
+                bool placed = _sm.PlaceFleetOrder(c.Id, k, -step, year, out string refused);   // MF q26: the − button presses the manager's verb, so the reliability check refuses here as it does on the page
                 Set("_hasCachedPreview", false);
-                Count("act fleet retire " + EnergyLayerData.Labels[k]);
-                if (o == null) { _fleetDone.Add(k); Event($"ACT fleet day {_day}: {EnergyLayerData.Labels[k]} - nothing left to retire (capacity {EnergyFleet.CapacityMw(c, k):F0} MW, retirements queued {EnergyFleet.QueuedMw(c, k, retirementsOnly: true):F0} MW)"); }
+                if (placed) { Count("act fleet retire " + EnergyLayerData.Labels[k]); _fleetRefused.Remove(k); continue; }
+                Count("act fleet retire refused " + EnergyLayerData.Labels[k]);   // MF q26: a refused press counted apart from a placed one
+                bool exhausted = refused == "NOTHING LEFT TO RETIRE" || refused == "NOTHING TO PLACE";
+                if (exhausted) { _fleetDone.Add(k); }   // nothing left: the label is done; a reliability refusal is retried on the next act (builds may have landed)
+                if (exhausted || !_fleetRefused.TryGetValue(k, out string said) || said != refused)
+                {
+                    _fleetRefused[k] = refused;
+                    Event($"ACT fleet day {_day}: {EnergyLayerData.Labels[k]} - refused: {refused} (capacity {EnergyFleet.CapacityMw(c, k):F0} MW, retirements queued {EnergyFleet.QueuedMw(c, k, retirementsOnly: true):F0} MW)");
+                }
             }
 
             foreach (int k in build)

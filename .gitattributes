@@ -30,3 +30,7 @@ ElectionsData/macro/raw/pension_guarantee/** -text
 ElectionsData/macro/raw/q29_longrun/** -text
 ElectionsData/italy/raw/seats_2022/** -text
 Assets/Scripts/Elections/Generated/ItalianCount2022.cs -text
+# MF q26/q27 (2026-10-28): the value-of-lost-load and reliability sources, byte-exact as fetched (their digests in each folder's SHA256SUMS.txt), and the generator's LF output
+EnergyData/raw/voll/** -text
+EnergyData/raw/reliability/** -text
+Assets/Scripts/Data/Generated/ValueOfLostLoadData.cs -text

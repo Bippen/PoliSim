@@ -370,3 +370,7 @@ file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	2d0bcb11ffea4
 file	Assets/Scripts/Simulation/SimulationManager.cs	15fd0f6bd0aeac28fa06e43846dab3b5ad1aef5d14ed32bcc1a9994983364ce8	reviewed	2026-10-28	s931	Reviews/2026-10-28_ps7_integrator.md	-
 baseline	777	bc618b3df2e4fe8343d17e41e8fdfa8f0ee4708d1120604699ef56ff01fd6cff	reviewed	2026-10-28	s932	Reviews/2026-10-28_q28_integrator.md	-
 baseline	424242	18b5b6a34b56ec31713772769351a017e6ef40ffe42be2ee36190966f23b8899	reviewed	2026-10-28	s932	Reviews/2026-10-28_q28_integrator.md	-
+file	Assets/Scripts/Simulation/AiEnergyMinistry.cs	399c32aa10c8abc0389b12f1ad0e8097ae87db2d7c40a22ee878c5a7df242f7f	reviewed	2026-10-28	s933	Reviews/2026-10-28_q26_integrator.md	-
+file	Assets/Scripts/Simulation/EnergyLedger.cs	5f07cbf33a35143df819b4b4bab9f13d3c041a20f1896e46d88811969bc9ad84	reviewed	2026-10-28	s933	Reviews/2026-10-28_q26_integrator.md	-
+file	Assets/Scripts/Simulation/EnergyMarket.cs	4fa8a41809b52f0da670946c92b2db655a80252c7b134e1e991980f39e3e87e7	reviewed	2026-10-28	s933	Reviews/2026-10-28_q26_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	b59fd3fec0bf353f58d4c327e4f75771df09ea68039cbf6292eee37bfc3ecadc	reviewed	2026-10-28	s933	Reviews/2026-10-28_q26_integrator.md	-

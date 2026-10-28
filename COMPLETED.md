@@ -41894,3 +41894,23 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nq28b HospitalWaitsDiagnostic PASS (nq28's first run failed c2 for Italy on a false premise, rewritten); cheapq28 clean; simq28 85/85, the sentinel at mf28; drysq28 Sweden 1280 clean; dumpq28 mf28 against mf32: only the two waits move, in Italy, Poland and Sweden.
 
 **Commit:** this one.
+
+## 933. MF q26/q27 (GA-6-1, GA-6-2; K145, K223-K226): THE RELIABILITY CHECK ON THE PLAYER'S ORDERS, UNSERVED ENERGY AT THE VALUE OF LOST LOAD, SWEDEN'S GAP AT THE CEILING AND ITS SURPLUS AS DISPLACED HYDRO (2026-10-28)
+
+**The rulings:** q26 and q27 of 2026-10-18 and K145, answering the audit's GA-6-1 (the player retired a whole fleet in weeks; the blocks went unserved at the ceiling and real GDP did not move) and GA-6-2 (Sweden's chain unbalance printed, never priced). On the reviews: K223 (Sweden's surplus booked as displaced hydro at the water value), K224 (the player's clearing test stricter than the ministry's), K225 (household VoLL out of GDP; the USA's small C&I out), K226 (EnWG § 13b for Germany; the other five statutes owed).
+
+**Built** (an implementer on `wave/q26`: 2dd28faf, 94626e22; three reviews - NOT READY (H1, M1-M3), NOT READY (N1: one wind step sent Sweden's zones to 0 EUR/MWh), READY; the reworks 3168d94c, 2e08c4be, 4c12af62, and 41b9b800 after the integrator's first run found the diagnostic's plant refused by Sweden's connection queue and carried on silently; squash-merged on §932):
+- `EnergyReliability.RefusalFor`: a player retirement meets the AI ministry's peak-block veto (`AiEnergyMinistry.PeakBlockSpareMw`, made public) and a clearing test with the queue's retirements landed and its builds not credited; wired into `SimulationManager.PlaceFleetOrder`; the refusal names EnWG § 13b for Germany (fetched from gesetze-im-internet.de) and the ministry's test for the five others; the plant tile's slip shows it; the audit driver presses the verb and retries a refused technology.
+- The output channel: unserved GWh x the non-household share x the output VoLL becomes a loss rate at the boundary and an overlay on GDP in the US lapse's form (lifted and laid beside it, restored in order). `Tools/voll_prep.pl` generates `ValueOfLostLoadData` reproducibly from CEPA for ACER 2018 Annex G (sector-weighted by Eurostat nrg_bal_c 2015) and LBNL-6941E Table ES-1 (medium and large C&I at 16 h), carried to 2023 by HICP / CPI-U and through SEK and PLN at the ECB's annual rates (THREE UNITS): DE 5.98, FR 5.71, IT 6.08, PL 3.59, SE 3.66 EUR/kWh, the USA 16.61 USD/kWh. Save format stays 66 (the two fields additive).
+- q27 in `EnergyMarket.ClearSweden`: a fall below the seed's own national balance goes unserved at SE4 at the ceiling; a rise above it is booked in `ChainCurtailedMw` as displaced hydro at the zones' own price, the floor only past the end group's hydro (the hydro backed down taken off the year's mix). `AuditInvariants` tests the chain identity net of what q27 books.
+- `EnergyReliabilityDiagnostic` (simulation, registered by the integrator): the seed inert in all six, the refusals (Germany past the spare, France's whole nuclear fleet), the loss arithmetic and its return to zero, Sweden's gap at the ceiling, its surplus at one step, a twentieth and three times the wind fleet.
+
+**Measured** (`Reviews/2026-10-28_q26_integrator.md`): the default dump (`mf26`) BYTE-IDENTICAL to `mf28` on both seeds - nothing is unserved at the default epoch; one wind step (+500 MW) books 97.1 MW curtailed in block 0 with SE4 at the control's 36.58 EUR/MWh; Germany's and Sweden's Energy pages filmed at 1280.
+
+**Evidence:** `Reviews/2026-10-28_q26_review.md`, `_review2.md`, `_review3.md`, `_integrator.md`; ledger rows s933 (`AiEnergyMinistry.cs`, `EnergyLedger.cs`, `EnergyMarket.cs`, `SimulationManager.cs`).
+
+**Declared:** K223-K226; GA-6-1 and GA-6-2 answered in the model, the audit plans `Tools/audit/area6_energy.plan` and `area6b_chain.plan` not yet re-run (owed).
+
+**Bars:** nq26 (8 named; the third surplus case's plant refused by the connection queue - fixed 41b9b800); nq26b EnergyReliabilityDiagnostic PASS (three times the wind fleet: 3669.0 MW curtailed in block 0, SE4 at the floor); cheapq26b 143/143; simq26 86/86 (the sentinel at mf28); dumpq26 mf26 byte-identical to mf28; drysq26 Sweden + Germany 1280 and realq26 Germany 1280 clean.
+
+**Commit:** this one.

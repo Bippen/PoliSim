@@ -1050,6 +1050,19 @@ namespace PoliSim.Data
         /// runs and where no profile is held.</summary>
         public System.DateTime LapseProfileQuarter;
 
+        /// <summary>MF q26 (ruling q26: "Unserved energy costs output at ACER's VoLL (CEPA 2018)"; K145 for the USA): the output the year's unserved energy
+        /// costs, billions of the book's dollars a year at the seed's prices (real, like `EconomyState.GDP`) - set at the boundary from the year's clearing
+        /// (`EnergyReliability.SetYear`, inside `EnergyLedger.AdvanceYear`), held for the year. 0 where nothing goes unserved. It rides the save and the preview's
+        /// clone. ADDITIVE (no format step, ruling A; the FurloughCountedMonth precedent): a save of an earlier build loads it as 0, which is what that build's
+        /// run carried, and the next boundary writes it from the clearing. DECLARED residue: a save of an earlier build cut while its fleet left load unserved
+        /// carries no loss until its next boundary.</summary>
+        public float UnservedOutputLossRate;
+
+        /// <summary>MF q26: the overlay on real output applied today (`EnergyReliability.ApplyOutput`) - the level the identity produced less what stands in
+        /// `EconomyState.GDP` - removed before the next day's identity (`EnergyReliability.RestoreOutput`), as the US lapse's is. 0 where none is applied.
+        /// ADDITIVE (no format step): an earlier build laid no overlay, so its saved GDP holds none and 0 is exact.</summary>
+        public float UnservedOutputWedge;
+
         /// <summary>PS-6 US-22c (Elias's ruling J7 (iv)): the first day of the last month whose household-survey reference week a lapse covered whole - that
         /// month's unemployment counts the furloughed as BLS does (`UsLapse.NoteReferenceWeek`, `UsLapse.FurloughPoints`); MinValue where none. It rides the
         /// save and the preview's clone. ADDITIVE (no format step, ruling A): a save of an earlier build carries MinValue, which is every month's value
