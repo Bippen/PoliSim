@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+Date: Wed, 28 Oct 2026 21:05:44 GMT
+Content-Length: 3234
+Content-Type: application/json
+Access-Control-Allow-Headers: Content-Type, Accept, X-Requested-With
+Access-Control-Allow-Methods: GET
+Access-Control-Allow-Origin: *
+Connection: keep-alive
+Set-Cookie: rps=!Nh8ACPCKsPdbhccJ1l7j19/F6MRRhHZRDhp8tM70RldFtNcZaycy73BrcqKMf4+HrMwAuAvOiizlS/AJ1kC3iPNH3ctTjYQTbeRbv1Z5; path=/; Httponly; Secure
+

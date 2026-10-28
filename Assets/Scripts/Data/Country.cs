@@ -467,7 +467,9 @@ namespace PoliSim.Data
 
         /// <summary>THE MATURITY RATE-LAG's one piece of state: the blended rate this country's
         /// existing debt stock currently pays, in percent - reverting toward
-        /// SimulationManager.GetDebtIssuanceRate at 1/AverageDebtMaturityYears per year.
+        /// SimulationManager.GetDebtIssuanceRate at 1/AverageDebtMaturityYears per year. K252
+        /// (ruled 2026-10-27): WorldFactory seeds it at the national accounts' implied rate
+        /// (Generated.DebtRateSeeds), so a new world's stock opens paying what it paid.
         /// ⚠ -1 is a SENTINEL (the R4-3 HousingRateAnchor pattern): a pre-mechanism save
         /// deserializes with this initializer and every reader falls back to the CURRENT issuance
         /// rate - exactly what the old code charged - so old saves behave identically until the

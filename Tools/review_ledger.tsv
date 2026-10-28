@@ -386,3 +386,6 @@ baseline	777	0ce1e0560c1da1c616c9111342795f82a82c1895fcafe6a51a27f4041fa7573d	re
 baseline	424242	f450438abc75052f0bc3e5f1edeeb727ade3c271c6723cd90f6658f9ea3cb018	reviewed	2026-10-28	s938	Reviews/2026-10-28_ps8_integrator.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	cde0c4fa02ea77c3bcd81100dcabd33fb42b762bde32d7f8b3d261d6ecb1a74f	reviewed	2026-10-28	s940	Reviews/2026-10-28_k218_integrator.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	498ad4b1959e9f4d2b999091322c1e35db7584fe7b6bc23d32ca2fa23c71202c	reviewed	2026-10-29	s941	Reviews/2026-10-28_plc_integrator.md	-
+file	Assets/Scripts/Data/Generated/DebtRateSeeds.cs	ccb07403c0f64ad83b7a441b5c0c3ef6ee8a5c8394503dab16b510686ab4ceb4	reviewed	2026-10-29	s942	Reviews/2026-10-28_k252_integrator.md	-
+baseline	777	8bc513e4d77233cf64d7184946b8ed383f20e42cd659259ff8c686795d32617e	reviewed	2026-10-29	s942	Reviews/2026-10-28_k252_integrator.md	-
+baseline	424242	016a3dbb8ff4684a0c26a5074e56a85990bebc09a109d04e4fa188abbb8d6346	reviewed	2026-10-29	s942	Reviews/2026-10-28_k252_integrator.md	-

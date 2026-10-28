@@ -24,6 +24,10 @@ namespace PoliSim.EditorTools
     /// (<see cref="NoPolicyCentury.Unchanged"/>: the AI's indexation, no ministry, no Finance partner, no fiscal reaction),
     /// and prints the shared century's change beside it for reference, unjudged.</para>
     ///
+    /// <para><b>K252 (2026-10-28): THE STOCK OPENS AT WHAT IT PAID.</b> The stock's effective rate is seeded at the national accounts' implied rate
+    /// (`DebtRateSeeds`, the interest paid over the average of the stocks at the ends of the year before and the year) rather than at the issuance rate, and converges on issuance over the stock's maturity;
+    /// each country's opening rate is asserted against the seed, and the bands K252's prereg closed are asserted.</para>
+    ///
     /// <para><b>The decomposition</b> (K218): for every window the change is split as the DSM splits it - minus the primary balance, the interest, the real
     /// growth effect and the inflation effect (each year's -b(t-1) x g / (1 + n) and -b(t-1) x (n - g) / (1 + n), g real and n nominal growth), and the
     /// remainder (the model's stock-flow: timing within the year, a fund's flows) - and printed against the DSM's own rows and CBO's (its primary balance and
@@ -61,19 +65,17 @@ namespace PoliSim.EditorTools
         private const float CboShortBand = 10f, CboLongBand = 25f;
 
         /// <summary>
-        /// K218: THE BANDS K218 DOES NOT CLOSE - each prints a REGISTERED MISS line with its reason and does not fail (the K211 / K217 pattern), until the item
+        /// K218: THE BANDS K218 DOES NOT CLOSE (K252 closed France (h1) and Italy (h1), the stock's rate seeded at the national accounts' implied rate) - each prints a REGISTERED MISS line with its reason and does not fail (the K211 / K217 pattern), until the item
         /// its reason names lands. The reason names the decomposition's terms; the figures are the run's own, printed above the line. Keyed "Country (hN)" for
         /// the EU five and "USA (h3) N years" for CBO's two. A key that is not here is a band K218 closes or one that held already: a miss there FAILS.
         /// </summary>
         private static readonly Dictionary<string, string> Registered = new Dictionary<string, string>
         {
             { "Sweden (h2)", "the primary balance - the model's surplus widens where the DSM's stays near balance; interest, growth and inflation follow the DSM's (the caseload lines' cycle and the real wage against GDP: a calibration item)" },
-            { "Germany (h2)", "the primary balance (the caseload lines' cycle after 2029) and the interest on the stock (seeded at the issuance rate, ruling R4's sentinel) - a calibration item" },
-            { "France (h1)", "the interest on the stock - seeded at the issuance rate (ruling R4's sentinel) where the DSM's implied rate is the stock's own cost, then the convex spread at the higher debt; the primary balance second" },
-            { "France (h2)", "the interest on the stock (R4's seed, then the convex spread) and the primary balance (the opening years' stagnation) - a calibration item" },
-            { "Italy (h1)", "the interest on the stock (R4's seed) and the real growth effect - the run's real GDP stalls where the DSM's grows (K245's registered growth miss)" },
-            { "Italy (h2)", "the interest on the stock (R4's seed, then the convex spread) and the real growth effect (K245) - a programme follows" },
-            { "Poland (h2)", "the DSM's stock-flow adjustments to 2026 (not modelled), the interest and the inflation effect - each smaller than the DSM's" },
+            { "Germany (h2)", "the primary balance (the caseload lines' cycle after 2029), then the interest on the stock (K252's seed at the national accounts' rate, converging on the issuance rate) - a calibration item" },
+            { "France (h2)", "the interest on the stock - K252 seeds it at the national accounts' rate, and over the stock's maturity it converges on the issuance rate and the convex spread at the higher debt, above the DSM's implied path - and the primary balance (the opening years' stagnation) - a calibration item" },
+            { "Italy (h2)", "the interest on the stock (K252's seed, converging on the issuance rate and the convex spread at the higher debt) and the real growth effect (K245) - a programme follows" },
+            { "Poland (h2)", "the DSM's stock-flow adjustments to 2026 (not modelled), then the interest and the primary balance - each smaller than the DSM's; the inflation effect offsets part" },
         };
 
         public static void Run()
@@ -112,14 +114,15 @@ namespace PoliSim.EditorTools
             Debug.Log("DEBT HOLD: REGISTERED MISS - " + what + " - " + reason);
         }
 
-        /// <summary>The player's country's debt ratio before its first day - the base every change is read from.</summary>
-        private static float OpeningRatio(CountryId id)
+        /// <summary>The player's country's debt ratio before its first day - the base every change is read from; K252: and the effective rate its stock opens at.</summary>
+        private static float OpeningRatio(CountryId id, out float effectiveRate)
         {
             SimulationRandom.Seed(NoPolicyCentury.Seed);
             using (SimulationManager.EpochScope())
             {
                 PoliSim.Elections.WorldClock.ApplyStart(id);
                 World world = WorldFactory.CreateDefault();
+                effectiveRate = world.GetCountry(id).EffectiveDebtInterestRate;
                 return world.GetCountry(id).State.DebtToGdpRatio;
             }
         }
@@ -198,6 +201,15 @@ namespace PoliSim.EditorTools
             return F("-pb {0:+0.0;-0.0} + net interest {1:+0.0;-0.0} + nominal growth {2:+0.0;-0.0} + other means of financing {3:+0.0;-0.0}", R(pb), R(interest), R(growth), R(change - pb - interest - growth));
         }
 
+        /// <summary>K252: the stock opens at the national accounts' implied rate (`DebtRateSeeds`), not at the issuance rate ruling R4's sentinel gave it. It reads the world
+        /// <see cref="OpeningRatio"/> builds (`WorldFactory.CreateDefault` after `ApplyStart`), not the run's own: <see cref="NoPolicyCentury.Unchanged"/> builds its world the same way, so a
+        /// seed lost inside WorldFactory fails here by name, but a path that rebuilt or reset the rate inside the run would not (the K252 review's L2).</summary>
+        private static void SeedHeld(CountryId id, float openRate)
+        {
+            float seed = DebtRateSeeds.ImpliedRatePercent[id];
+            Check(openRate == seed, F("{0}: the stock's effective rate opens at {1:0.00} %, the national accounts' {2} implied rate {3:0.00} % (K252)", id, openRate, DebtRateSeeds.InterestYear, seed));
+        }
+
         private static void HoldEu(CountryId id)
         {
             int start = PoliSim.Elections.WorldClock.StartDate(id).Year;
@@ -205,7 +217,7 @@ namespace PoliSim.EditorTools
             if (start < DebtPathAnchors.DsmFirstYear || start > DsmFanYear) { Check(false, F("{0}: the start year {1} lies outside the DSM's window {2}-{3} - UNVERIFIED, not clean", id, start, DebtPathAnchors.DsmFirstYear, DsmFanYear)); return; }
             IReadOnlyList<NoPolicyCentury.Year> run = NoPolicyCentury.Unchanged(id, DsmHorizonYear - start);
             IReadOnlyList<NoPolicyCentury.Year> idle = NoPolicyCentury.For(id);
-            float open = OpeningRatio(id);
+            float open = OpeningRatio(id, out float openRate);
             // the q32 review's L5: the windows ALIGNED - the DSM read from the start's own calendar year, the model from its opening state, both to the DSM's years
             float dsmAtStart = At(baseline, DebtPathAnchors.DsmFirstYear, start);
             float lowFan = At(p10, DebtPathAnchors.DsmFanFirstYear, DsmFanYear) - dsmAtStart, highFan = At(p90, DebtPathAnchors.DsmFanFirstYear, DsmFanYear) - dsmAtStart;
@@ -213,6 +225,7 @@ namespace PoliSim.EditorTools
             if (float.IsNaN(model2029) || float.IsNaN(model2035)) { Check(false, F("{0}: the run does not reach {1} - UNVERIFIED, not clean", id, DsmHorizonYear)); return; }
             _sb.Append(F("    {0}: starts {1}, opens at {2:0.0} % of GDP (the DSM's {1} {3:0.0} %); the player's own idle book (the shared century, with the fiscal reaction) for reference, unjudged: {4:+0.0;-0.0} to {5}, {6:+0.0;-0.0} to {7}\n",
                 id, start, open, dsmAtStart, ModelAt(idle, open, start, DsmFanYear) - open, DsmFanYear, ModelAt(idle, open, start, DsmHorizonYear) - open, DsmHorizonYear));
+            SeedHeld(id, openRate);
             foreach (int to in new[] { DsmFanYear, DsmHorizonYear })
             {
                 _sb.Append(F("        {0}-{1} the model: {2}\n", start, to, ModelTerms(run, open, start, start, to)));
@@ -236,10 +249,11 @@ namespace PoliSim.EditorTools
             int from = Math.Max(start, DebtPathAnchors.CboFirstYear);
             IReadOnlyList<NoPolicyCentury.Year> run = NoPolicyCentury.Unchanged(CountryId.USA, from + CboLongYears - start);
             IReadOnlyList<NoPolicyCentury.Year> idle = NoPolicyCentury.For(CountryId.USA);
-            float open = OpeningRatio(CountryId.USA);
+            float open = OpeningRatio(CountryId.USA, out float openRate);
             float modelFrom = ModelAt(run, open, start, from);
             _sb.Append(F("    USA: starts {0}, opens at {1:0.0} % of GDP gross; the hold reads from {2} (the model {3:0.0} %, CBO's debt held by the public {4:0.0} % - the perimeter differs, so the hold reads the change)\n",
                 start, open, from, modelFrom, cbo[from - DebtPathAnchors.CboFirstYear]));
+            SeedHeld(CountryId.USA, openRate);
             foreach ((int years, float band) in new[] { (CboShortYears, CboShortBand), (CboLongYears, CboLongBand) })
             {
                 int to = from + years;

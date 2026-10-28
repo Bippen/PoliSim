@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+Date: Wed, 28 Oct 2026 21:05:46 GMT
+Content-Length: 3289
+Content-Type: application/json
+X-ORACLE-DMS-ECID: 19b2d50e-5e6e-4698-893a-3a3f3a599dfa-0057d935
+Access-Control-Allow-Headers: Content-Type, Accept, X-Requested-With
+Access-Control-Allow-Methods: GET
+X-ORACLE-DMS-RID: 0
+Access-Control-Allow-Origin: *
+Connection: keep-alive
+Set-Cookie: rps=!p3Vo9ABLAnPeR1wJ1l7j19/F6MRRhMbPSriuvLcAdX7NID3NAMpUB9jiNJ16L4P8bhpRrSi0fuLZiOuoVRPF9DaLPPizAjL4iO/E0NzF; path=/; Httponly; Secure
+

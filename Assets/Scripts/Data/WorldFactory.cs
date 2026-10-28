@@ -433,16 +433,20 @@ namespace PoliSim.Data
 
             // THE MATURITY RATE-LAG (ruling R4, 2026-08-17): average debt maturity in years, from
             // real debt-office data, source and date per line (searched 2026-08-17).
-            // EffectiveDebtInterestRate is deliberately NOT seeded - the -1 sentinel initializes
-            // to the current issuance rate on first advance (the zero-gap idiom through one path,
-            // shared with pre-mechanism saves), so behavior diverges from the old code only once
-            // rates actually move.
+            // K252 (ruled 2026-10-27): EffectiveDebtInterestRate is SEEDED below at the national
+            // accounts' implied rate (Generated.DebtRateSeeds) - the stock opens paying what it paid,
+            // and reprices toward the issuance rate at 1/AverageDebtMaturityYears a year from there.
+            // The -1 sentinel stays for pre-mechanism saves only.
             usa.AverageDebtMaturityYears = 5.9f;     // [VERIFIED] US Treasury WAM of marketable debt ~70-72 months across 2025
             france.AverageDebtMaturityYears = 8.5f;  // [VERIFIED] AFT negotiable-debt average maturity 8y180d at 2026-05-31
             italy.AverageDebtMaturityYears = 7.0f;   // ⚠ [ESTIMATED] band 6.9-7.7 - MEF vita media residua, mixed 2023-2025 vintages
-            germany.AverageDebtMaturityYears = 7.0f; // ⚠ [GAP-REPORTED to Elias, seeded ESTIMATED] band 6-8: no dated aggregate found; bounded by Finanzagentur portfolio structure (>65% in the 7-30y segment, 10y-dominant issuance). Never to be quoted as settled. BAND-PROVEN INSENSITIVE at the maturity bar (the whole mechanism moves Germany's ratio <= 0.1 points at every horizon, so any M in [6,8] is inside noise) - the estimate STANDS per the ruled rider; no desk graduation needed
+            germany.AverageDebtMaturityYears = 7.0f; // ⚠ [GAP-REPORTED to Elias, seeded ESTIMATED] band 6-8: no dated aggregate found; bounded by Finanzagentur portfolio structure (>65% in the 7-30y segment, 10y-dominant issuance). Never to be quoted as settled. BAND-PROVEN INSENSITIVE at the maturity bar (the whole mechanism moves Germany's ratio <= 0.1 points at every horizon, so any M in [6,8] is inside noise) - the estimate STANDS per the ruled rider; no desk graduation needed. K252: re-measured with the stock seeded below issuance - any M in [6,8] moves no verdict of DebtPathHoldDiagnostic (the record, K252)
             sweden.AverageDebtMaturityYears = 4.75f; // ⚠ [ESTIMATED] midpoint of Riksgalden's 3.5-6y steering range, 2025 guidelines - a TIME-TO-REFIXING basis, which for a REPRICING lag is the mechanism-relevant metric (stated, not glossed)
             poland.AverageDebtMaturityYears = 5.65f; // [VERIFIED-secondary] general-government average maturity, 2024 (official data via aggregator)
+            foreach (Country seeded in new[] { usa, germany, france, italy, poland, sweden })
+            {
+                seeded.EffectiveDebtInterestRate = Generated.DebtRateSeeds.ImpliedRatePercent[seeded.Id];   // K252: SOURCED (Eurostat gov_10dd_edpt1 D41PAY over the average GD; OMB Tables 3.2 and 7.1), Tools/k252_debt_rate_prep.pl
+            }
 
             // States open AT their baselines - the standing zero-gap idiom, from one authority
             // rather than twelve constructor arguments that could drift from the block above.
@@ -961,7 +965,9 @@ namespace PoliSim.Data
             // equivalent debt-to-GDP ratio, and its effective interest rate on EXISTING debt reflects
             // the real blended average rate on federal debt (~3.3%) rather than today's policy rate
             // applied to the whole stock. Every other country keeps the default (unset override, full
-            // risk-premium sensitivity) - Italy/Poland/etc.'s existing curve is untouched.
+            // risk-premium sensitivity) - Italy/Poland/etc.'s existing curve is untouched. K252 (the review's L5):
+            // the blended rate the EXISTING stock pays is now the seed's job (Generated.DebtRateSeeds, sourced);
+            // this override sets only the ISSUANCE target the stock converges on (the hand-set figure below).
             usa.BaseDebtInterestRateOverride = 3.3f;
             usa.RiskPremiumSensitivity = 0.05f;
 

@@ -8977,9 +8977,9 @@ namespace PoliSim.Simulation
         /// 1-(1-s)^fraction slice - PerDayReversion's exact composition at constant target; the
         /// target moves with the ratio's premium, which is the Phase-3 within-period feedback
         /// class, budgeted as such in the equivalence check's enumeration. Sentinel init on first
-        /// advance: a fresh world or a pre-mechanism save starts AT the issuance rate - exactly
-        /// what the old code charged - so behavior diverges only once rates move (the
-        /// recalibration is confined to rate-moving regimes by construction). Called once per
+        /// advance: a pre-mechanism save starts AT the issuance rate - exactly what the old code
+        /// charged. A fresh world is seeded at the national accounts' implied rate instead (K252,
+        /// WorldFactory), so its stock converges toward issuance from what it paid. Called once per
         /// daily accrual and once per turn-form validation step; never from preview.
         /// </summary>
         private void AdvanceEffectiveDebtRate(Country country, float periodFraction)

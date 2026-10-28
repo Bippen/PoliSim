@@ -42066,3 +42066,19 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** g18p1 (Poland DUE A REFIT, as K248 makes it) -> refit s941 -> g18p2 the gate holds, --check OK; nplc 14/15 (F7 - REGISTERED under K267 after diagnosis); nplc2 3/3; dumpplc byte-identical to refit; slrtplc 12/12; dryplc/realplci overflow (the cap caption) -> fixed; plc03 missing (the films' order) -> fixed; dryplc3 / realplci3 Poland 1280 22 captured 0 failed, realplc clean; cheapplc clean but the ledger (row added); simplc 89/89 (31.5 min, past the runner's default timeout).
 
 **Commit:** this one.
+
+## 942. K252 (K268): THE DEBT STOCK'S EFFECTIVE RATE SEEDED AT THE NATIONAL ACCOUNTS' IMPLIED RATE - FRANCE (h1) AND ITALY (h1) CLOSED - THE FAMILY `k252` (2026-10-29)
+
+**What was owed:** K252 - seed the stock's effective interest rate at the source's implied rate, not the issuance rate (R4's sentinel), the largest term in France's, Italy's and Germany's registered misses; its prereg committed alone before its first Unity run (84fa8d08, its predictions from a second runtime, said so).
+
+**Built** (an implementer on `wave/k252`: d14a720f; the review READY with M1 - the first seed's end-2024 denominator overshot day-one interest by the stock's growth, Poland's by 16 % - fixed in 4a559e82 with a marked amendment to the prereg, no verdict changing): `WorldFactory` seeds `EffectiveDebtInterestRate` for all six from `Generated.DebtRateSeeds` (`Tools/k252_debt_rate_prep.pl`, `--check`): 2025 interest payable over the average of the end-2024 and end-2025 gross stocks (Eurostat gov_10dd_edpt1 S13 D41PAY/GD; OMB FY2027 Tables 3.2 line 901 and 7.1, the model's gross perimeter), fetched byte-exact; Sweden 1.83, Germany 1.77, France 1.94, Italy 2.87, Poland 4.51, the USA 3.35 % (issuance 1.77 / 2.38 / 3.80 / 4.84 / 4.00 / 3.47). The rollover toward issuance unchanged. DebtPathHoldDiagnostic asserts every opening rate and moves France (h1) and Italy (h1) from REGISTERED to asserted.
+
+**Measured** (`Reviews/2026-10-28_k252_integrator.md`): every figure the amended prereg's to the tenth - France (h1) +21.8 and Italy (h1) +13.1 inside the DSM's fan; the USA (h3) +11.4 over ten years and +55.3 over thirty; five bands still REGISTERED (Sweden, Germany, France, Italy, Poland (h2)). The family `k252` against `refit` moves from turn 1 in EffectiveDebtRate, Budget and GovernmentDebt. Sentinel 777 8bc513e4..., 424242 016a3dbb....
+
+**Evidence:** `Reviews/2026-10-28_k252_prereg.md` (with its amendment), `_review.md`, `_integrator.md`; ledger rows s942 (`DebtRateSeeds.cs`, both baseline digests).
+
+**Declared:** K268 (the average-stock convention for all six, one 2025 vintage per §621, superseding K252's quoted DSM-ratio figures).
+
+**Bars:** nk252 (first seeds: every figure the prereg's) -> review M1 the denominator -> nk252c 7/7, every figure the amended prereg's; dump k252 pinned; the play saves re-staged, the US cards regenerated; cheapk252d clean but the ledger (rows added); simk252d 89/89.
+
+**Commit:** this one.

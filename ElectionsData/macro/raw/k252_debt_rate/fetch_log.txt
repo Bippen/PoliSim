@@ -1,0 +1,6 @@
+url	file	fetched_utc	http_status	bytes
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10dd_edpt1?format=JSON&lang=EN&unit=MIO_NAC&sector=S13&na_item=D41PAY&geo=SE&geo=DE&geo=FR&geo=IT&geo=PL&sinceTimePeriod=2021	eurostat_gov_10dd_edpt1_D41PAY_S13_MIO_NAC.json	2026-10-28T21:05:44Z	200	3234
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10dd_edpt1?format=JSON&lang=EN&unit=MIO_NAC&sector=S13&na_item=GD&geo=SE&geo=DE&geo=FR&geo=IT&geo=PL&sinceTimePeriod=2021	eurostat_gov_10dd_edpt1_GD_S13_MIO_NAC.json	2026-10-28T21:05:46Z	200	3289
+https://www.whitehouse.gov/wp-content/uploads/2026/04/hist03z2_fy2027.xlsx	omb_hist03z2_fy2027.xlsx	2026-10-28T21:06:06Z	200	60343
+https://www.whitehouse.gov/wp-content/uploads/2026/04/hist07z1_fy2027.xlsx	omb_hist07z1_fy2027.xlsx	2026-10-28T21:06:06Z	200	17295
+# K252: curl -sS, byte-exact (the OMB files with User-Agent Mozilla/5.0, the fiscal_balance folder's URL pattern for the FY 2027 Budget's Historical Tables); each response header saved beside its file as <file>.headers.txt. No host refused.
