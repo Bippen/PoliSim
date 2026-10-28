@@ -53,6 +53,11 @@ namespace PoliSim.EditorTools
             /// <summary>MF q29: the output gap at the record, GDP / potential - 1, and the mortality multiplier.</summary>
             public double OutputGap;
             public float MortalityMultiplier;
+            /// <summary>MF q28: the two waits after the year's turn (-1 where absent) and the real health spending per age-cost unit against its seed that they
+            /// read (`HospitalWaitsDiagnostic`).</summary>
+            public float WaitCataractDays;
+            public float WaitKneeDays;
+            public float SpendPerAgeCostRatio;
         }
 
         private static readonly Dictionary<CountryId, Year[]> Runs = new Dictionary<CountryId, Year[]>();
@@ -121,6 +126,9 @@ namespace PoliSim.EditorTools
                         PotentialGrowth = (c.State.PotentialGDP / System.Math.Max(1e-6, potentialBefore) - 1.0) * 100.0,
                         OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0,
                         MortalityMultiplier = c.State.MortalityMultiplier,
+                        WaitCataractDays = c.State.WaitCataractDays,
+                        WaitKneeDays = c.State.WaitKneeDays,
+                        SpendPerAgeCostRatio = c.Health != null && c.Health.SpendPerAgeCostSeed > 0f ? HealthFamily.SpendPerAgeCost(c) / c.Health.SpendPerAgeCostSeed : 1f,
                     };
                     gdpBefore = c.State.GDP; potentialBefore = c.State.PotentialGDP; yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
                 }

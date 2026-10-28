@@ -279,7 +279,7 @@ namespace PoliSim.UI
                 "HEALTH LINE — AGE-COST ▸ · EFFICIENCY ▸ · " + effectiveness, true);
             book.Anchors["health:cataract"] = h.HasWaits
                 ? Reading("CATARACT WAIT · " + Figure(s.WaitCataractDays, 0, " d") + " ◇", "WAITING · CATARACT · MEAN DAYS · SPECIALIST TO TREATMENT", "OECD DF_WAITING · CM131_138" + Year(h.WaitYear), "SOURCED",
-                        Range(0f, 180f, true), Rank(s.WaitCataractDays, Peers(world, country.Id, c => c.Health != null && c.Health.Seeded ? c.Health.WaitCataract : -1f), true), effectiveness, true)
+                        Range(0f, 180f, true), Rank(s.WaitCataractDays, Peers(world, country.Id, c => c.Health != null && c.Health.Seeded ? c.Health.WaitCataract : -1f), true), "HEALTH LINE — AGE-COST ▸ · " + effectiveness, true)
                     .Add("WAITING · KNEE REPLACEMENT · " + Figure(s.WaitKneeDays, 0, " d") + " · OECD DF_WAITING · CM8154" + Year(h.WaitYear))
                 : Gap(Symbol.Absent, "CATARACT WAIT · WAITING · KNEE REPLACEMENT", "NO COMPARABLE SERIES PUBLISHED · SE IT PL REPORT", "OECD DF_WAITING · NO ROWS FOR " + country.Id.ToString().ToUpperInvariant(),
                     "NOT SIMULATED — EFFECTIVENESS REACHES QUALITY DIRECTLY");

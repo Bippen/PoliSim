@@ -41876,3 +41876,21 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** n932 18/20 named (the two answered here: the FormationSweep re-pin e450aeb4 -> cd1a324f, K216, Italy only; the ledger rows); cheap932b clean; sim932 clean; dump932 (ps7b) byte-identical to mf32 on both seeds; drys932 Italy + Sweden, real932it Italy 1280, real932sw Sweden night 1280 clean; Gate18 g18it3 0 failures (Italy forms FdI+Lega+FI+NM).
 
 **Commit:** this one.
+
+## 932. MF q28 (GA-7-1; K221, K222): HOSPITAL WAITS READ SPENDING, AS COVERAGE AND MORTALITY DO - THE FAMILY `mf28` (2026-10-28)
+
+**The ruling:** q28 of 2026-10-18 ("hospital waits read spending, as coverage and mortality do"), answering the audit's GA-7-1 (Sweden's, Poland's and Italy's cataract and knee waits never moved through three years of spending at its top or floor - they read the health ministry's effectiveness alone). On the reviews: K221 (the derived elasticity stands), K222 (the AI book's real-wage drift kept and DECLARED).
+
+**Built** (an implementer on `wave/q28`: cfd6a866; the review READY with one Medium (f3748cef); the rework 41441688 (M1 declared with an AI-book case, the played gap derived, L2/L3 declared, two stale texts); the integrator's first named run failing the AI-book case for Italy - its AI finance ministry cut every line under the EU rule, so the premise that the AI's health line follows the wage path was false - and the case rewritten to state what is true (d3677e87):
+- `HealthFamily.TargetsFor`: the wait factor is (real health spending per age-cost unit against its seed)^-0.821 x the effectiveness term as before; 0.821 = 1/(eS - eD), DERIVED from Siciliani, Fiorio & Riganti 2017 (Health Economics; Tables 2 and 3, pooled cross-section IV 2011-14: -0.149 and 1.069), fetched byte-exact to `ElectionsData/macro/raw/q28_waits/`; the capacity and demand premise [AUTHORED-DRAFT]; the cross-country Siciliani & Hurst (OECD Health WP 7, 2003) BILLED behind the OECD bot-check.
+- `HospitalWaitsDiagnostic` (simulation, registered by the integrator): (a) the arithmetic at the seed and at +/-20 %; (b) the played +/-10 % path in Sweden, Poland and Italy, its gap against the untouched run derived net of the effectiveness flow, and the step identity every year; (c1) the player's idle book near the seeds; (c2) the AI's book at the model's step, the drift decomposed (the real wage index, the AI ministry's line moves, the rest), and held to the wage index where the AI moved no line. `NoPolicyCentury` records the waits; the People slip names the health line; `docs/data/SOCIETY_STATS.md` states the term.
+
+**Measured** (`Reviews/2026-10-28_q28_integrator.md`): Against `mf32` only WaitCataractDays and WaitKneeDays move, in Italy, Poland and Sweden (nothing reads them downstream); at turn 100 Sweden -55.7 %, Poland -86.0 %, Italy +128.6 % (the AI books' health lines against the age-cost index - K222's drift and the AI finance ministry's uniform EU-rule cuts). The waits' year-10 decomposition on the AI books: Sweden wage x1.0888, line moves x1.0016; Poland x1.3056, x0.8411; Italy x0.9654, x0.7816. The sentinel re-pinned: 777 bc618b3d..., 424242 18b5b6a3....
+
+**Evidence:** `Reviews/2026-10-28_q28_review.md`, `_integrator.md`; ledger rows s932 (`HealthFamily.cs`, both baseline digests).
+
+**Declared:** the waits read spending per AGE-COST unit (mortality's ratio), not per head (coverage's); the Italian estimates applied to Sweden and Poland; the same money counted twice in the year a line moves (the level and the flow), as mortality; the pooled columns the smallest response the paper allows (first-difference IV 1.16), its over-60 coefficient insignificant; the vacant-chair rule unchanged (GA-8-3 stays open); the AI book's wage drift (K222).
+
+**Bars:** nq28b HospitalWaitsDiagnostic PASS (nq28's first run failed c2 for Italy on a false premise, rewritten); cheapq28 clean; simq28 85/85, the sentinel at mf28; drysq28 Sweden 1280 clean; dumpq28 mf28 against mf32: only the two waits move, in Italy, Poland and Sweden.
+
+**Commit:** this one.

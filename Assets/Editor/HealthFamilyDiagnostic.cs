@@ -91,7 +91,8 @@ namespace PoliSim.EditorTools
                     if (heldShare != 0f)
                     {
                         // P5-C7: the cut goes through the DECISION (the mechanic's own path - the request is the indexed line, the allocation the player's figure), so the
-                        // Health ministry's effectiveness falls below one and the waits, which read it, lengthen; the seed-range clamp decides how much of the ask lands.
+                        // Health ministry's effectiveness falls below one and real health spending per age-cost unit below its seed, and the waits, which read both
+                        // (MF q28), lengthen; the seed-range clamp decides how much of the ask lands.
                         foreach (SpendingLine line in se.SpendingLines) { if (HealthFamily.IsHealthLine(line.Category)) { d.SpendingLineChanges[line.Category] = heldShare * 100f; } }
                     }
                     decisions[CountryId.Sweden] = d;

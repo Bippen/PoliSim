@@ -1,0 +1,20 @@
+url	file	fetched_utc	http_status	bytes
+https://eprints.whiterose.ac.uk/id/eprint/162859/1/Waiting_Time_Italy.pdf	whiterose_162859_Waiting_Time_Italy.pdf	2026-10-28T10:34:14Z	200	390170
+
+# The file: Siciliani L., Fiorio C. V., Riganti A., "The Effect of Waiting Times on Demand and Supply for Elective Surgery: Evidence from Italy",
+# Health Economics (2017), the accepted version on White Rose Research Online (eprint 162859). The server's Content-MD5 (5sV0b/+q13WL88YhbbwWeQ==)
+# matches the bytes. MF q28 reads Table 2 (demand, pooled cross-section IV 2011-14: waiting time (log) -0.149, s.e. 0.086) and Table 3 (supply,
+# the same column: 1.069, s.e. 0.354) - HealthFamily.WaitDemandElasticity and WaitSupplyElasticity.
+
+# BILLED (2026-10-28) - the cross-country source the ruling's brief named first, not reached:
+# Siciliani L. and Hurst J., "Explaining Waiting Times Variations for Elective Surgery across OECD Countries", OECD Health Working Papers No. 7 (2003),
+#   doi 10.1787/406746186162 (OECD Economic Studies 38, 2004). Its one figure on spending, as a CMAJ news summary relays it (Saulnier, CMAJ 170(10):1526,
+#   PMC400710), is "a $100 rise in health spending per head, about 6.1 fewer days of median waiting" - a relay, not used.
+#   https://doi.org/10.1787/406746186162 -> www.oecd.org: 403, a Cloudflare "Just a moment..." bot check.
+#   https://bac-lac.wayback.archive-it.org/web/20061211094217/http://www.oecd.org/dataoecd/24/32/5162353.pdf and .../24/36/5163944.pdf: 200 with a
+#     4 430-byte "Session Verification" proof-of-work page in place of the PDF.
+#   https://web.archive.org/web/2006id_/http://www.oecd.org/dataoecd/24/32/5162353.pdf and .../24/36/5163944.pdf, and archive.org/wayback/available:
+#     429 Too Many Requests, three tries over some minutes.
+#   https://www.cmaj.ca/content/170/10/1526.2.full.pdf (the relay): 403.
+# Siciliani L., Borowitz M., Moran V. (eds.), "Waiting Time Policies in the Health Sector: What Works?", OECD Health Policy Studies (2013): on www.oecd.org,
+#   the same bot check; not tried further.

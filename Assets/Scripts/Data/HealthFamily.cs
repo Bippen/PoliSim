@@ -73,6 +73,32 @@ namespace PoliSim.Data
         public const float QualityEfficiencyElasticity = 0.3f;
         /// <remarks>[AUTHORED-DRAFT] - waiting times' elasticity to the Health ministry's effectiveness (P5-C7).</remarks>
         public const float WaitEffectivenessElasticity = 0.5f;
+
+        // ---- MF q28 (ruled 2026-10-18: "hospital waits read spending, as coverage and mortality do"; GA-7-1) ----
+        // The waits are the price that clears elective surgery: demand q = A x w^eD (A the demand shifter), supply q = K x w^eS (K capacity), so in
+        // equilibrium w is proportional to (A / K)^(1 / (eS - eD)). With capacity moving with real health spending and demand with the age-cost index,
+        // A / K is the inverse of real health spending per age-cost unit against its seed - the ratio treatable mortality already reads.
+        /// <remarks>SOURCED - the elasticity of demand for elective surgery to its waiting time: Siciliani, Fiorio and Riganti, "The Effect of Waiting Times
+        /// on Demand and Supply for Elective Surgery: Evidence from Italy", Health Economics 2017 (accepted version, White Rose eprint 162859), Table 2, the
+        /// pooled cross-section IV over 2011-14 (-0.149, s.e. 0.086); the paper's range -0.15 to -0.24, England's -0.2 (Martin and Smith). File:
+        /// ElectionsData/macro/raw/q28_waits/whiterose_162859_Waiting_Time_Italy.pdf.</remarks>
+        public const float WaitDemandElasticity = -0.149f;
+        /// <remarks>SOURCED - the elasticity of the supply of elective surgery to its waiting time: the same paper, Table 3, the same column (pooled cross-section
+        /// IV over 2011-14: 1.069, s.e. 0.354; its instrument the share of the population over 60, the demand shifter).</remarks>
+        public const float WaitSupplyElasticity = 1.069f;
+        /// <remarks>DERIVED - the waits' elasticity to real health spending per age-cost unit against its seed, 1 / (eS - eD) = 1 / (1.069 + 0.149) = 0.821, from the two
+        /// SOURCED elasticities above. Its one [AUTHORED-DRAFT] premise: capacity moves one for one with real health spending and demand one for one with the
+        /// age-cost index (the paper measures capacity in beds and the demand shifter as the over-60 share, not in money). Italian estimates, applied to the
+        /// three countries that publish waits.
+        /// DECLARED (the q28 review's L3): the column is a choice - the pooled cross-section IV pair gives the SMALLEST response the paper's tables allow (0.82);
+        /// its first-difference IV pair (0.627 and -0.238) gives 1 / 0.865 = 1.16. And the demand side of the premise is weakly supported: the paper's own demand
+        /// equation finds the over-60 share's effect on utilisation insignificant (0.021, s.e. 0.035).
+        /// DECLARED (the q28 review's M1, shared with treatable mortality, which reads the same ratio): where the player's party does not lead the government
+        /// (an AI book, SimulationManager.IndexSpendingLines), a caseload line grows with the REAL WAGE index on top of prices and its driver (RF-2, §384 - the
+        /// service lines are staff costs), while this ratio deflates by the price level. So under an AI book the ratio climbs with the real wage index and the
+        /// waits shorten by (real wage index ÷ its seed)^-0.821 with no policy - the wage bill read as capacity, against this premise. Deflating the capacity
+        /// term by a wage index would remove it from both families and is a ruling, not this item's. HospitalWaitsDiagnostic (c2) decomposes it, and holds it where the AI moves no line.</remarks>
+        public static readonly float WaitSpendingElasticity = 1f / (WaitSupplyElasticity - WaitDemandElasticity);
         /// <remarks>CONVENTION - runaway guards on the state, set outside anything the couplings reach; the instruments' bands are the family's STATED ranges (9c), not these.</remarks>
         public const float MinTreatableMortality = 10f, MaxTreatableMortality = 400f, MinWaitDays = 1f, MaxWaitDays = 1000f;
 
@@ -227,7 +253,10 @@ namespace PoliSim.Data
 
             float coverage = Mathf.Min(s.CoverageCeiling, s.Coverage * Mathf.Pow(perHeadRatio, CoverageElasticity));
             float tm = TrendedAnchor(s) * Mathf.Pow(1f / perAgeCostRatio, QualitySpendingElasticity) * Mathf.Pow(1f / effectivenessRatio, QualityEfficiencyElasticity);   // the trend family: the anchor carries the sourced trend
-            float waitFactor = Mathf.Pow(1f / effectivenessRatio, WaitEffectivenessElasticity);   // P5-C7: the waits read the ministry's effectiveness
+            // MF q28: the waits read spending per age-cost unit (the equilibrium form above), the ministry's effectiveness kept as the multiplier it was (P5-C7).
+            // DECLARED (the q28 review's L2): in the year a line is raised or cut the same money enters twice - the level here, and the flow (allocated / requested)
+            // inside effectiveness - as it does in treatable mortality's two terms; from the second year the flow is met again and only the level stands.
+            float waitFactor = Mathf.Pow(1f / perAgeCostRatio, WaitSpendingElasticity) * Mathf.Pow(1f / effectivenessRatio, WaitEffectivenessElasticity);
             return new Targets(coverage, Mathf.Clamp(tm, MinTreatableMortality, MaxTreatableMortality), waitFactor);
         }
 

@@ -368,3 +368,5 @@ file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	887f608a
 file	Assets/Scripts/Simulation/SimulationManager.Italy.cs	bf04ceff86176bd2f5c5b281268c7d9617e9e90ef5e4e7c4677b89bab2e8b39b	reviewed	2026-10-28	s931	Reviews/2026-10-28_ps7_integrator.md	-
 file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	2d0bcb11ffea496ad16039a8cda12626c6d8a7afd77376668699fbf8bf74efb9	reviewed	2026-10-28	s931	Reviews/2026-10-28_ps7_integrator.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	15fd0f6bd0aeac28fa06e43846dab3b5ad1aef5d14ed32bcc1a9994983364ce8	reviewed	2026-10-28	s931	Reviews/2026-10-28_ps7_integrator.md	-
+baseline	777	bc618b3df2e4fe8343d17e41e8fdfa8f0ee4708d1120604699ef56ff01fd6cff	reviewed	2026-10-28	s932	Reviews/2026-10-28_q28_integrator.md	-
+baseline	424242	18b5b6a34b56ec31713772769351a017e6ef40ffe42be2ee36190966f23b8899	reviewed	2026-10-28	s932	Reviews/2026-10-28_q28_integrator.md	-

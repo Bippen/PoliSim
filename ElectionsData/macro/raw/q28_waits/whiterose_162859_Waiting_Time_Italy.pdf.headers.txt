@@ -1,0 +1,16 @@
+HTTP/1.1 200 OK
+Date: Wed, 28 Oct 2026 10:34:14 GMT
+Server: Apache
+Strict-Transport-Security: max-age=63072000
+X-Content-Type-Options: nosniff
+ETag: e6c5746fffaad7758bf3c6216dbc1679
+Content-MD5: 5sV0b/+q13WL88YhbbwWeQ==
+Last-Modified: Thu, 01 Oct 2026 13:38:15 GMT
+Expires: Thu, 28 Oct 2027 10:34:14 GMT
+Content-Disposition: inline; filename=Waiting_Time_Italy.pdf
+Accept-Ranges: bytes
+Content-Length: 390170
+X-Frame-Options: SAMEORIGIN
+Content-Security-Policy: frame-ancestors 'self';
+Content-Type: application/pdf
+
