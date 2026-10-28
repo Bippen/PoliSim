@@ -207,6 +207,7 @@ namespace PoliSim.EditorTools
             ("SupportAgreementDiagnostic", SupportAgreementDiagnostic.Run),   // PS-3h (§635): the support agreement's items owed, delivered, broken; the withdrawal recorded
             ("ConfidenceDiagnostic", ConfidenceDiagnostic.Run),   // PS-3i (§636): a supporter's withdrawal brings a government down by the Riksdag's procedure
             ("ConstructiveVoteDiagnostic", ConstructiveVoteDiagnostic.Run),   // §698 (PS-4): Art. 67 GG - the motion is the successor's election, carried it installs the successor at once; the AI moves it by ruling (2)'s rule
+            ("CoalitionExitDiagnostic", CoalitionExitDiagnostic.Run),   // COAL-1 (K130-K133, s925): a partner's exit opens the confidence procedure - GA-4-1 answered; K131's declared movers and the s641 gate lifted; K130's sigma_v, quiet days and one exit a vote; Art. 67 and Art. 158
             ("FormationSweepDiagnostic", FormationSweepDiagnostic.Run),   // §646: the formation's whole answer over a sweep of chambers, pinned - the evaluator reproduces it exactly
             ("FormateurDiagnostic", FormateurDiagnostic.Run),   // §646: every AI party answers a proposal from the formation's own model (the formateur's premises 2-3)
             ("SpeakerRoundDiagnostic", SpeakerRoundDiagnostic.Run),   // §646: the Speaker's round, dated - the AI asked, the offer to the player, the player asked

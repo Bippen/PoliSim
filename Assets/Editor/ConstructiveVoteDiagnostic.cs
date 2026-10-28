@@ -59,9 +59,9 @@ namespace PoliSim.EditorTools
                 {
                     // (a) the rules
                     Check(ConfidenceProcedure.RulesOf(CountryId.Germany) == ConfidenceProcedure.Rules.Bundestag && ConfidenceProcedure.RulesOf(CountryId.Sweden) == ConfidenceProcedure.Rules.Riksdag
-                          && ConfidenceProcedure.RulesOf(CountryId.Poland) == ConfidenceProcedure.Rules.Unsourced && ConfidenceProcedure.RulesOf(CountryId.USA) == ConfidenceProcedure.Rules.Presidential
+                          && ConfidenceProcedure.RulesOf(CountryId.Poland) == ConfidenceProcedure.Rules.Sejm && ConfidenceProcedure.RulesOf(CountryId.USA) == ConfidenceProcedure.Rules.Presidential
                           && ConfidenceProcedure.RulesOf(CountryId.Italy) == ConfidenceProcedure.Rules.Unsourced && ConfidenceProcedure.RulesOf(CountryId.France) == ConfidenceProcedure.Rules.Unsourced,
-                        "the rules: the Bundestag's constructive vote, the Riksdag's unchanged, the USA's presidential (PS-6 US-7), the other three unsourced");
+                        "the rules: the Bundestag's constructive vote, the Riksdag's unchanged, the USA's presidential (PS-6 US-7), Poland's the Sejm's constructive vote (COAL-1, K133), the other two unsourced");
 
                     // (b) the record's chamber
                     (SimulationManager sim, Country de) = Open("ConstructiveVoteDiagnostic real", "CDU");
@@ -219,7 +219,7 @@ namespace PoliSim.EditorTools
                     outgoing3.FormedOn = sim3.CurrentDate.AddDays(-1);
                     PlayerRole sswBefore = outgoing3.RoleOf("SSW");
                     MethodInfo tryAi = typeof(SimulationManager).GetMethod("TryAiMotion", BindingFlags.Instance | BindingFlags.NonPublic);
-                    tryAi?.Invoke(sim3, new object[] { de3 });
+                    tryAi?.Invoke(sim3, new object[] { de3, null });
                     Check(tryAi != null && !ReferenceEquals(de3.Government, outgoing3) && de3.Government.PmParty == "CDU" && de3.Government.Basis.Contains("Art. 67"),
                         F("the AI: on the planted chamber the CDU moves its own constructive vote and installs {0} led by {1}", de3.Government != null ? string.Join("+", de3.Government.Cabinet) : "none", de3.Government?.PmParty));
                     Check(de3.Government.RoleOf("SSW") == sswBefore && !de3.Government.Cabinet.Contains("SSW") && !de3.Government.Support.Contains("SSW"),
@@ -229,7 +229,7 @@ namespace PoliSim.EditorTools
                     Plant(de5);
                     GovernmentRecord outgoing5 = de5.Government;
                     outgoing5.FormedOn = sim5.CurrentDate.AddDays(-30);
-                    tryAi?.Invoke(sim5, new object[] { de5 });
+                    tryAi?.Invoke(sim5, new object[] { de5, null });
                     Check(sim5.CurrentDate.DayOfWeek != DayOfWeek.Monday && !ReferenceEquals(de5.Government, outgoing5) && de5.Government.PmParty == "CDU" && de5.Government.Basis.Contains("Art. 67"),
                         F("AF-8, the cadence cut: on {0:yyyy-MM-dd}, a {1} a month after the government formed, the AI weighs and the CDU's successor takes office ({2})", sim5.CurrentDate, sim5.CurrentDate.DayOfWeek, de5.Government?.PmParty));
 
@@ -241,7 +241,7 @@ namespace PoliSim.EditorTools
                     var pending = pendingField?.GetValue(sim4) as HashSet<CountryId>;
                     pending?.Add(CountryId.Germany);
                     bool openBefore = sim4.GetPendingBudgetProcess(CountryId.Germany);
-                    tryAi?.Invoke(sim4, new object[] { de4 });
+                    tryAi?.Invoke(sim4, new object[] { de4, null });
                     Check(openBefore && de4.Government.PmParty == "CDU" && !sim4.GetPendingBudgetProcess(CountryId.Germany),
                         F("the review's defect 2: the SPD player's open budget window (open {0}) is closed when the CDU's successor takes office (the government {1}; the window {2})",
                             openBefore, de4.Government.PmParty, sim4.GetPendingBudgetProcess(CountryId.Germany) ? "STILL OPEN" : "closed"));

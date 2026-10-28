@@ -341,3 +341,6 @@ file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	8e7652662ed92
 file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	70f452a0a6d83fdc828071544257bb784f9061383b99c4d44a5d471d1e4d92e8	reviewed	2026-10-27	s918	Reviews/2026-10-24_g18d_review2.md	-
 file	Assets/Scripts/Simulation/SimulationManager.Sejm.cs	76318b5c9bc431f47acc4037d7abc41b3afbe382e9224e89b4ba1d62f08bc3a7	reviewed	2026-10-27	s918	Reviews/2026-10-24_g18d_review2.md	-
 file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	d8a4fe76f8d179c829bf01c4cc6e7734a936998662938da65ec5de596a713652	reviewed	2026-10-27	s918	Reviews/2026-10-27_g18d_integration_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	66ce967be7241c934bbc4dede5bee870888ddf40c098dc63e5e6af843b2a13e9	reviewed	2026-10-28	s925	Reviews/2026-10-27_coal1_review2.md	-
+file	Assets/Scripts/Simulation/SimulationManager.CoalitionExit.cs	61dfd94aa27d19ad2c034c721d1077b28f8f02be9ef23938a481fd4f5aac4b04	reviewed	2026-10-28	s925	Reviews/2026-10-27_coal1_review2.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	b0cccdc1665016f5971e835e5c0460086ecc3e16f5ecb73d5be8c0f2141d3196	reviewed	2026-10-28	s925	Reviews/2026-10-27_coal1_review2.md	integrator: the K59 read moved below the L5 break line (a statement order with no data dependency) for AverageCabinetDiagnostic's three-line guard

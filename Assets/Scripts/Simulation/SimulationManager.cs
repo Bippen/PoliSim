@@ -4128,6 +4128,7 @@ namespace PoliSim.Simulation
                     Debug.Log($"AGREEMENT: {country.Id} - '{broken.Name}' owed to {agreement.Supporter} broken, undelivered after {Elections.SupportAgreement.BudgetVotesToBreak} budget votes");
                 }
             }
+            WeighPartnerExits(country);   // COAL-1 (K130): an AI partner weighs leaving at each budget vote - every budget vote's site calls this method (SimulationManager.CoalitionExit.cs)
         }
 
         /// <summary>PS-3h (§635): every agreement's items read against the country - a delivery or a break is a fact of the book, so this runs at the turn boundary, the day a law bill applies and, in the player's country, every day (§644); a break is recorded on the government.</summary>
@@ -4216,11 +4217,13 @@ namespace PoliSim.Simulation
             if (g.Caretaker) { refusedBecause = "NO MOTION IS TAKEN UP AGAINST A CARETAKER GOVERNMENT"; return false; }
             if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate) { refusedBecause = "NO MOTION IS TAKEN UP BETWEEN AN EXTRA ELECTION'S DECISION AND THE NEW RIKSDAG"; return false; }
             if (g.NoConfidenceOn != System.DateTime.MinValue) { refusedBecause = "THE CHAMBER HAS ALREADY DECLARED NO CONFIDENCE - THE GOVERNMENT'S WEEK RUNS"; return false; }
-            if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Bundestag)
+            if (Elections.ConfidenceProcedure.IsConstructive(countryId))
             {
+                bool sejm = Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Sejm;   // COAL-1 (K133): Art. 158 Konstytucja, the Bundestag's shape
                 // §705 (the review's defect 5): no constructive vote while the chancellor's election runs - before the convening the old Bundestag
                 // sits, and a successor it elected would never be discharged at the convening (Art. 69 Abs. 2)
-                if ((g.Round != null && g.Round.Open) || ElectionAwaitsRound(country, g)) { refusedBecause = "THE CHANCELLOR'S ELECTION IS UNDER WAY - ART. 63, NOT ART. 67"; return false; }
+                if (!sejm && ((g.Round != null && g.Round.Open) || ElectionAwaitsRound(country, g))) { refusedBecause = "THE CHANCELLOR'S ELECTION IS UNDER WAY - ART. 63, NOT ART. 67"; return false; }
+                if (sejm && g.Sejm != null && g.Sejm.Open) { refusedBecause = "THE SEJM'S FORMATION IS UNDER WAY - ART. 154, NOT ART. 158"; return false; }
                 // §754 (the review's note): a party with no members moves nothing - the AI's rule, the player's too
                 if (SeatsOf(country, country.PlayerPartyAbbrev) <= 0) { refusedBecause = "YOUR PARTY HOLDS NO SEAT - A CONSTRUCTIVE VOTE IS MOVED BY MEMBERS"; return false; }
                 // §698 (Art. 67 GG): the motion IS the successor's election - carried, the successor's government takes office today
@@ -4232,8 +4235,9 @@ namespace PoliSim.Simulation
                 // Tagesordnung gesetzt werden." The signatories are §706's reading of § 4's identical quarter (ruled with it): the members who would elect the
                 // candidate. Short of a quarter the motion is not put on the agenda - refused, no division. The AI moves only a motion that carries, a majority
                 // of the members, so its quarter always stands.
-                int quarter = (vote.Members + 3) / 4;
-                if (vote.For < quarter) { refusedBecause = $"A CONSTRUCTIVE VOTE NEEDS A QUARTER OF THE MEMBERS TO SIGN IT - {quarter} - ITS CANDIDATE HAS {vote.For}"; vote = null; return false; }
+                // COAL-1 (K133): the Sejm's motion is moved by at least 46 deputies, Art. 158 ust. 1 [TK-KONST-C:158] - read as the quarter is: the deputies who would choose the candidate.
+                int quarter = sejm ? Elections.ConfidenceProcedure.SejmMovers : (vote.Members + 3) / 4;
+                if (vote.For < quarter) { refusedBecause = sejm ? $"A CONSTRUCTIVE VOTE NEEDS {quarter} DEPUTIES TO MOVE IT - ITS CANDIDATE HAS {vote.For}" : $"A CONSTRUCTIVE VOTE NEEDS A QUARTER OF THE MEMBERS TO SIGN IT - {quarter} - ITS CANDIDATE HAS {vote.For}"; vote = null; return false; }
                 country.Divisions.Append(vote.Title(), CurrentDate, vote.Carried ? 1f : -1f, vote.Carried, 0f, (int)BillAxis.Fiscal, vote.Sides);
                 country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
                 if (vote.Carried && successor != null) { InstallSuccessor(country, successor, verdict, vote); }
@@ -4283,6 +4287,7 @@ namespace PoliSim.Simulation
             country.Government.LeaveCabinet(country.PlayerPartyAbbrev, country);   // the portfolios re-apportioned among those who stay
             country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} left the government");
             Debug.Log($"CONFIDENCE: {countryId} - {country.PlayerPartyAbbrev} left the government");
+            ExitOpensConfidenceProcedure(country, country.PlayerPartyAbbrev);   // COAL-1 (q21, K131; GA-4-1): the exit opens the country's confidence procedure
             return true;
         }
 
@@ -4435,10 +4440,13 @@ namespace PoliSim.Simulation
         /// it was weighed against would never run (the reader). The player's refusals made by moving a motion stand in the round until the next
         /// election (<see cref="Elections.GovernmentRecord.StandingRefusals"/>), here as in the discharge.</para>
         /// </summary>
-        private void TryAiMotion(Country country)
+        private void TryAiMotion(Country country, string afterExitOf = null)
         {
             if (!PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id) { return; }
-            if (Elections.ConfidenceProcedure.RulesOf(country.Id) == Elections.ConfidenceProcedure.Rules.Bundestag) { TryAiConstructiveVote(country); return; }
+            // COAL-1 (K133; the review's M1): the Sejm's Art. 158 is taken up by the AI only after an exit - the daily weighing (ruling (2), §641) stays the Bundestag's
+            // and the Riksdag's; Poland's daily AI constructive vote is unruled and unmeasured, so a player's Poland weighs none on a quiet day
+            Elections.ConfidenceProcedure.Rules rules = Elections.ConfidenceProcedure.RulesOf(country.Id);
+            if (rules == Elections.ConfidenceProcedure.Rules.Bundestag || (rules == Elections.ConfidenceProcedure.Rules.Sejm && afterExitOf != null)) { TryAiConstructiveVote(country, afterExitOf); return; }
             if (Elections.ConfidenceProcedure.RulesOf(country.Id) != Elections.ConfidenceProcedure.Rules.Riksdag) { return; }
             Elections.GovernmentRecord g = country.Government;
             if (g == null || g.Caretaker || g.NoConfidenceOn != System.DateTime.MinValue || g.Cabinet.Count == 0) { return; }
@@ -4446,11 +4454,26 @@ namespace PoliSim.Simulation
             if (TryPlayerPollingDay(out System.DateTime polling) && polling <= CurrentDate.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { return; }
             Elections.GovernmentFormation.View next = null;
             var nextCabinet = new List<string>();
+            // COAL-1 (K131): after a partner's exit the DECLARED opposition moves - a party red-lined from the cabinet by its own lines (the vote's rule), never the
+            // partner that left (K132: it votes on the motion by its own lines, ConfidenceProcedure.Vote, and moves nothing - a mover's side is "for" whatever its lines)
+            HashSet<string> declared = afterExitOf != null ? Elections.GovernmentFormation.RedLinedFrom(country, g.Cabinet, CurrentDate) : null;
             foreach (string mover in AiMotionCandidates(country, g))
             {
+                if (afterExitOf != null && (mover == afterExitOf || !declared.Contains(mover))) { continue; }
                 if (!Elections.ConfidenceProcedure.CanBeTakenUp(country, mover, out int _, out int _)) { continue; }
                 Elections.ConfidenceProcedure.MotionVote vote = Elections.ConfidenceProcedure.Vote(country, mover, CurrentDate);   // §653: the lines standing today
                 if (!vote.Carried) { continue; }
+                if (afterExitOf != null)
+                {
+                    // K131 (Elias, 2026-10-27): the s641 mover-preference gate does not apply after an exit - the declared opposition holds a majority, and it moves
+                    country.Divisions.Append(vote.Title(), CurrentDate, 1f, true, 0f, (int)BillAxis.Fiscal, vote.Sides);
+                    country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
+                    g.NoConfidenceOn = CurrentDate;
+                    g.NoConfidenceMover = mover;
+                    g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag declared no confidence in the prime minister ({g.PmParty}), {vote.For} of {vote.Members} members, moved by {mover} after {afterExitOf} left the government - the declared opposition holds a majority (RF 13 kap. 4 §; COAL-1, K131)");
+                    Debug.Log($"CONFIDENCE: {country.Id} - after {afterExitOf} left, an AI motion by {mover}: {vote.Title()}");
+                    return;
+                }
                 if (next == null)
                 {
                     next = Elections.GovernmentFormation.ViewOfSitting(country, Elections.GovernmentFormation.RefusalLines(country.Id, g.StandingRefusals), CurrentDate);   // the round does not depend on the mover; §653: the mid-term reading, as the discharge's round would read
@@ -4491,9 +4514,11 @@ namespace PoliSim.Simulation
             }
             // The review's defect 1: an AI mover's successor never seats the player's party - nobody asked it (the Speaker's round OFFERS a place to the
             // player instead); a decline keeps it out of the draft's cabinet and support, and it votes on the person - by its lines and its compatibility (§754).
-            if (!string.IsNullOrEmpty(country.PlayerPartyAbbrev) && country.PlayerPartyAbbrev != mover) { round.Declines.Add(country.PlayerPartyAbbrev + ">" + mover); }
+            // COAL-1 (the review's M2; SP-7b, I14 (2a)): while the player is the President his party is the AI's - asked like any party, never declined
+            string playersParty = PartyInChamber(country);
+            if (!string.IsNullOrEmpty(playersParty) && playersParty != mover) { round.Declines.Add(playersParty + ">" + mover); }
             Elections.FormationProposal proposal = DraftProposal(country, round, mover);
-            verdict = Elections.Formateur.Answer(country, proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
+            verdict = Elections.Formateur.Answer(country, proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), playersParty);
             // §705: a partner of the sitting cabinet that the draft seats in the successor's cabinet and that stays where it sits (the review's defect 3)
             // refuses the mover - the mover drafts again without it, as a formateur would: the next government that holds. Before §705 the CDU could
             // stand alone with the CSU outside; one Fraktion, its best draft on §698's planted chamber seats the FDP, which stays - and the motion failed
@@ -4507,7 +4532,7 @@ namespace PoliSim.Simulation
                 if (staying.Count == 0) { break; }
                 foreach (string p in staying) { round.Refusals.Add(p + ">" + mover); }
                 proposal = DraftProposal(country, round, mover);
-                verdict = Elections.Formateur.Answer(country, proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
+                verdict = Elections.Formateur.Answer(country, proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), playersParty);
             }
             draftRound = round;
             return proposal;
@@ -4549,11 +4574,17 @@ namespace PoliSim.Simulation
             Elections.GovernmentRecord g = country.Government;
             var supporters = new List<string>();
             foreach (Elections.PartyAnswer answer in verdict.Answers) { if (!answer.InCabinet && answer.Accepts && !vote.Refusers.Contains(answer.Party)) { supporters.Add(answer.Party); } }   // a refusing supporter carries nothing
+            bool sejm = Elections.ConfidenceProcedure.RulesOf(country.Id) == Elections.ConfidenceProcedure.Rules.Sejm;   // COAL-1 (K133): Art. 158 - the President accepts the cabinet's resignation and appoints the prime minister the Sejm chose
             Elections.GovernmentRecord formed = Elections.GovernmentRecord.FromProposal(country, proposal, supporters, verdict.Investiture.Kind, CurrentDate,
-                $"the constructive vote of no confidence: the Bundestag elected {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} candidate chancellor, {vote.For} of {vote.Members} members (Art. 67 GG)",
+                sejm ? $"the constructive vote of no confidence: the Sejm chose {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} candidate prime minister, {vote.For} of {vote.Members} deputies (Art. 158 Konstytucja)"
+                    : $"the constructive vote of no confidence: the Bundestag elected {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} candidate chancellor, {vote.For} of {vote.Members} members (Art. 67 GG)",
                 g.Kind, g.Executive, g.StandingRefusals, _world);
-            formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Bundestag elected {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} candidate chancellor by the constructive vote, {vote.For} of {vote.Members} members; {PoliSim.Wording.EnglishText.Possessive(g.PmParty, false, true)} chancellor dismissed (Art. 67 GG)");
+            formed.Breaks.Add(sejm ? $"{CurrentDate:yyyy-MM-dd}: the Sejm expressed no confidence in the Council of Ministers and chose {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} candidate prime minister, {vote.For} of {vote.Members} deputies; {PoliSim.Wording.EnglishText.Possessive(g.PmParty, false, true)} cabinet's resignation accepted (Art. 158 Konstytucja)"
+                : $"{CurrentDate:yyyy-MM-dd}: the Bundestag elected {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} candidate chancellor by the constructive vote, {vote.For} of {vote.Members} members; {PoliSim.Wording.EnglishText.Possessive(g.PmParty, false, true)} chancellor dismissed (Art. 67 GG)");
             if (vote.SeatedByGroup) { formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} sits in {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }   // §754
+            // COAL-1 (the review's L5): a budget the Sejm adopted and the President holds stays on his docket through an Art. 158 change - it is the Sejm's act, not
+            // the cabinet's (Art. 158 discharges the Council of Ministers, not the Sejm's statutes), and no install path voids a held act (the election's, the Sejm's steps)
+            if (sejm && _pendingBudgetBillByCountry.TryGetValue(country.Id, out BudgetBill held) && held.ActsHeld != null) { formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the budget the Sejm adopted stays before the President - its acts are the Sejm's, and the change of cabinet does not withdraw them"); }
             HashSet<CabinetPortfolio> chairsBefore = CabinetSystem.PlayersChairs(country);   // K59
             country.Government = formed;
             CabinetSystem.SeatOnEntry(country, chairsBefore);   // K59: the chairs the vote hands the player are seated at the average
@@ -4580,10 +4611,11 @@ namespace PoliSim.Simulation
         /// would lead (the formation's payoff), in <see cref="AiMotionCandidates"/>' order; none in the week before the player's next polling day (the
         /// Riksdag branch's reader, kept). Deterministic: no stream is drawn.
         /// </summary>
-        private void TryAiConstructiveVote(Country country)
+        private void TryAiConstructiveVote(Country country, string afterExitOf = null)
         {
             Elections.GovernmentRecord g = country.Government;
             if (g == null || g.Caretaker || g.Cabinet.Count == 0) { return; }
+            if (g.Sejm != null && g.Sejm.Open) { return; }   // COAL-1 (K133): the Sejm's formation runs - Art. 154, not Art. 158
             if ((g.Round != null && g.Round.Open) || ElectionAwaitsRound(country, g)) { return; }   // §705 (the review's defect 5, and its second pass A): the chancellor's election runs - Art. 63, not Art. 67
             if (TryPlayerPollingDay(out System.DateTime polling) && polling <= CurrentDate.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { return; }
             // AF-8 (Elias's ruling q8, 2026-10-18: "a premise ... without a statute is sourced or cut"): THE MONDAY CADENCE IS CUT - the AI weighs a constructive
@@ -4591,22 +4623,28 @@ namespace PoliSim.Simulation
             // is the one the review measured then, a formation per candidate each German day (about 12 ms a day: the German day path's check 1.7 s -> 3.0 s
             // over 111 days). Stateless as before, so a loaded game weighs on the days a continuous one does. The s873 review's M2: every ticking fork weighs too,
             // so a day whose inputs equal the last quiet day's is not weighed again (SimulationManager.AiVoteMemo.cs - the key is everything the weighing reads).
-            if (AiVoteMemoHolds(country, g, out string memoKey)) { return; }
+            // COAL-1 (K131): the weighing after an exit is not the quiet day's - its movers and its gate differ - so it neither reads nor writes the memo
+            string memoKey = null;
+            if (afterExitOf == null && AiVoteMemoHolds(country, g, out memoKey)) { return; }
+            // K131 (the review's M3): after an exit the DECLARED opposition moves - a party red-lined from the cabinet by its own lines, as under the Riksdag's
+            // rule - never the partner that left (K132: it votes on the successor by its own lines, ConstructiveVote, and moves nothing)
+            HashSet<string> declared = afterExitOf != null ? Elections.GovernmentFormation.RedLinedFrom(country, g.Cabinet, CurrentDate) : null;
             foreach (string mover in AiMotionCandidates(country, g))
             {
                 if (SeatsOf(country, mover) <= 0) { continue; }   // a party with no members moves nothing
+                if (afterExitOf != null && (mover == afterExitOf || !declared.Contains(mover))) { continue; }
                 Elections.ConfidenceProcedure.MotionVote vote = ConstructiveVoteOf(country, mover, out Elections.FormationProposal successor, out Elections.ProposalVerdict verdict);
                 if (!vote.Carried || successor == null) { continue; }
                 double now = Elections.GovernmentFormation.PayoffIn(country, g.Cabinet, mover);
                 double after = Elections.GovernmentFormation.PayoffIn(country, successor.CabinetParties, mover);
-                if (after <= now + Elections.CoalitionFormation.DefectionMargin) { continue; }
+                if (afterExitOf == null && after <= now + Elections.CoalitionFormation.DefectionMargin) { continue; }   // K131: the s641 gate does not apply after an exit
                 country.Divisions.Append(vote.Title(), CurrentDate, 1f, true, 0f, (int)BillAxis.Fiscal, vote.Sides);
                 country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
-                Debug.Log($"CONFIDENCE: {country.Id} - an AI constructive vote by {mover}: {vote.Title()}");
+                Debug.Log($"CONFIDENCE: {country.Id} - {(afterExitOf != null ? "after " + afterExitOf + " left, " : string.Empty)}an AI constructive vote by {mover}: {vote.Title()}");
                 InstallSuccessor(country, successor, verdict, vote);
                 return;
             }
-            AiVoteMemoNothing(g, memoKey);
+            if (afterExitOf == null) { AiVoteMemoNothing(g, memoKey); }
         }
 
         /// <summary>Ruling (2)'s order: the parties that withdrew over broken agreement items first (the natural movers), then the rest of the opposition by
@@ -4618,7 +4656,7 @@ namespace PoliSim.Simulation
             foreach (PoliticalParty party in PartySystems.For(country.Id))
             {
                 string key = party.Abbrev;
-                if (key == country.PlayerPartyAbbrev || g.Cabinet.Contains(key) || g.Support.Contains(key)) { continue; }
+                if (key == PartyInChamber(country) || g.Cabinet.Contains(key) || g.Support.Contains(key)) { continue; }   // COAL-1 (M2): a player-president's party is the AI's (SP-7b)
                 Elections.SupportAgreement a = g.AgreementOf(key);
                 if (a != null && a.Count(Elections.AgreementState.Broken) > 0) { aggrieved.Add(key); } else { opposition.Add(key); }
             }

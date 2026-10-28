@@ -30,7 +30,7 @@ namespace PoliSim.Elections
         /// at the oath (<see cref="UsPresidentialElection"/>). Removal on impeachment (Art. II §4: "shall be removed from Office on Impeachment for, and Conviction
         /// of, Treason, Bribery, or other high Crimes and Misdemeanors") is not modelled, stated - nor the Twenty-fifth Amendment.
         /// </summary>
-        public enum Rules { Unsourced, Riksdag, Bundestag, Presidential }
+        public enum Rules { Unsourced, Riksdag, Bundestag, Presidential, Sejm }
 
         /// <summary>
         /// §698 (PS-4): <b>the Bundestag's rule is the CONSTRUCTIVE vote</b> - Art. 67 GG, quoted from gesetze-im-internet.de in
@@ -42,7 +42,24 @@ namespace PoliSim.Elections
         /// the model reads moves a party's vote inside them). AF-8 (ruling q8): who may move it is the standing orders' rule, GO-BT § 97 Abs. 1 [GOBT-4] - a quarter of the members
         /// or a Fraktion of a quarter sign it, or it is not put on the agenda (`SimulationManager.MoveNoConfidence`).
         /// </summary>
-        public static Rules RulesOf(CountryId id) => id == CountryId.Sweden ? Rules.Riksdag : id == CountryId.Germany ? Rules.Bundestag : id == CountryId.USA ? Rules.Presidential : Rules.Unsourced;
+        public static Rules RulesOf(CountryId id) => id == CountryId.Sweden ? Rules.Riksdag : id == CountryId.Germany ? Rules.Bundestag : id == CountryId.USA ? Rules.Presidential : id == CountryId.Poland ? Rules.Sejm : Rules.Unsourced;
+
+        /// <summary>
+        /// COAL-1 (Elias's ruling K133, 2026-10-27): <b>the Sejm's rule is the CONSTRUCTIVE vote too</b> - Konstytucja Art. 158, quoted from the Tribunal's text in
+        /// `ElectionsData/poland/confidence_rules.md` [TK-KONST-C:158]: <i>"Sejm wyraża Radzie Ministrów wotum nieufności większością ustawowej liczby posłów na wniosek
+        /// zgłoszony przez co najmniej 46 posłów i wskazujący imiennie kandydata na Prezesa Rady Ministrów."</i> The motion names its successor and carries by a majority
+        /// of the statutory number of deputies; carried, the President accepts the cabinet's resignation and appoints the prime minister the Sejm chose - the
+        /// Bundestag's shape, so it runs through the same vote (<see cref="ConstructiveVote"/>) and the same install. Art. 158 ust. 2's seven days between the
+        /// motion and its vote are a PREMISE here, stated as Germany's forty-eight hours are: the vote is taken on the motion's day. Its three-month bar on a
+        /// repeated motion (unless 115 deputies move it) is not modelled: the AI moves only a motion that carries, and a carried one installs a new cabinet.
+        /// Art. 160's vote of confidence the prime minister may ask for is quoted in the same file and not wired - no verb asks for it. The desk's motions
+        /// block stays the Riksdag's and the Bundestag's (<see cref="TakesMotions"/>): the player's Polish verbs are owed, stated. The AI moves an Art. 158 vote
+        /// only after a partner's exit (`SimulationManager.TryAiMotion`, the review's M1): the daily weighing of ruling (2) is not ruled for Poland.
+        /// </summary>
+        public static bool IsConstructive(CountryId id) => RulesOf(id) == Rules.Bundestag || RulesOf(id) == Rules.Sejm;
+
+        /// <summary>COAL-1 (K133): Art. 158 ust. 1 [TK-KONST-C:158] - "na wniosek zgłoszony przez co najmniej 46 posłów": the deputies who must move the Sejm's motion.</summary>
+        public const int SejmMovers = 46;
 
         /// <summary>PS-6 US-7: whether the chamber takes up a motion against the government - under the Riksdag's rule and the Bundestag's; never under a presidency's
         /// (a fixed term, Art. II §1), and not where the rules are unsourced. The desk draws the motions' block, and a declaration holds the clock, only where this is true.</summary>
@@ -65,6 +82,8 @@ namespace PoliSim.Elections
             public int Abstaining;
             /// <summary>§698: a CONSTRUCTIVE vote (Art. 67 GG) - the successor's party (the mover) and the government it would lead; whether its partners accept it decides, since §754, which government the elected successor forms.</summary>
             public bool Constructive;
+            /// <summary>COAL-1 (K133): the rule a constructive vote is taken under - the Bundestag's (Art. 67 GG) or the Sejm's (Art. 158); the title says whose.</summary>
+            public Rules Under;
             public List<string> SuccessorCabinet = new List<string>();
             public List<string> SuccessorSupport = new List<string>();
             /// <summary>§698: the drafted parties that refuse the successor - its answer says no, or a sitting partner stays where it has posts; they are not bound
@@ -83,7 +102,10 @@ namespace PoliSim.Elections
             public bool SeatedByGroup;
             public List<DivisionSide> Sides = new List<DivisionSide>();
 
-            public string Title() => Constructive
+            public string Title() => Constructive && Under == Rules.Sejm
+                ? string.Format(CultureInfo.InvariantCulture, "Constructive vote of no confidence in the Council of Ministers ({0}): {1} candidate {2}, {3} of {4} deputies for, {5} needed (Art. 158 Konstytucja)",
+                    PmParty, PoliSim.Wording.EnglishText.Possessive(Mover, false, true), Carried ? "elected" : "not elected", For, Members, Needed)
+                : Constructive
                 ? string.Format(CultureInfo.InvariantCulture, "Constructive vote of no confidence in the chancellor ({0}): {1} candidate {2}, {3} of {4} members for, {5} needed (Art. 67 GG)",
                     PmParty, PoliSim.Wording.EnglishText.Possessive(Mover, false, true), Carried ? "elected" : "not elected", For, Members, Needed)
                 : string.Format(CultureInfo.InvariantCulture, "Motion of no confidence in the prime minister ({0}): {1}, {2} of {3} members for it, {4} needed",
@@ -102,7 +124,7 @@ namespace PoliSim.Elections
             CoalitionFormation.Chamber chamber, IReadOnlyList<PoliticalParty> chamberParties)
         {
             GovernmentRecord government = country.Government;
-            var vote = new MotionVote { Mover = mover, PmParty = government?.PmParty, Constructive = true };
+            var vote = new MotionVote { Mover = mover, PmParty = government?.PmParty, Constructive = true, Under = RulesOf(country.Id) };
             vote.SuccessorCabinet.AddRange(proposal.CabinetParties);
             vote.SuccessorSupport.AddRange(proposal.Supporters);
             // The review's defect 4: every drafted party by its own answer - a partner that refuses the successor is not bound to elect him (§754: it votes on the person like any party).
@@ -212,7 +234,9 @@ namespace PoliSim.Elections
                 if (c.Side > 0) { vote.For += seats; } else if (c.Side < 0) { vote.Against += seats; } else { vote.Abstaining += seats; }
                 vote.Sides.Add(new DivisionSide { Abbrev = party.Abbrev, ShortName = party.ShortName, Seats = seats, Side = c.Side, Alignment = c.Side, Reason = c.Reason });
             }
-            vote.Needed = vote.Members / 2 + 1;
+            // COAL-1 (K133; the review's L3): Art. 158 counts "większością ustawowej liczby posłów" - a majority of the STATUTORY 460 (Art. 96 ust. 1,
+            // PresidentialVeto.StatutoryDeputies), not of the deputies seated; the Bundestag's "Mehrheit seiner Mitglieder" is its members, as before
+            vote.Needed = vote.Under == Rules.Sejm ? PresidentialVeto.StatutoryDeputies / 2 + 1 : vote.Members / 2 + 1;
             return vote;
         }
 

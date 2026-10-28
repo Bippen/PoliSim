@@ -400,7 +400,7 @@ namespace PoliSim.EditorTools
                 (SimulationManager sim, Country usa) = OpenUsa(go5);
                 Check(ConfidenceProcedure.RulesOf(CountryId.USA) == ConfidenceProcedure.Rules.Presidential && !ConfidenceProcedure.TakesMotions(CountryId.USA)
                       && ConfidenceProcedure.TakesMotions(CountryId.Sweden) && ConfidenceProcedure.TakesMotions(CountryId.Germany) && !ConfidenceProcedure.TakesMotions(CountryId.Poland),
-                    "(US) the USA's rules are the presidency's and take no motion; the Riksdag's and the Bundestag's take motions; Poland's (unsourced) none");
+                    "(US) the USA's rules are the presidency's and take no motion; the Riksdag's and the Bundestag's take motions at the desk; Poland's none there (the Sejm's rule is sourced since COAL-1, its desk owed)");
                 GovernmentRecord biden = usa.Government;
                 Check(biden != null && biden.Kind == WorldClock.ExecutiveKind.Presidency && biden.PmParty == "DEM", F("(US) the start's government: {0}, a presidency", biden?.Executive ?? "NONE"));
                 const string FixedTerm = "A PRESIDENCY SERVES A FIXED TERM · NO MOTION OF NO CONFIDENCE IS TAKEN UP";
@@ -419,9 +419,10 @@ namespace PoliSim.EditorTools
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { UnityEngine.Object.DestroyImmediate(go5); EnergyMarket.ResetTurnState(); }
 
-            // §698: Germany's rules are the Bundestag's constructive vote now (ConstructiveVoteDiagnostic proves them); the unsourced case is Poland's
-            Check(ConfidenceProcedure.RulesOf(CountryId.Poland) == ConfidenceProcedure.Rules.Unsourced && ConfidenceProcedure.RulesOf(CountryId.Germany) == ConfidenceProcedure.Rules.Bundestag,
-                "Poland's rules are not yet modelled - no motion is taken up there; Germany's are the Bundestag's (§698)");
+            // §698: Germany's rules are the Bundestag's constructive vote now (ConstructiveVoteDiagnostic proves them); COAL-1 (K133): Poland's the Sejm's (CoalitionExitDiagnostic); the unsourced cases are Italy's and France's
+            Check(ConfidenceProcedure.RulesOf(CountryId.Poland) == ConfidenceProcedure.Rules.Sejm && ConfidenceProcedure.RulesOf(CountryId.Germany) == ConfidenceProcedure.Rules.Bundestag
+                  && ConfidenceProcedure.RulesOf(CountryId.Italy) == ConfidenceProcedure.Rules.Unsourced && ConfidenceProcedure.RulesOf(CountryId.France) == ConfidenceProcedure.Rules.Unsourced,
+                "Poland's rules are the Sejm's constructive vote (Art. 158, COAL-1); Germany's the Bundestag's (§698); Italy's and France's not yet modelled - no motion is taken up there");
             Check(ConfidenceProcedure.ExtraElectionDay(new DateTime(2026, 3, 4)) == new DateTime(2026, 5, 31), "the extra election's day: the Sunday on or before three months (4 Mar -> 4 Jun is a Thursday -> 31 May)");
 
             if (failures > 0) { Debug.LogError($"CONFIDENCE: {failures} failure(s).\n{sb}"); CheckExit.Finish(1); return; }
