@@ -19,7 +19,6 @@ file	Assets/Scripts/Simulation/EnergyLedger.cs	7c35e1ec002d7d0ac82be1a5d515d5c1a
 file	Assets/Scripts/Simulation/EnergyLedger.cs	89d2cde964420e222190a1cfcaa484143bf2384a288940d14e97b40ff8e13e30	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	FT-10 P-A; two readers; comments alone changed after the second, said in the evidence header
 baseline	777	57f1e5cc73f1721c6b69290ad20702ed3dab7f8677777907812687da739fb28d	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
 baseline	424242	cd39dfbe1c8927937db2a0fe9cf58f6b35331310039b2c66d53c4f0bc7915014	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
-file	Assets/Scripts/Data/EconomyState.cs	f99a3c9d69b753c6f6df9d6848a716dfb5ccfbaf4e7558c5c80b45f743d6a063	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingCategory.cs	19c7df9fcc6486acb7ca440902462b5567f69a6375c62f82a763bcec6c8cab8c	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingLine.cs	614f93a446de40cde1b5ab2692577ec220546507effdcd8811a807c488e38175	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxBaseTable.cs	4b19b2dfe322a91772e6396aeb81714605a3403b4b395ae01c512aefc8e64cfe	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
@@ -354,3 +353,8 @@ file	Assets/Scripts/Simulation/MacroSystem.cs	0703b66b8ef28fa71b14e8f444a5222ab4
 file	Assets/Scripts/Simulation/SimulationManager.cs	54e9eaa1aa74af174e9592e3bdfa048439778bf0bf4e3350c6345a9e22767618	reviewed	2026-10-28	s928	Reviews/2026-10-28_q14_integrator.md	-
 baseline	777	ac5047698d87ff88b3d92befc3620227460d51803602c9c9ebe26f03f1ad6fcb	reviewed	2026-10-28	s928	Reviews/2026-10-28_q14_integrator.md	-
 baseline	424242	8367215c29fa670ab91b120f837b527abf8a15b96a55074ec463f017689bda3d	reviewed	2026-10-28	s928	Reviews/2026-10-28_q14_integrator.md	-
+file	Assets/Scripts/Simulation/MacroSystem.cs	dd46cd434eda0ae471877c7b7ecb32cfc138e962b34f388624ecf3d2df52958e	reviewed	2026-10-28	s929	Reviews/2026-10-28_q29_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	46193a88717f1b1734e7b8abee3aab5a46c9f09a59ef66ca08e96fbc747ff43b	reviewed	2026-10-28	s929	Reviews/2026-10-28_q29_integrator.md	-
+file	Assets/Scripts/Data/EconomyState.cs	f1890ea940cdf324b8363a55369238a9f7bfcf8895e794d17eab13df0440d8bb	reviewed	2026-10-28	s929	Reviews/2026-10-28_q29_integrator.md	-
+baseline	777	2ab67ccd2bba608ecb4c184a4ce1f52962ecae324529aec12d1a811e8932f67a	reviewed	2026-10-28	s929	Reviews/2026-10-28_q29_integrator.md	-
+baseline	424242	2c0cf9fa81176565ee180795f44d17fe3d75955e516e0f96cf51763fce477e4c	reviewed	2026-10-28	s929	Reviews/2026-10-28_q29_integrator.md	-

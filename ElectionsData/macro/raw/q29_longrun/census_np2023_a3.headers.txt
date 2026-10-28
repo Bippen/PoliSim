@@ -1,0 +1,22 @@
+HTTP/1.1 200 OK
+Date: Wed, 28 Oct 2026 02:31:08 GMT
+Content-Type: text/csv
+Content-Length: 29064
+Connection: keep-alive
+Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' census.gov *.census.gov http://www.census.gov assets.adobedtm.com www.googletagmanager.com https://dpm.demdex.net https://cm.everesttech.net https://uscensusbureau.demdex.net dap.digitalgov.gov www.google-analytics.com https://static.cloudflareinsights.com; frame-ancestors 'self';
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+Cache-Control: public, max-age=14400
+Referrer-Policy: strict-origin-when-cross-origin
+Last-Modified: Thu, 09 Nov 2023 14:09:01 GMT
+Accept-Ranges: bytes
+set-cookie: __cf_bm=jez3OmcsxDH9VOey6jjhuCntP0rDGvZsx.Y1QdAXwU0-1793154668.4208553-1.0.1.1-skqRFpWzniOyBAZCPJHY9TYXAqbhbUAF7CsrKRH8Wsb34ArwiAquohC0v6nsOX8_kx4B2IVIVn2fKD5yWVtyYA.JjirtoU5Cn0Ggq3JprgP5zFGmAuCa0sUaRW8wLvwm; HttpOnly; SameSite=None; Secure; Path=/; Domain=www2.census.gov; Expires=Wed, 28 Oct 2026 03:01:08 GMT
+Vary: Accept-Encoding
+X-XSS-Protection: 1; mode=block
+Strict-Transport-Security: max-age=31536000
+Age: 471475
+expires: Wed, 28 Oct 2026 06:31:08 GMT
+cf-cache-status: HIT
+Server: cloudflare
+CF-RAY: a51685c59ff0427c-EWR
+

@@ -39,9 +39,26 @@ namespace PoliSim.EditorTools
             public float LifeExpectancy;
             /// <summary>K58: approval after the year's turn - the pressure floor's reading for an idle governing year (`AverageMinisterLeakMeasure`).</summary>
             public float ApprovalRating;
+            /// <summary>MF q29: the fractional calendar year at the record (MortalitySchedule.YearOf the date), and the year's span - its midpoint, its real GDP
+            /// growth and its potential growth, per cent, against the record before it (the opening state for year one).</summary>
+            public double CalendarYear;
+            public double SpanMidYear;
+            public double RealGrowth;
+            public double PotentialGrowth;
+            /// <summary>MF q29: the output gap at the record, GDP / potential - 1, and the mortality multiplier.</summary>
+            public double OutputGap;
+            public float MortalityMultiplier;
         }
 
         private static readonly Dictionary<CountryId, Year[]> Runs = new Dictionary<CountryId, Year[]>();
+        private static readonly Dictionary<CountryId, Year> Openings = new Dictionary<CountryId, Year>();
+
+        /// <summary>MF q29: the player's country as the century opened, before its first day - the base of year one's growth and of the run's life-expectancy gain.</summary>
+        public static Year Opening(CountryId player)
+        {
+            For(player);
+            return Openings[player];
+        }
 
         /// <summary>The century with <paramref name="player"/> as the player - element <c>y - 1</c> is year <c>y</c> - run on the first ask and handed out after.</summary>
         public static IReadOnlyList<Year> For(CountryId player)
@@ -72,6 +89,8 @@ namespace PoliSim.EditorTools
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
                 var years = new Year[Years];
+                Openings[player] = new Year { LifeExpectancy = c.State.LifeExpectancy, CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate), OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0, MortalityMultiplier = c.State.MortalityMultiplier };
+                double gdpBefore = c.State.GDP, potentialBefore = c.State.PotentialGDP, yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
                 for (int year = 1; year <= Years; year++)
                 {
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
@@ -88,7 +107,14 @@ namespace PoliSim.EditorTools
                         NetMigrationRate = c.State.NetMigrationRate,
                         LifeExpectancy = c.State.LifeExpectancy,
                         ApprovalRating = c.State.ApprovalRating,
+                        CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate),
+                        SpanMidYear = 0.5 * (yearBefore + MortalitySchedule.YearOf(sim.CurrentDate)),
+                        RealGrowth = (c.State.GDP / System.Math.Max(1e-6, gdpBefore) - 1.0) * 100.0,
+                        PotentialGrowth = (c.State.PotentialGDP / System.Math.Max(1e-6, potentialBefore) - 1.0) * 100.0,
+                        OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0,
+                        MortalityMultiplier = c.State.MortalityMultiplier,
                     };
+                    gdpBefore = c.State.GDP; potentialBefore = c.State.PotentialGDP; yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
                 }
 
                 return years;

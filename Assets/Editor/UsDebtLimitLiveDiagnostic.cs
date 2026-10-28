@@ -28,7 +28,11 @@ namespace PoliSim.EditorTools
     /// <item>(d) A US GAME (the USA's own start, stepped in the controller's order): the suspension reinstated on 2 January 2025 at the game's own debt subject to
     /// limit at the end of 1 January (R-US21 (ii)'s words, no headroom - the review's L2), P.L. 119-21's increase NOT applied on 4 July 2025 (later raises are the game's Congress's acts),
     /// the limit reached that day; PS-6 K23: the player-president's government tables nothing by itself - the President proposes the raise a bill's course
-    /// before the measures run out, voted at the deadline (K25) and law on the day they run out, both chambers by reconciliation.</item>
+    /// before the measures run out, voted at the deadline (K25) and law on the day they run out, both chambers by reconciliation.
+    /// K215 (MF q29's sim929): from 3 January 2025 the (d)-(n) world carries the RECORD's 119th Congress - the House and the Senate of record, REP in
+    /// both - planted after each day's seating (StepOne, K78's StepPlanted pattern), so these sections test the debt limit's mechanics and not the
+    /// game's own 2024 count: that count reads the economy (the economic vote), and once MF q29's gap form moved the 2024 path it seated a DEM House
+    /// whose hostile majority (K78) withheld the raise. (n) plants its own House over it, as before.</item>
     /// <item>(e) THE CUT, planted on the US world: the limit binding with no raise law - the day tick arms the next day's flows (and tables nothing for a
     /// player-president), whose non-interest outlays are cut to revenue less interest (the debt held), the slip's lines and the national note saying so;
     /// (e3) PS-6 K26: the budget preview's year cut while it binds, and not with nothing armed.</item>
@@ -228,6 +232,7 @@ namespace PoliSim.EditorTools
                         // ============================================================ (d) a US game: the reinstatement on 2 January 2025
                         DateTime usStart = WorldClock.StartDate(CountryId.USA);
                         (SimulationManager s, World w, Country u) = UsCongressDiagnostic.OpenUsa(hosts, usStart, "REP");
+                        _record119In = w;   // K215: the record's 119th Congress planted from 3 January 2025 (StepOne)
                         s.PlayerPresidentVetoes = _ => false;   // a player-president signs on the day: the raise is law the day it is voted
                         DateTime jan1 = UsDebtLimit.SuspendedThrough, jan2 = jan1.AddDays(1);
                         double dslJan1 = double.NaN;
@@ -262,6 +267,10 @@ namespace PoliSim.EditorTools
                             if (s.CurrentDate == UsDebtLimit.Pl119From.AddDays(1)) { onTheFifth = u.DebtLimitUsd; }
                             armedBefore |= u.DebtLimitCutFlowDay != DateTime.MinValue;
                         }
+                        Dictionary<string, int> house119 = u.ParliamentSeats, senate119 = u.SecondChamberSeats;
+                        Check(Seats(house119, "REP") > Seats(house119, "DEM") && Seats(senate119, "REP") > Seats(senate119, "DEM"),
+                            F("(d) K215: the record's 119th Congress planted from {0}: the House REP {1}, DEM {2}; the Senate REP {3}, DEM {4} - the player's party holds both, so no hostile majority (K78) reads the count",
+                                Iso(Record119From), Seats(house119, "REP"), Seats(house119, "DEM"), Seats(senate119, "REP"), Seats(senate119, "DEM")));
                         Check(onTheFifth == reinstated, F("(d) R-US21 (ii)(a): on {0} the limit is still the game's {1} - P.L. 119-21's increase of 4 July 2025 is the record's, and later raises are the game's Congress's acts", Iso(UsDebtLimit.Pl119From.AddDays(1)), Usd(onTheFifth)));
                         DivisionRecord senate = u.Divisions.Entries.LastOrDefault(d => d.Title != null && d.Title.StartsWith("Reconciliation (the debt limit)", StringComparison.Ordinal) && d.Chamber == Congress.Senate);
                         DivisionRecord house = u.Divisions.Entries.LastOrDefault(d => d.Title != null && d.Title.StartsWith("Reconciliation (the debt limit)", StringComparison.Ordinal) && d.Chamber == Congress.House);
@@ -500,7 +509,7 @@ namespace PoliSim.EditorTools
                         }
                         finally { u.ParliamentSeats = houseWas; u.DebtLimitWithheldBy = limitWithheldWas; }
                     }
-                    finally { EnergyMarket.ResetTurnState(); }
+                    finally { EnergyMarket.ResetTurnState(); _record119In = null; }
                 }
 
                 // ================================================================ (g) the teeth
@@ -582,9 +591,29 @@ namespace PoliSim.EditorTools
         private static void StepOne(SimulationManager s, World w)
         {
             bool boundary = s.AdvanceDay();
+            PlantRecord119(s, w);   // K215: after the day's seating, before the player's day tick reads the chambers
             s.AdvanceCountryDayTick(CountryId.USA);
             if (boundary) { Turn(s, w); }
         }
+
+        /// <summary>K215: the world whose Congress is the record's 119th from <see cref="Record119From"/> - the (d)-(n) world; null outside it.</summary>
+        private static World _record119In;
+
+        /// <summary>K215: the day the record's 119th Congress convened (3 January 2025, the Twentieth Amendment's noon).</summary>
+        private static readonly DateTime Record119From = new DateTime(2025, 1, 3);
+
+        /// <summary>K215: the record's House (the chamber of record the day's date seats, `PartySystems.InitialSeats` on `WorldClock.SeatedVintage`) and the
+        /// record's Senate (`WorldClock.SecondChamberOfRecord`) laid over whatever the day loop seated - K78's StepPlanted pattern, every day.</summary>
+        private static void PlantRecord119(SimulationManager s, World w)
+        {
+            if (_record119In == null || w != _record119In || s.CurrentDate < Record119From) { return; }
+            Country u = w.GetCountry(CountryId.USA);
+            u.ParliamentSeats = PartySystems.InitialSeats(CountryId.USA, WorldClock.SeatedVintage(CountryId.USA, s.CurrentDate));
+            Dictionary<string, int> senate = WorldClock.SecondChamberOfRecord(CountryId.USA, s.CurrentDate);
+            if (senate.Count > 0) { u.SecondChamberSeats = senate; }
+        }
+
+        private static int Seats(Dictionary<string, int> chamber, string party) => chamber != null && chamber.TryGetValue(party, out int n) ? n : 0;
 
         /// <summary>K78's (n) (the Unity run n907): one day in the controller's order with the planted House kept - the day loop re-seats the House in office every
         /// day (`SimulationManager.SeatTheRecordOnItsDate`), so the plant is laid again after the day and before the player's day tick reads it.</summary>

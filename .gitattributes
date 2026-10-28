@@ -26,3 +26,5 @@ ElectionsData/macro/raw/oecd_hur/** -text
 ElectionsData/macro/raw/phillips_convexity/** -text
 Assets/Scripts/Data/Generated/UnemploymentFloorData.cs -text
 ElectionsData/macro/raw/pension_guarantee/** -text
+# MF q29 (2026-10-28): the long-run anchors, byte-exact as fetched (digests in the folder's SHA256SUMS.txt)
+ElectionsData/macro/raw/q29_longrun/** -text

@@ -145,6 +145,12 @@ namespace PoliSim.Data
         public float PotentialLabourSeed;
         public float PotentialProductivityIndex;
         public float PotentialLabourAtLastTurn;
+        /// <summary>K209 (resp929, sim929): the TREND labour input as it stood at the last turn - the labour force at the core's unemployment, the
+        /// natural rate plus the supply excess (MacroSystem.TrendLabourInput) - and the TREND growth of potential it gives with the productivity trend,
+        /// percent: the growth the gap form expects (MacroSystem.ExpectedPotentialGrowth), the core's cycle left out. Captured with the structural
+        /// bases; the trend growth opens at the seed's potential growth.</summary>
+        public float TrendLabourAtLastTurn;
+        public float TrendPotentialGrowthRate;
 
         /// <summary>T-3, form A (Elias, 2026-09-15, `COMPLETED.md` §507): the identity's government consumption over the book's discretionary lines - k = the sourced
         /// share of GDP (general government final consumption expenditure, P3_S13, 2023: GovernmentConsumptionData, generated from MacroData/) × the seed's
@@ -153,6 +159,18 @@ namespace PoliSim.Data
         /// themselves, unscaled. The USA's k is the widest because its lines are the federal budget and its share general government (the row's statement).
         /// 1 where a country has no discretionary lines or no share (the identity reads the book as it did); a save from before carries none - the gate refuses it.</summary>
         public float GovernmentConsumptionScale;
+
+        /// <summary>MF q29 (docs/RULINGS_2026-10-18.md q29): the national-accounts identity's two seed references, so the output gap closes at the
+        /// sourced persistence (MacroSystem.ApplyNationalAccounts): the consumption-and-investment propensity at the seed's rate and confidence, and
+        /// the seed's government consumption and net exports as a share of the seed's potential. Demand is read against them - a rate, a confidence,
+        /// a G or an NX away from the seed's is the impulse; at the seed's the gap decays at the persistence alone. Captured by
+        /// CaptureStructuralBases; 0 = a save from before this item, which keeps the old reversion.</summary>
+        public float IdentityPropensitySeed;
+        public float IdentityAutonomousShareSeed;
+        /// <summary>K209: the demand reference, a share of potential - the level of the identity's demand impulse that has become the economy's
+        /// own, moved toward each period's impulse at MacroSystem.DemandReferenceSpeed (MacroSystem.CloseDemandReference); the gap form reads
+        /// the impulse against it, so a change in demand fades and a drift is absorbed. 0 at the seed.</summary>
+        public float DemandReference;
 
         /// <summary>P5-B6 (2026-09-05): the price level as it stood when the spending lines were last indexed, so the lines carry the year's prices as the ratio now/then (IndexSpendingLines). 1 at the seed; 0 = a save from before this pass (the first index takes the level and applies 1).</summary>
         public float PriceLevelAtLastIndex;
@@ -266,9 +284,16 @@ namespace PoliSim.Data
             GovernmentConsumptionScale = seedDiscretionaryLines > 0f && Generated.GovernmentConsumptionData.SharePct.TryGetValue(Id, out float consumptionSharePct)
                 ? (float)(consumptionSharePct / 100.0 * State.NominalGdp / seedDiscretionaryLines)
                 : 1f;
+            // MF q29: the identity's seed references - the propensity at the seed's rate and confidence, and G + NX over the seed's potential
+            IdentityPropensitySeed = Simulation.MacroSystem.IdentityPropensity(this, CurrencyZone.InterestRate, Simulation.MacroSystem.EffectiveConsumerConfidence(this));
+            IdentityAutonomousShareSeed = PotentialGdpSeed > 0f
+                ? (Simulation.MacroSystem.IdentityGovernmentConsumption(this, seedDiscretionaryLines) + State.TradeBalance) / PotentialGdpSeed
+                : 0f;
             PotentialLabourSeed = PotentialOutput.LabourInput(this);
             PotentialProductivityIndex = 1f;
             PotentialLabourAtLastTurn = PotentialLabourSeed;
+            TrendLabourAtLastTurn = Simulation.MacroSystem.TrendLabourInput(this);   // K209 (resp929, sim929)
+            TrendPotentialGrowthRate = PotentialGrowthRate;
             PriceLevelAtLastIndex = State.PriceLevel;   // P5-B6
             RealWageIndexAtLastIndex = State.RealWageIndex;   // RF-2 re-formed (§384)
             DebtRatioSeed = State.DebtToGdpRatio;   // the AI finance ministry (§388)
@@ -476,9 +501,9 @@ namespace PoliSim.Data
         /// zero-gap-at-start idiom).</summary>
         public float BaselineYouthUnemploymentRate = 15f;
 
-        /// <summary>ROUND 4 BATCH 1 (C3): the structural life-expectancy anchor, years at birth -
-        /// ApplyLifeExpectancy's reversion target before the poverty drag and healthcare lift. Seeded
-        /// to the same real 2024 figure the state opens at.</summary>
+        /// <summary>ROUND 4 BATCH 1 (C3): the sourced life expectancy at birth, 2024, years. MF q29: the calibration target of the 2024 mortality
+        /// schedule (MortalitySchedule.Calibration) - the state opens at the derivation at the start's own year, so a start after 2024 opens above
+        /// it and one before below it.</summary>
         public float BaselineLifeExpectancy = 80f;
 
         /// <summary>ROUND 4 BATCH 2 (C2): the structural inequality anchor - ApplyGini's reversion

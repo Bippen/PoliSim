@@ -531,11 +531,11 @@ namespace PoliSim.EditorTools
                 }
 
                 MacroSystem.ApplyYouthUnemployment(cr);                                 // one turn step
-                MacroSystem.ApplyLifeExpectancy(cr);
+                MacroSystem.ApplyLifeExpectancy(cr, MortalitySchedule.YearOf(SimulationManager.EpochDate));
                 for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                 // daily steps
                 {
                     MacroSystem.ApplyYouthUnemploymentDaily(cs);
-                    MacroSystem.ApplyLifeExpectancyDaily(cs);
+                    MacroSystem.ApplyLifeExpectancyDaily(cs, MortalitySchedule.YearOf(SimulationManager.EpochDate));
                 }
 
                 total += 2;

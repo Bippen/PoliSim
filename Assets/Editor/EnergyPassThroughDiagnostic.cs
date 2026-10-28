@@ -265,6 +265,12 @@ namespace PoliSim.EditorTools
                 ApprovalLedgerRecorder.RecordEvent(de, sim.CurrentDate, "Enact: household electricity tax relief (EnergyPassThroughDiagnostic)", de.State.ApprovalRating - approvalBeforeLaw);
                 de.EnactedLaws.Add(new EnactedLaw { LawId = "household_electricity_tax_relief_act", EnactedOn = sim.CurrentDate });
                 sim.AdvanceTurn(decisions);
+                // MF q29 (sim929): the fixture moved, as the check below asks - the multiplier read 1.0063 once the gap form left Germany's debt near its
+                // comfortable level, too near 1 to tell a flow inside it from one outside. The debt is planted 20 points of GDP above that level here,
+                // before the year both previews and the boundary read, so the multiplier stands clear of 1 by construction rather than by the path.
+                float debtBeforePlant = de.State.GovernmentDebt;
+                de.State.GovernmentDebt = (de.ComfortableDebtToGdpPercent + 20f) / 100f * de.State.NominalGdp;
+                DebtLedgerRecorder.RecordEvent(de, sim.CurrentDate, "planted by EnergyPassThroughDiagnostic (the fixture's debt)", debtBeforePlant, de.State.GovernmentDebt);   // the debt ledger's audit sees the plant (s929)
                 for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                 PolicyPreview withLaw = sim.PreviewTurn(CountryId.Germany, PolicyDecision.None());
                 float statuteWithLaw = de.ElectricityTaxHouseholds;

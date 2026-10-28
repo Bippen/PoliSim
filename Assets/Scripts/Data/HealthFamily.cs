@@ -77,12 +77,10 @@ namespace PoliSim.Data
         public const float MinTreatableMortality = 10f, MaxTreatableMortality = 400f, MinWaitDays = 1f, MaxWaitDays = 1000f;
 
         // ---- THE FEEDBACK PASS (2026-09-06, overnight; the spine's §4 "feedbacks to the model, proposed and NOT built" - built now, one family, its own BASELINE) ----
-        // The family MOVES THE MODEL through three terms, each [AUTHORED-DRAFT] in magnitude and DIRECTIONAL in the literature, each reading the
+        // The family MOVES THE MODEL through its terms, each [AUTHORED-DRAFT] in magnitude and DIRECTIONAL in the literature, each reading the
         // quality key's RATIO to its seed so a country at its seed adds exactly nothing (the suite's pre-existing fields open only where the ratio moves):
-        /// <remarks>[AUTHORED-DRAFT], DIRECTIONAL - years of life expectancy per unit of ln(seed / treatable mortality): treatable mortality is by construction the mortality timely care averts
-        /// (OECD/Eurostat avoidable-mortality definition; OECD Health at a Glance 2023 reads the life-expectancy gap between countries largely through it). 1.0 means halving treatable
-        /// mortality adds 0.69 years - the small drift the spine asked for.</remarks>
-        public const float LifeExpectancyPerLogQuality = 1.0f;
+        // MF q29 (K140): the life-expectancy term (1.0 year per unit of ln(seed / treatable mortality), authored) is retired - life expectancy is derived
+        // from mortality, and the treatable excess enters it as deaths: MortalitySchedule.TreatableExcessRate, the identity DeathRateFor reads.
         /// <remarks>[AUTHORED-DRAFT], DIRECTIONAL - percentage points of labour-force participation per unit of ln(seed / treatable mortality): ill health is the largest single reason for
         /// inactivity in the 50–64 band (OECD Sickness, Disability and Work 2010; Eurostat lfsa_igar "own illness or disability" among the inactive). 0.5 means halving treatable mortality
         /// lifts participation a third of a point.</remarks>
@@ -115,9 +113,6 @@ namespace PoliSim.Data
             if (s == null || !s.Seeded || s.TreatableMortality <= 0f || country.State.TreatableMortality <= 0f) { return 0f; }
             return Mathf.Clamp(Mathf.Log(TrendedAnchor(s) / country.State.TreatableMortality), -1.386f, 1.386f);
         }
-
-        /// <summary>The life-expectancy term, years, added to MacroSystem.ApplyLifeExpectancy's target.</summary>
-        public static float LifeExpectancyTerm(Country country) => LifeExpectancyPerLogQuality * QualityLog(country);
 
         /// <summary>The participation term, percentage points, added to MacroSystem.ApplyLaborForceParticipationRate's target.</summary>
         public static float ParticipationTerm(Country country) => ParticipationPerLogQuality * QualityLog(country);

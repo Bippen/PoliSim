@@ -134,12 +134,16 @@ namespace PoliSim.Data
         /// (the OECD-harmonised US equivalent); that difference must never be "corrected".</summary>
         public float YouthUnemployment;
 
-        /// <summary>ROUND 4 BATCH 1 (C3): life expectancy at birth, years. Inputs-only: reverts
-        /// generationally toward the country's baseline, dragged by poverty above its own baseline and
-        /// lifted by an implemented UniversalHealthcare program - both real, documented directions at
-        /// modest scales (see MacroSystem.ApplyLifeExpectancy). No denominator, so the UI draws it on
+        /// <summary>ROUND 4 BATCH 1 (C3): life expectancy at birth, years. Inputs-only. MF q29: DERIVED - the period life expectancy of the
+        /// sourced mortality schedule at the day's year, scaled by MortalityMultiplier and the health family's treatable excess
+        /// (MortalitySchedule.LifeExpectancy, written by MacroSystem.ApplyLifeExpectancy). No denominator, so the UI draws it on
         /// the negative-fill convention (§A.9b), never a gauge.</summary>
         public float LifeExpectancy;
+
+        /// <summary>MF q29 (K140): the multiplier on every age's death rate that poverty above its baseline raises and an implemented
+        /// UniversalHealthcare program above the seed's lowers - 1 at the seed, reverting generationally toward its target
+        /// (MacroSystem.ApplyLifeExpectancy). Life expectancy is derived from the schedule it scales, never moved directly.</summary>
+        public float MortalityMultiplier = 1f;
 
         /// <summary>ROUND 4 BATCH 2 (C2): Gini coefficient of equivalised disposable income on the
         /// 0-100 scale (Eurostat's own label for `GINI_HND`). Inputs-only: reverts toward the

@@ -26,7 +26,7 @@ namespace PoliSim.EditorTools
             foreach (Country c in seedWorld.Countries)
             {
                 if (!c.Health.Seeded) { continue; }
-                if (Mathf.Abs(HealthFamily.QualityLog(c)) > 1e-6f || Mathf.Abs(HealthFamily.LifeExpectancyTerm(c)) > 1e-6f || Mathf.Abs(HealthFamily.ParticipationTerm(c)) > 1e-6f) { Debug.LogError($"HEALTH FEEDBACK: {c.Id} carries a nonzero term at the seed ({HealthFamily.QualityLog(c):R})."); ok = false; }
+                if (Mathf.Abs(HealthFamily.QualityLog(c)) > 1e-6f || System.Math.Abs(MortalitySchedule.TreatableExcessRate(c)) > 1e-12 || Mathf.Abs(HealthFamily.ParticipationTerm(c)) > 1e-6f) { Debug.LogError($"HEALTH FEEDBACK: {c.Id} carries a nonzero term at the seed ({HealthFamily.QualityLog(c):R})."); ok = false; }
                 if (c.Health.DeathRateSeed <= 0f) { Debug.LogError($"HEALTH FEEDBACK: {c.Id} has no death-rate seed."); ok = false; }
             }
 

@@ -229,8 +229,112 @@ namespace PoliSim.Simulation
 
             state.GovernmentConsumption = governmentSpending;   // T-3 form A (§507): the G the identity read
             float gdpFromIdentity = state.Consumption + state.Investment + governmentSpending + state.TradeBalance;
+            if (GapSeeded(country))
+            {
+                // MF q29 / K209: Y' = (1 + g) (rho Y + (1 - rho) P) + kappa (C + I + G + NX - a_seed Y - gamma_seed P) - R P - the gap against the
+                // period's potential decays at the sourced persistence, and demand away from the reference R is the impulse (see GapPersistence).
+                float rho = GapPersistence(country);
+                float kappa = GapImpact(country);
+                float growth = 1f + ExpectedPotentialGrowth(country);
+                float potential = state.PotentialGDP;
+                state.GDP = Mathf.Max(MinGdp, growth * (rho * priorGdp + (1f - rho) * potential)
+                    + kappa * (gdpFromIdentity - country.IdentityPropensitySeed * priorGdp - country.IdentityAutonomousShareSeed * potential)
+                    - country.DemandReference * potential);
+                CloseDemandReference(country, priorGdp, potential);   // the turn form is one whole period
+                return;
+            }
             float gdpAfterReversion = gdpFromIdentity + OutputGapReversionSpeed * (state.PotentialGDP - gdpFromIdentity);
             state.GDP = Mathf.Max(MinGdp, gdpAfterReversion);
+        }
+
+        /// <summary>
+        /// MF q29 (docs/RULINGS_2026-10-18.md q29; audit GA-7-3): THE OUTPUT GAP CLOSES AT A SOURCED PERSISTENCE. Until this item the identity's
+        /// result was pulled half-way to potential each year (OutputGapReversionSpeed, a CONVENTION), and its fixed point was wherever the seed's
+        /// C + I + G + NX shares left it - a lasting gap no seed could close. Now, with rho the annual persistence and kappa the impact coefficient
+        /// (GapImpact, K203 revised: derived from D-13 (b)'s sourced band and impact floor):
+        /// <para>Y' = (1 + g) (rho Y + (1 − rho) P) + kappa (Y_identity − a_seed Y − gamma_seed P) − R P,</para>
+        /// <para>K209 (the measured run n929): g is the growth potential is expected to make over the period (ExpectedPotentialGrowth), so the gap
+        /// is read against the potential the period ends at - without it the identity chased the period-open potential and stood g ÷ (1 − rho + g)
+        /// below a growing one; and R, the DEMAND REFERENCE (Country.DemandReference), follows the impulse at DemandReferenceSpeed a year, so a
+        /// change in demand's share of potential is a temporary impulse that fades and a drift in that share is absorbed - where the level of
+        /// (G + NX) ÷ P against its seed share was a standing impulse that held the gap open (n929: 8 to 28 % below potential at year 100).</para>
+        /// <para>where a_seed is the consumption-and-investment propensity at the seed's rate and confidence and gamma_seed the seed's G + NX over the
+        /// seed's potential (Country.IdentityPropensitySeed, IdentityAutonomousShareSeed). At the seed's references the bracket is zero and the gap
+        /// decays by rho a year, whatever the seed's shares; a rate above neutral, a confidence, a G or an NX away from the seed's is demand, entering
+        /// on impact at kappa, its cumulative multiplier at L+1 and L+4 inside Ramey's band, and a sustained impulse fading as the demand reference
+        /// absorbs it (K209). rho is
+        /// LongRunAnchors.GapPersistence: the share of a standing gap left four
+        /// quarters on under Holston, Laubach and Williams' output-gap equation (their current estimates, US for the USA and the euro area's for the
+        /// EU five), derived by Tools/q29_longrun_prep.pl. A save from before this item carries no seed references and keeps the old form.</para>
+        /// </summary>
+        public static float GapPersistence(Country country)
+            => PoliSim.Data.Generated.LongRunAnchors.GapPersistence.TryGetValue(country.Id, out float rho) ? rho : 1f - OutputGapReversionSpeed;
+
+        /// <summary>kappa, the gap form's impact coefficient (K203 revised, K209, then the measured harness resp929), read on D-13 (b)'s own basis
+        /// (ResponsivenessAuditHarness): Ramey's government-purchases multiplier "between 0.6 and 1" (Ramey 2019, "Ten Years After the Financial
+        /// Crisis: What Have We Learned from the Renaissance in Fiscal Research?", Journal of Economic Perspectives 33(2), read in NBER w25531) is a
+        /// CUMULATIVE multiplier over two to five years - the harness's sum of output responses over the sum of purchase responses from the landing
+        /// year, enforced at L+1 and L+4 with an impact floor (its ImpactRatchet, §512, never lowered). Under K209 a sustained unit of purchases
+        /// moves output kappa × the sum over j ≤ n of rho^(n−j) (1 − lambda)^j in year n (lambda = DemandReferenceSpeed). lambda alone sets the
+        /// SHAPE: it is the figure at which the EU five's (rho 0.609) arithmetic cumulative is equal at L+1 and L+4. kappa sets the LEVEL, and it is
+        /// FITTED to the measured harness: resp929 (Sweden, kappa 0.687) read the cumulative at 1.22 times this arithmetic once the cyclical part of
+        /// the growth term (fixed with it: ExpectedPotentialGrowth now reads the trend) is taken out - the purchases' own response falls in the
+        /// second year and the impact reads 1.058 times kappa - so kappa is the figure putting the harness's reading at the band's midpoint, 0.8,
+        /// at both horizons: the arithmetic 0.655. Expected readings: impact about 0.60 (floor 0.4984), L+1 and L+4 about 0.80; the USA's arithmetic
+        /// (rho 0.648) 0.666 and 0.692. LongRunAnchorsDiagnostic (c3) holds the arithmetic; the harness holds the reading.</summary>
+        /// <remarks>FITTED - one free parameter, kappa, solved so the harness's measured cumulative (resp929's ratio to the arithmetic, 1.22) sits at
+        /// the midpoint of D-13 (b)'s sourced band (Ramey 2019, 0.6-1.0), the impact above its floor (§512).</remarks>
+        public const float GapImpactCoefficient = 0.5625f;
+
+        /// <summary>K209: lambda, the share of the gap between the demand impulse and the demand reference that the reference closes at each period's
+        /// close (CloseDemandReference) - the figure at which the EU five's arithmetic cumulative multiplier is equal at D-13 (b)'s two horizons (see
+        /// GapImpactCoefficient). A drift in demand's share of potential at d a year then holds the gap near kappa (1 − lambda) d ÷ (lambda (1 − rho)),
+        /// about 3.7 d for the EU five.</summary>
+        /// <remarks>DERIVED (K209) from D-13 (b)'s two horizons: equal arithmetic cumulative multipliers at L+1 and L+4 for the EU five's rho.</remarks>
+        public const float DemandReferenceSpeed = 0.2804f;
+
+        /// <summary>K209: the growth potential is expected to make over the coming period, a fraction - the TREND growth of potential
+        /// (Country.TrendPotentialGrowthRate: the productivity trend compounded with the trend labour input's growth, the core's cycle left out), clamped as
+        /// a runaway guard. resp929 measured why the cycle is left out: the derived growth (Country.PotentialGrowthRate) reads employment, so a
+        /// spending impulse's fall in unemployment raised the next year's g and the whole economy with it - the harness's second-year response read
+        /// 1.44 times the purchases.</summary>
+        public static float ExpectedPotentialGrowth(Country country) => Mathf.Clamp(country.TrendPotentialGrowthRate / 100f, -0.05f, 0.10f);
+
+        /// <summary>K209 (sim929's JobsLagDiagnostic): the TREND labour input - the labour force at the core's unemployment, the natural rate plus the
+        /// supply excess (FT-7's first seat), so potential's own labour input less only the core's cyclical gap. The labour force alone (the first
+        /// form) put a participation shock into the expected growth the year it arrived, while potential took it in only as the excess was absorbed:
+        /// output was then expected short of potential for years and Okun read the shortfall as a cycle, slowing the supply excess's decay.</summary>
+        public static float TrendLabourInput(Country country)
+            => PotentialOutput.LabourForce(country)
+               * Mathf.Clamp(100f - country.EffectiveNaturalUnemploymentRate - country.State.SupplyUnemploymentExcess, 0f, 100f) / 100f;
+
+        /// <summary>K209: the period's demand impulse, a share of potential - kappa (C + I + G + NX − a_seed Y − gamma_seed P) ÷ P, read off the
+        /// state the identity just wrote (its C, I, G and NX) with the prior GDP and the potential it read - and the reference moved toward it by
+        /// DemandReferenceSpeed. Called once at each period's close: by the turn form at its end, by the daily path on the period's last day.</summary>
+        public static void CloseDemandReference(Country country, float priorGdp, float potential)
+        {
+            if (!GapSeeded(country) || potential <= 0f) { return; }
+            EconomyState state = country.State;
+            float identity = state.Consumption + state.Investment + state.GovernmentConsumption + state.TradeBalance;
+            float impulse = GapImpact(country) * (identity - country.IdentityPropensitySeed * priorGdp - country.IdentityAutonomousShareSeed * potential) / potential;
+            country.DemandReference += DemandReferenceSpeed * (impulse - country.DemandReference);
+        }
+
+        /// <summary>K203 revised: the impact coefficient kappa of the gap form (GapImpactCoefficient). OutputGapReversionSpeed serves the old form only.</summary>
+        public static float GapImpact(Country country) => GapImpactCoefficient;
+
+        /// <summary>MF q29: true where the country carries the identity's seed references and a sourced persistence (see GapPersistence).</summary>
+        public static bool GapSeeded(Country country) => country.IdentityPropensitySeed > 0f && PoliSim.Data.Generated.LongRunAnchors.GapPersistence.ContainsKey(country.Id);
+
+        /// <summary>MF q29: the identity's consumption-and-investment propensity - the C + I share of prior GDP after the rate and confidence
+        /// factors, the expression both forms of the identity read - at <paramref name="interestRate"/> and <paramref name="effectiveConsumerConfidence"/>.</summary>
+        public static float IdentityPropensity(Country country, float interestRate, float effectiveConsumerConfidence)
+        {
+            float rateAboveNeutral = interestRate - TaylorRule.NeutralRealRate(country);
+            float consumptionInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * ConsumptionInterestSensitivity);
+            float investmentInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * InvestmentInterestSensitivity);
+            return BaseConsumptionRate * consumptionInterestFactor * effectiveConsumerConfidence
+                + BaseInvestmentRate * investmentInterestFactor * country.State.BusinessConfidence;
         }
 
         /// <summary>
@@ -669,6 +773,10 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
+        /// MF q29: where the country carries the identity's seed references (GapSeeded) the map is the gap form's - A = rho (1 + g) + kappa (a − a_seed),
+        /// B = kappa (G + NX + DI) + ((1 − rho)(1 + g) − kappa gamma_seed − R) P (GapPersistence, GapImpact, K209) - sliced the same way; the (1 − s) map below is the
+        /// old form's, kept for a save without those references.
+        ///
         /// Phase 5: the identity's daily form - the AFFINE POWER SLICE, the one genuinely new shape
         /// this phase adds to the taxonomy. The turn form is an affine contraction
         /// `GDP' = A·GDP + B` with `A = (1−s)·a` (s = OutputGapReversionSpeed, a = the C+I share of
@@ -717,7 +825,14 @@ namespace PoliSim.Simulation
 
             float share = BaseConsumptionRate * consumptionInterestFactor * effectiveConsumerConfidence
                 + BaseInvestmentRate * investmentInterestFactor * state.BusinessConfidence;
-            float contraction = Mathf.Clamp((1f - OutputGapReversionSpeed) * share, 0f, 0.99f);
+            // MF q29: with the seed references the contraction is the sourced persistence plus kappa times the propensity's move from the seed's
+            // (GapPersistence's map, A = rho + kappa (a - a_seed), kappa = GapImpact); a save from before keeps (1 - s) a.
+            bool gapSeeded = GapSeeded(country);
+            float rho = gapSeeded ? GapPersistence(country) : 0f;
+            float kappa = gapSeeded ? GapImpact(country) : 0f;
+            float contraction = gapSeeded
+                ? Mathf.Clamp(rho * (1f + ExpectedPotentialGrowth(country)) + kappa * (share - country.IdentityPropensitySeed), 0f, 0.99f)
+                : Mathf.Clamp((1f - OutputGapReversionSpeed) * share, 0f, 0.99f);
             // ⚠ C-N4, AND THE SECOND LOSS POINT THIS ITEM FOUND BY MEASURING ITS OWN FIRST BUILD.
             // The daily path does NOT build GDP from `state.Consumption`. It solves an analytic fixed
             // point in which C and I enter as SHARE COEFFICIENTS (`share`) and only G, NX and potential
@@ -729,8 +844,11 @@ namespace PoliSim.Simulation
             // already a level in this line, and nothing else households did ever reached it.
             float disposableIncomeDelta = DisposableIncomeConsumptionDelta(country, priorGdp);
             state.GovernmentConsumption = governmentSpending;   // T-3 form A (§507): the G the identity read today
-            float attractorTerm = (1f - OutputGapReversionSpeed) * (governmentSpending + state.TradeBalance + disposableIncomeDelta)
-                + OutputGapReversionSpeed * potentialGdpAtPeriodOpen;
+            float attractorTerm = gapSeeded
+                ? kappa * (governmentSpending + state.TradeBalance + disposableIncomeDelta)
+                    + ((1f - rho) * (1f + ExpectedPotentialGrowth(country)) - kappa * country.IdentityAutonomousShareSeed - country.DemandReference) * potentialGdpAtPeriodOpen   // MF q29 / K209: B = kappa (G + NX + DI) + ((1 - rho)(1 + g) - kappa gamma_seed - R) P
+                : (1f - OutputGapReversionSpeed) * (governmentSpending + state.TradeBalance + disposableIncomeDelta)
+                    + OutputGapReversionSpeed * potentialGdpAtPeriodOpen;
 
             float contractionPerDay = Mathf.Pow(contraction, MacroSliceFractionPerDay);
             state.GDP = Mathf.Max(MinGdp,
@@ -1099,20 +1217,23 @@ namespace PoliSim.Simulation
                 0f, MaxYouthUnemploymentPercent);
         }
 
-        /// <summary>Years of life expectancy lost per point PovertyRate sits above the country's own
-        /// baseline - the poverty-mortality link is among the best-documented social gradients; the
-        /// scale here is modest (5 points of excess poverty costs 0.4 years).</summary>
-        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its relative size; the number itself is a game figure no cited study fixes.</remarks>
-        private const float LifeExpectancyPovertySensitivity = 0.08f;
+        /// <summary>MF q29 (K140): the share by which every age's death rate rises per point PovertyRate sits above the country's own baseline -
+        /// the poverty-mortality gradient, among the best documented, re-expressed as a MORTALITY MULTIPLIER in place of the years the retired
+        /// LifeExpectancyPovertySensitivity subtracted (0.08 a point). The direction is kept; the magnitude is chosen so one point lands near
+        /// those years on the seed schedules, and LongRunAnchorsDiagnostic prints the years a point costs on each.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION (K140) - a game figure no cited study fixes.</remarks>
+        private const float MortalityPovertySensitivity = 0.008f;
 
-        /// <summary>Years added at FULL generosity of an implemented UniversalHealthcare program -
-        /// universal-coverage literature puts the effect at one to two years; 1.5 sits mid-range,
-        /// scaled by GenerosityLevel like every welfare effect.</summary>
-        /// <remarks>[AUTHORED-DRAFT] value, SOURCED BRACKET - the summary above states the bracket it sits in (the universal-coverage literature puts the effect at one to two years) and says plainly that 1.5 is chosen mid-range rather than measured.</remarks>
-        private const float LifeExpectancyHealthcareSensitivity = 1.5f;
+        /// <summary>MF q29 (K140): the share by which every age's death rate falls at FULL generosity of an implemented UniversalHealthcare
+        /// program above the seed's - the retired LifeExpectancyHealthcareSensitivity's one to two years (the universal-coverage literature's
+        /// bracket, 1.5 chosen mid-range) re-expressed as a mortality multiplier, scaled by GenerosityLevel like every welfare effect. The
+        /// direction is kept; LongRunAnchorsDiagnostic prints the years full generosity buys on each seed schedule.</summary>
+        /// <remarks>[AUTHORED-DRAFT] value inside a SOURCED BRACKET of years (K140) - chosen, not measured.</remarks>
+        private const float MortalityHealthcareSensitivity = 0.13f;
 
         /// <summary>Generational reversion - the same "slowest-moving quantities in the model" reasoning
-        /// the retired PopulationGrowthReversionSpeed documented (F2 step 4 deleted it with the scalar demography); life expectancy moves over decades, not quarters.</summary>
+        /// the retired PopulationGrowthReversionSpeed documented (F2 step 4 deleted it with the scalar demography); mortality's response moves
+        /// over decades, not quarters. MF q29: it now carries the mortality multiplier toward its target, where it carried life expectancy.</summary>
         /// <remarks>CONVENTION - a reversion speed, the rate at which a gap closes rather than a claim about the world.</remarks>
         private const float LifeExpectancyReversionSpeed = 0.05f;
 
@@ -1121,33 +1242,49 @@ namespace PoliSim.Simulation
         /// <remarks>CONVENTION - a state-space clamp on years of life expectancy. Both ends sit outside the range any of the six occupies, so the pair is defence-in-depth against a feedback bug, not a prediction.</remarks>
         private const float MaxLifeExpectancyYears = 95f;
 
-        /// <summary>Reverts EconomyState.LifeExpectancy toward the structural baseline, dragged by
-        /// excess poverty and lifted by an implemented UniversalHealthcare program. Inputs-only.
+        /// <remarks>CONVENTION - a state-space clamp on the mortality multiplier, defence-in-depth against a feedback bug; the sensitivities above
+        /// cannot reach either end from any seed.</remarks>
+        private const float MinMortalityMultiplier = 0.5f;
+        /// <remarks>CONVENTION - the clamp's other end, as above.</remarks>
+        private const float MaxMortalityMultiplier = 2f;
+
+        /// <summary>MF q29 (K140): the mortality multiplier's target - poverty above its baseline raises every age's death rate, an implemented
+        /// UniversalHealthcare program above the seed's portfolio lowers it. 1 at the seed.
         ///
-        /// ⚠ Zero-gap seeding leans on every country starting with UniversalHealthcare
-        /// UNIMPLEMENTED (WorldFactory's welfare block): the seeded real-world figures already
-        /// contain each country's actual health system, so the baseline absorbs it and the lift
-        /// models a NEW program on top. If countries ever start with the program implemented,
-        /// their BaselineLifeExpectancy must absorb the starting lift or every seeded value
-        /// drifts upward from turn one with no player action.</summary>
-        public static void ApplyLifeExpectancy(Country country, float reversionSpeed = LifeExpectancyReversionSpeed)
+        /// ⚠ Zero-gap seeding leans on the seed-spread ruling (2026-08-27): the healthcare term is the deviation from the seeded portfolio
+        /// (WelfareEffectDelta), so the seeded real-world figures - which already contain each country's actual health system - add nothing,
+        /// and the term models a change on top.</summary>
+        public static float MortalityMultiplierTarget(Country country)
         {
             EconomyState state = country.State;
             float povertyGap = Mathf.Max(0f, state.PovertyRate - country.BaselinePovertyRate);
-
-            // Seed-spread ruling (2026-08-27): the deviation from the seeded portfolio - exactly the
-            // absorption this method's own doc comment asked for the day a country starts with the
-            // program implemented, done once for every effect by WelfareEffectDelta rather than by
-            // hand-adjusting BaselineLifeExpectancy away from its sourced figure.
-            float healthcareLift = WelfareEffectDelta(country, program => program.Type == WelfareProgramType.UniversalHealthcare
-                ? LifeExpectancyHealthcareSensitivity * (program.GenerosityLevel / 100f)
+            float healthcareCut = WelfareEffectDelta(country, program => program.Type == WelfareProgramType.UniversalHealthcare
+                ? MortalityHealthcareSensitivity * (program.GenerosityLevel / 100f)
                 : 0f);
+            return Mathf.Clamp((1f + MortalityPovertySensitivity * povertyGap) * (1f - healthcareCut), MinMortalityMultiplier, MaxMortalityMultiplier);
+        }
 
-            float target = country.BaselineLifeExpectancy - LifeExpectancyPovertySensitivity * povertyGap + healthcareLift
-                + HealthFamily.LifeExpectancyTerm(country);   // the health feedback pass (2026-09-06): treatable mortality against its seed, years
-            state.LifeExpectancy = Mathf.Clamp(
-                state.LifeExpectancy + reversionSpeed * (target - state.LifeExpectancy),
-                MinLifeExpectancyYears, MaxLifeExpectancyYears);
+        /// <summary>MF q29 (docs/RULINGS_2026-10-18.md q29; K140): LIFE EXPECTANCY IS DERIVED FROM MORTALITY. The mortality multiplier reverts
+        /// generationally toward its target (poverty, universal healthcare), and life expectancy is then the period life expectancy at birth of
+        /// the sourced schedule at <paramref name="year"/> - its projection's own improvement, the multiplier and the health family's treatable
+        /// excess applied (MortalitySchedule.LifeExpectancy, whose summary declares the form). Never moved directly: what moves it moves
+        /// mortality. A country without a schedule keeps its state. Inputs-only.</summary>
+        public static void ApplyLifeExpectancy(Country country, double year, float reversionSpeed = LifeExpectancyReversionSpeed)
+        {
+            EconomyState state = country.State;
+            state.MortalityMultiplier = Mathf.Clamp(
+                state.MortalityMultiplier + reversionSpeed * (MortalityMultiplierTarget(country) - state.MortalityMultiplier),
+                MinMortalityMultiplier, MaxMortalityMultiplier);
+            double derived = MortalitySchedule.LifeExpectancy(country, year);
+            if (double.IsNaN(derived)) { return; }
+            state.LifeExpectancy = Mathf.Clamp((float)derived, MinLifeExpectancyYears, MaxLifeExpectancyYears);
+        }
+
+        /// <summary>MF q29: the derivation as ApplyLifeExpectancy stores it, clamp included - what LongRunAnchorsDiagnostic holds the state to.</summary>
+        public static float DerivedLifeExpectancy(Country country, double year)
+        {
+            double derived = MortalitySchedule.LifeExpectancy(country, year);
+            return double.IsNaN(derived) ? country.State.LifeExpectancy : Mathf.Clamp((float)derived, MinLifeExpectancyYears, MaxLifeExpectancyYears);
         }
 
         /// <remarks>DERIVED, never typed - the per-day form of the turn constant it names, through PerDayReversion, so a turn-length change lands in one place. The Phase 1 discipline this file has followed since.</remarks>
@@ -1156,7 +1293,7 @@ namespace PoliSim.Simulation
         private static readonly float LifeExpectancyReversionSpeedPerDay = PerDayReversion(LifeExpectancyReversionSpeed);
 
         public static void ApplyYouthUnemploymentDaily(Country country) => ApplyYouthUnemployment(country, YouthUnemploymentReversionSpeedPerDay);
-        public static void ApplyLifeExpectancyDaily(Country country) => ApplyLifeExpectancy(country, LifeExpectancyReversionSpeedPerDay);
+        public static void ApplyLifeExpectancyDaily(Country country, double year) => ApplyLifeExpectancy(country, year, LifeExpectancyReversionSpeedPerDay);
 
         // --- ROUND 4 BATCH 2 (C2): Gini and the real wage index - inputs-only tracked stats ---
         // Both READ existing state and WRITE nothing back, per the standing Round 4 first-pass rule.
@@ -2125,6 +2262,11 @@ namespace PoliSim.Simulation
             if (PotentialOutput.HasSeeds(country))
             {
                 country.PotentialGrowthRate = PotentialOutput.DerivedGrowthPercent(country, country.PotentialLabourAtLastTurn);
+                // K209 (resp929, sim929): the trend growth the gap form expects - the productivity trend with the trend labour input's growth, the core's cycle out
+                float trendLabour = TrendLabourInput(country);
+                country.TrendPotentialGrowthRate = ((1f + country.ProductivityTrendGrowth / 100f)
+                    * (country.TrendLabourAtLastTurn > 0f && trendLabour > 0f ? trendLabour / country.TrendLabourAtLastTurn : 1f) - 1f) * 100f;
+                country.TrendLabourAtLastTurn = trendLabour;
                 country.PotentialLabourAtLastTurn = PotentialOutput.LabourInput(country);
                 // The cohort commits at the top of AdvanceTurn, after the year's days wrote potential on last year's cohort;
                 // rewrite it here so the turn closes on the potential its factors give today (the diagnostic reads it here).

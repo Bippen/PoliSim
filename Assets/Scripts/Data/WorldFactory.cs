@@ -455,7 +455,9 @@ namespace PoliSim.Data
             foreach (Country seeded in new[] { usa, germany, france, italy, poland, sweden })
             {
                 seeded.State.YouthUnemployment = seeded.BaselineYouthUnemploymentRate;
-                seeded.State.LifeExpectancy = seeded.BaselineLifeExpectancy;
+                seeded.State.LifeExpectancy = MortalitySchedule.Has(seeded.Id)   // MF q29: derived from the sourced schedule at the epoch (the seed year's e0 is the baseline by the calibration)
+                    ? (float)MortalitySchedule.LifeExpectancy(seeded, MortalitySchedule.YearOf(Simulation.SimulationManager.EpochDate))
+                    : seeded.BaselineLifeExpectancy;
                 seeded.State.Gini = seeded.BaselineGini;
                 seeded.State.RealWageIndex = 100f;
                 // C1: overburden parks at 0 (the field's own default) where untracked - the USA's

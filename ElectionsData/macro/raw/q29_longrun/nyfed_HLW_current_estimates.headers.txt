@@ -1,0 +1,19 @@
+HTTP/1.1 200 OK
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+Content-Length: 178850
+Pragma: no-cache
+Request-Context: appId=cid-v1:d281620b-6b44-4d2e-86f2-662eb5529a0e
+Content-Disposition: attachment; filename="Holston_Laubach_Williams_current_estimates.xlsx"
+Cache-Control: no-cache, no-store
+Expires: Wed, 28 Oct 2026 02:34:25 GMT
+Date: Wed, 28 Oct 2026 02:34:25 GMT
+Connection: keep-alive
+Server-Timing: cdn-cache; desc=REVALIDATE
+Server-Timing: edge; dur=105
+Server-Timing: origin; dur=37
+Alt-Svc: h3=":443"; ma=93600
+Strict-Transport-Security: max-age=31536000 ; includeSubDomains
+Set-Cookie: _abck=3F3FF9C612EA06B9925E6F011724FF7D~-1~YAAQzZtkX/U8/3ahAQAA6thbgBAHIhVfpTeROBiIx5tIMqfusPc8kAPMsnsL8DUfPTnkzngrRrq52uI3rkEfCy60p92eO4b18YdFaYhO5CTUXJP80ww5bHYW1Iz/+JgH50K+G5mE8cE1Ln6W/d1Xu43Jo46iHyCO6gnBlJMl99gafD5Rmrv6BWvrfp/LwehT+XjBPpVRS+2ltkjRf/ZpGqcRAExVuz12HKPlNZ/putaKubelCfYHrKGDWl9bWu0Egk+MAMvESHveilBKeK58o168aWLshhHXYZ5Oz+Gv+3Cy9PjLmEx01SM2Mt9W9GcToWQmpjYjPQGCHqVcLg6Xfo5V1uz+Ys73gQ/4ZjnWMEKneCav9X7GSFhR649lAaPeXnaxvWrwNoycpaEIC/JEA/FuQvFqV9WL09BUbJMjT+xtFehhwfeU6d77B6WgzdhSq50K0Gxn23KL~-1~-1~-1~-1~-1; Domain=.newyorkfed.org; Path=/; Expires=Thu, 28 Oct 2027 02:34:25 GMT; Max-Age=31536000; Secure
+Set-Cookie: bm_sz=DCC825A7D80AC669CF66CCFB7C50CBB1~YAAQzZtkX/Y8/3ahAQAA6thbgAGAHio8i9ztzneQKJUkd2gDFv3WcWmMYjRCsYEGebTakR+cC1pzYUyDFUrKNEU7fCG1BeDr9El3+9vPssna6nfhS2ZrwPm2tGiq0yHQDRmTGUlkTBNRUaxGkxiz1hf6YBOJXhhPlahNLgjaoRJIfFkpyiYjIaJUG0HBHnqDXcixCAcoseO8lUXj1cwAcwXEZK6rwtHPgpDavBjhVoa6s7v1v0nNlvxWAk//poyHMBFRVZWi6ir00OhiiK2MhBBcr6RytJQ3ziPzUhd5mFbpO60z+KVpcbubr+4AmCdr+UXtMKsQU5RTSyPoBEifAuWCljBIe7JpGEtWspyICP/b24so~4408888~3486256; Domain=.newyorkfed.org; Path=/; Expires=Wed, 28 Oct 2026 06:34:25 GMT; Max-Age=14400
+Server-Timing: ak_p; desc="1793154865212_1600429005_76914409_14234_14359_9_15_-";dur=1
+

@@ -1,0 +1,45 @@
+HTTP/1.1 200 OK
+Server: nginx
+Date: Wed, 28 Oct 2026 02:27:23 GMT
+Content-Type: application/json
+Content-Length: 29883
+Connection: keep-alive
+x-archive-orig-x-content-type-options: nosniff
+x-archive-orig-x-frame-options: SAMEORIGIN
+x-archive-orig-x-permitted-cross-domain-policies: none
+x-archive-orig-x-xss-protection: 1; mode=block
+x-archive-orig-content-security-policy: upgrade-insecure-requests
+x-archive-orig-vary: Accept-Encoding
+content-encoding: gzip
+x-archive-orig-date: Mon, 05 Oct 2026 13:53:35 GMT
+x-archive-orig-content-length: 29883
+x-archive-orig-connection: close
+x-archive-orig-set-cookie: cookie_persistence=!q+yovUrof9Oa+5MunoUVdMrVwevRwt7w8us+uzLLCdq5Ep1xpN6mDIxYdBzjKe59ZwWytFwKtiViMQ==; path=/; Httponly; Secure
+x-archive-orig-set-cookie: TS01e41fe4=01250698b24b079421521a456ed03fb1a35e22ff61a2c8d6c9dcb268db9ccc524a959dbd35db5acf3107460fd218e9ac1987cca126346e8bd79322146bc345c45df4a5d31a; Path=/; Domain=.www.imf.org; Secure; HttpOnly
+x-archive-orig-alt-svc: h3=":443"; ma=93600
+x-archive-orig-strict-transport-security: max-age=31536000
+x-archive-orig-akamai-grn: 0.53951eb8.1791208409.3724a0be
+cache-control: max-age=1800
+accept-ranges: bytes
+memento-datetime: Mon, 05 Oct 2026 13:53:29 GMT
+link: <https://www.imf.org/external/datamapper/api/v1/NGDP_RPCH>; rel="original", <https://web.archive.org/web/timemap/link/https://www.imf.org/external/datamapper/api/v1/NGDP_RPCH>; rel="timemap"; type="application/link-format", <https://web.archive.org/web/https://www.imf.org/external/datamapper/api/v1/NGDP_RPCH>; rel="timegate"
+content-security-policy: default-src 'self' 'unsafe-eval' 'unsafe-inline' data: blob: archive.org web.archive.org web-static.archive.org wayback-api.archive.org athena.archive.org analytics.archive.org pragma.archivelab.org wwwb-events.archive.org
+x-archive-src: NOD-20261005134250589-00082-zeno-k8s-nod-1/NOD-20261005134250589-00082-zeno-k8s-nod-crawl.warc.gz
+server-timing: captures_list;dur=0.379981, exclusion.robots;dur=0.042718, exclusion.robots.policy;dur=0.034429, esindex;dur=0.006180, cdx.remote;dur=6.055690, LoadShardBlock;dur=87.342967, PetaboxLoader3.datanode;dur=69.268189, PetaboxLoader3.resolve;dur=148.998848, load_resource;dur=172.229419
+x-app-server: wwwb-app267-dc8
+x-ts: 200
+x-tr: 279
+server-timing: TR;dur=0,Tw;dur=0,Tc;dur=1
+set-cookie: wb-p-SERVER=wwwb-app267; path=/
+cache-control: private
+X-location: All
+X-AS: 33885
+X-RL: 0
+X-NA: 0
+X-Page-Cache: MISS
+Server-Timing: MISS
+X-NID: Telenor Sverige AB
+Referrer-Policy: no-referrer-when-downgrade
+Permissions-Policy: interest-cohort=()
+X-sd: 0
+

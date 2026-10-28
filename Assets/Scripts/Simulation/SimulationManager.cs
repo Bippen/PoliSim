@@ -456,7 +456,7 @@ namespace PoliSim.Simulation
                     // reads the PovertyRate the poverty daily above just settled. Neither writes
                     // anything any later system reads (inputs-only, the ruled Round 4 posture).
                     MacroSystem.ApplyYouthUnemploymentDaily(country);
-                    MacroSystem.ApplyLifeExpectancyDaily(country);
+                    MacroSystem.ApplyLifeExpectancyDaily(country, MortalitySchedule.YearOf(CurrentDate));   // MF q29: derived from the sourced schedule at today's year
 
                     // ROUND 4 BATCH 2 (C2): same slot, same reasoning - Gini reads the same
                     // start-of-day Unemployment youth-U reads; the wage index reads yesterday's
@@ -511,7 +511,9 @@ namespace PoliSim.Simulation
                     float anchoredPotential = macroPeriod.PotentialGdpAtPeriodOpen > 0f
                         ? macroPeriod.PotentialGdpAtPeriodOpen
                         : country.State.PotentialGDP;
-                    MacroSystem.ApplyNationalAccountsDaily(country, MacroSystem.IdentityGovernmentConsumption(country, macroPeriod.PlannedGovernmentSpending), country.CurrencyZone.InterestRate, anchoredPotential, macroPeriod.WageGrowthGapAtPeriodOpen);   // P5-B6: G is a nominal budget; the identity is real - deflate it by today's price level. T-3 form A (§507): scaled to the sourced share by k
+                    float gdpBeforeIdentity = country.State.GDP;
+                    MacroSystem.ApplyNationalAccountsDaily(country, MacroSystem.IdentityGovernmentConsumption(country, macroPeriod.PlannedGovernmentSpending), country.CurrencyZone.InterestRate, anchoredPotential, macroPeriod.WageGrowthGapAtPeriodOpen);
+                    if (dayOfTurn == DaysPerTurn) { MacroSystem.CloseDemandReference(country, gdpBeforeIdentity, anchoredPotential); }   // K209: the period's close moves the demand reference   // P5-B6: G is a nominal budget; the identity is real - deflate it by today's price level. T-3 form A (§507): scaled to the sourced share by k
                     MacroSystem.ApplyPotentialGdpGrowthDaily(country);
                     // The day's growth increment is measured against the PERIOD-OPEN GDP, not the
                     // day's own base - the third fixed reference of this phase: daily linear
@@ -7465,6 +7467,11 @@ namespace PoliSim.Simulation
                 PotentialProductivityIndex = country.PotentialProductivityIndex,
                 PotentialLabourAtLastTurn = country.PotentialLabourAtLastTurn,
                 GovernmentConsumptionScale = country.GovernmentConsumptionScale,   // T-3 form A (§507): without it the clone's k is 0 and the preview's identity reads no government
+                IdentityPropensitySeed = country.IdentityPropensitySeed,   // MF q29: the identity's seed references - without them the preview's identity keeps the old reversion
+                IdentityAutonomousShareSeed = country.IdentityAutonomousShareSeed,
+                DemandReference = country.DemandReference,   // K209: the reference the preview's identity reads
+                TrendLabourAtLastTurn = country.TrendLabourAtLastTurn,   // K209 (resp929, sim929): the trend growth the gap form expects
+                TrendPotentialGrowthRate = country.TrendPotentialGrowthRate,
                 PriceLevelAtLastIndex = country.PriceLevelAtLastIndex,   // P5-B6
                 Health = country.Health,   // P5-C2: the seeds are immutable after the seed; the preview reads them
                 Education = country.Education,   // P5-C3: seeds, immutable after the seed

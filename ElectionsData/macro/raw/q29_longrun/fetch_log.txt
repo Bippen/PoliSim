@@ -1,0 +1,28 @@
+url	file	fetched_utc	http_status	bytes
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/demo_mlifetable?indic_de=DEATHRATE&sex=T&geo=SE&geo=DE&geo=FR&geo=IT&geo=PL&time=2023&time=2024	eurostat_demo_mlifetable_DEATHRATE_T_2023-2024.json	2026-10-28T02:31:02Z	200	23632
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/demo_mlexpec?sex=T&age=Y_LT1&geo=SE&geo=DE&geo=FR&geo=IT&geo=PL&sinceTimePeriod=2019	eurostat_demo_mlexpec_T_Y_LT1.json	2026-10-28T02:31:04Z	200	3366
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/proj_23naasmr?projection=BSL&geo=SE&geo=DE&geo=FR&geo=IT&geo=PL&time=2022&time=2024&time=2030&time=2040&time=2050&time=2060&time=2070&time=2080&time=2090&time=2100	eurostat_proj_23naasmr_BSL.json	2026-10-28T02:50:19Z	200	156168
+https://www2.census.gov/programs-surveys/popproj/datasets/2023/2023-popproj/np2023_a2.csv	census_np2023_a2.csv	2026-10-28T02:31:07Z	200	1229613
+https://www2.census.gov/programs-surveys/popproj/datasets/2023/2023-popproj/np2023_a3.csv	census_np2023_a3.csv	2026-10-28T02:31:08Z	200	29064
+https://www2.census.gov/programs-surveys/popproj/technical-documentation/file-layouts/2023/np2023_a2.pdf	census_np2023_a2.pdf	2026-10-28T02:31 (headers not saved)	200	77287
+https://economy-finance.ec.europa.eu/document/download/403cc04f-9487-406b-a48a-22538e0d461c_en?filename=2024_Ageing_Report-Statistical_annex_all_horizontal_tables.xlsx	ec_2024_Ageing_Report-Statistical_annex_all_horizontal_tables.xlsx	2026-10-28T02:27 (headers not saved; User-Agent Mozilla/5.0)	200	12330433
+https://economy-finance.ec.europa.eu/document/download/e248db46-f876-4e72-8821-efae678e81ea_en?filename=2024_Ageing_Report-Statistical_annex_all_countryfiches.xlsx	(not kept: the per-country fiches, 11840707 bytes; the cross-country tables carry every series read)	2026-10-28T02:27	200	11840707
+https://www.newyorkfed.org/medialibrary/media/research/economists/williams/data/Holston_Laubach_Williams_current_estimates.xlsx	nyfed_Holston_Laubach_Williams_current_estimates.xlsx	2026-10-28T02:34:25Z	200	178850
+https://web.archive.org/web/20250404235041id_/https://www.cbo.gov/system/files/2025-03/57054-2025-03-LTBO-econ.xlsx	wayback_20250404235041_cbo_57054-2025-03-LTBO-econ.xlsx	2026-10-28T02:25 (headers not saved)	200	580696
+https://web.archive.org/web/20260211152810id_/https://www.cbo.gov/system/files/2026-02/51119-2026-02-LTBO-Budget.xlsx	(not kept: CBO's February 2026 extended baseline - percentages of GDP and nominal GDP only, no real or potential growth)	2026-10-28T02:25	200	632036
+https://web.archive.org/web/20261005135329id_/https://www.imf.org/external/datamapper/api/v1/NGDP_RPCH	wayback_20261005135329_imf_datamapper_NGDP_RPCH.json.gz	2026-10-28T02:27:23Z	200	29883
+https://www.cbo.gov/system/files/2026-02/57054-2026-02-LTBO-econ.xlsx	REFUSED (cbo.gov's 767-byte JavaScript challenge), not kept	2026-10-28T02:37:16Z	403	767
+https://web.archive.org/web/2026id_/https://www.cbo.gov/system/files/2026-02/57054-2026-02-LTBO-econ.xlsx	REFUSED (429; the Archive's only capture, 2026-05-14, is itself cbo.gov's 403), not kept	2026-10-28T02:37:17Z	429	620
+https://www.imf.org/external/datamapper/api/v1/NGDP_RPCH	REFUSED (imf.org), not kept	2026-10-28T02:37:18Z	403	421
+https://www.imf.org/en/Publications/WEO/weo-database/2026/october	REFUSED (imf.org), not kept	2026-10-28T02:37:19Z	403	432
+https://www.imf.org/external/pubs/ft/wp/2008/wp08278.pdf	REFUSED (imf.org; an IMF paper on the gap's persistence was sought first), not kept	2026-10-28T02:21	403	423
+https://pubs.aeaweb.org/doi/pdfplus/10.1257/jep.33.2.89	REFUSED (aeaweb.org, 5509-byte HTML), not kept - Ramey 2019, JEP 33(2), K203	2026-10-28T03:05:38Z	403	5509
+https://www.aeaweb.org/articles/pdf/doi/10.1257/jep.33.2.89	REFUSED (aeaweb.org), not kept	2026-10-28T03:05:38Z	403	5509
+https://www.nber.org/system/files/working_papers/w25531/w25531.pdf	nber_w25531.pdf (Ramey, Ten Years After the Financial Crisis, NBER WP 25531 - the JEP article's working paper; K203's fallback)	2026-10-28T03:05:39Z	200	272421
+# curl, byte-exact; where a response header was saved it is beside its file as <file>.headers.txt.
+# BILLED: (1) the IMF's October 2026 WEO - imf.org refuses every request; the WEO read is the DataMapper's NGDP_RPCH as the Internet Archive kept
+#   imf.org's response of 5 October 2026 (gzip, as served; its horizon 2031 is the April 2026 edition's). (2) CBO's February 2026
+#   long-term economic projections (57054-2026-02-LTBO-econ.xlsx) - cbo.gov refuses, and the Archive holds only cbo.gov's refusal; the CBO read is
+#   the March 2025 Long-Term Budget Outlook's economic file, the latest whose bytes could be reached. (3) An IMF, ECB or OECD paper giving the
+#   output gap's persistence - imf.org refuses; the persistence is derived from Holston, Laubach and Williams' current estimates (NY Fed).
+# (4) Ramey (2019) in the Journal of Economic Perspectives - aeaweb.org refuses; read in its NBER working paper w25531 (K203's named fallback).
