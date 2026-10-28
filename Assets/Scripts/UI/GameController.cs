@@ -747,6 +747,11 @@ namespace PoliSim.UI
             {
                 return;
             }
+            // MF q33 (D-WORKLIST §1, board 32a/32b): the debt crisis's plate stops the clock as the signing plate does, until Continue
+            if (CrisisPlateHolds())
+            {
+                return;
+            }
             if (_gameSpeed == GameSpeed.Paused)
             {
                 return;
@@ -757,9 +762,7 @@ namespace PoliSim.UI
             if ((HasPendingCampaignOpening() || HasPendingScandalAnswer()) && !_liveCampaignOpen && !_isGameOver) { OpenLiveCampaign(); }   // CL-2: a story that waits for its answer opens the HQ the same way
 
             // MM-2: the campaign's opening and the budget window hold the clock only while their settings say so.
-            if (UpdateFedChairSelectionState() || CampaignOpeningHolds() || HasPendingScandalAnswer() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
-                || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                || BudgetWindowHolds() || DeclarationHolds() || FormationHolds() || DebtLimitHolds())
+            if (ClockHeld())   // the review of wave/dcrisis, N1: the one hold predicate (CollectHolds) the frame and the strip read too
             {
                 return;
             }
@@ -805,11 +808,7 @@ namespace PoliSim.UI
                 // meeting/budget process (or game over) must stop the clock immediately, not keep
                 // draining _daySpeedTimer toward days/turns that can't happen yet - re-check every gate
                 // before this same frame's loop continues.
-                if (_isGameOver || _electionNight != null || _signingQueue.Count > 0
-                    || UpdateFedChairSelectionState() || CampaignOpeningHolds() || HasPendingScandalAnswer()
-                    || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
-                    || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                    || BudgetWindowHolds() || DeclarationHolds() || FormationHolds() || DebtLimitHolds())
+                if (_isGameOver || _electionNight != null || _signingQueue.Count > 0 || CrisisPlateHolds() || ClockHeld())
                 {
                     break;
                 }
@@ -2718,7 +2717,7 @@ namespace PoliSim.UI
             // and its persisted overrides were deleted in v3.1 Phase B (COMPLETED.md section 45). The
             // interrupt banner the Budget tab once re-surfaced is the frame's banner on every screen
             // (DrawFoldedInterruptBanner); the instant frame is the calendar's own ruling - nothing tweens.
-            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess || hasPendingCampaignOpening || DeclarationHolds() || FormationHolds() || DebtLimitHolds();
+            bool isTimePaused = hasPendingFedChairSelection || ClockHeld();   // N1: the one hold predicate Update and the strip read
             if (isTimePaused && !_wasTimePausedLastFrame && Event.current.type == EventType.Repaint) { AudioDirector.Fire(AudioCue.InterruptRaised); }   // P4-2: the hold's rising edge
             RefreshHeldCells();   // §648: the rail's HELD marks read the banner's own list
             if (Event.current.type == EventType.Repaint) { _wasTimePausedLastFrame = isTimePaused; }
@@ -2744,6 +2743,10 @@ namespace PoliSim.UI
             // top edge the shadow has nowhere to fall, and the cropped sheet style draws the paper from the rect's own
             // first row. Chosen here, once per pass, from the banner's measured height; the same on Layout and Repaint.
             _frameSheetStyle = foldedBannerHeight >= _boxStyle.overflow.top ? _boxStyle : _sheetStyle;
+            // MF q33 (D-WORKLIST §1): the debt crisis's plate lies over the page below the strip (the rail and the strip stay live); the page's own
+            // controls are swallowed under it before the page draws, and the plate draws last (DrawCrisisPlate, after the rail's tongue)
+            var crisisPage = new Rect(leftColumnWidth + columnSpacing, foldedBannerHeight, rightColumnWidth, Mathf.Max(1f, areaHeight - foldedBannerHeight));
+            CrisisPlateInput(crisisPage);
 
             // ⚠ INSTANCE #12, RIGHT COLUMN — same defect, same line of reasoning. Every tab wraps its
             // content in a `_boxStyle` box, and that box's padding and margin come out of `areaHeight`
@@ -2854,6 +2857,7 @@ namespace PoliSim.UI
 
             // Board 1n-r3: the active tongue's paper over the seam, after the sheet has drawn its own edge.
             DrawRailActiveTongueOverlap();
+            DrawCrisisPlate(crisisPage);
             GUILayout.EndArea();
 
             // CANVAS SEAM, Restore phase: the scrim lifts OVER the just-redrawn IMGUI, so it draws
@@ -3616,7 +3620,7 @@ namespace PoliSim.UI
         /// guess - the same "measured, not assumed" discipline CalendarAndSpeedControlsHeight documents
         /// for the pad beside it.
         /// </summary>
-        private void DrawCalendarMonthGrid(System.DateTime monthStart, System.DateTime today, Dictionary<int, List<CalendarMarker>> markers, bool withTitle = true)
+        private void DrawCalendarMonthGrid(System.DateTime monthStart, System.DateTime today, Dictionary<int, List<CalendarMarker>> markers, bool withTitle = true, CalendarFit.Result? fit = null)
         {
             // Board 1k, rule 5: the sheet's first section rule sits between the country header and
             // the month page (see DrawCalendarMonthLedger for the second). §726: the desk's v3.5 card names the month in its head, so it asks for neither.
@@ -3642,9 +3646,9 @@ namespace PoliSim.UI
             int totalCells = leadBlanks + daysInMonth;
             int rows = Mathf.CeilToInt(totalCells / 7f);
 
-            float scale = Mathf.Clamp(UiScreen.Height / 1080f, 0.6f, 1.5f);
             float cellHeight = CalendarDayCellHeight();
-            float gap = 2f * scale;   // D4 (2026-08-28): the calendar sheet's cell gap 3s → 2s; dots, strike and rules stand by ruling
+            float gap = CalendarGap();
+            if (fit.HasValue) { cellHeight = CalendarDayNumberLineHeight() + fit.Value.DotRow; gap = fit.Value.Gap; }   // the review of wave/dcrisis, M2: the Desk card's fitted cell (CalendarFit)
             Rect gridRect = GUILayoutUtility.GetRect(0f, rows * cellHeight + (rows - 1) * gap, GUILayout.ExpandWidth(true));
             float cellWidth = (gridRect.width - gap * 6f) / 7f;
 
@@ -3699,6 +3703,15 @@ namespace PoliSim.UI
         {
             return CalendarDayNumberLineHeight() + CalendarDayDotRowHeight;
         }
+
+        /// <summary>D4 (2026-08-28): the calendar sheet's cell gap 3s → 2s; dots, strike and rules stand by ruling.</summary>
+        private static float CalendarGap() => 2f * Mathf.Clamp(UiScreen.Height / 1080f, 0.6f, 1.5f);
+
+        /// <summary>The review of wave/dcrisis, M2: the dots' row and the gap at their floor - the dot (5 px) with its margin, and one pixel between rows.</summary>
+        private const float CalendarDotRowFloor = 8f, CalendarGapFloor = 1f;
+
+        /// <summary>M2: the weekday header row's height as the grid lays it out - the label's own height and its vertical margins.</summary>
+        private float CalendarWeekdayRowHeight() => Mathf.Ceil(_calendarWeekdayStyle.CalcHeight(new GUIContent("WED"), 100f)) + _calendarWeekdayStyle.margin.vertical;
 
         /// <summary>
         /// One day cell: the number (shrink-never-clip via LedgerRow.Cell, the same never-clipping
@@ -3763,7 +3776,7 @@ namespace PoliSim.UI
             int dotCount = Mathf.Min(dayMarkers.Count, CalendarDotCap);
             float totalDotsWidth = dotCount * (CalendarDotSize + 2f) - 2f;
             float dotX = rect.x + (rect.width - totalDotsWidth) * 0.5f;
-            float dotY = rect.y + dayNumberLine + (CalendarDayDotRowHeight - CalendarDotSize) * 0.5f;
+            float dotY = rect.y + dayNumberLine + (rect.height - dayNumberLine - CalendarDotSize) * 0.5f;   // centred in the cell's dot row - the full row, or the Desk card's fitted one (M2)
             for (int i = 0; i < dotCount; i++)
             {
                 PoliSimTheme.Pill(new Rect(dotX + i * (CalendarDotSize + 2f), dotY, CalendarDotSize, CalendarDotSize), UiPalette.GetAreaColor(dayMarkers[i].Area));
@@ -5907,6 +5920,7 @@ namespace PoliSim.UI
             // on as a chip naming the rail cell it is answered at, a click taking the player there. No sentence and no speed hint (the rail's
             // chip says PAUSE/RUN). On the Budget ledger its own pause is left out - it states that status itself. Game over keeps its line.
             if (Event.current.type == EventType.Repaint) { _mastheadAnchors.Clear(); }   // K40: the top masthead re-registers its own below, where it is drawn
+            _topStripHeight = 0f;
             if (_isGameOver)
             {
                 string over = $"GAME OVER - {_gameOverReason}";
@@ -5926,6 +5940,7 @@ namespace PoliSim.UI
 
             float height = DrawHoldChips(holds, columnWidth, _bannerIsMasthead);
             GUILayout.Space(4f);
+            _topStripHeight = _bannerIsMasthead ? height + 4f : 0f;   // K178: what the strip takes from the page (the Desk's first row gives it back, DrawDeskCards)
             return height + 4f;
         }
 
@@ -5959,6 +5974,7 @@ namespace PoliSim.UI
         {
             var holds = new List<(string Label, HoldCell Cell)>();
             if (_electionNight != null) { holds.Add(("ELECTION NIGHT - CONTINUE IS ON THE BOARD", HoldCell.None)); }
+            if (CrisisPlateHolds()) { holds.Add(("MARKET ACCESS LOST - CONTINUE IS ON THE PLATE", HoldCell.None)); }   // MF q33 (D-WORKLIST §1): the debt crisis's moment
             if (CampaignOpeningHolds()) { holds.Add(("THE CAMPAIGN'S OPENING", HoldCell.Campaign)); }
             if (HasPendingScandalAnswer()) { holds.Add(("A STORY ABOUT YOUR PARTY", HoldCell.Campaign)); }
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0) { holds.Add(($"THE {GetCentralBankHeadTitle(PlayerCountryId).ToUpperInvariant()} TO APPOINT", HoldCell.Docket)); }
@@ -5977,6 +5993,13 @@ namespace PoliSim.UI
             }
             return holds;
         }
+
+        /// <summary>
+        /// The review of wave/dcrisis, N1: THE ONE HOLD PREDICATE - something holds the clock. Update's gate before a day and after each, the frame's held
+        /// reading (isTimePaused) and the strip's clock chip all read it, so the lists cannot drift: a hold added to <see cref="CollectHolds"/> holds the
+        /// clock everywhere. The central bank's selection is refreshed first (its candidates are what CollectHolds reads).
+        /// </summary>
+        private bool ClockHeld() => UpdateFedChairSelectionState() | (CollectHolds(includeBudgetProcess: true).Count > 0);
 
         /// <summary>The banner's text as one string, or null when nothing holds the clock - the same line the chips draw, for measurement and the log.</summary>
         private string BuildFoldedInterruptText(bool includeBudgetProcess)
@@ -5999,51 +6022,20 @@ namespace PoliSim.UI
         /// §648: the HELD line - the plate, the lamp in its left padding, TIME PAUSED in mono, then one chip per hold: CELL · WHAT, a click
         /// opening the cell (a hold with no cell - election night - is a plain chip). Chips that do not fit the width fold into "+N MORE", so
         /// the line never wraps and never pushes the page down by more than its one line. Returns the height it takes.
-        /// K40 (Elias, 2026-10-23; board 30c's masthead): with <paramref name="masthead"/> the line is the TOP MASTHEAD and is drawn whether or not anything
-        /// holds - Paused and its holds at the left (nothing there while the clock runs), the lapse's chip beside them, the role chip at the right end, both
-        /// reserved before the holds so a long hold folds into "+N MORE" rather than under them.
+        /// K40 (Elias, 2026-10-23; board 30c's masthead), K178 (every country; board 33a): with <paramref name="masthead"/> the line is the TOP STRIP and is
+        /// drawn whether or not anything holds - its seven places are DrawTopStrip's.
         /// </summary>
         private float DrawHoldChips(List<(string Label, HoldCell Cell)> holds, float width, bool masthead = false)
         {
+            // K178 (D-WORKLIST §2, board 33a): the top masthead is the strip of seven places in every country (GameController.TopStrip.cs)
+            if (masthead) { return DrawTopStrip(holds, width); }
             GUIStyle line = DeskCaption(9.5f, PoliSimTheme.TextOnDesk);
-            if (_holdChipStyle == null || _holdChipSize != line.fontSize)
-            {
-                // A flat paper chip on the plate: the paper button's nine-slice border is taller than a caption line, and at this height its
-                // edges drew over the words (the first film of this line). Every state inked, or IMGUI draws the skin's pale hover ink.
-                _holdChipStyle = Inked(new GUIStyle(line)
-                {
-                    alignment = TextAnchor.MiddleCenter, wordWrap = false,
-                    padding = new RectOffset(6, 6, 2, 2), margin = new RectOffset(6, 0, 0, 0), border = new RectOffset(0, 0, 0, 0),
-                }, PoliSimTheme.TextPrimary);
-                _holdChipStyle.normal.background = UiPalette.Solid(PoliSimTheme.CardInset);
-                _holdChipStyle.focused.background = UiPalette.Solid(PoliSimTheme.CardInset);
-                _holdChipStyle.hover.background = UiPalette.Solid(PoliSimTheme.Hex(0xF6EFDF));
-                _holdChipStyle.active.background = UiPalette.Solid(PoliSimTheme.Hex(0xF6EFDF));
-                _holdChipSize = line.fontSize;
-            }
+            EnsureHoldChipStyle(line);
             float chipHeight = Mathf.Ceil(_holdChipStyle.CalcSize(new GUIContent("Ag")).y);
             float inner = Mathf.Max(chipHeight, Mathf.Ceil(line.CalcSize(new GUIContent("Ag")).y));
 
-            // K40: the masthead's two chips, measured first - the role's (its words and tag, the Desk's own) and the lapse's
-            (string Words, bool InOffice)? role = null;
-            string roleTag = null;
-            (string Words, Color Ground, Color Ink, Color Dot)? lapse = null;
-            float roleWidth = 0f, lapseWidth = 0f, chipGap = 0f, mastChipHeight = 0f;
-            if (masthead)
-            {
-                _mastheadSlipBook = new PeopleSlips.Book();
-                role = RoleChip();
-                roleTag = role.HasValue ? RoleTag(role.Value.Words) : null;
-                roleWidth = role.HasValue ? RoleChipWidth(role.Value.Words, roleTag) : 0f;
-                lapse = LapseChip(_simulationManager.CurrentDate);
-                lapseWidth = lapse.HasValue ? LapseChipWidth(lapse.Value.Words) : 0f;
-                chipGap = StatsUnit(10f);
-                mastChipHeight = StatsUnit(20f);
-                inner = Mathf.Max(inner, mastChipHeight);
-            }
-
             GUILayout.BeginHorizontal(_holdBannerStyle, GUILayout.Width(width), GUILayout.Height(inner + _holdBannerStyle.padding.vertical));
-            float used = _holdBannerStyle.padding.horizontal + (roleWidth > 0f ? roleWidth + chipGap : 0f) + (lapseWidth > 0f ? lapseWidth + chipGap : 0f);
+            float used = _holdBannerStyle.padding.horizontal;
             if (holds.Count > 0)
             {
                 const string head = "TIME PAUSED";
@@ -6065,18 +6057,7 @@ namespace PoliSim.UI
                 }
                 if (shown < holds.Count) { GUILayout.Label($"+{holds.Count - shown} MORE", _holdChipStyle, GUILayout.Height(inner)); }
             }
-            if (lapse.HasValue)
-            {
-                if (holds.Count > 0) { GUILayout.Space(chipGap); }
-                Rect slot = GUILayoutUtility.GetRect(lapseWidth, inner, GUILayout.Width(lapseWidth), GUILayout.Height(inner));
-                DrawLapseChip(new Rect(slot.x, slot.y + Mathf.Round((slot.height - mastChipHeight) * 0.5f), lapseWidth, mastChipHeight), lapse.Value, onStrip: true);
-            }
             GUILayout.FlexibleSpace();
-            if (role.HasValue)
-            {
-                Rect slot = GUILayoutUtility.GetRect(roleWidth, inner, GUILayout.Width(roleWidth), GUILayout.Height(inner));
-                DrawRoleChip(new Rect(slot.x, slot.y + Mathf.Round((slot.height - mastChipHeight) * 0.5f), roleWidth, mastChipHeight), role.Value.Words, role.Value.InOffice, roleTag, onStrip: true);
-            }
             GUILayout.EndHorizontal();
 
             if (holds.Count > 0 && Event.current.type == EventType.Repaint && _holdBannerStyle.normal.background != null)
@@ -6086,6 +6067,26 @@ namespace PoliSim.UI
                 PoliSimTheme.Pill(new Rect(plate.x + HoldBannerPadX, plate.y + _holdBannerStyle.padding.top + (inner - lamp) * 0.5f, lamp, lamp), PoliSimTheme.DraftOnDesk);
             }
             return inner + _holdBannerStyle.padding.vertical + _holdBannerStyle.margin.vertical;
+        }
+
+        /// <summary>§648: the hold chip's flat paper style, built once per caption size - the HELD line's, and the top strip's measure of its own height.</summary>
+        private void EnsureHoldChipStyle(GUIStyle line)
+        {
+            if (_holdChipStyle == null || _holdChipSize != line.fontSize)
+            {
+                // A flat paper chip on the plate: the paper button's nine-slice border is taller than a caption line, and at this height its
+                // edges drew over the words (the first film of this line). Every state inked, or IMGUI draws the skin's pale hover ink.
+                _holdChipStyle = Inked(new GUIStyle(line)
+                {
+                    alignment = TextAnchor.MiddleCenter, wordWrap = false,
+                    padding = new RectOffset(6, 6, 2, 2), margin = new RectOffset(6, 0, 0, 0), border = new RectOffset(0, 0, 0, 0),
+                }, PoliSimTheme.TextPrimary);
+                _holdChipStyle.normal.background = UiPalette.Solid(PoliSimTheme.CardInset);
+                _holdChipStyle.focused.background = UiPalette.Solid(PoliSimTheme.CardInset);
+                _holdChipStyle.hover.background = UiPalette.Solid(PoliSimTheme.Hex(0xF6EFDF));
+                _holdChipStyle.active.background = UiPalette.Solid(PoliSimTheme.Hex(0xF6EFDF));
+                _holdChipSize = line.fontSize;
+            }
         }
 
         /// <summary>§648: a chip's click - the cell it names, as the rail's own cell would open it (the Parliament page for the Speaker's round and a declaration).</summary>

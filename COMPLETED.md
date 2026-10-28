@@ -41914,3 +41914,24 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nq26 (8 named; the third surplus case's plant refused by the connection queue - fixed 41b9b800); nq26b EnergyReliabilityDiagnostic PASS (three times the wind fleet: 3669.0 MW curtailed in block 0, SE4 at the floor); cheapq26b 143/143; simq26 86/86 (the sentinel at mf28); dumpq26 mf26 byte-identical to mf28; drysq26 Sweden + Germany 1280 and realq26 Germany 1280 clean.
 
 **Commit:** this one.
+
+## 934. D-WORKLIST §1-§2 BUILT (K178; K227-K230): THE DEBT CRISIS ON SCREEN - THE MOMENT, THE STRIP, THE DESK CARD, THE BUDGET TARGET - AND THE TOP STRIP IN EVERY COUNTRY (2026-10-28)
+
+**What was owed:** Design's first return of 2026-10-28 (`PoliSim-captures/design/RETURN_2026-10-28/`, sent by Elias in a new chat, K220): boards 32a-32e (the crisis MF q33 built at §930, until then sentences in the debt tile's slip) and 33a-33b (K178: the top strip in every country).
+
+**Built** (an implementer on `wave/dcrisis`: 6a66723d; review NOT READY (M1 the clock chip ran while the budget window held it, M2 the shortened Desk row could clip the calendar silently); the rework 3b8b2b18; review 2 READY; e15a0eb4 its Lows (one shared clock predicate `ClockHeld()`); 6962e47f after the integrator's first films (crisis text rects sized from `CalcSize`, an 8 px bar figure moved to its caption)):
+- `GameController.Crisis`: the moment plate (32a default, 32b programme) on the crisis's opening day, once a crisis, holding the clock with Continue its only control - the rating ladder, debt and deficit, the dollar's discount for the USA, the branch's columns from `SovereignCrisis`'s constants, the head's sources slip; the Desk's first card in World trade's place while the crisis lasts (32c, 32d running and withheld); the Budget's programme target on the balance strip and the if-passed row (32e); the rating tile's branch word.
+- `TopStrip` / `GameController.TopStrip`: the strip in all six countries in seven fixed places (the clock, what holds it, what binds, what is coming, the polling day, the government's standing, your role), absent chips closing up, a +N fold; the US DIVIDED tag moved to standing; every country's first card row losing the strip's height; `CalendarFit` (the provenance line to the slip, then the cell floored, then a counted error).
+- `UiScreenshotDriver.CaptureDeskCrisis`: 01g, 01g1, 01g2, 01g3, 05u, 01g4 from a staged crisis, restored in `finally`; `TopStripCrisisDiagnostic` (cheap, registered by the integrator); `UsCongressViewDiagnostic` (f) on K178.
+
+**Measured** (`Reviews/2026-10-28_dcrisis_integrator.md`): read on film - 32b's plate and Sweden's Desk under the strip, the calendar whole. A Low left: the chart's 'year 1' and 'year 2' labels touch at 1280.
+
+**Evidence:** `Reviews/2026-10-28_dcrisis_review.md`, `_review2.md`, `_integrator.md`.
+
+**Declared:** K227-K230. Absent for want of model data: France's censure motion (art. 49) and cohabitation, a tabled constructive or art. 94 vote, the previous review's rating.
+
+**Still owed from the return:** D-WORKLIST §3-§10 and D-CP (Design's next return).
+
+**Bars:** ncr 8/8 (TopStripCrisisDiagnostic clean); dryscr/realcrse/realcrus exit 1 on OVERFLOW (text rects px+2, an 8 px bar figure) - fixed 6962e47f; dryscr2 Sweden + USA + Germany 1280, realcrse2 Sweden 1280, realcrus2 USA 1280 clean, no CALENDAR FIT error, every staging restored; cheapcr2 clean. UI tier only (no simulation path).
+
+**Commit:** this one.

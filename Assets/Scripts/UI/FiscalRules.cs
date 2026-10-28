@@ -204,7 +204,7 @@ namespace PoliSim.UI
                 lines.Add("The programme's loans carry no market premium.");   // the q32 review's L2: K214's pricing holds in a withheld year too
                 if (SovereignCrisis.Unfinanced(country, today)) { lines.Add("A missed target withheld this year's loan through " + Day(crisis.WithheldThrough) + ": spending other than interest is cut to revenue less interest."); }
             }
-            if (crisis.CutBillions > 0f) { lines.Add(UiFormat.Money(crisis.CutBillions, MoneyUnit.Billions) + " cut so far."); }
+            if (crisis.CutBillions > 0f) { lines.Add(UiFormat.Money(crisis.CutBillions, MoneyUnit.Billions) + (crisis.Crises > 1 ? " cut so far, across the run's crises." : " cut so far.")); }   // the review of wave/dcrisis, L9: the sum is the run's, so a second crisis says so
             return lines;
         }
 

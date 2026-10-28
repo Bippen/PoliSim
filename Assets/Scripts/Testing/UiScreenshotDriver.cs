@@ -776,6 +776,7 @@ namespace PoliSim.Testing
             yield return CaptureDeskUsRoles(controller);   // PS-6 US-19: the US role chip's other words (USA only)
             yield return CaptureDeskEventCard(controller);
             yield return CaptureDeskGameOver(controller);
+            yield return CaptureDeskCrisis(controller);   // MF q33 (D-WORKLIST §1): the debt crisis staged - the moment, the Desk's card, the withheld year, the Budget's target, the reopening
             SetPrivateField(controller, "_onDesk", false);
             yield return Settle();
 
@@ -2893,7 +2894,7 @@ namespace PoliSim.Testing
                 Debug.LogError($"SHOT: EXPECTED FRAME MISSING - '{frame}' was declared and never captured (TL-1): a skipped frame fails the film.");
             }
             Debug.Log($"SHOT: {_expectedFrames.Count} declared frame(s), {missing} missing.");
-            Debug.Log($"SHOT: done, {_captured} captured, {_failed} failed.");
+            Debug.Log($"SHOT: done, {_captured} captured, {_failed} failed, {_realCrisisPlateFrames} frame(s) under a real crisis plate.");   // the review 2, N7: the plate frames reach the run's summary
 
             int overflows = ReportOverflows();
             Debug.Log($"SHOT: {overflows} text overflow(s) recorded.");
@@ -2911,7 +2912,7 @@ namespace PoliSim.Testing
             // above are the driver's own asserts; _loggedErrors catches everything else - the ~18
             // uncounted LogError sites and any ATTRIB the simulation raised while this drove it.
             bool clean = _failed == 0 && overflows == 0 && escapes == 0 && _canvasTextViolations == 0;
-            LastSweepSummary = $"{_captured} measured, {_failed} failed, {overflows} overflow(s), {escapes} escape(s), {_canvasTextViolations} canvas text, {_loggedErrors} error(s) logged, ";
+            LastSweepSummary = $"{_captured} measured, {_failed} failed, {overflows} overflow(s), {escapes} escape(s), {_canvasTextViolations} canvas text, {_loggedErrors} error(s) logged, {_realCrisisPlateFrames} crisis-plate frame(s), ";
             if (_loggedErrors > 0)
             {
                 Debug.Log(clean
@@ -3152,6 +3153,21 @@ namespace PoliSim.Testing
                     Debug.Log($"SHOT: {name} - the formation sheet the game opened by itself (the player's party asked) is closed as a player would, CLOSE THE SHEET; the clock still waits on the answer (07a films the sheet).");
                 }
             }
+            // The review of wave/dcrisis, L6: a frame filmed under a REAL debt crisis's plate (the world's own trajectory read CCC on the film's day) is said and
+            // counted - the plate lies over the page the name promises. The staged crisis (CaptureDeskCrisis) films its plate on purpose and is not counted.
+            if (!_stagingCrisis)
+            {
+                GameController plateHost = _tourController != null ? _tourController : UnityEngine.Object.FindFirstObjectByType<GameController>();
+                MethodInfo plateHolds = plateHost != null ? typeof(GameController).GetMethod("CrisisPlateHolds", BindingFlags.Instance | BindingFlags.NonPublic) : null;
+                if (plateHolds != null && plateHolds.Invoke(plateHost, null) is bool plateUp && plateUp)
+                {
+                    _realCrisisPlateFrames++;
+                    Debug.LogWarning($"SHOT: CRISIS PLATE ON FILM - {name} is filmed under a real debt crisis's plate (market access lost on the film's day); {_realCrisisPlateFrames} frame(s) so far.");
+                }
+            }
+            // The review 2, N2: every Desk frame says its calendar card's margin - the need, the room and the outcome the card chose (CalendarFit)
+            GameController fitHost = _tourController != null ? _tourController : UnityEngine.Object.FindFirstObjectByType<GameController>();
+            if (fitHost != null && fitHost.OnDesk && !string.IsNullOrEmpty(fitHost.LastCalendarFitLine)) { Debug.Log($"SHOT: {name} - {fitHost.LastCalendarFitLine}"); }
             // ⚠ THIS IS WHY THE RUNNER CANNOT USE -batchmode.
             //
             // `WaitForEndOfFrame` NEVER RESUMES in batchmode - the coroutine simply stops, the capture
@@ -4915,6 +4931,185 @@ namespace PoliSim.Testing
             overField.SetValue(controller, wasOver);
             reasonField.SetValue(controller, wasReason);
             yield return Settle();
+        }
+
+        /// <summary>The review of wave/dcrisis, L6: true while CaptureDeskCrisis films its staged plate; the frames a REAL crisis's plate lay over, counted
+        /// (and, review 2's N7, reported in the run's summary).</summary>
+        private bool _stagingCrisis;
+        private int _realCrisisPlateFrames;
+
+        /// <summary>
+        /// MF q33 on screen (D-WORKLIST §1, boards 32a-32e): THE DEBT CRISIS, STAGED. The player's country's crisis state is replaced, for these frames alone,
+        /// by the one the model's entry into a crisis (SovereignCrisis.AdvanceDay) would write on today's review - the country's own branch (the USA defaults, every EU country takes a programme),
+        /// the model's constants, the haircut and the output cost computed from today's debt and GDP, the entry deficit the rating's settled reading (for a
+        /// default the stock IS written down by the haircut for the staged frames, as the model writes it, and put back after - the review's L5) - and then
+        /// moved through its after-states by its own fields: (1) <c>01g_crisis_moment</c>, the plate on its day (32a / 32b), and <c>01g1_crisis_moment_sources</c>,
+        /// the head's slip opened through the plate's film hook; Continue through the controller's own AcknowledgeCrisisPlate; (2)
+        /// <c>01g2_crisis_desk</c>, 220 days on (the default's output cost with 145 days left, the cut so far at the last closed year's rate - 32c; the
+        /// programme's first year running - 32d); for a programme (3) <c>01g3_crisis_desk_withheld</c>, year 2 with the loan withheld (32d's second state) and
+        /// (4) <c>05u_budget_programme_target</c>, the Budget's target row under the sweep's own drafts (32e); then (5) <c>01g4_crisis_restored</c>, the day the
+        /// market reopens (the strip's GOOD chip). Play's clock is held for the staged frames (§510's idiom), and the crisis state, the plate's
+        /// acknowledgement, the page and the clock are put back after, whatever happens.
+        /// </summary>
+        private IEnumerator CaptureDeskCrisis(GameController controller)
+        {
+            const BindingFlags Own = BindingFlags.Instance | BindingFlags.NonPublic;
+            var country = controller.GetType().GetField("_playerCountry", Own)?.GetValue(controller) as Country;
+            var sim = controller.GetType().GetField("_simulationManager", Own)?.GetValue(controller) as SimulationManager;
+            FieldInfo timerField = controller.GetType().GetField("_daySpeedTimer", Own);
+            FieldInfo seenCountry = controller.GetType().GetField("_crisisPlateSeenCountry", Own), seenCrises = controller.GetType().GetField("_crisisPlateSeenCrises", Own);
+            FieldInfo tabField = controller.GetType().GetField("_consolidatedTab", Own);
+            MethodInfo holds = controller.GetType().GetMethod("CrisisPlateHolds", Own), acknowledge = controller.GetType().GetMethod("AcknowledgeCrisisPlate", Own);
+            if (country == null || sim == null || timerField == null || seenCountry == null || seenCrises == null || tabField == null || holds == null || acknowledge == null)
+            {
+                Debug.LogError("SHOT: the debt crisis could not be staged (_playerCountry/_simulationManager/_daySpeedTimer/_crisisPlateSeen*/_consolidatedTab/CrisisPlateHolds/AcknowledgeCrisisPlate not found) - 01g-01g4 and 05u NOT captured.");
+                _failed++;
+                yield break;
+            }
+            SovereignCrisisState was = country.Crisis;
+            object seenCountryWas = seenCountry.GetValue(controller), seenCrisesWas = seenCrises.GetValue(controller), timerWas = timerField.GetValue(controller), tabWas = tabField.GetValue(controller);
+            DateTime today = sim.CurrentDate.Date;
+            CrisisPhase branch = SovereignCrisis.BranchOf(country.Id);
+            SovereignCrisisState staged = was != null ? was.Copy() : new SovereignCrisisState();
+            staged.Phase = branch;
+            staged.StartedOn = today;
+            staged.Crises = (was?.Crises ?? 0) + 1;
+            staged.TriggerRating = CreditRating.CCC;
+            staged.TriggerReviewedOn = today;
+            float cutPerDay = 0f;
+            FiscalTurnReport year = sim.GetLastFiscalReport(country.Id);
+            if (year != null)
+            {
+                float rest = Mathf.Max(0f, year.TotalSpending - year.InterestOnDebt);
+                cutPerDay = Mathf.Clamp(rest - Mathf.Max(0f, year.Revenue - year.InterestOnDebt), 0f, rest) / 365f;
+            }
+            if (branch == CrisisPhase.Default)
+            {
+                float writtenOff = Mathf.Max(0f, country.State.GovernmentDebt) * SovereignCrisis.HaircutFraction;
+                staged.HaircutBillions += writtenOff;
+                staged.Haircuts = new List<DatedAmount>(staged.Haircuts ?? new List<DatedAmount>()) { new DatedAmount { Date = today, Billions = writtenOff } };
+                staged.OutputCostPerDay = country.State.GDP * (SovereignCrisis.OutputCostPercent / 100f) / SovereignCrisis.OutputCostDays;
+                staged.OutputCostDaysLeft = SovereignCrisis.OutputCostDays;
+                staged.EndsOn = today.AddDays(Math.Round(SovereignCrisis.ExclusionYears * 365.25) - 1);
+            }
+            else
+            {
+                CreditRatingSystem.GetSettledPosition(country, today, out _, out float? deficit, out _);
+                staged.EntryDeficitPercent = deficit ?? country.Rating.ReviewedDeficitPercent ?? AiFinanceMinistry.EuDeficitReferencePercent;
+                staged.ProgrammeYear = 1;
+                staged.NextReviewOn = today.AddYears(1);
+                staged.WithheldThrough = DateTime.MinValue;
+                staged.EndsOn = today.AddYears(SovereignCrisis.ProgrammeYears).AddDays(-1);
+            }
+            float debtWas = country.State.GovernmentDebt;
+            object budgetScrollWas = controller.GetType().GetField("_budgetProcessCenterScrollPosition", Own)?.GetValue(controller);
+            timerField.SetValue(controller, -ClockHoldSeconds);
+            try
+            {
+                _stagingCrisis = true;
+                country.Crisis = staged;
+                // the review of wave/dcrisis, L5: the haircut is written off the stock as the model writes it on the day (put back after), so the plate's
+                // debt-to-GDP and its stock before and after are play's
+                if (branch == CrisisPhase.Default) { country.State.GovernmentDebt = debtWas - staged.Haircuts[staged.Haircuts.Count - 1].Billions; }
+                SetPrivateField(controller, "_onDesk", true);
+                ScrollDeskTo(controller, null);   // the crisis's card is the Desk's first row
+                UiGuardContext.CurrentScreen = "01g_crisis_moment";   // the films of e15a0eb4: the staged frames settle under their own name, never the frame before (01f)
+                yield return Settle();
+                yield return Settle();
+                bool owed = (bool)holds.Invoke(controller, null);
+                yield return Capture("01g_crisis_moment");
+                if (owed) { Debug.Log($"SHOT: 01g_crisis_moment - staged: {country.Id} loses market access today ({today:yyyy-MM-dd}), {branch} - the plate owed and holding the clock."); }
+                else { Debug.LogError("SHOT: 01g_crisis_moment - the staged crisis owes NO plate (CrisisPlateHolds false): the frame is not the moment."); _failed++; }
+                // L2: the head's slip with its sources, opened through the plate's own film hook
+                if (SetPrivateField(controller, "_crisisSlipForFilm", "plate:head"))
+                {
+                    UiGuardContext.CurrentScreen = "01g1_crisis_moment_sources";   // the films of e15a0eb4: the staged frames settle under their own name, never the frame before (01f)
+                    yield return Settle();
+                    yield return Capture("01g1_crisis_moment_sources");
+                    SetPrivateField(controller, "_crisisSlipForFilm", null);
+                }
+                else { Debug.LogError("SHOT: 01g1_crisis_moment_sources - the plate has no _crisisSlipForFilm hook; NOT captured."); _failed++; }
+                acknowledge.Invoke(controller, null);
+                if ((bool)holds.Invoke(controller, null)) { Debug.LogError("SHOT: 01g_crisis_moment - Continue did not release the plate."); _failed++; }
+
+                // the after-state 220 days on: the crisis's own fields moved as the model's day would move them
+                const int on = 220;
+                staged.StartedOn = today.AddDays(-on);
+                if (branch == CrisisPhase.Default)
+                {
+                    staged.EndsOn = staged.StartedOn.AddDays(Math.Round(SovereignCrisis.ExclusionYears * 365.25) - 1);
+                    staged.OutputCostDaysLeft = SovereignCrisis.OutputCostDays - on;
+                    staged.Haircuts[staged.Haircuts.Count - 1] = new DatedAmount { Date = staged.StartedOn, Billions = staged.Haircuts[staged.Haircuts.Count - 1].Billions };
+                    staged.CutBillions = (was?.CutBillions ?? 0f) + cutPerDay * on;
+                }
+                else
+                {
+                    staged.NextReviewOn = staged.StartedOn.AddYears(1);
+                    staged.EndsOn = staged.StartedOn.AddYears(SovereignCrisis.ProgrammeYears).AddDays(-1);
+                }
+                UiGuardContext.CurrentScreen = "01g2_crisis_desk";   // the films of e15a0eb4: the staged frames settle under their own name, never the frame before (01f)
+                yield return Settle();
+                yield return Capture("01g2_crisis_desk");
+                Debug.Log($"SHOT: 01g2_crisis_desk - staged {on} days into the crisis: {(branch == CrisisPhase.Default ? $"the exclusion through {staged.EndsOn:yyyy-MM-dd}, the output cost {staged.OutputCostDaysLeft} days left, the cut so far {staged.CutBillions:0.#} bn at the last closed year's rate" : $"programme year 1, the entry deficit {staged.EntryDeficitPercent:0.0} %, the review {staged.NextReviewOn:yyyy-MM-dd}")}.");
+
+                if (branch == CrisisPhase.Programme)
+                {
+                    // 32d's second state: year 1 missed at its review, year 2's loan withheld
+                    staged.StartedOn = today.AddDays(-(365 + 40));
+                    staged.ProgrammeYear = 2;
+                    staged.TargetsMissed = (was?.TargetsMissed ?? 0) + 1;
+                    staged.WithheldThrough = staged.StartedOn.AddYears(2).AddDays(-1);
+                    staged.NextReviewOn = staged.StartedOn.AddYears(2);
+                    staged.EndsOn = staged.StartedOn.AddYears(SovereignCrisis.ProgrammeYears).AddDays(-1);
+                    staged.CutBillions = (was?.CutBillions ?? 0f) + cutPerDay * 40;
+                    UiGuardContext.CurrentScreen = "01g3_crisis_desk_withheld";   // the films of e15a0eb4: the staged frames settle under their own name, never the frame before (01f)
+                    yield return Settle();
+                    yield return Capture("01g3_crisis_desk_withheld");
+                    Debug.Log($"SHOT: 01g3_crisis_desk_withheld - staged: year 1 missed, the loan withheld through {staged.WithheldThrough:yyyy-MM-dd}, the cut so far {staged.CutBillions:0.#} bn.");
+
+                    // 32e: the Budget's target row, year 1, under the sweep's own drafts
+                    staged.StartedOn = today.AddDays(-on);
+                    staged.ProgrammeYear = 1;
+                    staged.TargetsMissed = was?.TargetsMissed ?? 0;
+                    staged.WithheldThrough = DateTime.MinValue;
+                    staged.NextReviewOn = staged.StartedOn.AddYears(1);
+                    staged.EndsOn = staged.StartedOn.AddYears(SovereignCrisis.ProgrammeYears).AddDays(-1);
+                    SetPrivateField(controller, "_onDesk", false);
+                    SetEnumField(controller, "_consolidatedTab", "Budget");
+                    SetPrivateField(controller, "_budgetProcessCenterScrollPosition", Vector2.zero);   // L5: the strip and its target row are the page's head
+                    UiGuardContext.CurrentScreen = "05u_budget_programme_target";   // the films of e15a0eb4: the staged frames settle under their own name, never the frame before (01f)
+                    yield return Settle();
+                    yield return Settle();
+                    yield return Capture("05u_budget_programme_target");
+                    Debug.Log($"SHOT: 05u_budget_programme_target - staged: programme year 1, the target {SovereignCrisis.TargetFor(staged.EntryDeficitPercent, 1):0.0} % of GDP on the balance strip.");
+                    SetPrivateField(controller, "_onDesk", true);
+                }
+
+                // the market reopens: the crisis ended yesterday (the model ends it on the first day past EndsOn)
+                staged.Phase = CrisisPhase.None;
+                staged.WithheldThrough = DateTime.MinValue;
+                staged.EndsOn = today.AddDays(-1);
+                UiGuardContext.CurrentScreen = "01g4_crisis_restored";   // the films of e15a0eb4: the staged frames settle under their own name, never the frame before (01f)
+                yield return Settle();
+                yield return Capture("01g4_crisis_restored");
+                Debug.Log($"SHOT: 01g4_crisis_restored - staged: the {(branch == CrisisPhase.Default ? "exclusion" : "programme")} ended {staged.EndsOn:yyyy-MM-dd}; the strip reads Market access restored today.");
+            }
+            finally
+            {
+                country.Crisis = was;
+                country.State.GovernmentDebt = debtWas;
+                if (budgetScrollWas != null) { SetPrivateField(controller, "_budgetProcessCenterScrollPosition", budgetScrollWas); }
+                SetPrivateField(controller, "_hasCachedPreview", false);   // L5: no preview computed over the staged crisis survives it
+                SetPrivateField(controller, "_crisisSlipForFilm", null);
+                _stagingCrisis = false;
+                seenCountry.SetValue(controller, seenCountryWas);
+                seenCrises.SetValue(controller, seenCrisesWas);
+                tabField.SetValue(controller, tabWas);
+                SetPrivateField(controller, "_onDesk", true);
+                timerField.SetValue(controller, timerWas);
+            }
+            yield return Settle();
+            Debug.Log($"SHOT: 01g-01g4 restored - {country.Id}'s crisis state put back ({(country.Crisis == null ? "none" : country.Crisis.Phase.ToString())}), the plate's acknowledgement and the clock as they were.");
         }
 
         /// <summary>

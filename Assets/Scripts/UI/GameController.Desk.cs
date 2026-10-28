@@ -307,11 +307,20 @@ namespace PoliSim.UI
             }
         }
 
-        private float RoleChipWidth(string words, string tag = null) =>
-            StatsUnit(6f) + StatsUnit(16f) + StatsUnit(6f) + Mathf.Ceil(RowChipCaption(PoliSimTheme.TextPrimary).CalcSize(new GUIContent(words)).x) + StatsUnit(8f)
-            + (string.IsNullOrEmpty(tag) ? 0f : RoleTagWidth(tag) + StatsUnit(6f));
+        private float RoleChipWidth(string words, string tag = null, bool onStrip = false) => onStrip
+            ? V35.Px(StripChipPad) * 2f + V35.Px(StripIcon) + V35.Px(StripIconGap) + Mathf.Ceil(StripFace(PoliSimTheme.TextPrimary).CalcSize(new GUIContent(StripRoleWords(words))).x)
+              + (string.IsNullOrEmpty(tag) ? 0f : RoleTagWidth(tag, true) + V35.Px(StripIconGap))
+            : StatsUnit(6f) + StatsUnit(16f) + StatsUnit(6f) + Mathf.Ceil(RowChipCaption(PoliSimTheme.TextPrimary).CalcSize(new GUIContent(words)).x) + StatsUnit(8f)
+              + (string.IsNullOrEmpty(tag) ? 0f : RoleTagWidth(tag) + StatsUnit(6f));
 
-        private float RoleTagWidth(string tag) => Mathf.Ceil(DeskCaption(9f, PoliSimTheme.TextPrimary, true).CalcSize(new GUIContent(tag)).x) + StatsUnit(10f);
+        private float RoleTagWidth(string tag, bool onStrip = false) => onStrip
+            ? Mathf.Ceil(V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true).CalcSize(new GUIContent(tag)).x) + V35.Px(10f)
+            : Mathf.Ceil(DeskCaption(9f, PoliSimTheme.TextPrimary, true).CalcSize(new GUIContent(tag)).x) + StatsUnit(10f);
+
+        /// <summary>K178 (board 33a): the role's words as the strip prints them, in sentence case ("In opposition", "House majority"); the words themselves,
+        /// which the gate and the slip read, stay the role's.</summary>
+        private static string StripRoleWords(string words) =>
+            string.IsNullOrEmpty(words) ? words : words.Substring(0, 1) + words.Substring(1).ToLowerInvariant();
 
         /// <summary>
         /// PS-6 US-35 (board 30c, answers 5 and 6): THE ROLE CHIP'S TAG - one mark, a date or DIVIDED, outlined after the word. The lame duck is a date, not a
@@ -338,9 +347,7 @@ namespace PoliSim.UI
         /// <summary>PS-6 US-35: whether the presidency's party holds fewer than both chambers on <paramref name="today"/>.</summary>
         private bool UsCongressDivided(System.DateTime today)
         {
-            if (!Congress.PresidentOn(_playerCountry, today, out _, out string pp, out _) || string.IsNullOrEmpty(pp)) { return false; }
-            string house = Congress.HouseMajority(_playerCountry), senate = Congress.SenateMajority(_playerCountry, today);
-            return (house != null && house != pp) || (senate != null && senate != pp);
+            return TopStrip.UsDivided(_playerCountry, today);   // K178: the one rule, which the strip's standing chip reads too
         }
 
         /// <summary>PS-6 US-35 (board 30c, answer 5): every congressional role the player's party holds on the day, in the chip's order of precedence - President,
@@ -367,30 +374,32 @@ namespace PoliSim.UI
             string you = _playerCountry.PlayerPartyAbbrev;
             bool congress = Congress.Applies(_playerCountry);
             // K40: on the top masthead's dark strip the chip is paper whatever the role (board 30c draws no filled face there), a state and not a control
-            if (onStrip) { inOffice = false; DrawRowChip(r, string.Empty, ChipFace.Paper, control: false); }
+            // K178 (board 33a): the strip's paper chip at the strip's measures - the 16 px mark, the 14 px face, the words in sentence case
+            if (onStrip) { inOffice = false; if (Event.current.type == EventType.Repaint) { PoliSimTheme.Rule(r, StripPaper); } }
             else { DrawRowChip(r, string.Empty, inOffice ? ChipFace.Filled : ChipFace.Outline); }
-            float side = StatsUnit(16f);
-            var markRect = new Rect(r.x + StatsUnit(6f), r.y + Mathf.Round((r.height - side) * 0.5f), side, side);
+            float side = onStrip ? V35.Px(StripIcon) : StatsUnit(16f);
+            var markRect = new Rect(r.x + (onStrip ? V35.Px(StripChipPad) : StatsUnit(6f)), r.y + Mathf.Round((r.height - side) * 0.5f), side, side);
             if (congress) { DrawRoleMarkOnInk(markRect, _playerCountry.Id, you); }
             else
             {
                 if (inOffice && Event.current.type == EventType.Repaint) { PoliSimTheme.Rule(markRect, PoliSimTheme.Card); }   // the mark's own ground on the dark fill
                 DrawPartyMarkSlot(markRect, _playerCountry.Id, you);
             }
-            float wx = markRect.xMax + StatsUnit(6f);
-            float tagW = string.IsNullOrEmpty(tag) ? 0f : RoleTagWidth(tag);
-            PoliSimWidgets.MeasuredLabel(new Rect(wx, r.y, Mathf.Max(1f, r.xMax - wx - StatsUnit(4f) - (tagW > 0f ? tagW + StatsUnit(6f) : 0f)), r.height), words,
-                DeskCaption(9.5f, inOffice ? PoliSimTheme.Card : PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft));
+            float wx = markRect.xMax + (onStrip ? V35.Px(StripIconGap) : StatsUnit(6f));
+            float tagW = string.IsNullOrEmpty(tag) ? 0f : RoleTagWidth(tag, onStrip);
+            float endPad = onStrip ? V35.Px(StripChipPad) - 2f : StatsUnit(4f), tagGap = onStrip ? V35.Px(StripIconGap) : StatsUnit(6f);
+            PoliSimWidgets.MeasuredLabel(new Rect(wx, r.y, Mathf.Max(1f, r.xMax - wx - endPad - (tagW > 0f ? tagW + tagGap : 0f)), r.height), onStrip ? StripRoleWords(words) : words,
+                onStrip ? StripFace(PoliSimTheme.TextPrimary) : DeskCaption(9.5f, inOffice ? PoliSimTheme.Card : PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft));
             if (tagW > 0f && Event.current.type == EventType.Repaint)
             {
                 Color ink = inOffice ? PoliSimTheme.Card : PoliSimTheme.TextPrimary;
                 float th = Mathf.Round(r.height * 0.72f);
-                var tagRect = new Rect(r.xMax - StatsUnit(4f) - tagW, r.y + Mathf.Round((r.height - th) * 0.5f), tagW, th);
+                var tagRect = new Rect(r.xMax - endPad - tagW, r.y + Mathf.Round((r.height - th) * 0.5f), tagW, th);
                 PoliSimTheme.Rule(new Rect(tagRect.x, tagRect.y, tagRect.width, 1.5f), ink);
                 PoliSimTheme.Rule(new Rect(tagRect.x, tagRect.yMax - 1.5f, tagRect.width, 1.5f), ink);
                 PoliSimTheme.Rule(new Rect(tagRect.x, tagRect.y, 1.5f, tagRect.height), ink);
                 PoliSimTheme.Rule(new Rect(tagRect.xMax - 1.5f, tagRect.y, 1.5f, tagRect.height), ink);
-                PoliSimWidgets.MeasuredLabel(tagRect, tag, DeskCaption(9f, ink, true, TextAnchor.MiddleCenter));
+                PoliSimWidgets.MeasuredLabel(tagRect, tag, onStrip ? V35Mono(V35.Floor, ink, bold: true, TextAnchor.MiddleCenter) : DeskCaption(9f, ink, true, TextAnchor.MiddleCenter));
             }
 
             var slip = new SlipContent(PartySystems.ShortName(_playerCountry.Id, you) + " " + words);
@@ -596,10 +605,10 @@ namespace PoliSim.UI
         /// <summary>
         /// K40 (Elias, 2026-10-23: "the role chip moves to the top masthead and the lapse chip beside Paused, v3.5's places"; board 30c): whether the frame's
         /// banner is drawn as the TOP MASTHEAD on every page - Paused and what holds the clock at its left, the lapse's chip beside them, the role chip at its
-        /// right. A Congress's alone (the USA's, where the board drew it); every other country keeps its role chip in the Desk's masthead beside the year, and
-        /// the banner only while something holds the clock. Never at game over, whose line is its own.
+        /// right. K178 (Elias's ruling; D-WORKLIST §2, board 33a): in every country - the strip's seven places (GameController.TopStrip.cs); the Desk's
+        /// masthead keeps the role chip beside the year only where the strip is not drawn. Never at game over, whose line is its own.
         /// </summary>
-        private bool MastheadStripApplies() => _playerCountry != null && !_isGameOver && Congress.Applies(_playerCountry);
+        private bool MastheadStripApplies() => _playerCountry != null && !_isGameOver;   // K178 (Elias): the top strip in every country, not a Congress alone
 
         /// <summary>K40: the top masthead's slips (the role's and the lapse's), rebuilt on every pass of the strip, and its anchors - kept apart from the page's,
         /// which a page clears at its head (`BeginSlipAnchors` puts them back), so the strip's slips open over whatever page is below it.</summary>
@@ -768,6 +777,11 @@ namespace PoliSim.UI
             float left = V35Span(width, 7);
             float right = width - left - gutter;
             float rowWorld = V35.Px(DeskRowWorld), rowLedger = V35.Px(DeskRowLedger), rowEffects = V35.Px(DeskRowEffects), rowEvent = V35.Px(DeskRowEvent);
+            // K178 (D-WORKLIST §2: "Sweden's Desk loses 39 px, exactly as the USA's Desk already does ... out of the first row of cards; the calendar card's
+            // empty foot absorbs it"): the strip's height comes out of the first row in every country, the USA's included - the board draws both Desks at
+            // one geometry (the review of wave/dcrisis, K-b). The USA's strip took nothing from its Desk before: K40's strip shortened the sheet and the
+            // Desk scrolled further. The calendar card fits its grid to what is left (CalendarFit), or says it cannot.
+            rowWorld = Mathf.Max(V35.Px(DeskRowWorld) * 0.5f, rowWorld - _topStripHeight);
             var content = new Rect(0f, 0f, width, rowWorld + rowLedger + rowEffects + rowEvent + gutter * 3f);
 
             _deskScrollPosition = GUI.BeginScrollView(view, _deskScrollPosition, content, false, true);
@@ -775,7 +789,9 @@ namespace PoliSim.UI
             V35.FloorGuarded = true;   // §726: the v3.5 page - a shrink below the floor is an overflow here
             float y = 0f;
             _deskCardTops["world"] = y;
-            DrawDeskMapCard(new Rect(0f, y, left, rowWorld));
+            // MF q33 (D-WORKLIST §1, boards 32c and 32d): while a debt crisis stands its card takes World trade's place (World trade stays on Stats, International)
+            if (SovereignCrisis.InCrisis(_playerCountry)) { DrawDeskCrisisCard(new Rect(0f, y, left, rowWorld)); }
+            else { DrawDeskMapCard(new Rect(0f, y, left, rowWorld)); }
             DrawDeskCalendarCard(new Rect(left + gutter, y, right, rowWorld));
             y += rowWorld + gutter;
             _deskCardTops["approval"] = y;
@@ -1071,13 +1087,57 @@ namespace PoliSim.UI
             _deskSlipBook.Anchors["card:calendar"] = slip;
             Rect head = DrawV35CardHead(inner, "cal", monthStart.ToString("MMMM yyyy", CultureInfo.CurrentCulture), PoliSimTheme.TextSecondary);
             DeskAnchor(head, "card:calendar");
-            Rect body = DrawV35DenseLine(V35UnderHead(inner, head), slip);
+
+            // The review of wave/dcrisis, M2: the grid's need decided before it is laid out (CalendarFit) - the dense line kept, or dropped into the head's
+            // slip (which holds its text word for word), or the cell at its floor; a month that fits none of them is reported, never clipped quietly.
+            Rect under = V35UnderHead(inner, head);
+            CalendarFit.Result fit = DeskCalendarFit(monthStart, under, slip);
+            Rect body = fit.DenseKept ? DrawV35DenseLine(under, slip) : under;
+            ReportDeskCalendarFit(monthStart, under.height, fit);
 
             GUILayout.BeginArea(body);
             GUILayout.BeginVertical();
-            DrawCalendarMonthGrid(monthStart, today, markers, withTitle: false);
+            DrawCalendarMonthGrid(monthStart, today, markers, withTitle: false, fit: fit);
             GUILayout.EndVertical();
             GUILayout.EndArea();
+        }
+
+        /// <summary>M2: the calendar card's fit for <paramref name="monthStart"/> in <paramref name="under"/> - the dense line measured as DrawV35DenseLine draws it.</summary>
+        private CalendarFit.Result DeskCalendarFit(System.DateTime monthStart, Rect under, SlipContent slip)
+        {
+            float dense = 0f;
+            if (DeskProvenance.On && slip != null)
+            {
+                GUIStyle face = V35SerifWrapped(V35.Floor, PoliSimTheme.TextMuted);
+                string text = slip.Head;
+                foreach (string l in slip.Lines) { text += " · " + SlipContent.Plain(l); }
+                dense = Mathf.Ceil(face.CalcHeight(new GUIContent(text), under.width)) + V35.Px(4f) + V35.Px(4f);   // the text, its rule's 4 and the gap above it
+            }
+            int rows = CalendarFit.Rows(monthStart, DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
+            return CalendarFit.Fit(under.height, dense, CalendarWeekdayRowHeight(), rows, CalendarDayNumberLineHeight(), CalendarDayDotRowHeight, CalendarGap(), CalendarDotRowFloor, CalendarGapFloor);
+        }
+
+        private string _calendarFitReported;
+
+        /// <summary>The review 2, N2: the last Desk frame's fit as one line - "need N in M" and the outcome - which the film prints beside every Desk capture
+        /// (UiScreenshotDriver's Capture), so each film shows the card's margin, whatever the outcome.</summary>
+        internal string LastCalendarFitLine { get; private set; }
+
+        /// <summary>M2, N2: the fit, every Desk frame, as <see cref="LastCalendarFitLine"/>; and in the log once per month, height and outcome - an info line
+        /// whatever the outcome, and an ERROR, which the film counts, where nothing fits.</summary>
+        private void ReportDeskCalendarFit(System.DateTime monthStart, float bodyHeight, CalendarFit.Result fit)
+        {
+            if (Event.current.type != EventType.Repaint) { return; }
+            bool full = fit.DotRow >= CalendarDayDotRowHeight;
+            bool denseWanted = DeskProvenance.On;
+            string outcome = !fit.Fits ? "DOES NOT FIT" : !full ? "the cell at its floor" : denseWanted && !fit.DenseKept ? "the dense line in the slip" : "whole";
+            LastCalendarFitLine = string.Format(CultureInfo.InvariantCulture, "CALENDAR FIT: need {0:0.#} in {1:0.#} ({2:yyyy-MM}, {3}, margin {4:0.#} px)", fit.Need, bodyHeight, monthStart, outcome, bodyHeight - fit.Need);
+            string key = monthStart.ToString("yyyy-MM", CultureInfo.InvariantCulture) + "/" + Mathf.RoundToInt(bodyHeight).ToString(CultureInfo.InvariantCulture) + "/" + denseWanted + "/" + fit.Fits + "/" + full;
+            if (key == _calendarFitReported) { return; }
+            _calendarFitReported = key;
+            string what = string.Format(CultureInfo.InvariantCulture, "the Desk's calendar card, {0:yyyy-MM}: the grid needs {1:0} px in {2:0}", monthStart, fit.Need, bodyHeight);
+            if (!fit.Fits) { Debug.LogError("CALENDAR FIT: " + what + " even at its floor cell - THE GRID DOES NOT FIT AND IS CLIPPED."); }
+            else { Debug.Log(LastCalendarFitLine + " - " + what + "."); }
         }
 
         /// <summary>

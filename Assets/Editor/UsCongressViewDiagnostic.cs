@@ -293,8 +293,9 @@ namespace PoliSim.EditorTools
                     var usaNoSenate = new Country { Id = CountryId.USA };
                     var sweden = new Country { Id = CountryId.Sweden, SecondChamberSeats = new Dictionary<string, int> { { "S", 10 } } };
                     bool inCongress = Mast(usaSeated, false), atGameOver = Mast(usaSeated, true), noSenate = Mast(usaNoSenate, false), swedish = Mast(sweden, false);
-                    Check(applies != null && inCongress && !atGameOver && !noSenate && !swedish,
-                        F("(f) K40: the top masthead carries the role and lapse chips in a Congress ({0}) - not at game over ({1}), not for a US world with no Senate seated ({2}), not for Sweden ({3}), whose role chip stays beside the year",
+                    // K178 (Elias's ruling: the top strip in every country) widened K40's predicate - a US world with no Senate seated and Sweden carry it too
+                    Check(applies != null && inCongress && !atGameOver && noSenate && swedish,
+                        F("(f) K40, K178: the top strip carries the role and lapse chips in a Congress ({0}) - not at game over ({1}); in a US world with no Senate seated ({2}) and in Sweden ({3}) too, every country's since K178",
                             inCongress, atGameOver, noSenate, swedish));
                     string rows = SourceText.ReadWithoutComments("Assets/Scripts/UI/GameController.ParliamentRows.cs");
                     string view = SourceText.ReadWithoutComments("Assets/Scripts/UI/GameController.CongressV35.cs");

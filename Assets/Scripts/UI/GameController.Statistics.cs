@@ -140,10 +140,14 @@ namespace PoliSim.UI
             // pill is the grid's norm, so absence reads as "nothing to telegraph".
             SovereignRatingState rating = _playerCountry.Rating;
             bool hasOutlookSignal = rating.HasBeenReviewed && rating.Outlook != RatingOutlook.Stable;
+            // MF q33 (D-WORKLIST §1, boards 32c/32d): while a debt crisis stands the tile's second line is its branch's word, in the bad ink, in the outlook's place.
+            // DECLARED: the figure stays the standing rating - for the USA the one with the dollar's discount, which the trigger reads without (K143)
+            CrisisPhase crisisPhase = _playerCountry.Crisis != null ? _playerCountry.Crisis.Phase : CrisisPhase.None;
             readings.Add(new HeadlineReading("Credit Rating",
                 rating.HasBeenReviewed ? CreditRatingSystem.Format(rating.Rating) : "-",
-                hasOutlookSignal ? (rating.Outlook == RatingOutlook.Positive ? "OUTLOOK +" : "OUTLOOK -") : null,
-                rating.Outlook == RatingOutlook.Positive,
+                crisisPhase == CrisisPhase.Default ? "DEFAULT" : crisisPhase == CrisisPhase.Programme ? "PROGRAMME"
+                    : hasOutlookSignal ? (rating.Outlook == RatingOutlook.Positive ? "OUTLOOK +" : "OUTLOOK -") : null,
+                crisisPhase == CrisisPhase.None && rating.Outlook == RatingOutlook.Positive,
                 null));
             // Signed on purpose: a balance's direction is the whole reading.
             // P2-0.4 (2026-09-02): THE YEAR, not the accumulator - the last closed fiscal period's balance from the

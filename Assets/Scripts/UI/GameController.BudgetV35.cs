@@ -231,6 +231,7 @@ namespace PoliSim.UI
                 _budgetSlipBook.Anchors[ids[i]] = slips[i];
             }
             GUILayout.Space(gutter);
+            DrawBudgetProgrammeTarget(width, withDraft);   // MF q33 (D-WORKLIST §1, board 32e): a programme year's target where the deficit is drafted - nothing outside a programme
         }
 
         // =============================================================================================================================================
@@ -1297,6 +1298,19 @@ namespace PoliSim.UI
                 FiscalRules.Breaches(PlayerCountryId, FiscalRules.Measure.Deficit, -yearBalance / Mathf.Max(0.0001f, _playerCountry.State.NominalGdp) * 100f, out rule);
             }
             book.Add(("Balance", "scales", BudgetSignedFigure(_cachedBudgetImpact.NetDelta), rule != null ? V35.Warning : neutral, "ifpassed:balance"));
+            // MF q33 (D-WORKLIST §1, board 32e): in a programme year the panel says whether the draft meets the year's target (the board's tick and cross; the
+            // row's figure is text, so its ink and its words carry them)
+            if (_cachedPreview != null)
+            {
+                float draftDeficit = -(_cachedPreview.RevenueEstimate - _cachedPreview.SpendingEstimate) / Mathf.Max(0.0001f, _playerCountry.State.NominalGdp) * 100f;
+                if (ProgrammeVerdict(draftDeficit, out string programmeWords, out Color programmeInk, out float programmeTarget))
+                {
+                    book.Add(("Programme target", "debt", programmeWords, programmeInk, "ifpassed:programme"));
+                    _budgetSlipBook.Anchors["ifpassed:programme"] = new SlipContent("PROGRAMME TARGET · " + programmeWords.ToUpperInvariant())
+                        .Add("The year's deficit with the draft, " + UiFormat.Number(draftDeficit, 1) + " % of GDP, against this year's target of " + UiFormat.Number(programmeTarget, 1) + " %")
+                        .Add("A miss withholds the next year's loan");
+                }
+            }
 
             GUIStyle rowName = V35Serif(V35.Floor, PoliSimTheme.TextPrimary);
             float rowH = V35.Px(V35.ListRow) + V35.Px(3f);
