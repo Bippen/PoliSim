@@ -42028,3 +42028,21 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** g18r1 (4 DUE A REFIT, as intended); the refit s940 (31 moved); g18r2 the gate holds, --check OK; dumprf byte-identical to ps8 through turn 20; cheaprf 144/144; simrf 88/88.
 
 **Commit:** this one.
+
+## 940. K218 (K217 PARTLY ENDS; K249-K252): THE NO-POLICY-CHANGE DEBT PATH - THE HOLD READS THE SOURCES' PREMISE, DECOMPOSED AGAINST THE DSM'S AND CBO'S OWN; THREE OF FIVE MISSES CLOSED, SEVEN BANDS REGISTERED WITH THEIR TERMS (2026-10-28)
+
+**What was owed:** K218 - close K217's five registered debt-path misses by holding the no-policy fiscal path against CBO's extended baseline and the EC DSM; its prereg committed alone before its first Unity run (8d13b5b6, its predictions from a second runtime, said so).
+
+**Diagnosis:** the shared no-policy century never ran the AI finance ministry (the player's country has no party seated, so PlayerGoverns); its debt was pinned by the fiscal reaction function (slope 1.5, no role gate) moving revenue with debt's gap from each country's comfort seed - France's revenue 44.6 -> 51.5 % of GDP by 2029 with no rate moved - and the player's idle book froze real provision. Sweden, Germany and Italy passed q32's bands only because their sources' paths are near-flat.
+
+**Built** (an implementer on `wave/k218`: 679596fc..91395221; the review READY): `SimulationManager.NoPolicyChangeBook` (an instrument switch never set by play) and `NoPolicyCentury.Unchanged` - the player's country under the AI's indexation with no ministry, no Finance partner and no fiscal reaction; DebtPathHoldDiagnostic reads it, each window decomposed (minus the primary balance, interest, real growth, inflation, remainder - an exact identity) beside the DSM's rows and CBO's columns (`Tools/q32_debt_prep.pl` writing them, the DSM identity checked); `Tools/headless_hold` (the diagnostic out of the engine, a loop instrument, never the bar); `Tools/cgate/gate.sh` resolving its root - and, by the integrator, refusing a missing root and an empty build (a relative or missing root had compiled nothing and printed GATE OK).
+
+**Measured** (`Reviews/2026-10-28_k218_integrator.md`): every figure the prereg's to the tenth - asserted and inside: Poland (h1) +13.3 (fan +12.1..+34.6), the USA (h3) +11.5 over ten years (CBO +19.6) and +55.6 over thirty (CBO +74.5), Sweden (h1) -3.6, Germany (h1) +3.9; REGISTERED with their terms: Sweden (h2) -22.9 and Germany (h2) +33.2 (the primary balance), France (h1) +30.4 and (h2) +69.3, Italy (h1) +26.9 and (h2) +73.8 (interest on the stock), Poland (h2) +30.0 (interest and stock-flow). The dump byte-identical (play untouched); both bars clean.
+
+**Evidence:** `Reviews/2026-10-28_k218_prereg.md`, `_review.md`, `_integrator.md`; ledger row s940 (`SimulationManager.cs`).
+
+**Declared:** K249-K252. Filed as their own items: the fiscal reaction function in play (K251), the debt stock's interest rate seeded at the source's implied rate (K252); Lows - the switch `[NonSerialized]`, the crisis cut separated in the decomposition, `DebtPathAnchors.cs` a `-text` entry.
+
+**Bars:** nkf 4/4 (DEBT HOLD PASS, 7 REGISTERED, every figure the prereg's); dumpkf byte-identical to refit; simkf 88/88; cheapkf clean but the ledger (row added); gate.sh guards tested (absolute, relative, missing root).
+
+**Commit:** this one.

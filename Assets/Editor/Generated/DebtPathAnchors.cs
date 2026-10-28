@@ -26,6 +26,14 @@ namespace PoliSim.Data.Generated
         public const int CboFirstYear = 2026;
         public static readonly float[] CboDebtHeldByPublic = { 100.605f, 102.069f, 104.116f, 105.811f, 107.726f, 109.573f, 111.535f, 113.992f, 116.186f, 117.977f, 120.223f, 122.449f, 124.742f, 127.066f, 129.383f, 131.71f, 134.155f, 136.631f, 139.168f, 141.784f, 144.497f, 147.277f, 150.113f, 153.018f, 155.982f, 159.029f, 162.163f, 165.314f, 168.524f, 171.785f, 175.076f };
 
+        /// <summary>K218: CBO's own decomposition, the same table, the same years - revenues, total noninterest spending, their difference (the primary balance,
+        /// positive a surplus) and net interest, per cent of GDP; GDP in billions of dollars (its growth is the growth effect's).</summary>
+        public static readonly float[] CboRevenues = { 17.541f, 17.665f, 17.514f, 17.55f, 17.638f, 17.699f, 17.702f, 17.685f, 17.681f, 17.711f, 17.77f, 17.826f, 17.88f, 17.945f, 17.998f, 18.06f, 18.12f, 18.183f, 18.223f, 18.268f, 18.328f, 18.374f, 18.427f, 18.455f, 18.489f, 18.544f, 18.601f, 18.647f, 18.704f, 18.741f, 18.798f };
+        public static readonly float[] CboNoninterestSpending = { 20.092f, 20.005f, 19.644f, 19.824f, 19.694f, 19.599f, 19.611f, 19.672f, 19.762f, 19.795f, 19.849f, 19.848f, 19.903f, 19.942f, 19.9497f, 20.004f, 20.11f, 20.166f, 20.232f, 20.289f, 20.353f, 20.421f, 20.485f, 20.546f, 20.584f, 20.668f, 20.766f, 20.794f, 20.882f, 20.943f, 21.002f };
+        public static readonly float[] CboPrimaryBalance = { -2.551f, -2.34f, -2.13f, -2.274f, -2.056f, -1.9f, -1.909f, -1.987f, -2.081f, -2.084f, -2.079f, -2.022f, -2.023f, -1.996f, -1.952f, -1.944f, -1.991f, -1.984f, -2.009f, -2.021f, -2.025f, -2.047f, -2.058f, -2.091f, -2.095f, -2.124f, -2.165f, -2.147f, -2.178f, -2.201f, -2.204f };
+        public static readonly float[] CboNetInterest = { 3.257f, 3.325f, 3.513f, 3.678f, 3.829f, 3.989f, 4.147f, 4.269f, 4.389f, 4.486f, 4.591f, 4.687f, 4.788f, 4.887f, 4.989f, 5.097f, 5.217f, 5.334f, 5.443f, 5.554f, 5.676f, 5.792f, 5.907f, 6.022f, 6.143f, 6.269f, 6.4f, 6.529f, 6.658f, 6.79f, 6.93f };
+        public static readonly float[] CboGdpBillions = { 31902.006f, 33315.187f, 34665.785f, 36010.049f, 37390.673f, 38812.821f, 40276.527f, 41795.93f, 43373.323f, 45011.5f, 46712.142f, 48473.081f, 50301.676f, 52196.378f, 54167.425f, 56215.91f, 58324.808f, 60508.7f, 62766.662f, 65085.761f, 67459.335f, 69907.038f, 72429.576f, 75032.762f, 77710.604f, 80469.404f, 83314.241f, 86253.579f, 89291.612f, 92434.596f, 95689.841f };
+
         /// <summary>The first year of each DSM baseline; element i is year DsmFirstYear + i.</summary>
         public const int DsmFirstYear = 2022;
         public static readonly Dictionary<CountryId, float[]> DsmBaseline = new Dictionary<CountryId, float[]>
@@ -54,6 +62,58 @@ namespace PoliSim.Data.Generated
             { CountryId.France, new[] { 111.2294f, 109.8822f, 112.7207f, 119.919335f, 123.597377f, 127.806808f, 132.200628f, 136.499975f } },
             { CountryId.Italy, new[] { 138.3491f, 134.7936f, 136.5627f, 144.929754f, 148.571564f, 151.518934f, 155.427931f, 159.071374f } },
             { CountryId.Poland, new[] { 48.78592f, 49.71811f, 54.65944f, 63.458325f, 69.169635f, 73.950088f, 78.923685f, 84.300113f } },
+        };
+
+        /// <summary>K218: the DSM's own decomposition of each year's change in the baseline's ratio, per cent of GDP, the baseline's years (element i is DsmFirstYear + i):
+        /// the primary balance (positive a surplus; it subtracts), of which the cost of ageing, the interest expenditure, the real growth and inflation effects and the
+        /// stock-flow adjustments - the change is -PrimaryBalance + Interest + GrowthEffect + InflationEffect + StockFlow (the tool checks it every year).</summary>
+        public static readonly Dictionary<CountryId, float[]> DsmPrimaryBalance = new Dictionary<CountryId, float[]>
+        {
+            { CountryId.Sweden, new[] { 1.504038f, 0.093208f, -1.289381f, -0.832429f, 0.075613f, 0.098725f, 0.183014f, 0.218299f, 0.183873f, 0.146378f, 0.101008f, 0.066286f, 0.054353f, 0.060611f } },
+            { CountryId.Germany, new[] { -1.441734f, -1.695237f, -1.130782f, -0.888649f, -0.621815f, -0.68399f, -0.640356f, -0.625522f, -0.737745f, -0.889157f, -1.030149f, -1.143923f, -1.248856f, -1.278411f } },
+            { CountryId.France, new[] { -2.819143f, -3.615675f, -4.051063f, -2.733971f, -2.524379f, -2.582831f, -2.593126f, -2.565835f, -2.553143f, -2.540972f, -2.544955f, -2.582853f, -2.631546f, -2.629183f } },
+            { CountryId.Italy, new[] { -3.992379f, -3.512075f, 0.129115f, 0.542861f, 0.886381f, 0.441267f, 0.087264f, -0.084435f, -0.231813f, -0.36771f, -0.553943f, -0.653161f, -0.762371f, -0.822755f } },
+            { CountryId.Poland, new[] { -1.907284f, -3.209686f, -3.533585f, -2.98489f, -2.989313f, -3.185626f, -3.286099f, -3.32059f, -3.331435f, -3.310012f, -3.282848f, -3.264189f, -3.246645f, -3.230232f } },
+        };
+        public static readonly Dictionary<CountryId, float[]> DsmCostOfAgeing = new Dictionary<CountryId, float[]>
+        {
+            { CountryId.Sweden, new[] { 0f, 0f, 0f, 0f, -0.164043f, -0.148506f, -0.139259f, -0.126837f, -0.100613f, -0.063705f, -0.02709f, -0.00631f, -0.019136f, -0.047264f } },
+            { CountryId.Germany, new[] { 0f, 0f, 0f, 0f, 0.078846f, 0.268085f, 0.386742f, 0.457521f, 0.587286f, 0.751795f, 0.906412f, 1.030579f, 1.144936f, 1.230434f } },
+            { CountryId.France, new[] { 0f, 0f, 0f, 0f, 0.014603f, 0.079989f, 0.09445f, 0.064468f, 0.048714f, 0.033106f, 0.033911f, 0.072781f, 0.122242f, 0.113751f } },
+            { CountryId.Italy, new[] { 0f, 0f, 0f, 0f, 0.030499f, 0.174141f, 0.240438f, 0.26486f, 0.442064f, 0.60235f, 0.822565f, 0.934666f, 1.058445f, 1.121403f } },
+            { CountryId.Poland, new[] { 0f, 0f, 0f, 0f, 0.186008f, 0.376776f, 0.459682f, 0.472029f, 0.460527f, 0.411377f, 0.355984f, 0.310753f, 0.266998f, 0.225141f } },
+        };
+        public static readonly Dictionary<CountryId, float[]> DsmInterest = new Dictionary<CountryId, float[]>
+        {
+            { CountryId.Sweden, new[] { 0.509598f, 0.717052f, 0.653515f, 0.552471f, 0.533974f, 0.528805f, 0.525607f, 0.520783f, 0.515758f, 0.511554f, 0.508092f, 0.505578f, 0.503235f, 0.495846f } },
+            { CountryId.Germany, new[] { 0.704908f, 0.873649f, 1.03946f, 1.069013f, 1.098547f, 1.157155f, 1.210229f, 1.261182f, 1.312855f, 1.366906f, 1.424877f, 1.486635f, 1.550059f, 1.607218f } },
+            { CountryId.France, new[] { 1.917317f, 1.870503f, 2.173383f, 2.521305f, 2.83467f, 2.994093f, 3.168267f, 3.348796f, 3.532313f, 3.718704f, 3.907677f, 4.100246f, 4.299516f, 4.478745f } },
+            { CountryId.Italy, new[] { 4.098285f, 3.665317f, 3.906517f, 3.913437f, 3.99799f, 4.213974f, 4.386738f, 4.574401f, 4.772334f, 4.9913f, 5.232188f, 5.498113f, 5.783191f, 6.014556f } },
+            { CountryId.Poland, new[] { 1.527194f, 2.080015f, 2.270047f, 2.589878f, 2.55292f, 2.900928f, 3.167849f, 3.439233f, 3.708952f, 3.974603f, 4.233081f, 4.485346f, 4.737261f, 4.97955f } },
+        };
+        public static readonly Dictionary<CountryId, float[]> DsmGrowthEffect = new Dictionary<CountryId, float[]>
+        {
+            { CountryId.Sweden, new[] { -0.498806f, 0.09873f, -0.098702f, -0.574063f, -0.923223f, -0.611681f, -0.58661f, -0.546107f, -0.485441f, -0.456193f, -0.435977f, -0.415202f, -0.405233f, -0.426997f } },
+            { CountryId.Germany, new[] { -0.86705f, 0.163591f, 0.068141f, -0.42352f, -0.744094f, -0.528432f, -0.645302f, -0.604832f, -0.486541f, -0.467597f, -0.448115f, -0.444253f, -0.505354f, -0.610923f } },
+            { CountryId.France, new[] { -2.736675f, -0.980009f, -1.210641f, -0.904835f, -1.478503f, -0.862932f, -0.755637f, -0.713586f, -0.752032f, -0.80876f, -0.872392f, -0.918531f, -0.896451f, -1.079908f } },
+            { CountryId.Italy, new[] { -6.26805f, -0.905778f, -0.881305f, -1.376351f, -1.948002f, -0.645013f, -0.260389f, -0.475912f, -0.622725f, -0.440314f, -0.258743f, -0.092985f, -0.03373f, -0.5292f } },
+            { CountryId.Poland, new[] { -2.391368f, -0.061741f, -1.399883f, -1.829008f, -1.75767f, -1.30257f, -1.274696f, -1.271683f, -1.355509f, -1.486122f, -1.658513f, -1.821212f, -1.911857f, -1.882092f } },
+        };
+        public static readonly Dictionary<CountryId, float[]> DsmInflationEffect = new Dictionary<CountryId, float[]>
+        {
+            { CountryId.Sweden, new[] { -2.005192f, -1.948084f, -0.705499f, -0.455533f, -0.435504f, -0.460576f, -0.488943f, -0.514122f, -0.536988f, -0.55924f, -0.580573f, -0.601151f, -0.620931f, -0.603255f } },
+            { CountryId.Germany, new[] { -3.909011f, -3.761659f, -1.801101f, -1.456515f, -1.382333f, -1.384266f, -1.391118f, -1.395402f, -1.401255f, -1.413308f, -1.430222f, -1.451834f, -1.477221f, -1.485079f } },
+            { CountryId.France, new[] { -3.516516f, -5.602024f, -2.384967f, -1.816455f, -1.902876f, -2.027649f, -2.171231f, -2.32181f, -2.47769f, -2.637569f, -2.800973f, -2.967975f, -3.139661f, -3.1828f } },
+            { CountryId.Italy, new[] { -5.010031f, -7.607535f, -2.126558f, -2.546505f, -2.444046f, -2.552634f, -2.65567f, -2.77524f, -2.897006f, -3.022114f, -3.157971f, -3.306741f, -3.467268f, -3.511432f } },
+            { CountryId.Poland, new[] { -5.119658f, -4.251759f, -1.862413f, -2.41772f, -1.688417f, -1.784661f, -1.85999f, -1.943406f, -2.032111f, -2.122721f, -2.212828f, -2.300927f, -2.387414f, -2.474737f } },
+        };
+        public static readonly Dictionary<CountryId, float[]> DsmStockFlow = new Dictionary<CountryId, float[]>
+        {
+            { CountryId.Sweden, new[] { 0.428216f, -0.921661f, 0.148612f, -0.413596f, -0.11375f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f } },
+            { CountryId.Germany, new[] { -0.451534f, -1.090236f, -0.348447f, 0.112682f, 0.108775f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f } },
+            { CountryId.France, new[] { 0.042343f, -0.251302f, 0.209638f, 0.041414f, -0.17651f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f } },
+            { CountryId.Italy, new[] { -4.198547f, -2.219576f, 0.999489f, 2.206911f, 2.205615f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f } },
+            { CountryId.Poland, new[] { -0.167233f, -0.02501f, 2.432242f, 2.898289f, 1.6f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f } },
         };
     }
 }

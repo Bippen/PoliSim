@@ -72,10 +72,17 @@ namespace PoliSim.EditorTools
             public float WaitCataractDays;
             public float WaitKneeDays;
             public float SpendPerAgeCostRatio;
+            /// <summary>K218: the closed year's fiscal report against the nominal GDP at the record, per cent - the primary balance (the year's balance plus its
+            /// interest, positive a surplus; a fund contribution and a one-off ride inside it) and the interest - and the nominal GDP's growth over the
+            /// span, per cent (`DebtPathHoldDiagnostic` decomposes the debt change with them).</summary>
+            public float PrimaryBalancePercent;
+            public float InterestPercent;
+            public double NominalGrowth;
         }
 
         private static readonly Dictionary<CountryId, Year[]> Runs = new Dictionary<CountryId, Year[]>();
         private static readonly Dictionary<CountryId, Year> Openings = new Dictionary<CountryId, Year>();
+        private static readonly Dictionary<CountryId, Year[]> UnchangedRuns = new Dictionary<CountryId, Year[]>();
 
         /// <summary>MF q29: the player's country as the century opened, before its first day - the base of year one's growth and of the run's life-expectancy gain.</summary>
         public static Year Opening(CountryId player)
@@ -96,8 +103,28 @@ namespace PoliSim.EditorTools
             return run;
         }
 
-        /// <summary>The loop the two diagnostics ran for an untouched country, recording every year.</summary>
-        private static Year[] Advance(CountryId player)
+        /// <summary>
+        /// K218 (2026-10-28): THE NO-POLICY-CHANGE RUN - the same loop, seed and start as <see cref="For"/>, with <c>SimulationManager.NoPolicyChangeBook</c> set:
+        /// the player's country runs the AI's indexation with no ministry, no Finance partner and no fiscal reaction - the premise CBO's extended baseline (current law) and the EC DSM (the structural primary balance unchanged, the cost of
+        /// ageing on top) project under. Read by `DebtPathHoldDiagnostic` alone; the shared century, which every other reader takes, is the player's own
+        /// idle book and is not changed by it. Run on the first ask for at least <paramref name="years"/> years and handed out after (a longer ask runs again).
+        /// </summary>
+        public static IReadOnlyList<Year> Unchanged(CountryId player, int years)
+        {
+            if (!UnchangedRuns.TryGetValue(player, out Year[] run) || run.Length < years)
+            {
+                run = Advance(player, years, noPolicyChange: true);
+                UnchangedRuns[player] = run;
+            }
+
+            return run;
+        }
+
+        /// <summary>The loop the two diagnostics ran for an untouched country, recording every year - the shared century, the player's own book for <see cref="Years"/>.</summary>
+        private static Year[] Advance(CountryId player) => Advance(player, Years, noPolicyChange: false);
+
+        /// <summary>K218: the same loop for <paramref name="horizon"/> years, in the no-policy-change book where <paramref name="noPolicyChange"/> is set.</summary>
+        private static Year[] Advance(CountryId player, int horizon, bool noPolicyChange)
         {
             SimulationRandom.Seed(Seed);
             using System.IDisposable epoch = SimulationManager.EpochScope();   // PS-1 (§618): the century opens on the player's own start, as the game does, and the epoch is put back after
@@ -109,10 +136,11 @@ namespace PoliSim.EditorTools
                 SimulationManager sim = go.AddComponent<SimulationManager>();
                 sim.SetWorld(world);
                 sim.PlayerCountryId = player;
+                sim.NoPolicyChangeBook = noPolicyChange;   // K218: false for the shared century (the player's own idle book)
                 Country c = world.GetCountry(player);
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
-                var years = new Year[Years];
+                var years = new Year[horizon];
                 // K210 (the review's L5): read the ledger at the boundary, for this world's player only - the hook is static, read-only and removed below
                 float ledgerTrend = 0f, ledgerInfrastructure = 0f, ledgerSector = 0f, ledgerEducation = 0f;
                 System.DateTime ledgerDay = default, ledgerClockDay = default;
@@ -131,15 +159,18 @@ namespace PoliSim.EditorTools
                 SimulationManager.BoundaryLedger += ledger;
                 try
                 {
-                    Openings[player] = new Year { LifeExpectancy = c.State.LifeExpectancy, CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate), OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0, MortalityMultiplier = c.State.MortalityMultiplier };
+                    if (!noPolicyChange) Openings[player] = new Year { LifeExpectancy = c.State.LifeExpectancy, CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate), OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0, MortalityMultiplier = c.State.MortalityMultiplier };
+                    double nominalBefore = c.State.NominalGdp;   // K218
                     double gdpBefore = c.State.GDP, potentialBefore = c.State.PotentialGDP, productivityBefore = c.PotentialProductivityIndex, yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
-                    for (int year = 1; year <= Years; year++)
+                    for (int year = 1; year <= horizon; year++)
                     {
                         for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                         PolicyDecision d = PolicyDecision.None();
                         decisions[player] = d;
                         ledgerDay = default;
                         sim.AdvanceTurn(decisions);
+                        FiscalTurnReport report = sim.GetLastFiscalReport(player);   // K218: the closed year's book, read only
+                        double nominal = System.Math.Max(1e-6, (double)c.State.NominalGdp);
                         years[year - 1] = new Year
                         {
                             DebtToGdpRatio = c.State.DebtToGdpRatio,
@@ -169,7 +200,11 @@ namespace PoliSim.EditorTools
                             LedgerEducation = ledgerEducation,
                             LedgerDay = ledgerDay,
                         LedgerClockDay = ledgerClockDay,
+                            PrimaryBalancePercent = report != null ? (float)(100.0 * ((double)report.BudgetBalance + report.InterestOnDebt) / nominal) : float.NaN,
+                            InterestPercent = report != null ? (float)(100.0 * report.InterestOnDebt / nominal) : float.NaN,
+                            NominalGrowth = (nominal / System.Math.Max(1e-6, nominalBefore) - 1.0) * 100.0,
                         };
+                        nominalBefore = nominal;
                         gdpBefore = c.State.GDP; potentialBefore = c.State.PotentialGDP; productivityBefore = c.PotentialProductivityIndex; yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
                     }
                 }

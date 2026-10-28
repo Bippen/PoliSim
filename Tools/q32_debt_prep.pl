@@ -8,6 +8,11 @@
 #  - the European Commission's Debt Sustainability Monitor 2024, country fiches (one sheet per member state, named by its code): the baseline gross
 #    debt ratio, per cent of GDP, from the row under "<country> - baseline scenario (% of GDP)" (its "Gross debt ratio" row), and the stochastic
 #    projections' 10th and 90th percentiles (the rows the sheet labels p10 and p90 beside "stochastic"), each year the sheet's header gives.
+# K218 (2026-10-28): it also writes each source's own decomposition of the debt change, which the hold prints beside the model's - CBO's revenues, total
+#    noninterest spending, revenues minus total noninterest spending (the primary balance), net interest and GDP in billions of dollars (the same table's
+#    columns, matched by header); the DSM's baseline block rows (1) Primary balance, (1.1.2) Cost of ageing, (2.1) Interest expenditure, (2.2) Growth effect
+#    (real), (2.3) Inflation effect and (3) Stock-flow adjustments (matched by label; a blank cell - no cost of ageing before the projection's first year -
+#    is 0), the DSM's own identity (the change in the ratio = -(1) + (2) + (3)) checked every year to 0.1 point.
 # DebtPathHoldDiagnostic reads the generated table; this tool re-reads the workbooks and with --check proves the table is theirs, byte for byte.
 # Usage (from the project root): perl Tools/q32_debt_prep.pl [--check] [cs]
 # Writes LF line ends; the output is byte-identical on every run from the same workbooks.
@@ -89,15 +94,26 @@ my ($cboBytes, $cboDigest) = verified($cboFile);
 my %cboSheets = sheets($cboBytes);
 die "$cboFile: no sheet 'Supplemental Table 1'\n" unless $cboSheets{'Supplemental Table 1'};
 my %cbo = cells($cboBytes, $cboSheets{'Supplemental Table 1'});
-my ($headRow, $debtCol);
+my ($headRow, $debtCol, %cboCol);
 for my $r (sort { $a <=> $b } keys %cbo) {
     next unless ($cbo{$r}{A} // '') eq 'Fiscal year';
     $headRow = $r;
     for my $c (keys %{ $cbo{$r} }) { $debtCol = $c if $cbo{$r}{$c} =~ /^Federal debt held by the public/; }
+    # K218: the decomposition's columns, each matched by its header's own words
+    for my $c (keys %{ $cbo{$r} }) {
+        my $hd = $cbo{$r}{$c};
+        $cboCol{Revenues} = $c if $hd eq 'Revenues';
+        $cboCol{Noninterest} = $c if $hd =~ /^Total noninterest spending/;
+        $cboCol{Primary} = $c if $hd =~ /^Revenues minus total noninterest spending/;
+        $cboCol{NetInterest} = $c if $hd eq 'Net interest';
+        $cboCol{Gdp} = $c if $hd eq 'GDP (billions of dollars)';
+    }
     last;
 }
 die "$cboFile: no 'Fiscal year' header row\n" unless $headRow;
 die "$cboFile: no 'Federal debt held by the public' column in the header row\n" unless $debtCol;
+for my $k (qw(Revenues Noninterest Primary NetInterest Gdp)) { die "$cboFile: no '$k' column in the header row\n" unless $cboCol{$k}; }
+my %cboSeries;
 my %cboDebt;
 for my $r (sort { $a <=> $b } keys %cbo) {
     next unless $r > $headRow;
@@ -105,6 +121,8 @@ for my $r (sort { $a <=> $b } keys %cbo) {
     last unless $y =~ /^\d{4}$/;
     die "$cboFile: ${y}'s debt '" . ($cbo{$r}{$debtCol} // '') . "' is not a number\n" unless isnum($cbo{$r}{$debtCol});
     $cboDebt{$y} = $cbo{$r}{$debtCol};
+    for my $k (keys %cboCol) { die "$cboFile: ${y}'s $k '" . ($cbo{$r}{$cboCol{$k}} // '') . "' is not a number\n" unless isnum($cbo{$r}{$cboCol{$k}}); $cboSeries{$k}{$y} = $cbo{$r}{$cboCol{$k}}; }
+    die "$cboFile: ${y}'s primary balance is not revenues less noninterest spending\n" if abs($cboSeries{Revenues}{$y} - $cboSeries{Noninterest}{$y} - $cboSeries{Primary}{$y}) > 0.01;
 }
 my @cboYears = sort { $a <=> $b } keys %cboDebt;
 die "$cboFile: the years do not run 2026 to 2056 (" . join(',', @cboYears) . ")\n" unless @cboYears == 31 && $cboYears[0] == 2026 && $cboYears[-1] == 2056;
@@ -114,7 +132,10 @@ die "$cboFile: 2026's debt held by the public $cboDebt{2026} is not near 100 % o
 my ($dsmBytes, $dsmDigest) = verified($dsmFile);
 my %dsmSheets = sheets($dsmBytes);
 my @dsmOrder = ([SE => 'Sweden'], [DE => 'Germany'], [FR => 'France'], [IT => 'Italy'], [PL => 'Poland']);
-my (%baseFirst, %base, %fanFirst, %p10, %p90);
+my (%baseFirst, %base, %fanFirst, %p10, %p90, %dec);
+# K218: the decomposition rows, by the label the sheet's column D carries, and the name each is written under
+my @decRows = (['(1) Primary balance' => 'PrimaryBalance'], ['(1.1.2) Cost of ageing' => 'CostOfAgeing'], ['(2.1) Interest expenditure' => 'Interest'],
+    ['(2.2) Growth effect (real)' => 'GrowthEffect'], ['(2.3) Inflation effect' => 'InflationEffect'], ['(3) Stock-flow adjustments' => 'StockFlow'], ['Change in the ratio' => 'Change']);
 for my $pair (@dsmOrder) {
     my ($code, $name) = @$pair;
     die "$dsmFile: no sheet $code\n" unless $dsmSheets{$code};
@@ -132,6 +153,17 @@ for my $pair (@dsmOrder) {
     die "$dsmFile $code: the baseline does not reach 2035\n" unless $years[-1] == 2035;
     $baseFirst{$name} = $years[0];
     $base{$name} = [ map { die "$dsmFile $code: a baseline figure '" . ($s{$g}{$_} // '') . "' is not a number\n" unless isnum($s{$g}{$_}); $s{$g}{$_} } @cols ];
+    # K218: each decomposition row - the first row below the header whose label opens with the row's words; a blank cell is 0 (no cost of ageing before 2026)
+    for my $dr (@decRows) {
+        my ($label, $key) = @$dr; my $row;
+        for my $r (sort { $a <=> $b } keys %s) { next unless $r > $h; if (index($s{$r}{D} // '', $label) == 0) { $row = $r; last; } }
+        die "$dsmFile $code: no '$label' row in the baseline block\n" unless $row && $row < $h + 30;
+        $dec{$key}{$name} = [ map { my $v = $s{$row}{$_}; die "$dsmFile $code: a '$label' figure '$v' is not a number\n" if defined $v && !isnum($v); $v // 0 } @cols ];
+    }
+    for my $i (0 .. $#cols) {
+        my $sum = -$dec{PrimaryBalance}{$name}[$i] + $dec{Interest}{$name}[$i] + $dec{GrowthEffect}{$name}[$i] + $dec{InflationEffect}{$name}[$i] + $dec{StockFlow}{$name}[$i];
+        die "$dsmFile $code: $years[$i]'s decomposition does not sum to its change in the ratio\n" if abs($sum - $dec{Change}{$name}[$i]) > 0.1;
+    }
     # the fan: the rows labelled p10 and p90 (column X); their years are the header row just above the p10 row whose X... reads the years in Y..
     my ($r10, $r90);
     for my $r (sort { $a <=> $b } keys %s) { $r10 //= $r if ($s{$r}{X} // '') eq 'p10'; $r90 //= $r if ($s{$r}{X} // '') eq 'p90'; }
@@ -169,6 +201,13 @@ $o .= "        public const string DsmSourceDigest = \"$dsmDigest\";\n\n";
 $o .= "        /// <summary>The first fiscal year of <see cref=\"CboDebtHeldByPublic\"/>; element i is year CboFirstYear + i.</summary>\n";
 $o .= "        public const int CboFirstYear = $cboYears[0];\n";
 $o .= "        public static readonly float[] CboDebtHeldByPublic = { " . join(', ', map { lit($cboDebt{$_}) } @cboYears) . " };\n\n";
+$o .= "        /// <summary>K218: CBO's own decomposition, the same table, the same years - revenues, total noninterest spending, their difference (the primary balance,\n";
+$o .= "        /// positive a surplus) and net interest, per cent of GDP; GDP in billions of dollars (its growth is the growth effect's).</summary>\n";
+for my $k (qw(Revenues Noninterest Primary NetInterest Gdp)) {
+    my %name = (Revenues => 'CboRevenues', Noninterest => 'CboNoninterestSpending', Primary => 'CboPrimaryBalance', NetInterest => 'CboNetInterest', Gdp => 'CboGdpBillions');
+    $o .= "        public static readonly float[] $name{$k} = { " . join(', ', map { lit($cboSeries{$k}{$_}) } @cboYears) . " };\n";
+}
+$o .= "\n";
 $o .= "        /// <summary>The first year of each DSM baseline; element i is year DsmFirstYear + i.</summary>\n";
 $o .= "        public const int DsmFirstYear = $dsmFirst;\n";
 $o .= "        public static readonly Dictionary<CountryId, float[]> DsmBaseline = new Dictionary<CountryId, float[]>\n        {\n";
@@ -181,7 +220,17 @@ $o .= "            { CountryId.$_->[1], new[] { " . join(', ', map { lit($_) } @
 $o .= "        };\n";
 $o .= "        public static readonly Dictionary<CountryId, float[]> DsmP90 = new Dictionary<CountryId, float[]>\n        {\n";
 $o .= "            { CountryId.$_->[1], new[] { " . join(', ', map { lit($_) } @{ $p90{$_->[1]} }) . " } },\n" for @dsmOrder;
-$o .= "        };\n    }\n}\n";
+$o .= "        };\n\n";
+$o .= "        /// <summary>K218: the DSM's own decomposition of each year's change in the baseline's ratio, per cent of GDP, the baseline's years (element i is DsmFirstYear + i):\n";
+$o .= "        /// the primary balance (positive a surplus; it subtracts), of which the cost of ageing, the interest expenditure, the real growth and inflation effects and the\n";
+$o .= "        /// stock-flow adjustments - the change is -PrimaryBalance + Interest + GrowthEffect + InflationEffect + StockFlow (the tool checks it every year).</summary>\n";
+for my $dr (grep { $_->[1] ne 'Change' } @decRows) {
+    my $key = $dr->[1];
+    $o .= "        public static readonly Dictionary<CountryId, float[]> Dsm$key = new Dictionary<CountryId, float[]>\n        {\n";
+    $o .= "            { CountryId.$_->[1], new[] { " . join(', ', map { lit($_) } @{ $dec{$key}{$_->[1]} }) . " } },\n" for @dsmOrder;
+    $o .= "        };\n";
+}
+$o .= "    }\n}\n";
 
 if ($check) {
     my $have = slurp($cs);

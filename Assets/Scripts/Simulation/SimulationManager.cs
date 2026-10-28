@@ -695,6 +695,7 @@ namespace PoliSim.Simulation
         /// </summary>
         private float GetFiscalReactionMultiplier(Country country)
         {
+            if (HoldsNoPolicyChange(country)) { return 1f; }   // K218: the no-policy-change book collects its revenue with no reaction to its debt
             float debtGap = country.State.DebtToGdpRatio - country.ComfortableDebtToGdpPercent;
             float multiplier = 1f + FiscalReactionSensitivity * debtGap / 100f;
             return Mathf.Clamp(multiplier, MinFiscalReactionMultiplier, MaxFiscalReactionMultiplier);
@@ -881,6 +882,19 @@ namespace PoliSim.Simulation
         /// <summary>§388: the AI finance ministry acts for every country the player does not govern. A diagnostic that measures the indexation rule alone
         /// (LineIndexationDiagnostic, SpendingIndexationDiagnostic) or a tax term's inertness (LaborTaxParticipationDiagnostic) sets this false; play never does.</summary>
         public bool AiFinanceMinistryEnabled = true;
+
+        /// <summary>K218 (2026-10-28; Code's recommendation under Elias's standing instruction of 2026-10-27): THE NO-POLICY-CHANGE BOOK - an Editor instrument's
+        /// switch, never set by play (default false). CBO's extended baseline projects current law and the EC Debt Sustainability Monitor holds the structural primary
+        /// balance unchanged with the cost of ageing on top; neither projects a government correcting its deficit. With it set, the PLAYER'S country (the
+        /// instrument's hand, no party seated - the ministry and the Finance partner already keep off it) runs the AI's indexation instead of the player's own
+        /// (<see cref="IndexSpendingLines"/>: a driverless line at the economy's real growth, a caseload at the going real wage - the law's reading, §384, where the
+        /// player's book holds real provision where the player set it), collects its revenue with no fiscal reaction (<see cref="GetFiscalReactionMultiplier"/>
+        /// at 1: the reaction is a government tightening against its own debt, which neither source projects). Every other country is untouched. Read by
+        /// `NoPolicyCentury.Unchanged` for `DebtPathHoldDiagnostic`.</summary>
+        public bool NoPolicyChangeBook;
+
+        /// <summary>K218: true for the player's country while <see cref="NoPolicyChangeBook"/> is set - the one test its two readers share.</summary>
+        private bool HoldsNoPolicyChange(Country country) => NoPolicyChangeBook && country != null && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id;
 
         /// <summary>
         /// Hard floor/ceiling on every SpendingLine's Amount, expressed as a multiple of that line's
@@ -8350,7 +8364,7 @@ namespace PoliSim.Simulation
         /// </summary>
         private void IndexSpendingLines(Country country)
         {
-            bool aiBudget = !PlayerGoverns(country);   // PS-3a (§628): the AI's book wherever the player's party does not lead the government
+            bool aiBudget = !PlayerGoverns(country) || HoldsNoPolicyChange(country);   // PS-3a (§628): the AI's book wherever the player's party does not lead the government; K218: and in the no-policy-change book
             float realGrowth = aiBudget ? 1f + country.PotentialGrowthRate / 100f : 1f;
             // P5-B6 (2026-09-05): THE PRICE TERM RETURNS - the book is in current prices now, so a nominal line carries the
             // year's prices as the ratio of the price level now to the level at the last index (0 = a save from before: a
