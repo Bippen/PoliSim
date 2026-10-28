@@ -42012,3 +42012,19 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nps8 (9 WorldCalendar clauses: the purity re-prediction read the newly seated chamber; Sweden 2022 unpredictable - fixed cee08e89); nps8b 9/9; slrtps8c 12/12; drysabr / realabr Sweden 1280 clean; simps8 88/88; cheapps8 5 older checks asserting frozen AI countries - updated eb4a1913; cheapps8d clean but the ledger (rows added); dump ps8 (= ps8d) pinned; the play saves re-staged and the US cards regenerated.
 
 **Commit:** this one.
+
+## 939. GATE-18's RECORD-FACTOR REFIT (K248, K107 SUPERSEDED): THE FOUR ELECTIONS OF RECORD REFIT FROM ONE GATE18 LOG; A REFIT OWED FAILS THE GATE - THE FAMILY `refit` (2026-10-28)
+
+**What was owed:** §936 and §938's owed line - since regional 5a every campaign result moves, Gate18 reported the stored record factors DUE A REFIT, and PS-8 (K160) carries them into every AI country's count.
+
+**Built** (an implementer on `wave/refit`: 52ad1640; the review READY with the merge-order condition met on main): `Tools/record_factor_refit.pl` - the fit Gate18Diagnostic prints (its FIT lines, the last closed block) written into `RecordFactors` for all four elections at once, byte for byte, each row `[FITTED] refit s940 from <log>, the fit's fixed point`; `--check` confirms a log's fit is the table; it writes nothing on a partial, duplicated, non-finite or row-less fit. `Gate18Diagnostic`'s refit clause fails an election whose stored factors are not the run's fit (K248).
+
+**Measured** (`Reviews/2026-10-28_refit_integrator.md`): g18r1 failed all four by name (Sweden2026 2.1e-2 on M, Germany2025 8.7e-4 on SPD, Poland2023 2.8e-2 on PiS, Italy2022 3.0e-3 on AVS); the tool moved 31 factors (12 already the fit); g18r2 the stored factors are the fit x4 (move 0.0e+0), the gate holds, `--check` OK; the dump `refit` against `ps8` byte-identical through turn 20 (Sweden first differs at turn 33), so the sentinel stands.
+
+**Evidence:** `Reviews/2026-10-28_refit_review.md`, `_integrator.md`.
+
+**Declared:** K248. Filed Lows: a leftover table row; no convergence assertion; `--check`'s exit code; the one-pass property unguarded.
+
+**Bars:** g18r1 (4 DUE A REFIT, as intended); the refit s940 (31 moved); g18r2 the gate holds, --check OK; dumprf byte-identical to ps8 through turn 20; cheaprf 144/144; simrf 88/88.
+
+**Commit:** this one.

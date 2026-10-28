@@ -29,12 +29,14 @@ namespace PoliSim.EditorTools
     /// idle player's answer). The whole run is inside `ParliamentaryCount.NoiseAtZero`.</description></item>
     /// <item><description><b>The fit</b> (E1's form at the count's unit): each list's factor is the record's share over the roster's total divided by the share
     /// the idle game handed the count, refit by the count itself to its fixed point (the doors' turnout moves a counted share a little off the handed one) and
-    /// normalised so the factors times the handed shares sum to one. Printed as FIT lines, which `Tools/chamber_factor_patch.pl` patches into
-    /// `RecordFactors` from this log.</description></item>
+    /// normalised so the factors times the handed shares sum to one. Printed as FIT lines, which `Tools/record_factor_refit.pl` writes into
+    /// `RecordFactors` from this log (its `--check` confirms the stored factors are a log's fit).</description></item>
     /// <item><description><b>The gate</b> (FAILS while any is false): every factor of the election fitted; the count drawn at sigma 0; every list's share as the
     /// game counted it within `TolerancePp` of the record's share over the roster's total; and, where the record names the cabinet formed after that election,
     /// the game's first government formed after the polling day led by the record's head's party with the record's cabinet. Where the record names none, the
-    /// clause is printed NOT ON RECORD and asserts nothing.</description></item>
+    /// clause is printed NOT ON RECORD and asserts nothing. <b>The refit clause</b> (K248, superseding K107's "reported, not failed": PS-8's AI countries count
+    /// with these factors, K160): the stored factors within `RefitReportFloor` of this run's fit, every list the fit prints holding a row of the table - or
+    /// the election is DUE A REFIT and the gate fails on it by name until `Tools/record_factor_refit.pl` has written the fit in.</description></item>
     /// <item><description><b>GATE-18 q20, with it</b> (FAILS while false): the night installs nothing - the government before the polling day governs on
     /// through it - and the night's projection by the procedure's own code (`SimulationManager.ProjectFormation`) is the government the procedure formed,
     /// "formed" read off the procedure's own completion; a projection that stops at the Bundestag's first ballot is printed and asserts nothing.</description></item>
@@ -61,8 +63,11 @@ namespace PoliSim.EditorTools
         private const double FitConvergence = 1e-12;
         /// <summary>CONVENTION: the most iterations the fit takes to reach its fixed point.</summary>
         private const int FitIterations = 200;
-        /// <summary>CONVENTION: the stored factors are reported as due a refit when the refit moves one by more than this, relative.</summary>
+        /// <summary>CONVENTION: the stored factors are due a refit when the refit moves one by more than this, relative (to the larger of one and the fit).</summary>
         private const double RefitReportFloor = 1e-6;
+        /// <summary>RULED K248 (Code's recommendation, declared for Elias to strike; supersedes K107's "reported, not failed"): a refit owed FAILS the gate,
+        /// since PS-8's AI countries count with these factors (K160). False restores K107: the drift printed, the gate reading the shares alone.</summary>
+        private static readonly bool RefitFails = true;
 
         private static readonly MethodInfo SeatMethod = typeof(SimulationManager).GetMethod("SeatTheRecordOnItsDate", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -125,7 +130,7 @@ namespace PoliSim.EditorTools
             DateTime poll = RecordFactors.PollingDayOf(election);
             _sb.Append(F("  {0} ({1}, polling day {2:yyyy-MM-dd}):\n", election, id, poll));
             bool fitted = RecordFactors.IsFitted(election, out List<string> unfitted);
-            Check(fitted, fitted ? "every list's factor is fitted" : "UNFITTED - no fit patched in for " + string.Join(", ", unfitted) + " (perl Tools/chamber_factor_patch.pl <this log>, then run again)");
+            Check(fitted, fitted ? "every list's factor is fitted" : "UNFITTED - no fit patched in for " + string.Join(", ", unfitted) + " (perl Tools/record_factor_refit.pl <this log> --record s<NNN>, then run again)");
 
             if (!PartySystems.TryHistory(id, out double[] recordShares, out double[] _, election)) { Check(false, "the record's shares are not on disk"); return; }
             PoliticalParty[] roster = PartySystems.RealRoster(id);
@@ -181,14 +186,30 @@ namespace PoliSim.EditorTools
                     Dictionary<string, double> fit = Fit(id, election, held, target, out double fitMiss, out int iterations);
                     Dictionary<string, double> stored = RecordFactors.Stored(election);
                     double moved = 0.0;
+                    string movedKey = null;
+                    var rowless = new List<string>();   // a list the fit prints that the table holds no row for: the refit tool refuses it, so the gate names it
                     foreach (KeyValuePair<string, double> kv in fit)
                     {
                         double before = held.BeforeFactors.TryGetValue(kv.Key, out double h) ? h : double.NaN;
                         _sb.Append(F("      FIT {0} {1} {2:R}  (handed {3:0.000000}, record {4:0.000000})\n", election, kv.Key, kv.Value, before, target.TryGetValue(kv.Key, out double t) ? t : double.NaN));
-                        if (stored.TryGetValue(kv.Key, out double old) && !double.IsNaN(old)) { moved = Math.Max(moved, Math.Abs(old - kv.Value) / Math.Max(1.0, Math.Abs(kv.Value))); }
+                        if (!stored.TryGetValue(kv.Key, out double old)) { rowless.Add(kv.Key); continue; }
+                        if (double.IsNaN(old)) { continue; }
+                        double m = Math.Abs(old - kv.Value) / Math.Max(1.0, Math.Abs(kv.Value));
+                        if (m > moved) { moved = m; movedKey = kv.Key; }
                     }
-                    _sb.Append(F("      the fit's fixed point in {0} iteration(s), its largest miss {1:0.0e+0} of the vote; {2}\n", iterations, fitMiss,
-                        !fitted ? "nothing stored to compare" : moved <= RefitReportFloor ? "the stored factors are the fit" : F("the stored factors are DUE A REFIT (the largest relative move {0:0.0e+0}) - reported, the gate reads the shares", moved)));
+                    _sb.Append(F("      the fit's fixed point in {0} iteration(s), its largest miss {1:0.0e+0} of the vote\n", iterations, fitMiss));
+                    // the refit clause (K248): the stored factors are this run's fit, within the floor, every list the fit prints a row of the table
+                    if (!fitted) { _sb.Append("      the refit: nothing stored to compare\n"); }
+                    else
+                    {
+                        bool isFit = moved <= RefitReportFloor && rowless.Count == 0;
+                        string refit = isFit
+                            ? F("the refit (K248): the stored factors are the fit (the largest relative move {0:0.0e+0}, the floor {1:0e+0})", moved, RefitReportFloor)
+                            : F("the refit (K248): the stored factors of {0} are DUE A REFIT - the largest relative move {1:0.0e+0} ({2}) against the floor {3:0e+0}{4} (perl Tools/record_factor_refit.pl <this log> --record s<NNN>, then run again)",
+                                election, moved, movedKey ?? "none", RefitReportFloor, rowless.Count > 0 ? "; no row in the table for " + string.Join(", ", rowless) : string.Empty);
+                        if (RefitFails) { Check(isFit, refit); }
+                        else { _sb.Append("      ").Append(refit).Append(isFit ? string.Empty : " - reported (K107), the gate reads the shares").Append('\n'); }
+                    }
 
                     // the out-of-sample prediction: the same count of the same handed shares at factor one
                     ParliamentaryCount.Result oos = ParliamentaryCount.Count(id, poll, held.BeforeFactors, held.Setup, held.Gotv, writeReadout: false, regionalShift: held.RegionalShift);

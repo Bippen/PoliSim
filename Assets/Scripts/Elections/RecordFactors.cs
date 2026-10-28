@@ -17,8 +17,8 @@ namespace PoliSim.Elections
     /// <item><description><b>[FITTED], once per election, on its own count</b>: n is one - each election's factors are fitted on that election alone, on the
     /// idle game's count of its polling day (the world built as a new game builds it at the start, the player's party doing nothing, the campaign of its eve
     /// counted at the noise at zero), against the record's shares over the roster's own total (the scale the count's shares are on, as the out-of-sample file
-    /// of K-1 part 0 reads its shares over the parties the model carries). `Gate18Diagnostic` refits them every run and prints the refit as FIT lines, which `Tools/chamber_factor_patch.pl` patches
-    /// into the table below from the log - never retyped.</description></item>
+    /// of K-1 part 0 reads its shares over the parties the model carries). `Gate18Diagnostic` refits them every run and prints the refit as FIT lines, which `Tools/record_factor_refit.pl` writes
+    /// into the table below from the log - never retyped - and the gate fails while the table is not that fit (K248).</description></item>
     /// <item><description><b>Unfitted is inert.</b> A table entry holding NaN has had no fit patched in; an election with any unfitted entry carries no factor
     /// at all in play (its count is the model's own, as before), and the gate fails on it by name.</description></item>
     /// <item><description><b>No leak into the out-of-sample figure.</b> Nothing before the count reads this table - the campaign, its AI, the tactical layer and
@@ -34,55 +34,55 @@ namespace PoliSim.Elections
         /// <summary>
         /// [FITTED] n = 1 per election (that election's own count), on the idle game's count of the polling day of record (the day `WorldClock.Chambers`
         /// dates; the shares handed to it are its eve's campaign), the noise at zero - the record's share over the roster's total divided by the share the
-        /// idle game handed the count, refit to the count's fixed point. Patched in from `Gate18Diagnostic`'s FIT lines by `Tools/chamber_factor_patch.pl`;
+        /// idle game handed the count, refit to the count's fixed point. Patched in from `Gate18Diagnostic`'s FIT lines by `Tools/record_factor_refit.pl` (each row's comment names its refit);
         /// NaN where no fit has been patched in. Keyed by the election and the party key, in the roster's order.
         /// </summary>
         private static readonly (ElectionVintage Election, string Party, double Factor)[] Fitted =
         {
-            (ElectionVintage.Sweden2026, "S", 0.99933090719699225),
-            (ElectionVintage.Sweden2026, "SD", 0.85595592772742224),
-            (ElectionVintage.Sweden2026, "M", 0.97022736669177057),
-            (ElectionVintage.Sweden2026, "V", 1.3250626916285613),
-            (ElectionVintage.Sweden2026, "C", 1.2061067444425941),
-            (ElectionVintage.Sweden2026, "KD", 0.904466571629495),
-            (ElectionVintage.Sweden2026, "MP", 1.1186258162371281),
-            (ElectionVintage.Sweden2026, "L", 1.066402011391163),
-            (ElectionVintage.Germany2025, "CDU", 1.4561571854783546),
-            (ElectionVintage.Germany2025, "AfD", 2.2700389247046266),
-            (ElectionVintage.Germany2025, "SPD", 0.7113541479026001),
-            (ElectionVintage.Germany2025, "Grune", 0.90652324813575014),
-            (ElectionVintage.Germany2025, "Linke", 1.4990825190758004),
-            (ElectionVintage.Germany2025, "CSU", 1.0451677792228755),
-            (ElectionVintage.Germany2025, "SSW", 1.7499142558899421),
-            (ElectionVintage.Germany2025, "BSW", 0.3923045940200347),
-            (ElectionVintage.Germany2025, "FDP", 0.40024743159011833),
-            (ElectionVintage.Poland2023, "PiS", 1.0063974085158323),
-            (ElectionVintage.Poland2023, "KO", 1.1982770732334098),
-            (ElectionVintage.Poland2023, "TD", 0.84787763083056267),
-            (ElectionVintage.Poland2023, "NL", 0.74335973796708),
-            (ElectionVintage.Poland2023, "Konf", 1.0436385770366714),
-            (ElectionVintage.Poland2023, "SLD", 1),
-            (ElectionVintage.Poland2023, "PSL", 1),
-            (ElectionVintage.Poland2023, "MN", 0.71411636220926122),
+            (ElectionVintage.Sweden2026, "S", 0.98492824336575135),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Sweden2026, "SD", 0.85711835952159243),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Sweden2026, "M", 0.99085481745176041),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Sweden2026, "V", 1.3047481139038568),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Sweden2026, "C", 1.1897373148825883),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Sweden2026, "KD", 0.91112525825210267),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Sweden2026, "MP", 1.1308457774740239),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Sweden2026, "L", 1.072570203344112),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Germany2025, "CDU", 1.4573322474247408),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Germany2025, "AfD", 2.2717911272299083),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Germany2025, "SPD", 0.71048483189370193),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Germany2025, "Grune", 0.90606053159697242),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Germany2025, "Linke", 1.5002422860206091),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Germany2025, "CSU", 1.0459632840766488),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Germany2025, "SSW", 1.7505983958553111),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Germany2025, "BSW", 0.39260784332868948),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Germany2025, "FDP", 0.40011402116812606),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Poland2023, "PiS", 0.97862026345259578),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Poland2023, "KO", 1.218133423539548),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Poland2023, "TD", 0.86192759943179853),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Poland2023, "NL", 0.75567776665198538),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Poland2023, "Konf", 1.0609324514180962),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Poland2023, "SLD", 1),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Poland2023, "PSL", 1),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Poland2023, "MN", 0.725949806213251),   // [FITTED] refit s940 from g18r1, the fit's fixed point
             // PS-7 (K205): Italy's Camera of 25 Sep 2022 - fitted from Gate18Diagnostic's FIT lines (patched by Tools/chamber_factor_patch.pl from the Italy run's log)
-            (ElectionVintage.Italy2022, "FdI", 2.7556079508528666),
-            (ElectionVintage.Italy2022, "PD", 1.3099090205481287),
-            (ElectionVintage.Italy2022, "Lega", 0.734806712710914),
-            (ElectionVintage.Italy2022, "M5S", 0.61198708056273732),
-            (ElectionVintage.Italy2022, "FI", 0.79366154800378963),
-            (ElectionVintage.Italy2022, "AzIV", 0.47460415849208903),
-            (ElectionVintage.Italy2022, "AVS", 1.2354423240932009),
-            (ElectionVintage.Italy2022, "NM", 0.82962342623323415),
-            (ElectionVintage.Italy2022, "SVP", 1.2019524834966961),
-            (ElectionVintage.Italy2022, "PlusE", 1.3082743177439526),
-            (ElectionVintage.Italy2022, "IC", 1),
-            (ElectionVintage.Italy2022, "ScN", 1),
-            (ElectionVintage.Italy2022, "MAIE", 1),
-            (ElectionVintage.Italy2022, "UV", 1),
-            (ElectionVintage.Italy2022, "LeU", 1),
-            (ElectionVintage.Italy2022, "CP", 1),
-            (ElectionVintage.Italy2022, "NcI", 1),
-            (ElectionVintage.Italy2022, "Misto", 1),
+            (ElectionVintage.Italy2022, "FdI", 2.7637618770429588),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "PD", 1.3093537777310427),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "Lega", 0.73429660395873686),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "M5S", 0.61033179384713487),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "FI", 0.7932547573836497),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "AzIV", 0.47600852636548607),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "AVS", 1.2390980348120113),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "NM", 0.83207830671831318),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "SVP", 1.2019524834966961),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "PlusE", 1.3082743177439526),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "IC", 1),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "ScN", 1),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "MAIE", 1),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "UV", 1),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "LeU", 1),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "CP", 1),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "NcI", 1),   // [FITTED] refit s940 from g18r1, the fit's fixed point
+            (ElectionVintage.Italy2022, "Misto", 1),   // [FITTED] refit s940 from g18r1, the fit's fixed point
         };
 
         /// <summary>The country an election of the table belongs to; throws for one the table does not carry.</summary>
