@@ -1193,7 +1193,7 @@ namespace PoliSim.Data
         /// <summary>A-LOOP q15 (2026-10-19, `docs/specs/A_LOOP_PLAN.md` §3 (2), Elias's ruling J1 Q1 (a)): <b>approval's economy stock</b> - the part of
         /// approval its three economy terms built (the growth gap and the unemployment and inflation misery terms, the approval ledger's
         /// `ApprovalAttribution.GrowthEffect`, `ApprovalAttribution.MiseryUnemployment` and `ApprovalAttribution.MiseryInflation`), carried under approval's
-        /// own reversion rate, with its share of the clamp where approval + T (the base its reversion reads) met a bound (`ApprovalVote.AdvanceEconomyStock`, as each boundary's approval period closes). The vote reads approval net of it
+        /// own reversion rate, with its share of the clamp where approval + T (the base its reversion reads) met a bound (`ApprovalVote.AdvanceEconomyStockDay`, each day of approval's daily step - MF-13, K191). The vote reads approval net of it
         /// (`ApprovalVote.NetApproval`), because the economy already votes through the economic vote. Read by the vote alone, never by the simulation.
         /// Saved (format 45); carried on the preview's clone.</summary>
         public float ApprovalEconomyStock;

@@ -188,7 +188,9 @@ namespace PoliSim.EditorTools
 
         private static void ApplyLaw(SimulationManager sim, Country country, string lawId, bool repeal)
         {
+            float approvalBeforeLaw = country.State.ApprovalRating;   // MF-13 (K191): the law's enactment cost recorded on the approval ledger as the game's caller records it (SimulationManager's law resolution) - approval's daily step opens the period's ledger on its first day, so an unrecorded write here fails the ATTRIB audit at the next boundary (the integration finding of 2026-10-28)
             Invoke(sim, "ApplyLawBillEffects", country, new LawBill { LawId = lawId, IsRepeal = repeal });
+            ApprovalLedgerRecorder.RecordEvent(country, sim.CurrentDate, (repeal ? "Repeal: " : "Enact: ") + lawId + " (harness)", country.State.ApprovalRating - approvalBeforeLaw);
         }
 
         private static void ApplyBill(SimulationManager sim, Country country, LaborPolicyBill bill)

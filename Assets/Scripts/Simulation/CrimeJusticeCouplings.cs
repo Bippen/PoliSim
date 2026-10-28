@@ -109,7 +109,7 @@ namespace PoliSim.Simulation
         public const float JudicialFundingPrisonPopulationSensitivity = 0.8f;
 
         /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. Approval points gained per point Country.DrugPolicyLevel sits above its neutral 50 (and lost per point below) - a small "tough on crime" political effect, gap versus the shared neutral 50 rather than a country-specific anchor (DrugPolicyLevel has no real per-country seed the way PaidFamilyLeaveWeeks does).</summary>
-        public const float DrugPolicyApprovalSensitivity = 0.02f;
+        public const float DrugPolicyApprovalSensitivity = 0.02f;   // MF-13 (K135, K191): applied a day at x MacroSystem.SustainedApprovalTermScale (MacroSystem.ApplyApprovalDay), so its equilibrium (this ÷ 0.05) stands
 
         /// <summary>CONVENTION - a dial's midpoint, not a measurement. **THE single statement of it.**
         /// The shared neutral every sensitivity above measures its gap against.

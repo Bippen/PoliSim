@@ -1217,7 +1217,7 @@ namespace PoliSim.UI
                 case PolicyNodeId.PaidFamilyLeave:
                     lines.Add($"Current level: {country.PaidFamilyLeaveWeeks:F0} weeks (baseline {country.BaselinePaidFamilyLeaveWeeks:F0})");
                     lines.Add($"LFPR pull (before combined ceiling): {LaborCouplings.PaidFamilyLeaveParticipationSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks):+0.00;-0.00} pts");
-                    lines.Add($"Approval pull: {LaborCouplings.PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks):+0.00;-0.00} pts");
+                    lines.Add($"Approval, standing effect: {MacroSystem.SustainedEquilibrium(LaborCouplings.PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks)):+0.00;-0.00} pts in the long run");   // K190 (MF-13): the equilibrium the term settles approval at, not its size a day
                     break;
                 case PolicyNodeId.OvertimeRegulation:
                     lines.Add($"Current level: {country.OvertimeRegulationLevel:F0}/100");
@@ -1262,7 +1262,7 @@ namespace PoliSim.UI
                 case PolicyNodeId.DrugPolicy:
                     lines.Add($"Current level: {country.DrugPolicyLevel:F0}/100");
                     lines.Add($"Incarceration Rate target pull: {CrimeJusticeCouplings.DrugPolicyPrisonPopulationSensitivity * (country.DrugPolicyLevel - neutral):+0.00;-0.00} per 100k");
-                    lines.Add($"Approval pull: {CrimeJusticeCouplings.DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - neutral):+0.00;-0.00} pts");
+                    lines.Add($"Approval, standing effect: {MacroSystem.SustainedEquilibrium(CrimeJusticeCouplings.DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - neutral)):+0.00;-0.00} pts in the long run");   // K190 (MF-13): the equilibrium the term settles approval at, not its size a day
                     break;
                 case PolicyNodeId.JudicialFunding:
                     lines.Add($"Current level: {country.JudicialFundingLevel:F0}/100");
@@ -1446,9 +1446,12 @@ namespace PoliSim.UI
                 if (program.Type != type) continue;
                 lines.Add(program.IsImplemented ? $"Current generosity: {program.GenerosityLevel:F0}%" : "Not currently implemented.");
                 float poverty = MacroSystem.GetPovertyReductionSensitivity(type) * (program.IsImplemented ? program.GenerosityLevel / 100f : 0f);
-                float approval = MacroSystem.GetWelfareApprovalSensitivity(type) * (program.IsImplemented ? program.GenerosityLevel / 100f : 0f);
+                // K190 (MF-13): the standing effect is the equilibrium of what the formula reads - this type's share of the deviation from the seeded
+                // portfolio, through the formula's own helper (MacroSystem.WelfareEffectDelta, as GetWelfareApprovalEffect reads it; review 2's N-7)
+                float approval = MacroSystem.SustainedEquilibrium(MacroSystem.WelfareEffectDelta(country,
+                    p => p.Type == type ? MacroSystem.GetWelfareApprovalSensitivity(p.Type) * (p.GenerosityLevel / 100f) : 0f));
                 lines.Add($"Poverty Rate pull: {-poverty:+0.00;-0.00} pts");
-                lines.Add($"Approval pull: {approval:+0.00;-0.00} pts");
+                lines.Add($"Approval, standing effect: {approval:+0.00;-0.00} pts in the long run, against the seed");
                 return true;
             }
             lines.Add("No WelfareProgram of this type exists for this country.");

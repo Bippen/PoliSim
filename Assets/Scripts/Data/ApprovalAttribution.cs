@@ -32,9 +32,12 @@ namespace PoliSim.Data
     /// One period's approval attribution - Step 2's ledger, the minimum slice (R-S2d).
     ///
     /// <para><b>The honesty classes govern what each field may claim</b> (the scoping package's
-    /// §1): the term fields are Class A - the boundary formula's own named locals, recorded AS
-    /// SIGNED CONTRIBUTIONS to the period delta at the moment they are computed, never
-    /// recomputed; <see cref="Events"/> is Class B - discrete shocks recorded per event with
+    /// §1): the term fields are Class A - the approval formulas' own figures, recorded AS
+    /// SIGNED CONTRIBUTIONS to the period delta at the moment they are computed: since MF-13
+    /// (K191, recorded in docs/RULINGS_2026-10-23.md) the reversion and the sustained terms are
+    /// period SUMS of approval's daily step (MacroSystem.ApplyApprovalDay, which computes, applies
+    /// and records each once), and the tax impulse and the spending change the boundary formula's
+    /// one-off terms (recomputed by its twin from the same inputs); <see cref="Events"/> is Class B - discrete shocks recorded per event with
     /// their dates; <see cref="ClampLoss"/> is the [0,100] clamp's truncation when it binds,
     /// carried as its own term so the audit identity stays exact.</para>
     ///
@@ -56,7 +59,8 @@ namespace PoliSim.Data
         public float ApprovalAtClose;
         public bool Closed;
 
-        // Class A - the formula's terms, signed as contributions to the period delta.
+        // Class A - the approval formulas' terms, signed as contributions to the period delta: TaxHikePenalty and SpendingEffect the boundary
+        // formula's one-off terms, every other one the period's sum of approval's daily step (MF-13, K191).
         public float Reversion;
         public float GrowthEffect;
         public float MiseryUnemployment;
@@ -76,11 +80,13 @@ namespace PoliSim.Data
         /// impulses ride where the moves land: the turn's decision in <see cref="TaxHikePenalty"/>, a bill's in its event.</summary>
         public float TaxTermFading;
 
-        /// <summary>The [0,100] clamp's truncation of the formula delta, 0 when it never bound.</summary>
+        /// <summary>The [0,100] clamp's truncation of the approval formulas' steps over the period - the daily step's and the boundary formula's - 0 when
+        /// it never bound; since MF-13 it also carries each daily step's float rounding, so the audit identity stays exact.</summary>
         public float ClampLoss;
 
-        /// <summary>Approval as the boundary FORMULA left it, before any boundary-day event -
-        /// the value whose position at exactly 0 or 100 is what legitimizes a nonzero
+        /// <summary>Approval as the period's LAST approval step left it - the daily step's or the boundary formula's (MF-13, K191) -
+        /// held at the bound once a clamped step left it there, and opening at the period's opening approval; before any
+        /// boundary-day event - the value whose position at exactly 0 or 100 is what legitimizes a nonzero
         /// <see cref="ClampLoss"/> (a boundary event can pull approval back INSIDE the range
         /// by close time, which is why the twin-drift detector must test this, not
         /// ApprovalAtClose - the matrix measured 61 false positives on the close-time test,
@@ -90,7 +96,8 @@ namespace PoliSim.Data
         // Class B - dated, labeled, post-clamp actuals.
         public List<ApprovalEventRecord> Events = new List<ApprovalEventRecord>();
 
-        /// <summary>The boundary formula's own terms (`MacroSystem.RecordApprovalAttribution`), which the clamp term is measured against.</summary>
+        /// <summary>The approval formulas' terms over the period - the daily step's sums (`MacroSystem.ApplyApprovalDay`) and the boundary formula's one-off
+        /// terms (`MacroSystem.RecordApprovalAttribution`) - which the clamp term is measured against.</summary>
         public float FormulaTermSum =>
             Reversion + GrowthEffect + MiseryUnemployment + MiseryInflation + MiseryCrime
             + MiseryCorruption + TaxHikePenalty + SpendingEffect + WelfareEffect

@@ -16,7 +16,7 @@ namespace PoliSim.Elections
     /// starts at zero.</item>
     /// <item><b>Which approval (Q1 (a), ruled):</b> approval NET of its three economy terms - the growth gap and the unemployment and inflation
     /// misery terms - because the economy already votes through Duch &amp; Stevenson (<see cref="EconomicVote"/>). A second stock carries just those
-    /// terms under approval's own reversion rate (`Country.ApprovalEconomyStock`, <see cref="AdvanceEconomyStock"/>); the vote reads approval minus it
+    /// terms under approval's own reversion rate (`Country.ApprovalEconomyStock`, <see cref="AdvanceEconomyStockDay"/>); the vote reads approval minus it
     /// (<see cref="NetApproval"/>). Every other part of approval - the tax term and its fading (q37), spending, welfare, events, the reversion of
     /// those parts - stays in what the vote reads.</item>
     /// <item><b>The split:</b> shift_gov is divided among the governing parties by the responsibility vector the economic vote carries
@@ -25,7 +25,7 @@ namespace PoliSim.Elections
     /// <para>⚠ <b>Declared readings</b> (the plan leaves them open):
     /// (1) the economy stock reverts at approval's own reversion rate, applied to the stock alone (the base the reversion reads - approval + T, q37 -
     /// is neutral + the economy's part + the rest, and a reversion linear in it takes the same fraction of each part);
-    /// (2) where the base's [0, 100] clamp binds at a boundary, what it gives back or takes is shared between the economy stock and every other part
+    /// (2) where the base's [0, 100] clamp binds on a day of approval's daily step, what it gives back or takes is shared between the economy stock and every other part
     /// of the base in proportion to each one's push past the bound (<see cref="ClampShare"/>; review 879's M1, on q37's contract that the base is the
     /// run without the tax term, kept inside [0, 100]), and base = neutral + the stock + the rest stays exact; where approval meets a bound and the
     /// base does not (a tax term standing against the bound), approval's own clamp is shared the same way (review 879b's M-2), the stock then off the
@@ -38,12 +38,14 @@ namespace PoliSim.Elections
     /// L1); a government whose term the record walks back to an earlier day (a government of record, `EconomicVote.TookOffice`) reads the first mark on
     /// or after that day - the start's for one in office before the run; a government with no mark yet (formed today, or a world never stepped)
     /// carries no approval term;
-    /// (5) the economy stock advances as each boundary's approval period closes (`ApprovalLedgerRecorder.CloseAtBoundary`), from the
-    /// period's recorded terms; the policy preview closes nothing, so its clone carries the stock unadvanced - nothing on the preview votes;
+    /// (5) the economy stock advances each day with approval's daily step (`MacroSystem.ApplyApprovalDay`, MF-13 K191), from the day's own
+    /// economy terms; the policy preview projects its clone's year on that step, so the clone's stock moves and nothing on the preview votes;
     /// (6) a government formed in play inherits the rest of approval as it stands (review 879's L2): its predecessor's non-economy residue, still
-    /// reverting toward neutral, and its standing tax term, still fading - so a successor to an unpopular government gains a little over its term
-    /// for nothing it did (about b × 30 × (1 − 0.95⁴) ≈ 0.9 pp after a residue of −30), and one after a popular government loses as much. Q3 rules
-    /// approval's persistence out of A-LOOP (MF-13), and this direction is its consequence;
+    /// reverting toward neutral, and its standing tax term, still fading - so a successor to an unpopular government gains over its term for
+    /// nothing it did, b × residue × (1 − the persistence over the term), and one after a popular government loses as much. Q3 kept approval's
+    /// persistence out of A-LOOP; MF-13 (K134, K191) then set it to the tax term's 0.81 a quarter, daily, so over a four-year term
+    /// (1 − 0.81¹⁶) ≈ 0.966 of a residue is gone: after a residue of −30 the successor gains about 0.16 × 30 × 0.966 ≈ 4.6 pp (about 0.9 pp
+    /// at the 0.95 a year approval kept before MF-13). This direction is the persistence's consequence;
     /// (7) only the formula's three economy terms are netted out (review 879's L3): an economic EVENT's approval effect (`EventSystem.ApplyEvent`'s
     /// approval shock) stays in net approval, as the ruling's "its three economy terms" reads.</para>
     /// <para>The US House coefficients the plan names (the midterm's 0.13, Tufte 1978 via [LBS00] Table 7 col. 1, and the on-year's carried 0.13)
@@ -76,50 +78,48 @@ namespace PoliSim.Elections
         /// <summary>True where the coefficient is the US figure carried to another country ([AUTHORED-DRAFT], Q2 (a)).</summary>
         public static bool IsTransferred(CountryId id) => id != CountryId.USA;
 
-        /// <summary>DERIVED: the share of the economy stock standing after one boundary - one less approval's own reversion rate a turn
-        /// (`MacroSystem.ApplyApprovalRating`'s reversion), the rate the stock is carried under.</summary>
+        /// <summary>DERIVED: the share of the economy stock standing after one day - one less approval's own daily reversion rate
+        /// (`MacroSystem.ApplyApprovalDay`'s reversion, MF-13 K191), the rate the stock is carried under.</summary>
         public static float EconomyStockPersistence => 1f - Simulation.MacroSystem.ApprovalReversionSpeed;
 
-        /// <summary>Advances the economy stock by one closed approval period: the stock's reversion, the period's three economy terms as the
-        /// ledger recorded them (the formula's own terms, signed as contributions), and the stock's share of the clamp where it bound
-        /// (<see cref="ClampShare"/>). Called as the period closes.</summary>
-        public static void AdvanceEconomyStock(Country country, ApprovalAttribution closed)
+        /// <summary>Advances the economy stock by one day of approval's daily step (MF-13, K191; called from `MacroSystem.ApplyApprovalDay`): the
+        /// stock's reversion, the day's three economy terms as the step computed them (the growth gap and the unemployment and inflation misery
+        /// terms, signed as contributions), and the stock's share of the day's clamp where it bound (<see cref="ClampShare"/>).</summary>
+        /// <param name="economyDay">The day's three economy terms, summed.</param>
+        /// <param name="baseBefore">Approval + T, the base the day's reversion read.</param>
+        /// <param name="step">The day's whole step (its reversion and every sustained term) before the clamp.</param>
+        /// <param name="approvalAfter">Approval after the day's clamped step.</param>
+        /// <param name="clampLoss">Approval's own truncation that day: the applied move less <paramref name="step"/>.</param>
+        public static void AdvanceEconomyStockDay(Country country, float economyDay, float baseBefore, float step, float approvalAfter, float clampLoss)
         {
-            if (country == null || closed == null) { return; }
+            if (country == null) { return; }
             float before = country.ApprovalEconomyStock;
-            float economy = closed.GrowthEffect + closed.MiseryUnemployment + closed.MiseryInflation;
-            country.ApprovalEconomyStock = before * EconomyStockPersistence + economy + ClampShare(closed, before);
+            country.ApprovalEconomyStock = before * EconomyStockPersistence + economyDay + ClampShare(before, economyDay, baseBefore, step, approvalAfter, clampLoss);
         }
 
         /// <summary>
-        /// Declared reading 2 (review 879's M1, on q37's contract of review 878b's M-5; review 879b's M-2): the economy stock's share of a clamp at the
-        /// boundary formula. Two clamps can bind, and the stock shares one of them:
+        /// Declared reading 2 (review 879's M1, on q37's contract of review 878b's M-5; review 879b's M-2), on the daily step (MF-13, K191): the
+        /// economy stock's share of a clamp. Two clamps can bind, and the stock shares one of them:
         /// <list type="bullet">
-        /// <item><b>The base's</b> - approval + T, the approval of the run without the tax term, which q37 keeps inside [0, 100] (`TaxTerm.BookFormula`,
-        /// `TaxTerm.Reclamp`) and which approval's reversion reads. The stock is a part of that base (base = neutral + the stock + the rest) and the tax
-        /// impulse is not: the base moves by the formula's terms with the impulse aside (FormulaTermSum + impulse) and is clamped as a whole. The base
-        /// before the formula is read back from the formula's own reversion term (<see cref="BaseBeforeFormula"/>); the clamp is Clamp(x, 0, 100) − x
-        /// for x = that base + the formula's step without the impulse.</item>
-        /// <item><b>Approval's own</b> (`ApprovalAttribution.ClampLoss`), where approval met a bound and the base did not - a tax term standing against
-        /// the bound (T &gt; 0 at the floor, T &lt; 0 at the ceiling), which `TaxTerm.BookFormula` forgives by approval's truncation. The vote reads approval,
-        /// so the stock shares approval's clamp here, over the formula's own step (the impulse included); in this window the stock is not strictly a
+        /// <item><b>The base's</b> - approval + T, the approval of the run without the tax term, which q37 keeps inside [0, 100] (`TaxTerm.AfterShock`,
+        /// `TaxTerm.Reclamp`) and which approval's reversion reads. The stock is a part of that base (base = neutral + the stock + the rest): the base
+        /// moves by the day's step and is clamped as a whole; the clamp is Clamp(x, 0, 100) − x for x = the base before + the step.</item>
+        /// <item><b>Approval's own</b>, where approval met a bound and the base did not - a tax term standing against the bound (T &gt; 0 at the floor,
+        /// T &lt; 0 at the ceiling). The vote reads approval, so the stock shares approval's clamp here; in this window the stock is not strictly a
         /// part of the base, by at most the standing tax term.</item>
         /// </list>
         /// Either clamp is shared between the stock - whose own move is its reversion and the three economy terms - and the rest, in proportion to
         /// each part's move past the bound (only a part moving toward the bound pushed past it); 0 where neither binds. So at the floor a worse economy
-        /// never raises net approval, and at the ceiling a better one never lowers it. ⚠ The read-back of the base is accurate to a few ulp of the
-        /// neutral rating (about 1e-5, review 879b's L-2): a base landing within that of a bound may take a spurious share of at most about 1e-5.
+        /// never raises net approval, and at the ceiling a better one never lowers it. The boundary formula's one-off terms (the tax impulse, the
+        /// spending change) are no move of the stock's, so the stock takes no share of a boundary clamp.
         /// </summary>
-        public static float ClampShare(ApprovalAttribution closed, float stockBefore)
+        public static float ClampShare(float stockBefore, float economyDay, float baseBefore, float step, float approvalAfter, float clampLoss)
         {
-            if (closed == null) { return 0f; }
-            float speed = Simulation.MacroSystem.ApprovalReversionSpeed;
-            float own = -speed * stockBefore + closed.GrowthEffect + closed.MiseryUnemployment + closed.MiseryInflation;
-            float step = closed.FormulaTermSum - closed.TaxHikePenalty;   // the formula's step with the tax impulse aside (TaxHikePenalty is -impulse)
-            float x = BaseBeforeFormula(closed) + step;
+            float own = -Simulation.MacroSystem.ApprovalReversionSpeed * stockBefore + economyDay;
+            float x = baseBefore + step;
             if (x < 0f || x > 100f) { return Shared(Math.Max(0f, Math.Min(100f, x)) - x, own, step - own); }   // the base's clamp
-            bool approvalBound = closed.ApprovalAfterFormula <= 0f || closed.ApprovalAfterFormula >= 100f;
-            return approvalBound && closed.ClampLoss != 0f ? Shared(closed.ClampLoss, own, closed.FormulaTermSum - own) : 0f;   // approval's own clamp (M-2)
+            bool approvalBound = approvalAfter <= 0f || approvalAfter >= 100f;
+            return approvalBound && clampLoss != 0f ? Shared(clampLoss, own, step - own) : 0f;   // approval's own clamp (M-2)
         }
 
         /// <summary>A clamp (positive: given back at the floor; negative: taken at the ceiling) shared between two parts by their push past the bound.</summary>
@@ -131,10 +131,6 @@ namespace PoliSim.Elections
             float push = ownPush + restPush;
             return push > 0f ? clamp * ownPush / push : 0f;
         }
-
-        /// <summary>The base (approval + T) the boundary formula reverted, read back from its own reversion term: reversion = speed × (neutral − base).</summary>
-        public static float BaseBeforeFormula(ApprovalAttribution closed)
-            => Simulation.MacroSystem.NeutralApprovalRating - closed.Reversion / Simulation.MacroSystem.ApprovalReversionSpeed;
 
         /// <summary>Net approval: approval less its economy stock, held in [0, 100] (declared reading 2), in approval points.</summary>
         public static double NetApproval(Country country)

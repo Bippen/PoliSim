@@ -1,0 +1,19 @@
+# wave/mf13: the integrator's reading at the merge (2026-10-28)
+
+**Why this exists.** MF-13 was reviewed four times on its branch (`Reviews/2026-10-27_mf13_review.md`, `_review2.md`, `2026-10-28_mf13_review3.md`, `_review4.md` - the last READY at 6b3e2154). Main moved one of its money paths after those reviews: COAL-1 (s925, 7cb675e0) changed `Assets/Scripts/Simulation/SimulationManager.cs`. This file reads the merged state.
+
+**Files reviewed:** `Assets/Scripts/Simulation/SimulationManager.cs`, `Assets/Scripts/Simulation/MacroSystem.cs`, `Assets/Scripts/Simulation/ApprovalLedgerRecorder.cs`, `Assets/Scripts/Simulation/TaxTerm.cs`.
+
+**The merge.** `git merge --squash wave/mf13` on 7cb675e0 auto-merged `SimulationManager.cs` with no conflict. The changed-line set of `git diff c34f1099 wave/mf13 -- SimulationManager.cs` and of `git diff --cached -- SimulationManager.cs` on main (each line sorted, carriage returns stripped) are IDENTICAL: 53 lines each - MF-13's hunks landed unchanged, beside COAL-1's, which touch other methods (the exit, the motion path, the constructive vote). `MacroSystem.cs`, `ApprovalLedgerRecorder.cs` and `TaxTerm.cs` on main are byte-equal to the branch's tip. The compile gate printed GATE OK on the merged tree.
+
+**Interaction read.** COAL-1's exit test reads `NationalElection.TryPredictShares` with the record shift (the vote's economy stock among its terms); MF-13 makes that stock advance daily. The exit test reads the stock as it stands on the budget vote's day, which is the reading K130 asks for; no ordering between the two changes matters because the exit runs in the budget-vote path and the daily approval step in `AdvanceDay`'s country loop, on different calls.
+
+**Verdict:** READY, subject to the merged tree's named runs, the family dump (`mf13`) and both bars.
+
+## The family, read on the merged tree (2026-10-28)
+
+**The named run (n926b, then n926c):** ApprovalReversionDiagnostic PASS (the daily persistence, the fourteen equilibria by figure and live on every country, the shock sampled daily with a 300-day half-life, no step at the boundary, the growth input annual); TaxTermDiagnostic PASS; PreviewParityDiagnostic 6 of 6 asserted terms for all six countries, and the budget draft case: VAT +2, impulse 3.0000 charged at once, the year's fading +1.7086 = I x (1 - p^365), the draft's tax part -1.2914 = -0.81^4 x I; LeverLivenessCheck clean; SaveLoadRoundTripDiagnostic 12 of 12. ApprovalVoteDiagnostic failed (2e) and (3) on the merged tree: both plant an approval and assume no economy stock, which before MF-13 stood at zero after one day and now advances daily from day 1 - the integrator set the stock to zero in both cases (the premise each names), and the run passed (n926c).
+
+**The dump (dump926, family `mf13`) against `form` (`Tools/traj_diff.pl form mf13 <seed> 100 first`):** ApprovalRating ALONE moves, in every country from turn 1, on both seeds; GDP, government debt, the budget, participation, unemployment and inflation are identical at turns 1, 4, 20 and 100. In the first year each country moves most of the way to its own sustained equilibrium: the USA 47.8 -> 23.2 and Poland 48.2 -> 26.7 on both seeds, Sweden 45.8 -> 52.6 (777) and 49.8 -> 56.6 (424242). At turn 100 on 777: France 42.6 -> 50.0, Germany 34.6 -> 49.1, Italy 34.7 -> 50.2, Poland 33.2 -> 47.7, Sweden 36.6 -> 47.0, the USA 24.5 -> 45.0; on 424242 every country 45.6 to 54.7. That is K192's declared rise: the steady stream of one-off events drags long-run approval about -0.6 points where it dragged -9.7.
+
+**The sentinel:** `TrajectorySentinelCheck.BaselineLabel` = mf13; the digests of the dump through turn 20 (header and rows 1-20, reproduced in perl against form's pinned pair first): 777 33ee6c90f51226e5ce7ba5774199a93da20f51d4bc437f49376bc9532fff520f, 424242 607c3f8deccb4a0558849ad0ddaa6a6a58eda313a586af5d6f61423594debe0c.

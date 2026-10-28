@@ -586,8 +586,10 @@ namespace PoliSim.EditorTools
                 for (int t = 0; t < turns; t++)
                 {
                     for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { sim.AdvanceDay(); }
-                    sim.AdvanceTurn(decisions);
+                    // MF-13 (K191; review 2's N-3): approval reverts daily, so pressure planted a year before the roll would have reverted away by it -
+                    // it is planted again on the turn's last day, after that day's approval step and right before the boundary whose cabinet roll reads it
                     if (attribute == "Loyalty") { PutUnderPressure(country, sim); }
+                    sim.AdvanceTurn(decisions);
                 }
                 return Fingerprint(world) + "|ministers=" + country.CabinetMinisters.Count.ToString(CultureInfo.InvariantCulture);
             }

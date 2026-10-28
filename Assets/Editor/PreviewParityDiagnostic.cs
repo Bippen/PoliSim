@@ -15,11 +15,15 @@ namespace PoliSim.EditorTools
     /// BaselineGini class, three recorded appearances) surfaces as a mismatched term that NAMES
     /// ITSELF, and every future term is covered the day it is added, with no list to maintain.
     ///
-    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the assert covers the SEVEN terms whose
-    /// inputs the preview does not advance - Reversion, TaxHikePenalty (0 under a no-op
-    /// decision), SpendingEffect (likewise 0), WelfareEffect, PaidLeaveEffect, DrugPolicyEffect,
-    /// GiniEffect (the preview never runs a Gini update; verified against PreviewTurn's body).
-    /// The remaining five - GrowthEffect and the four misery gaps - are EXPECTED-DIFFERENT BY
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the assert covers the boundary formula's
+    /// terms - TaxHikePenalty (0 under a no-op decision) and SpendingEffect (likewise 0). Since
+    /// MF-13 (K191) the reversion and the sustained terms run on approval's daily step: the real
+    /// ledger holds the closed period's daily sums, the preview its projection of the coming year.
+    /// Four of them - WelfareEffect, PaidLeaveEffect, DrugPolicyEffect, GiniEffect - read inputs
+    /// the clone's year never moves, so each is asserted as a year of the REAL country's own day
+    /// term at the preview's instant (`MacroSystem.SustainedTermsForDay`): six asserted in all.
+    /// Reversion is printed as expected-different. Before MF-13 the assert covered seven terms,
+    /// those four and Reversion with the two above. The economy's five - GrowthEffect and the four misery gaps - are EXPECTED-DIFFERENT BY
     /// DESIGN: the preview models the COMING period (its clone runs the turn-form identity,
     /// Okun, Phillips and the crime/corruption updates before its formula), while the real
     /// boundary measures the elapsed one. They are printed for the record, never asserted, and
@@ -90,12 +94,15 @@ namespace PoliSim.EditorTools
                 }
 
                 var previews = new Dictionary<CountryId, ApprovalAttribution>();
+                var dayTerms = new Dictionary<CountryId, MacroSystem.ApprovalDayTerms>();
                 foreach (Country c in world.Countries)
                 {
+                    dayTerms[c.Id] = MacroSystem.SustainedTermsForDay(c, c.PotentialGrowthRate);   // MF-13 (review 2's N-1): the real country's day terms at the preview's instant
                     previews[c.Id] = sim.PreviewTurn(c.Id, PolicyDecision.None()).ApprovalTerms;
                 }
 
                 int failures = 0;
+                failures += DraftTaxCase(sim, world.GetCountry(CountryId.Sweden));   // MF-13 (review 3's R3-1): a budget draft's tax impulse in the preview's approval change
                 // P2-3.4 (2026-09-02): THE PROJECTED RATE PATH IS THE RULE ON THE PROJECTION. For every country
                 // with a sitting chair: the preview's rule reading re-derived from the rule's own formula on the
                 // preview's year-end readings equals PolicyPreview.PreviewRuleRate; the path's three steps are the
@@ -176,19 +183,26 @@ namespace PoliSim.EditorTools
                         continue;
                     }
 
-                    failures += AssertTerm(c.Id, "Reversion", real.Reversion, prev.Reversion);
+                    // MF-13 (K191): the reversion and the sustained terms run on approval's daily step, so the real ledger holds the closed period's daily
+                    // sums and the preview its projection of the coming year. The boundary formula's one-off terms (the tax impulse, the spending change)
+                    // still read the same boundary state on both sides and are asserted against the real boundary. Four daily terms read inputs the
+                    // clone's year never moves - welfare (the programmes and the seeded portfolio, LISTS the clone audit only tests for null), paid
+                    // leave, drug policy (a no-op decision moves no dial) and Gini (the preview runs no Gini update) - so the preview's sum is exactly
+                    // DaysPerTurn of the real country's own day term at the preview's instant, accumulated as the ledger accumulates it (review 2's N-1).
+                    // Reversion, growth and the misery gaps are expected-different (printed below).
+                    MacroSystem.ApprovalDayTerms day = dayTerms[c.Id];
+                    failures += AssertTerm(c.Id, "WelfareEffect (a year of the day term)", YearOf(day.Welfare), prev.WelfareEffect);
+                    failures += AssertTerm(c.Id, "PaidLeaveEffect (a year of the day term)", YearOf(day.PaidLeave), prev.PaidLeaveEffect);
+                    failures += AssertTerm(c.Id, "DrugPolicyEffect (a year of the day term)", YearOf(day.DrugPolicy), prev.DrugPolicyEffect);
+                    failures += AssertTerm(c.Id, "GiniEffect (a year of the day term)", YearOf(day.Gini), prev.GiniEffect);
                     failures += AssertTerm(c.Id, "TaxHikePenalty", real.TaxHikePenalty, prev.TaxHikePenalty);
                     // §755 (ruling A2): a Finance partner's stance step writes LINES into the no-op decision, so SpendingEffect is no longer 0 there - and the
                     // term divides by GDP and damps by the debt ratio, which the preview advances (the coming period's, by design): expected-different where
                     // the partner has stepped (the harness runs one boundary, so it stepped at this one), asserted everywhere else
                     if (c.FinanceStanceHolder != null && c.FinancePartnerSteppedOn != System.DateTime.MinValue) { Debug.Log($"PARITY: {c.Id} SpendingEffect expected-different - the Finance partner's stance step ({c.FinanceStanceHolder}, {c.FinanceStanceApplied:+0.000;-0.000} pp) wrote lines into the no-op decision, and the term reads GDP and the debt ratio, which the preview advances: {real.SpendingEffect:F4}/{prev.SpendingEffect:F4}"); }
                     else { failures += AssertTerm(c.Id, "SpendingEffect", real.SpendingEffect, prev.SpendingEffect); }
-                    failures += AssertTerm(c.Id, "WelfareEffect", real.WelfareEffect, prev.WelfareEffect);
-                    failures += AssertTerm(c.Id, "PaidLeaveEffect", real.PaidLeaveEffect, prev.PaidLeaveEffect);
-                    failures += AssertTerm(c.Id, "DrugPolicyEffect", real.DrugPolicyEffect, prev.DrugPolicyEffect);
-                    failures += AssertTerm(c.Id, "GiniEffect", real.GiniEffect, prev.GiniEffect);
-
-                    Debug.Log($"PARITY: {c.Id} expected-different (the preview models the coming period): " +
+                    Debug.Log($"PARITY: {c.Id} expected-different (the preview models the coming period; the daily terms are the closed period's sums against the coming year's projection, MF-13): " +
+                              $"Reversion {real.Reversion:F4}/{prev.Reversion:F4} · " +
                               $"Growth {real.GrowthEffect:F4}/{prev.GrowthEffect:F4} · " +
                               $"MiseryU {real.MiseryUnemployment:F4}/{prev.MiseryUnemployment:F4} · " +
                               $"MiseryPi {real.MiseryInflation:F4}/{prev.MiseryInflation:F4} · " +
@@ -201,7 +215,7 @@ namespace PoliSim.EditorTools
                 failures += IdentityGovernmentParity();
 
                 Debug.Log(failures == 0
-                    ? "PARITY: 7 of 7 asserted terms match for all 6 countries - no clone escape in the covered set; the clone audit clean; the preview's identity G the boundary's."
+                    ? "PARITY: 6 of 6 asserted terms match for all 6 countries (the boundary's two one-off terms, and a year of the four daily terms whose inputs the clone's year never moves) - no clone escape in the covered set; the clone audit clean; the preview's identity G the boundary's."
                     : $"PARITY: {failures} mismatches - each names the escaped input above.");
                 CheckExit.Finish(failures == 0 ? 0 : 1);
             }
@@ -390,6 +404,53 @@ namespace PoliSim.EditorTools
             { "FinancePartnerSteppedOn", "§716: the day the partner last stepped - the preview computes the step on the REAL country (previewedReal) and records never; the clone never reads it" },
             { "FinanceStanceGovernment", "§755: the government the count was made under - read on the real country only, as FinanceStanceApplied" },
         };
+
+        /// <summary>
+        /// MF-13 (review 3's R3-1): a budget draft raising VAT by two points, previewed against the standing preview. The draft's bill charges its
+        /// impulse I to approval at once (approval − I, T + I) and the projected year's fading hands back I × (1 − p³⁶⁵), so the draft's tax part of
+        /// the approval change is −p³⁶⁵ × I = −0.81⁴ × I a year on - the figure the game reaches. Asserted in two parts, each against the turn the
+        /// clones' own ledgers recorded (the draft also moves the economy, and so the daily terms, which the ledgers carry): (1) the change less what
+        /// the ledgers recorded differs between the two previews by exactly the bill's charge, −I - the charge is IN the previewed change (before the
+        /// fix it was measured from after the bill and this read 0); (2) the tax term's fading differs by I × (1 − p³⁶⁵). I is measured on a clone of
+        /// its own, the same bill applied the same way.
+        /// </summary>
+        private static int DraftTaxCase(SimulationManager sim, Country country)
+        {
+            TaxLine vat = null;
+            foreach (TaxLine line in country.TaxLines) { if (line.Type == TaxType.VAT) { vat = line; } }
+            if (vat == null) { Debug.LogError($"PARITY: {country.Id} has no VAT line - the draft case VERIFIED NOTHING"); return 1; }
+            var bill = new BudgetBill();
+            bill.TaxLines[TaxType.VAT] = vat.Rate + 2f;
+
+            MethodInfo cloneOf = typeof(SimulationManager).GetMethod("ClonePreviewCountry", BindingFlags.NonPublic | BindingFlags.Static);
+            var probe = cloneOf?.Invoke(null, new object[] { country }) as Country;
+            if (probe == null) { Debug.LogError("PARITY: ClonePreviewCountry not reachable - the draft case VERIFIED NOTHING"); return 1; }
+            float stockBefore = probe.TaxTermStock, approvalBefore = probe.State.ApprovalRating;
+            ParliamentSystem.ApplyBillResult(probe, bill, true, (c, b) => { }, sim.CurrentDate.Year);
+            float impulse = probe.TaxTermStock - stockBefore, charged = probe.State.ApprovalRating - approvalBefore;
+
+            PolicyPreview standing = sim.PreviewTurnWithBudgetDraft(country.Id, PolicyDecision.None(), null);
+            PolicyPreview drafted = sim.PreviewTurnWithBudgetDraft(country.Id, PolicyDecision.None(), bill);
+            float Recorded(PolicyPreview p) => p.ApprovalTerms.TermSum + p.ApprovalTerms.ClampLoss + p.ApprovalTerms.EventSum;
+            float outsideLedger = (drafted.ApprovalChange - Recorded(drafted)) - (standing.ApprovalChange - Recorded(standing));
+            float fadingGap = drafted.ApprovalTerms.TaxTermFading - standing.ApprovalTerms.TaxTermFading;
+            double keptYear = Math.Pow(TaxTerm.DailyPersistence, SimulationManager.DaysPerTurn);
+            bool ok = impulse > 0.5f && Mathf.Abs(charged + impulse) <= 1e-4f
+                      && Mathf.Abs(outsideLedger - charged) <= 1e-3f
+                      && Math.Abs(fadingGap - impulse * (1.0 - keptYear)) <= 1e-3;
+            string what = $"PARITY: {country.Id} budget draft VAT +2: impulse {impulse:F4} charged {charged:+0.0000;-0.0000} at once; the previewed change outside the ledgers differs by {outsideLedger:+0.0000;-0.0000} (the charge); the year's fading by {fadingGap:+0.0000;-0.0000} (I x (1 - p^365) = {impulse * (1.0 - keptYear):+0.0000;-0.0000}); the draft's tax part {charged + fadingGap:+0.0000;-0.0000} against -0.81^4 x I = {-keptYear * impulse:+0.0000;-0.0000}";
+            if (ok) { Debug.Log(what); return 0; }
+            Debug.LogError(what + " - MISMATCH (MF-13 R3-1: the draft's charge must be inside the previewed approval change, and fade as the game fades it)");
+            return 1;
+        }
+
+        /// <summary>A day term summed over a turn's days, from zero, in float, as approval's daily step adds it into a fresh ledger field (MF-13).</summary>
+        private static float YearOf(float perDay)
+        {
+            float sum = 0f;
+            for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { sum += perDay; }
+            return sum;
+        }
 
         private static int AssertTerm(CountryId id, string name, float real, float preview)
         {

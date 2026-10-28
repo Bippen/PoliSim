@@ -27,15 +27,15 @@ namespace PoliSim.EditorTools
     /// <item><b>(c) A_E = A_0 is exactly zero</b>: every approval part is 0, and the record and the shares it shifts are the economy's alone to the bit.</item>
     /// <item><b>(d) Bounds</b>: net approval held in [0, 100] whatever the stock, |shift_gov| ≤ b, shifted shares sum to one, non-negative and finite.</item>
     /// <item><b>A government formed in play</b>: no term on its formation day; the next day's mark is its reference, not the start's.</item>
-    /// <item><b>The net approval's composition</b>, played across three boundaries (review 879's M3): the economy stock is zero before the first; at each,
-    /// the stock is its own reversion of the previous (exercised from the second) plus the closed period's growth, unemployment and inflation terms as the
-    /// ledger recorded them plus its clamp share (zero unless the base, approval + T, met a bound), and the rest of approval moves by everything else - the events,
-    /// the tax term's fading, the formula's other terms with the reversion of the rest, and the rest of the clamp - every country; net approval is
-    /// approval less the stock, clamped; the ledger's identity holds; the composition printed per country. And the stock is a part of approval + T, not bookkeeping (review 879b's L-3): every country's reversion term implies one neutral from the base the harness observed, at the stock's own rate.</item>
+    /// <item><b>The net approval's composition</b>, played day by day across three boundaries (review 879's M3; on approval's daily step since MF-13,
+    /// K191): the economy stock is zero before the world's first day; on every country-day the clamp took nothing, the stock is its own daily persistence
+    /// on yesterday's plus the day's growth, unemployment and inflation terms as the ledger recorded them (a clamped day's share is section 8's); at each
+    /// boundary net approval is approval less the stock, clamped, and the ledger's identity holds. And the stock is a part of approval + T, not
+    /// bookkeeping (review 879b's L-3): every country-day's reversion is the stock's own rate times the neutral 50 less the base the day opened on.</item>
     /// <item><b>The save and the clone</b>: a save cut after the boundary carries the stock and the marks (format 45); the preview's clone carries both,
     /// the marks as its own list.</item>
-    /// <item><b>The clamp's share</b> (review 879's M1), by hand on a bare country: at the floor a worse economy never raises net approval, at the
-    /// ceiling a better one never lowers it; a tax impulse, outside the base (approval + T, q37's contract), leaves the stock's share as it is; inside [0, 100] no share. With a tax term standing against the bound (review 879b's M-2), approval's own clamp is shared, and the same two hold.</item>
+    /// <item><b>The clamp's share</b> (review 879's M1), one day of approval's daily step by hand on a bare country: at the floor a worse economy never raises
+    /// net approval, at the ceiling a better one never lowers it; a tax impulse through the boundary formula leaves the stock untouched; inside [0, 100] no share. With a tax term standing against the bound (review 879b's M-2), approval's own clamp is shared, and the same two hold.</item>
     /// </list>
     /// Prints `APPROVAL VOTE: PASS` and exits 0 when every check holds; each failure is an `APPROVAL VOTE:` error naming its check.
     /// Run: `Unity.exe -batchmode -nographics -projectPath &lt;path&gt; -executeMethod PoliSim.EditorTools.ApprovalVoteDiagnostic.Run -logFile &lt;path&gt;`.
@@ -91,8 +91,8 @@ namespace PoliSim.EditorTools
                 Days(sim, 1);
                 ApprovalMark mark = se.VoteApprovalMarks.Count > 0 ? se.VoteApprovalMarks[0] : null;
                 DateTime? took = EconomicVote.TookOffice(se);
-                Check(se.Government != null && se.VoteApprovalMarks.Count == 1 && mark.FormedOn == se.Government.FormedOn && mark.Net == (double)seed && se.ApprovalEconomyStock == 0f,
-                    F("(1b) after the first day one mark for the government formed {0:yyyy-MM-dd}: net {1:R} on {2:yyyy-MM-dd}, the seed's approval {3:R} with no economy stock", se.Government?.FormedOn, mark?.Net, mark?.On, seed));
+                Check(se.Government != null && se.VoteApprovalMarks.Count == 1 && mark.FormedOn == se.Government.FormedOn && mark.Net == (double)seed,   // MF-13 (K191): the mark is taken before the day's approval step, so it reads the seed - the step then moves approval and the stock
+                    F("(1b) after the first day one mark for the government formed {0:yyyy-MM-dd}: net {1:R} on {2:yyyy-MM-dd}, the seed's approval {3:R} with no economy stock (the mark taken before the day's approval step)", se.Government?.FormedOn, mark?.Net, mark?.On, seed));
                 bool found = took.HasValue && ApprovalVote.TryReference(se, took.Value, out ApprovalMark reference) && ReferenceEquals(reference, mark);
                 Check(found, F("(1c) the government took office {0:yyyy-MM-dd}, on or before the mark: the mark is its reference (A_0, the seed's)", took));
                 foreach (Country k in world.Countries)
@@ -141,6 +141,7 @@ namespace PoliSim.EditorTools
                 Dictionary<string, double> live = EconomicVote.RecordOverTerm(se, sim.CurrentDate, out _);
                 Check(SameBits(live, parts.Total), "(2d) the record every live count reads (EconomicVote.RecordOverTerm) is the components' total");
 
+                se.ApprovalEconomyStock = 0f;   // MF-13 (K191): the stock advances daily, so the case sets the "no economy stock" its premise names
                 Plant(sim, se, 1.5f, "planted: approval at 1.5");
                 ApprovalVote.ShiftOverTerm(se, sim.CurrentDate, out ApprovalVote.Reading low);
                 Check(Math.Abs(low.GovernmentShift - b * (1.5 - low.Reference) / 100.0) <= 1e-9,
@@ -155,6 +156,7 @@ namespace PoliSim.EditorTools
             WithSwedenAfterOneDay((sim, se) =>
             {
                 ApprovalMark mark = se.VoteApprovalMarks[0];
+                se.ApprovalEconomyStock = 0f;   // MF-13 (K191): the stock advances daily from day 1, so net approval equals the planted approval only with it at zero
                 Plant(sim, se, (float)mark.Net, "planted: approval at the reference");
                 EconomicVote.RecordParts parts = EconomicVote.RecordPartsOverTerm(se, sim.CurrentDate);
                 List<string> keys = se.ParliamentSeats.Keys.ToList();
@@ -215,61 +217,82 @@ namespace PoliSim.EditorTools
         }
 
         // ============================================================ (6) the net approval's composition, across three boundaries; (7) the save and the clone
+        // MF-13 (K191): the economy stock moves on approval's daily step, so its composition is asserted day by day - each day's stock against the
+        // day's own recorded economy terms, each day's reversion against the base the day opened on - and the period's ledger identity at each boundary
         private static void Composition()
         {
-            _sb.Append(F("    6. the net approval's composition, played across {0} boundaries\n", Boundaries));
+            _sb.Append(F("    6. the net approval's composition, played day by day across {0} boundaries\n", Boundaries));
             (SimulationManager sim, World world, GameObject go) = Open();
             try
             {
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
-                int crossed = 0;
-                bool zeroBefore = true;
-                var stockBefore = new Dictionary<CountryId, float>();
-                var baseObserved = new Dictionary<CountryId, float>();
+                Check(world.Countries.All(k => k.ApprovalEconomyStock == 0f), "(6a) no economy stock before the world's first day, every country");
+                float speed = 1f - ApprovalVote.EconomyStockPersistence;
+                int crossed = 0, stockDays = 0, clampDays = 0, stockMisses = 0, reversionDays = 0, reversionMisses = 0;
+                string firstStockMiss = null, firstReversionMiss = null;
                 for (int d = 0; d < 400 * Boundaries && crossed < Boundaries; d++)
                 {
-                    if (!sim.AdvanceDay())
+                    var before = new Dictionary<CountryId, (float Stock, float Economy, float Reversion, float Clamp, float Base)>();
+                    foreach (Country k in world.Countries)
                     {
-                        if (crossed == 0) { foreach (Country k in world.Countries) { if (k.ApprovalEconomyStock != 0f) { zeroBefore = false; } } }
-                        continue;
+                        ApprovalAttribution l = k.ApprovalLedgerAccruing;
+                        before[k.Id] = (k.ApprovalEconomyStock, l != null ? l.GrowthEffect + l.MiseryUnemployment + l.MiseryInflation : 0f, l != null ? l.Reversion : 0f,
+                            l != null ? l.ClampLoss : 0f, Mathf.Clamp(k.State.ApprovalRating + k.TaxTermStock, 0f, 100f));
                     }
-                    foreach (Country k in world.Countries) { stockBefore[k.Id] = k.ApprovalEconomyStock; baseObserved[k.Id] = Mathf.Clamp(k.State.ApprovalRating + k.TaxTermStock, 0f, 100f); }
+                    bool boundary = sim.AdvanceDay();
+                    foreach (Country k in world.Countries)
+                    {
+                        ApprovalAttribution l = k.ApprovalLedgerAccruing;
+                        if (l == null) { continue; }
+                        var b = before[k.Id];
+                        float economyDay = l.GrowthEffect + l.MiseryUnemployment + l.MiseryInflation - b.Economy;
+                        float clampDay = l.ClampLoss - b.Clamp;
+                        float reversionDay = l.Reversion - b.Reversion;
+                        // (6b) the day's stock: its own persistence on yesterday's, plus the day's three economy terms as the ledger recorded them - on every
+                        // day the clamp took nothing (a day's float rounding is in ClampLoss too, far under the bar); a clamped day is counted, its share
+                        // asserted by hand in section 8
+                        if (Math.Abs(clampDay) > 1e-4f) { clampDays++; }
+                        else
+                        {
+                            stockDays++;
+                            float expected = b.Stock * ApprovalVote.EconomyStockPersistence + economyDay;
+                            if (Math.Abs(k.ApprovalEconomyStock - expected) > 1e-4f)
+                            {
+                                stockMisses++;
+                                firstStockMiss = firstStockMiss ?? F("{0} {1:yyyy-MM-dd}: stock {2:R}, expected {3:R} x {4:R} + {5:R}", k.Id, sim.CurrentDate, k.ApprovalEconomyStock, b.Stock, ApprovalVote.EconomyStockPersistence, economyDay);
+                            }
+                        }
+                        // (6e) the day's reversion acts on approval + T as the day opened (the tax term's fading moves approval and T together, so the base
+                        // is yesterday's), at the stock's own rate, toward the neutral 50 - the stock is a part of the base, not bookkeeping (review 879b's L-3)
+                        reversionDays++;
+                        float wantReversion = speed * (50f - b.Base);
+                        if (Math.Abs(reversionDay - wantReversion) > 1e-4f)
+                        {
+                            reversionMisses++;
+                            firstReversionMiss = firstReversionMiss ?? F("{0} {1:yyyy-MM-dd}: reversion {2:R}, expected {3:R} x (50 - {4:R})", k.Id, sim.CurrentDate, reversionDay, speed, b.Base);
+                        }
+                    }
+                    if (!boundary) { continue; }
                     sim.AdvanceTurn(decisions);
                     crossed++;
-                    if (crossed == 1) { Check(zeroBefore, F("(6a) the first boundary on {0:yyyy-MM-dd}: no economy stock before it, every country", sim.CurrentDate)); }
                     foreach (Country k in world.Countries)
                     {
                         ApprovalAttribution closed = k.ApprovalLedgerLastPeriod;
-                        if (closed == null || !closed.Closed || closed.PeriodCloseDate != sim.CurrentDate) { Check(false, F("(6b) {0} has no approval period closed on {1:yyyy-MM-dd}", k.Id, sim.CurrentDate)); continue; }
-                        float was = stockBefore[k.Id], economy = closed.GrowthEffect + closed.MiseryUnemployment + closed.MiseryInflation;
-                        float share = ApprovalVote.ClampShare(closed, was);
-                        float expected = was * ApprovalVote.EconomyStockPersistence + economy + share;
-                        // the rest, approval less the stock (less the neutral rating), from the period's open to its close: its move is everything but the stock's own (its reversion, the three terms, its clamp share)
-                        float restExpected = (closed.ApprovalAtPeriodOpen - was) + closed.EventSum + closed.TaxTermFading + (closed.FormulaTermSum - economy)
-                                             + (1f - ApprovalVote.EconomyStockPersistence) * was + (closed.ClampLoss - share);
-                        float rest = closed.ApprovalAtClose - k.ApprovalEconomyStock;
+                        if (closed == null || !closed.Closed || closed.PeriodCloseDate != sim.CurrentDate) { Check(false, F("(6f) {0} has no approval period closed on {1:yyyy-MM-dd}", k.Id, sim.CurrentDate)); continue; }
                         float observed = closed.ApprovalAtClose - closed.ApprovalAtPeriodOpen, explained = closed.EventSum + closed.TermSum + closed.ClampLoss;
                         double net = ApprovalVote.NetApproval(k), plain = Math.Max(0.0, Math.Min(100.0, (double)k.State.ApprovalRating - k.ApprovalEconomyStock));
-                        Check(Math.Abs(k.ApprovalEconomyStock - expected) <= 1e-4f && Math.Abs(rest - restExpected) <= 0.001f && net == plain && Math.Abs(observed - explained) <= 0.001f,
-                            F("(6b) boundary {0} ({1:yyyy-MM-dd}) {2}: the stock {3:+0.0000;-0.0000} = {4:+0.0000;-0.0000} x {5} + growth {6:+0.0000;-0.0000} + unemployment {7:+0.0000;-0.0000} + inflation {8:+0.0000;-0.0000} + clamp share {9:+0.0000;-0.0000}{10}; the rest {11:+0.0000;-0.0000} (expected {12:+0.0000;-0.0000}); approval {13:F4}, net {14:F4}; the ledger's identity observed {15:F4} = explained {16:F4}",
-                                crossed, sim.CurrentDate, k.Id, k.ApprovalEconomyStock, was, ApprovalVote.EconomyStockPersistence, closed.GrowthEffect, closed.MiseryUnemployment, closed.MiseryInflation, share,
-                                share != 0f ? " (the base met a bound)" : "", rest, restExpected, k.State.ApprovalRating, net, observed, explained));
+                        Check(net == plain && Math.Abs(observed - explained) <= 0.001f,
+                            F("(6f) boundary {0} ({1:yyyy-MM-dd}) {2}: the period's economy terms growth {3:+0.0000;-0.0000}, unemployment {4:+0.0000;-0.0000}, inflation {5:+0.0000;-0.0000}; the stock {6:+0.0000;-0.0000}; approval {7:F4}, net {8:F4}; the ledger's identity observed {9:F4} = explained {10:F4}",
+                                crossed, sim.CurrentDate, k.Id, closed.GrowthEffect, closed.MiseryUnemployment, closed.MiseryInflation, k.ApprovalEconomyStock, k.State.ApprovalRating, net, observed, explained));
                     }
-                    // (6e) review 879b's L-3: the stock is a part of approval + T, not bookkeeping - the formula's reversion acts on the base the harness
-                    // observed (approval + T, as q37 re-clamps it), linearly, at the stock's own rate, toward one neutral: every country's reversion term
-                    // implies the same neutral, P + reversion / rate. (A pre-formula approval writer inside AdvanceTurn would break this - it names one.)
-                    float rate = 1f - ApprovalVote.EconomyStockPersistence;
-                    List<Country> closedHere = world.Countries.Where(k => k.ApprovalLedgerLastPeriod != null && k.ApprovalLedgerLastPeriod.PeriodCloseDate == sim.CurrentDate).ToList();
-                    List<float> implied = closedHere.Select(k => baseObserved[k.Id] + k.ApprovalLedgerLastPeriod.Reversion / rate).ToList();
-                    float spread = closedHere.Count > 0 ? closedHere.Max(k => baseObserved[k.Id]) - closedHere.Min(k => baseObserved[k.Id]) : 0f;
-                    bool oneNeutral = implied.Count > 1 && implied.Max() - implied.Min() <= 0.01f
-                                      && closedHere.All(k => Math.Abs(ApprovalVote.BaseBeforeFormula(k.ApprovalLedgerLastPeriod) - baseObserved[k.Id]) <= 1e-3f);
-                    Check(oneNeutral && (crossed < 2 || spread > 0.5f),
-                        F("(6e) boundary {0}: the reversion acts on approval + T at the stock's rate {1:R} toward one neutral - implied {2:F4} to {3:F4} over bases {4:F2} apart; each base read back from its reversion term matches the observed one",
-                            crossed, rate, implied.Count > 0 ? implied.Min() : float.NaN, implied.Count > 0 ? implied.Max() : float.NaN, spread));
-                    if (crossed >= 2 && world.Countries.All(k => stockBefore[k.Id] == 0f)) { Check(false, F("(6c) boundary {0}: every stock stood at zero before it - the stock's reversion is not exercised", crossed)); }
                 }
+                Check(stockMisses == 0 && stockDays > 0,
+                    F("(6b) the stock is its own persistence ({0:R} a day) on yesterday's plus the day's growth, unemployment and inflation terms, on {1} country-days the clamp took nothing ({2} clamped country-days asserted in section 8){3}",
+                        ApprovalVote.EconomyStockPersistence, stockDays, clampDays, stockMisses > 0 ? F("; {0} missed, the first {1}", stockMisses, firstStockMiss) : ""));
+                Check(reversionMisses == 0 && reversionDays > 0,
+                    F("(6e) the day's reversion is {0:R} x (50 - the base the day opened on), on {1} country-days{2}", speed, reversionDays, reversionMisses > 0 ? F("; {0} missed, the first {1}", reversionMisses, firstReversionMiss) : ""));
+                Check(world.Countries.Any(k => k.ApprovalEconomyStock != 0f), "(6c) an economy stock stands somewhere after the run - the stock's persistence is exercised");
                 Check(crossed == Boundaries, F("(6d) {0} of {1} boundaries crossed", crossed, Boundaries));
                 Country se = world.GetCountry(CountryId.Sweden);
                 EconomicVote.RecordParts parts = EconomicVote.RecordPartsOverTerm(se, sim.CurrentDate);
@@ -290,76 +313,69 @@ namespace PoliSim.EditorTools
             finally { Object.DestroyImmediate(go); }
         }
 
-        // ============================================================ (8) the floor and the ceiling (review 879's M1)
+        // ============================================================ (8) the floor and the ceiling (review 879's M1), on the daily step (MF-13, K191)
         private static void FloorAndCeiling()
         {
-            _sb.Append("    8. the clamp's share (review 879's M1)\n");
+            _sb.Append("    8. the clamp's share (review 879's M1), one day of approval's daily step by hand\n");
             SimulationRandom.Seed(777);
             Country k = WorldFactory.CreateDefault().GetCountry(CountryId.Sweden);   // a bare country: no simulation runs and no period closes on it, so no approval write here is audited
             float speed = 1f - ApprovalVote.EconomyStockPersistence;
 
-            // the stock at -45 and approval held at 0 by the clamp; the reversion (+speed x 50) and the economy (-4, then -5) the formula's only terms
-            float AtFloor(float misery, float impulse, out float share)
+            // One day by hand: approval and T planted, the stock planted, the day's reversion speed x (50 - (approval + T)) and the economy term the
+            // step's only terms; approval clamped as the daily step clamps it; the stock advanced as the daily step advances it. The economy term is
+            // sized against the live reversion so the step is the case's own (the floor: -1.5, then -2.5; the ceiling +1.5, then +2.5; with a tax term
+            // standing against the bound: -0.65 and -1.65, +0.65 and +1.65) - at the pre-MF-13 once-a-turn speed 0.05 these were the economy -4/-5,
+            // +4/+5, -3/-4 and +3/+4.
+            float Day(float approval, float term, float stock, float economy, out float share)
             {
-                var closed = new ApprovalAttribution { Reversion = speed * 50f, MiseryUnemployment = misery, TaxHikePenalty = -impulse, ApprovalAfterFormula = 0f };
-                closed.ClampLoss = 0f - closed.FormulaTermSum;   // approval stayed at 0
-                k.State.ApprovalRating = 0f;
-                k.ApprovalEconomyStock = -45f;
-                share = ApprovalVote.ClampShare(closed, k.ApprovalEconomyStock);
-                ApprovalVote.AdvanceEconomyStock(k, closed);
-                return k.ApprovalEconomyStock;
-            }
-            float stock4 = AtFloor(-4f, 0f, out float share4); double net4 = ApprovalVote.NetApproval(k);
-            float stock5 = AtFloor(-5f, 0f, out float share5); double net5 = ApprovalVote.NetApproval(k);
-            float stockTax = AtFloor(-4f, 3f, out float shareTax);
-            float expected4 = -45f * ApprovalVote.EconomyStockPersistence - 4f + share4;
-            Check(Math.Abs(stock4 - expected4) <= 1e-4f && net5 <= net4 + 1e-4 && Math.Abs(net5 - net4) <= 1e-4 && share4 > 0f && share5 > share4,
-                F("(8a) at the floor a worse economy never raises net approval: the economy -4 -> stock {0:F4} (clamp share {1:+0.0000;-0.0000}), net {2:F4}; the economy -5 -> stock {3:F4} (share {4:+0.0000;-0.0000}), net {5:F4} (before the fix the stock took no share: net {6:F4} and {7:F4})",
-                    stock4, share4, net4, stock5, share5, net5, -(-45f * ApprovalVote.EconomyStockPersistence - 4f), -(-45f * ApprovalVote.EconomyStockPersistence - 5f)));
-            Check(Math.Abs(shareTax - share4) <= 1e-4f && Math.Abs(stockTax - stock4) <= 1e-4f,
-                F("(8b) a tax impulse of 3 at the floor is outside the base (approval + T, which TaxTerm.BookFormula keeps as the run without the term): the stock's share {0:+0.0000;-0.0000}, as without it {1:+0.0000;-0.0000}", shareTax, share4));
-
-            float AtCeiling(float growth, out float share)
-            {
-                var closed = new ApprovalAttribution { Reversion = speed * (50f - 100f), GrowthEffect = growth, ApprovalAfterFormula = 100f };
-                closed.ClampLoss = 0f - closed.FormulaTermSum;   // approval stayed at 100
-                k.State.ApprovalRating = 100f;
-                k.ApprovalEconomyStock = 40f;
-                share = ApprovalVote.ClampShare(closed, k.ApprovalEconomyStock);
-                ApprovalVote.AdvanceEconomyStock(k, closed);
-                return k.ApprovalEconomyStock;
-            }
-            AtCeiling(4f, out float up4); double ceil4 = ApprovalVote.NetApproval(k);
-            AtCeiling(5f, out float up5); double ceil5 = ApprovalVote.NetApproval(k);
-            Check(up4 < 0f && ceil5 >= ceil4 - 1e-4 && Math.Abs(ceil5 - ceil4) <= 1e-4,
-                F("(8c) at the ceiling a better economy never lowers net approval: growth +4 -> share {0:+0.0000;-0.0000}, net {1:F4}; +5 -> share {2:+0.0000;-0.0000}, net {3:F4}", up4, ceil4, up5, ceil5));
-
-            var inside = new ApprovalAttribution { Reversion = 1f, MiseryUnemployment = -2f, ApprovalAfterFormula = 30f, ClampLoss = 0f };
-            Check(ApprovalVote.ClampShare(inside, -10f) == 0f, "(8d) inside [0, 100] the stock takes no share");
-
-            // (8e) review 879b's M-2: a tax term standing against the bound - approval meets it, the base (approval + T) does not
-            float WithTerm(float approval, float term, float stock, float growth, float misery, out float share)
-            {
-                var closed = new ApprovalAttribution { Reversion = speed * (50f - (approval + term)), GrowthEffect = growth, MiseryUnemployment = misery };
-                float after = Mathf.Clamp(approval + closed.FormulaTermSum, 0f, 100f);
-                closed.ApprovalAfterFormula = after;
-                closed.ClampLoss = (after - approval) - closed.FormulaTermSum;
+                float baseBefore = approval + term;
+                float step = speed * (50f - baseBefore) + economy;
+                float after = Mathf.Clamp(approval + step, 0f, 100f);
+                float clampLoss = (after - approval) - step;
                 k.State.ApprovalRating = after;
                 k.ApprovalEconomyStock = stock;
-                share = ApprovalVote.ClampShare(closed, stock);
-                ApprovalVote.AdvanceEconomyStock(k, closed);
+                share = ApprovalVote.ClampShare(stock, economy, baseBefore, step, after, clampLoss);
+                ApprovalVote.AdvanceEconomyStockDay(k, economy, baseBefore, step, after, clampLoss);
                 return k.ApprovalEconomyStock;
             }
-            WithTerm(0f, 3f, -10f, 0f, -3f, out float floor3); double floorNet3 = ApprovalVote.NetApproval(k);
-            WithTerm(0f, 3f, -10f, 0f, -4f, out float floor4); double floorNet4 = ApprovalVote.NetApproval(k);
+
+            float floorReversion = speed * 50f;
+            float floorMisery4 = -(floorReversion + 1.5f), floorMisery5 = -(floorReversion + 2.5f);
+            float stock4 = Day(0f, 0f, -45f, floorMisery4, out float share4); double net4 = ApprovalVote.NetApproval(k);
+            float stock5 = Day(0f, 0f, -45f, floorMisery5, out float share5); double net5 = ApprovalVote.NetApproval(k);
+            float expected4 = -45f * ApprovalVote.EconomyStockPersistence + floorMisery4 + share4;
+            Check(Math.Abs(stock4 - expected4) <= 1e-4f && net5 <= net4 + 1e-4 && Math.Abs(net5 - net4) <= 1e-4 && share4 > 0f && share5 > share4,
+                F("(8a) at the floor a worse economy never raises net approval: the economy {0:F4} -> stock {1:F4} (clamp share {2:+0.0000;-0.0000}), net {3:F4}; the economy {4:F4} -> stock {5:F4} (share {6:+0.0000;-0.0000}), net {7:F4} (before the fix the stock took no share: net {8:F4} and {9:F4})",
+                    floorMisery4, stock4, share4, net4, floorMisery5, stock5, share5, net5, -(-45f * ApprovalVote.EconomyStockPersistence + floorMisery4), -(-45f * ApprovalVote.EconomyStockPersistence + floorMisery5)));
+
+            // (8b) the boundary formula's one-off step (a tax impulse) is no move of the stock's: approval at the floor, the stock at -45, an impulse of 3
+            k.State.ApprovalRating = 0f;
+            k.ApprovalEconomyStock = -45f;
+            MacroSystem.ApplyApprovalRating(k, PolicyDecision.None(), 3f, 0f);
+            Check(k.ApprovalEconomyStock == -45f && k.State.ApprovalRating == 0f,
+                F("(8b) a tax impulse of 3 at the floor, through the boundary formula: approval {0}, the stock {1:R} - untouched (the stock moves on the daily step alone)", k.State.ApprovalRating, k.ApprovalEconomyStock));
+
+            float ceilingGrowth4 = -(speed * (50f - 100f)) + 1.5f, ceilingGrowth5 = -(speed * (50f - 100f)) + 2.5f;
+            Day(100f, 0f, 40f, ceilingGrowth4, out float up4); double ceil4 = ApprovalVote.NetApproval(k);
+            Day(100f, 0f, 40f, ceilingGrowth5, out float up5); double ceil5 = ApprovalVote.NetApproval(k);
+            Check(up4 < 0f && ceil5 >= ceil4 - 1e-4 && Math.Abs(ceil5 - ceil4) <= 1e-4,
+                F("(8c) at the ceiling a better economy never lowers net approval: growth {0:+0.0000;-0.0000} -> share {1:+0.0000;-0.0000}, net {2:F4}; {3:+0.0000;-0.0000} -> share {4:+0.0000;-0.0000}, net {5:F4}", ceilingGrowth4, up4, ceil4, ceilingGrowth5, up5, ceil5));
+
+            Check(ApprovalVote.ClampShare(-10f, -2f, 48f, -1f, 30f, 0f) == 0f, "(8d) inside [0, 100] the stock takes no share");
+
+            // (8e) review 879b's M-2: a tax term standing against the bound - approval meets it, the base (approval + T) does not
+            float termFloorMisery3 = -(speed * (50f - 3f)) - 0.65f, termFloorMisery4 = -(speed * (50f - 3f)) - 1.65f;
+            float termCeilingGrowth3 = -(speed * (50f - 97f)) + 0.65f, termCeilingGrowth4 = -(speed * (50f - 97f)) + 1.65f;
+            Day(0f, 3f, -10f, termFloorMisery3, out float floor3); double floorNet3 = ApprovalVote.NetApproval(k);
+            Day(0f, 3f, -10f, termFloorMisery4, out float floor4); double floorNet4 = ApprovalVote.NetApproval(k);
             Check(floor3 > 0f && floorNet4 <= floorNet3 + 1e-4,
-                F("(8e) at the floor with T = +3 (the base at 3 stays inside): the economy -3 -> share {0:+0.0000;-0.0000}, net {1:F4}; -4 -> share {2:+0.0000;-0.0000}, net {3:F4} - a worse economy does not raise net approval (unshared it read 12.5 and 13.5)",
-                    floor3, floorNet3, floor4, floorNet4));
-            WithTerm(100f, -3f, 10f, 3f, 0f, out float ceil3); double ceilNet3 = ApprovalVote.NetApproval(k);
-            WithTerm(100f, -3f, 10f, 4f, 0f, out float ceil4b); double ceilNet4 = ApprovalVote.NetApproval(k);
+                F("(8e) at the floor with T = +3 (the base at 3 stays inside): the economy {0:F4} -> share {1:+0.0000;-0.0000}, net {2:F4}; {3:F4} -> share {4:+0.0000;-0.0000}, net {5:F4} - a worse economy does not raise net approval",
+                    termFloorMisery3, floor3, floorNet3, termFloorMisery4, floor4, floorNet4));
+            Day(100f, -3f, 10f, termCeilingGrowth3, out float ceil3); double ceilNet3 = ApprovalVote.NetApproval(k);
+            Day(100f, -3f, 10f, termCeilingGrowth4, out float ceil4b); double ceilNet4 = ApprovalVote.NetApproval(k);
             Check(ceil3 < 0f && ceilNet4 >= ceilNet3 - 1e-4,
-                F("(8e) at the ceiling with T = -3 (the base at 97 stays inside): growth +3 -> share {0:+0.0000;-0.0000}, net {1:F4}; +4 -> share {2:+0.0000;-0.0000}, net {3:F4} - a better economy does not lower net approval",
-                    ceil3, ceilNet3, ceil4b, ceilNet4));
+                F("(8e) at the ceiling with T = -3 (the base at 97 stays inside): growth {0:+0.0000;-0.0000} -> share {1:+0.0000;-0.0000}, net {2:F4}; {3:+0.0000;-0.0000} -> share {4:+0.0000;-0.0000}, net {5:F4} - a better economy does not lower net approval",
+                    termCeilingGrowth3, ceil3, ceilNet3, termCeilingGrowth4, ceil4b, ceilNet4));
         }
 
         // ============================================================ the harness's hands

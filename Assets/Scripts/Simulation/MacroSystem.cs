@@ -2098,36 +2098,62 @@ namespace PoliSim.Simulation
 
         /// <summary>Approval mean-reverts toward this absent any other effect - a "neutral" governing position, not an extreme.</summary>
         /// <remarks>CONVENTION - a scale origin. Approval reverts here absent any other effect: a neutral governing position, chosen so the stat has a middle, not measured from anything.</remarks>
-        internal const float NeutralApprovalRating = 50f;   // internal for A-LOOP q15: ApprovalVote.ClampShare reads the formula's base back from its reversion term
+        internal const float NeutralApprovalRating = 50f;   // internal for A-LOOP q15 (the economy stock's clamp share sat beside it); MF-13: the daily step reverts toward it
 
-        /// <summary>Fraction of the gap versus NeutralApprovalRating that closes each turn on its
-        /// own. Internal since Step 2: the trace panel derives EQUILIBRIUM framing from it
-        /// (sustained term ÷ this = equilibrium shift - the honest unit Q1's magnitude was ruled
-        /// in), reading the same constant the formula uses rather than a second copy.</summary>
-        /// <remarks>CONVENTION - a reversion speed toward the neutral rating.</remarks>
-        internal const float ApprovalReversionSpeed = 0.05f;
+        /// <summary>Fraction of the gap versus NeutralApprovalRating (approval + the tax term's standing stock, q37) that closes each DAY on its
+        /// own (`ApplyApprovalDay`, the country's daily step). A sustained term's size a day ÷ this is its equilibrium shift - the honest unit Q1's
+        /// magnitude was ruled in. Internal: the economy stock (`ApprovalVote.EconomyStockPersistence`) and its clamp share read the same figure the
+        /// daily step uses rather than a second copy.</summary>
+        /// <remarks>DERIVED (MF-13, Elias's rulings K134-K135 and K191, 2026-10-27; `docs/specs/A_LOOP_PLAN.md` §3; J1/Q3): <b>one persistence across
+        /// approval</b> - q37's tax term's, `TaxTerm.QuarterlyPersistence` = 0.81 a quarter, SOURCED [LBS00] Table 2 (its citation is at that
+        /// constant; the tables under `docs/reference/raw/aloop`), transferred to every country. <b>Where approval advances (K191):</b> daily, as the
+        /// tax term fades - the speed is one less `TaxTerm.DailyPersistence`, 0.81 to the power 1 ⁄ `TaxTerm.DaysPerQuarter` (91.25 days):
+        /// 1 − 0.81^(1/91.25) = 1 − exp(ln 0.81 ⁄ 91.25) = 1 − exp(−0.0023093) ≈ 0.0023066 a day. Across a quarter's days that is 0.81, across a
+        /// 365-day year 0.81⁴ ≈ 0.4305 (0.95 a year before MF-13); a one-off shock halves in ln 0.5 ⁄ ln 0.81 ≈ 3.29 quarters (about 300 days)
+        /// whatever day it lands on, and approval takes no step at the turn boundary. `ApprovalReversionDiagnostic` asserts each figure.</remarks>
+        internal static readonly float ApprovalReversionSpeed = 1f - TaxTerm.DailyPersistence;
+
+        /// <summary>MF-13 (K135): the reversion speed approval ran at before MF-13 - a turn's, applied once at the boundary - kept as THE UNIT the
+        /// sustained terms' authored figures are written in. Every sustained approval term below - one paid for as long as its gap stands (growth,
+        /// the four misery gaps, Gini, welfare, paid leave, drug policy) - has the equilibrium shift its authored figure ÷ this, and K135 keeps that
+        /// equilibrium.</summary>
+        /// <remarks>CONVENTION - the retired speed, not a claim about the world: the figure each sustained term's authored magnitude was set
+        /// against, held so those magnitudes keep their meaning (equilibrium points = figure ÷ this).</remarks>
+        internal const float PreMf13ApprovalReversionSpeed = 0.05f;
+
+        /// <summary>MF-13 (K135, "every sustained approval term rescaled so its equilibrium is unchanged; only one-off shocks fade faster"; K191, the
+        /// daily step): the factor a sustained term's authored figure is multiplied by to give its size a DAY - `ApprovalReversionSpeed` ÷
+        /// `PreMf13ApprovalReversionSpeed` (≈ 0.0023066 ⁄ 0.05 ≈ 0.04613). A term's equilibrium is its size a day ÷ the daily speed, so
+        /// figure × scale ÷ speed = figure ÷ 0.05: the equilibrium it had before MF-13. The one-off terms take no scale - the turn's spending change,
+        /// the tax term's impulse, every event, cabinet, foreign-policy and bill shock - so they fade at the new persistence.</summary>
+        /// <remarks>DERIVED - the ratio of the two speeds above.</remarks>
+        internal static readonly float SustainedApprovalTermScale = ApprovalReversionSpeed / PreMf13ApprovalReversionSpeed;
+
+        /// <summary>K190: a sustained term's long-run EQUILIBRIUM, in approval points, for an authored figure times its gap - figure × gap ÷
+        /// `PreMf13ApprovalReversionSpeed`, what the Policy Web's "standing effect" readouts print (the figure MF-13 keeps, K135).</summary>
+        public static float SustainedEquilibrium(float authoredTimesGap) => authoredTimesGap / PreMf13ApprovalReversionSpeed;
 
         /// <summary>Approval points per percentage-point of growth gap (actual vs. potential) - strong growth is rewarded, weak growth punished.</summary>
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
-        private const float GrowthApprovalSensitivity = 0.3f;
+        private const float GrowthApprovalSensitivity = 0.3f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
 
         /// <summary>Approval points lost per percentage point unemployment sits above NAIRU.</summary>
         // internal (2026-08-28, R-K1): the Policy Web's stat -> stat edges weight the four misery
         // terms by these, relative to each other - read, never restated as literals.
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
-        internal const float UnemploymentApprovalSensitivity = 0.4f;
+        internal const float UnemploymentApprovalSensitivity = 0.4f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
 
         /// <summary>Approval points lost per percentage point inflation sits away from the Taylor Rule's inflation target (either direction - deflation hurts too).</summary>
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
-        internal const float InflationApprovalSensitivity = 0.4f;
+        internal const float InflationApprovalSensitivity = 0.4f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
 
         /// <summary>Approval points lost per point CrimeIndex sits above Country.BaselineCrimeIndex (and gained per point below) - smaller than Unemployment/InflationApprovalSensitivity since CrimeIndex gaps tend to run larger in absolute point terms on its 0-100 scale.</summary>
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
-        internal const float CrimeApprovalSensitivity = 0.2f;
+        internal const float CrimeApprovalSensitivity = 0.2f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
 
         /// <summary>Round 3 item 3: Approval points lost per point CorruptionIndex sits above Country.BaselineCorruptionIndex (and gained per point below) - corruption scandals hurt approval, a real and well-documented political effect. Slightly smaller than CrimeApprovalSensitivity, since corruption's political salience varies more by country/culture than crime's does - a stylized judgment call, not a precisely-fitted figure.</summary>
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
-        internal const float CorruptionApprovalSensitivity = 0.15f;
+        internal const float CorruptionApprovalSensitivity = 0.15f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
 
         // PaidFamilyLeaveApprovalSensitivity moved VERBATIM to LaborCouplings (pass 3's declared
         // labor coupling table, 2026-08-26): value and doc comment carried unchanged; both
@@ -2140,14 +2166,16 @@ namespace PoliSim.Simulation
         /// is inert and a raw level term is a per-country recalibration; the gap is zero at seed
         /// for all six and active exactly when POLICY moves inequality off the nation's own norm -
         /// habituation to the level is the form's own claim). SIGNED: pushing inequality below the
-        /// norm earns approval. THE HONEST UNIT is equilibrium: with ApprovalReversionSpeed 0.05,
-        /// this 0.05/turn = 1.0 EQUILIBRIUM approval point per Gini point (ruled band 0.5-1.5) -
+        /// norm earns approval. THE HONEST UNIT is equilibrium: the authored 0.05/turn at the
+        /// pre-MF-13 speed 0.05 = 1.0 EQUILIBRIUM approval point per Gini point (ruled band 0.5-1.5;
+        /// MF-13 multiplies the figure by SustainedApprovalTermScale so that equilibrium stands at
+        /// approval's sourced persistence, K135) -
         /// a +3-Gini redistribution reversal costs 3 sustained points, one serious authored
         /// shock's size but permanent, legible beside the ±2-5 interrupts and never dominant over
         /// misery/growth. R-Q1c: NO combined ceiling exists on approval's sustained gap terms
         /// (drug policy alone can shift ±20 eq-pts) and none is added - the absence is a named
         /// standing property, handed to the legibility feature (MS II step 2).</summary>
-        internal const float GiniApprovalSensitivity = 0.05f;
+        internal const float GiniApprovalSensitivity = 0.05f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
 
         // DrugPolicyApprovalSensitivity moved to CrimeJusticeCouplings (item 6, 2026-08-25).
 
@@ -2208,17 +2236,17 @@ namespace PoliSim.Simulation
 
         /// <summary>Approval points per 100% GenerosityLevel for each WelfareProgramType, an ongoing STOCK effect (based on the program's CURRENT GenerosityLevel every turn, same idiom as TaxLine.Rate affecting revenue every turn) rather than a one-time "this-turn change" shock like TaxHikeApprovalSensitivity/spending's own weighted term. UBI/UniversalHealthcare are the strongest (universal, highly visible programs); MeansTestedWelfare/HousingAssistance/ChildcareSubsidies are more modest, per the task's own framing (targeted spending is politically less visible than universal programs of similar poverty-reduction power).</summary>
         /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
-        private const float UbiApprovalSensitivity = 3.0f;
+        private const float UbiApprovalSensitivity = 3.0f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
         /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
-        private const float NegativeIncomeTaxApprovalSensitivity = 2.0f;
+        private const float NegativeIncomeTaxApprovalSensitivity = 2.0f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
         /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
-        private const float MeansTestedWelfareApprovalSensitivity = 1.5f;
+        private const float MeansTestedWelfareApprovalSensitivity = 1.5f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
         /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
-        private const float UniversalHealthcareApprovalSensitivity = 3.0f;
+        private const float UniversalHealthcareApprovalSensitivity = 3.0f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
         /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
-        private const float HousingAssistanceApprovalSensitivity = 1.5f;
+        private const float HousingAssistanceApprovalSensitivity = 1.5f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
         /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
-        private const float ChildcareSubsidiesApprovalSensitivity = 1.5f;
+        private const float ChildcareSubsidiesApprovalSensitivity = 1.5f;   // MF-13 (K135, K191): applied a day at x SustainedApprovalTermScale, so its equilibrium (this ÷ PreMf13ApprovalReversionSpeed) stands
 
         internal static float GetWelfareApprovalSensitivity(WelfareProgramType type)
         {
@@ -2247,18 +2275,96 @@ namespace PoliSim.Simulation
             return gdp > 0f ? amount / gdp * 100f : 0f;
         }
 
+        /// <summary>MF-13 (K191): one day's SUSTAINED approval terms, in approval points, signed as contributions - what approval's daily step adds
+        /// besides its reversion. Public so a check can hold a projection against the model's own figures (PreviewParityDiagnostic).</summary>
+        public struct ApprovalDayTerms
+        {
+            public float Growth, MiseryUnemployment, MiseryInflation, MiseryCrime, MiseryCorruption, Welfare, PaidLeave, DrugPolicy, Gini;
+        }
+
+        /// <summary>MF-13 (K191): the day's sustained terms for <paramref name="country"/> as it stands, each authored figure × SustainedApprovalTermScale
+        /// × its gap (K135: equilibrium figure × gap ÷ PreMf13ApprovalReversionSpeed). <paramref name="growthRatePercent"/> is ANNUAL growth, in per cent -
+        /// the unit the authored growth figure is written in (SimulationManager.AdvanceDay passes the day's growth annualised).</summary>
+        public static ApprovalDayTerms SustainedTermsForDay(Country country, float growthRatePercent)
+        {
+            EconomyState state = country.State;
+            float scale = SustainedApprovalTermScale;
+            return new ApprovalDayTerms
+            {
+                Growth = scale * GrowthApprovalSensitivity * (growthRatePercent - country.PotentialGrowthRate),
+                MiseryUnemployment = -(scale * UnemploymentApprovalSensitivity * Mathf.Max(0f, state.Unemployment - country.EffectiveNaturalUnemploymentRate)),
+                MiseryInflation = -(scale * InflationApprovalSensitivity * Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country))),
+                MiseryCrime = -(scale * CrimeApprovalSensitivity * (state.CrimeIndex - country.BaselineCrimeIndex)),
+                MiseryCorruption = -(scale * CorruptionApprovalSensitivity * (state.CorruptionIndex - country.BaselineCorruptionIndex)),
+                Welfare = scale * GetWelfareApprovalEffect(country),
+                // Paid family leave (see "Deeper Labor Market Policies" in CLAUDE.md) and drug policy (see "Deeper Crime & Justice") - ongoing stock
+                // effects of the gap versus the country's own seeded baseline and the shared neutral 50; Q1's Gini term the gap versus the country's
+                // OWN baseline, zero at seed (R-Q1a)
+                PaidLeave = scale * LaborCouplings.PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks),
+                DrugPolicy = scale * CrimeJusticeCouplings.DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel),
+                Gini = -(scale * GiniApprovalSensitivity * (state.Gini - country.BaselineGini)),
+            };
+        }
+
         /// <summary>
-        /// Approval mean-reverts toward NeutralApprovalRating, adjusted by: the growth gap (strong
-        /// growth helps, weak growth hurts), a Phillips-curve-adjacent "misery index" of how far
-        /// unemployment/inflation sit from NAIRU/target (not their absolute level - a healthy economy
-        /// at its own structural equilibrium shouldn't be punished just for having nonzero
-        /// unemployment/inflation), a tax-hike penalty proportional to the hike, and a
-        /// category-weighted spending effect (Mandatory categories weighted distinctly higher than
-        /// Discretionary ones - see MandatorySpendingApprovalMultiplier) whose benefit (not its
-        /// cut-side penalty) is discounted the more debt-to-GDP already sits above a "safe" benchmark,
-        /// and a welfare-program effect (see GetWelfareApprovalEffect - an ongoing effect of any
-        /// implemented Country.WelfarePrograms' CURRENT GenerosityLevel, not a one-time change like
-        /// the tax-hike/spending-change terms above). Clamped to [0, 100].
+        /// MF-13 (K191, 2026-10-27): <b>approval's daily step</b> - the reversion toward NeutralApprovalRating and every SUSTAINED term, applied each
+        /// day of the country's daily step (`SimulationManager.AdvanceDay`, after the day's macro block, so it reads the day's settled state):
+        /// the growth gap (the day's realised growth, annualised as the day's Okun reads it, against potential), a Phillips-curve-adjacent "misery
+        /// index" of how far unemployment/inflation sit from NAIRU/target (not their absolute level - a healthy economy at its own structural
+        /// equilibrium shouldn't be punished just for having nonzero unemployment/inflation), crime and corruption against their baselines, the
+        /// welfare programmes' generosity against the seed (GetWelfareApprovalEffect), paid leave, drug policy and the Gini gap. Each term's
+        /// authored figure is applied × SustainedApprovalTermScale a day, so its equilibrium - figure × gap ÷ PreMf13ApprovalReversionSpeed - is
+        /// the one it had when the formula ran once a turn at 0.05 (K135); the reversion closes ApprovalReversionSpeed of the gap a day (0.81 a
+        /// quarter, K134). Clamped to [0, 100]. <b>The day records what it computes</b> - the terms are computed once, applied and added to the
+        /// accruing ledger's fields (summed over the period), the clamp's truncation into ClampLoss - so no twin can drift. The base the reversion
+        /// reads is approval + the tax term's standing stock (q37, review 878's M-1); a clamp that binds is carried into T as every clamped writer's
+        /// is (`TaxTerm.AfterShock`), and the vote's economy stock takes the day's three economy terms and its share of the clamp
+        /// (`ApprovalVote.AdvanceEconomyStockDay`).
+        /// </summary>
+        /// <param name="growthRatePercent">The day's realised growth, annualised (SimulationManager.AdvanceDay's annualizedDailyGrowth; the policy
+        /// preview passes its turn's growth).</param>
+        public static void ApplyApprovalDay(Country country, float growthRatePercent, System.DateTime date)
+        {
+            EconomyState state = country.State;
+            TaxTerm.Reclamp(country);   // q37 (M-5): the base the reversion reads is put back inside [0, 100] first (T only; nothing where T is 0)
+            ApprovalDayTerms terms = SustainedTermsForDay(country, growthRatePercent);
+            float growthEffect = terms.Growth, miseryUnemployment = terms.MiseryUnemployment, miseryInflation = terms.MiseryInflation;
+            float miseryCrime = terms.MiseryCrime, miseryCorruption = terms.MiseryCorruption, welfareEffect = terms.Welfare;
+            float paidLeaveEffect = terms.PaidLeave, drugPolicyEffect = terms.DrugPolicy, giniEffect = terms.Gini;
+
+            float approvalBefore = state.ApprovalRating;
+            float baseBefore = approvalBefore + country.TaxTermStock;
+            float reversion = ApprovalReversionSpeed * (NeutralApprovalRating - baseBefore);
+            float economy = growthEffect + miseryUnemployment + miseryInflation;
+            float step = reversion + economy + miseryCrime + miseryCorruption + welfareEffect + paidLeaveEffect + drugPolicyEffect + giniEffect;
+            bool bound = approvalBefore + step < 0f || approvalBefore + step > 100f;
+            state.ApprovalRating = Mathf.Clamp(approvalBefore + step, 0f, 100f);
+            TaxTerm.AfterShock(country, approvalBefore, step);   // q37 (M-5): where a clamp binds, the run without the term takes the same step through its own clamp
+
+            ApprovalAttribution ledger = ApprovalLedgerRecorder.EnsureAccruing(country, date, approvalBefore);
+            float clampLoss = (state.ApprovalRating - approvalBefore) - step;
+            ledger.Reversion += reversion;
+            ledger.GrowthEffect += growthEffect;
+            ledger.MiseryUnemployment += miseryUnemployment;
+            ledger.MiseryInflation += miseryInflation;
+            ledger.MiseryCrime += miseryCrime;
+            ledger.MiseryCorruption += miseryCorruption;
+            ledger.WelfareEffect += welfareEffect;
+            ledger.PaidLeaveEffect += paidLeaveEffect;
+            ledger.DrugPolicyEffect += drugPolicyEffect;
+            ledger.GiniEffect += giniEffect;
+            ledger.ClampLoss += clampLoss;   // the clamp's truncation where it bound, and the step's float rounding where it did not, so the audit identity is exact
+            if (bound || (ledger.ApprovalAfterFormula > 0f && ledger.ApprovalAfterFormula < 100f)) { ledger.ApprovalAfterFormula = state.ApprovalRating; }   // the last step's approval, held at the bound a clamped step left
+
+            PoliSim.Elections.ApprovalVote.AdvanceEconomyStockDay(country, economy, baseBefore, step, state.ApprovalRating, clampLoss);
+        }
+
+        /// <summary>
+        /// The boundary formula (MF-13, K191: the reversion and the sustained terms moved to the daily step, ApplyApprovalDay): the turn's
+        /// ONE-OFF terms alone - a tax-term impulse (q37) and a category-weighted spending effect on the turn's spending change (Mandatory
+        /// categories weighted distinctly higher than Discretionary ones - see MandatorySpendingApprovalMultiplier) whose benefit (not its
+        /// cut-side penalty) is discounted the more debt-to-GDP already sits above a "safe" benchmark. Clamped to [0, 100]. Neither term is
+        /// rescaled (K135): each is a shock that then fades at the daily reversion.
         /// </summary>
         /// <param name="taxTermImpulse">
         /// A-LOOP q37 (2026-10-19): the tax term's impulse of this turn's rate changes, in approval points (positive: approval lost) - the
@@ -2273,104 +2379,18 @@ namespace PoliSim.Simulation
         /// by MandatorySpendingApprovalMultiplier, distinctly higher than any Discretionary category's
         /// multiplier - see that constant's doc comment.
         /// </param>
-        public static void ApplyApprovalRating(Country country, PolicyDecision decision, float actualGrowthRatePercent, float taxTermImpulse, float totalMandatorySpendingChange)
+        public static void ApplyApprovalRating(Country country, PolicyDecision decision, float taxTermImpulse, float totalMandatorySpendingChange)
         {
             EconomyState state = country.State;
-
-            float growthGap = actualGrowthRatePercent - country.PotentialGrowthRate;
-            float growthEffect = GrowthApprovalSensitivity * growthGap;
-
-            float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.EffectiveNaturalUnemploymentRate);
-            float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country));
-            float crimePenaltyGap = state.CrimeIndex - country.BaselineCrimeIndex;
-            float corruptionPenaltyGap = state.CorruptionIndex - country.BaselineCorruptionIndex;
-            float miseryPenalty = UnemploymentApprovalSensitivity * unemploymentPenaltyGap
-                + InflationApprovalSensitivity * inflationPenaltyGap
-                + CrimeApprovalSensitivity * crimePenaltyGap
-                + CorruptionApprovalSensitivity * corruptionPenaltyGap;
-
-            float taxHikePenalty = taxTermImpulse;   // A-LOOP q37: the tax term's impulse, signed (a cut's mirror is a gain)
-
-            float weightedSpendingPercent =
-                HealthcareApprovalMultiplier * PercentOfGdp(decision.HealthcareSpendingChange, state.NominalGdp) +
-                DefenseApprovalMultiplier * PercentOfGdp(decision.DefenseSpendingChange, state.NominalGdp) +
-                InfrastructureApprovalMultiplier * PercentOfGdp(decision.InfrastructureSpendingChange, state.NominalGdp) +
-                EducationApprovalMultiplier * PercentOfGdp(decision.EducationSpendingChange, state.NominalGdp) +
-                JusticeApprovalMultiplier * PercentOfGdp(decision.JusticeSpendingChange, state.NominalGdp) +
-                HomelandSecurityApprovalMultiplier * PercentOfGdp(decision.HomelandSecuritySpendingChange, state.NominalGdp) +
-                EnergyApprovalMultiplier * PercentOfGdp(decision.EnergySpendingChange, state.NominalGdp) +
-                HousingApprovalMultiplier * PercentOfGdp(decision.HousingSpendingChange, state.NominalGdp) +
-                MandatorySpendingApprovalMultiplier * PercentOfGdp(totalMandatorySpendingChange, state.NominalGdp);
-
-            float spendingEffect;
-            if (weightedSpendingPercent >= 0f)
-            {
-                float excessDebtToGdp = Mathf.Max(0f, state.DebtToGdpRatio - DeficitAwarenessDebtToGdpThreshold);
-                float deficitAwarenessFactor = Mathf.Clamp(1f - DeficitAwarenessDampeningPerPoint * excessDebtToGdp, 0f, 1f);
-                spendingEffect = SpendingApprovalSensitivity * weightedSpendingPercent * deficitAwarenessFactor;
-            }
-            else
-            {
-                spendingEffect = SpendingApprovalSensitivity * weightedSpendingPercent;
-            }
-
-            float welfareApprovalEffect = GetWelfareApprovalEffect(country);
-
-            // Paid family leave (see "Deeper Labor Market Policies" in CLAUDE.md) - an ONGOING stock
-            // effect of the gap versus the country's own seeded baseline (the same idiom
-            // welfareApprovalEffect/GetMinimumWageUnemploymentAdjustment already use), not a one-time
-            // shock - paid-leave policy tends to be popular, a small, real political effect.
-            float paidLeaveApprovalEffect = LaborCouplings.PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks);
-
-            // Drug policy (see "Deeper Crime & Justice" in CLAUDE.md) - stricter enforcement gives a
-            // small "tough on crime" approval boost, the same modest political framing
-            // PoliceFundingLevel's own crime-reduction effect implicitly carries, gap versus the
-            // shared neutral 50.
-            float drugPolicyApprovalEffect = CrimeJusticeCouplings.DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
-
-            // Q1 (gap form, R-Q1a): the paidLeave/welfare idiom exactly - a sustained term on the
-            // gap versus the country's OWN baseline, zero at seed, no daily shape needed because
-            // this whole formula is turn-boundary-resident (politics lives at boundaries).
-            float giniApprovalEffect = -GiniApprovalSensitivity * (state.Gini - country.BaselineGini);
-
-            // A-LOOP q37 (review 878's M-1): the reversion reads approval WITHOUT the tax term's standing stock (approval + T) - the term's points come
-            // back by its own fading (`TaxTerm.AdvanceDay`) and by nothing else; reverting the approval that carries −T paid them back twice and left an
-            // old rise RAISING approval for a decade. The speed is untouched (Q3); with no standing term the expression is the old one (x + 0 is exact)
-            float reversion = ApprovalReversionSpeed * (NeutralApprovalRating - (state.ApprovalRating + country.TaxTermStock));
-            float delta = reversion + growthEffect - miseryPenalty - taxHikePenalty + spendingEffect + welfareApprovalEffect + paidLeaveApprovalEffect + drugPolicyApprovalEffect + giniApprovalEffect;
+            float spendingEffect = BoundarySpendingEffect(country, decision, totalMandatorySpendingChange);
+            float delta = spendingEffect - taxTermImpulse;   // A-LOOP q37: the tax term's impulse, signed (a cut's mirror is a gain)
             state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + delta, 0f, 100f);
         }
 
-        /// <summary>
-        /// Step 2 (R-S2d): the approval ledger's Class-A terms.
-        ///
-        /// ⚠ **A RECOMPUTATION, DELIBERATELY - the observation gate forced it and the audit makes
-        /// it honest.** The first build recorded ApplyApprovalRating's own locals in place, and
-        /// the added code shifted that method's float codegen by one ulp at value-dependent
-        /// points (measured: USA t79, seed 777 - 38 of 39 dump fields byte-identical, approval
-        /// alone moved 5.6e-6). Recording must be OBSERVATION, so the formula above keeps its
-        /// exact pre-ledger body and THIS method recomputes the same expressions from the same
-        /// inputs (state is untouched by the formula except ApprovalRating itself, which arrives
-        /// here as <paramref name="approvalBeforeFormula"/>). The twin cannot drift silently:
-        /// CloseAtBoundary's self-audit asserts Σ(terms)+Σ(events)+clamp against the OBSERVED
-        /// movement every boundary, so a divergence between this method and the formula fires
-        /// ATTRIB immediately. Any edit to the formula's terms MUST be mirrored here - the audit
-        /// is the enforcement, this comment is the courtesy.
-        /// </summary>
-        public static void RecordApprovalAttribution(Country country, PolicyDecision decision, float actualGrowthRatePercent, float taxTermImpulse, float totalMandatorySpendingChange, System.DateTime boundaryDate, float approvalBeforeFormula)
+        /// <summary>The turn's spending-change term (one-off), in approval points - shared by the boundary formula and its ledger twin.</summary>
+        private static float BoundarySpendingEffect(Country country, PolicyDecision decision, float totalMandatorySpendingChange)
         {
             EconomyState state = country.State;
-
-            float growthGap = actualGrowthRatePercent - country.PotentialGrowthRate;
-            float growthEffect = GrowthApprovalSensitivity * growthGap;
-
-            float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.EffectiveNaturalUnemploymentRate);
-            float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country));
-            float crimePenaltyGap = state.CrimeIndex - country.BaselineCrimeIndex;
-            float corruptionPenaltyGap = state.CorruptionIndex - country.BaselineCorruptionIndex;
-
-            float taxHikePenalty = taxTermImpulse;   // A-LOOP q37: the tax term's impulse, signed (a cut's mirror is a gain)
-
             float weightedSpendingPercent =
                 HealthcareApprovalMultiplier * PercentOfGdp(decision.HealthcareSpendingChange, state.NominalGdp) +
                 DefenseApprovalMultiplier * PercentOfGdp(decision.DefenseSpendingChange, state.NominalGdp) +
@@ -2382,37 +2402,36 @@ namespace PoliSim.Simulation
                 HousingApprovalMultiplier * PercentOfGdp(decision.HousingSpendingChange, state.NominalGdp) +
                 MandatorySpendingApprovalMultiplier * PercentOfGdp(totalMandatorySpendingChange, state.NominalGdp);
 
-            float spendingEffect;
             if (weightedSpendingPercent >= 0f)
             {
                 float excessDebtToGdp = Mathf.Max(0f, state.DebtToGdpRatio - DeficitAwarenessDebtToGdpThreshold);
                 float deficitAwarenessFactor = Mathf.Clamp(1f - DeficitAwarenessDampeningPerPoint * excessDebtToGdp, 0f, 1f);
-                spendingEffect = SpendingApprovalSensitivity * weightedSpendingPercent * deficitAwarenessFactor;
-            }
-            else
-            {
-                spendingEffect = SpendingApprovalSensitivity * weightedSpendingPercent;
+                return SpendingApprovalSensitivity * weightedSpendingPercent * deficitAwarenessFactor;
             }
 
-            // Pre-formula approval, so even a lazy-create here (the preview path clones with a null
-            // accruing ledger and has no boundary EnsureAccruing before the formula) opens the
-            // window BEFORE the terms it is about to record - the first-touch class, closed by
+            return SpendingApprovalSensitivity * weightedSpendingPercent;
+        }
+
+        /// <summary>
+        /// Step 2 (R-S2d): the approval ledger's boundary terms - the turn's tax impulse and spending change, recomputed from the same inputs as
+        /// ApplyApprovalRating (which reads the same BoundarySpendingEffect), with <paramref name="approvalBeforeFormula"/> the approval the formula
+        /// started from. The daily terms are recorded by the daily step itself (ApplyApprovalDay). The boundary clamp's truncation is added to
+        /// ClampLoss; CloseAtBoundary's self-audit asserts Σ(terms)+Σ(events)+clamp against the OBSERVED movement every boundary.
+        /// </summary>
+        public static void RecordApprovalAttribution(Country country, PolicyDecision decision, float taxTermImpulse, float totalMandatorySpendingChange, System.DateTime boundaryDate, float approvalBeforeFormula)
+        {
+            EconomyState state = country.State;
+            // Pre-formula approval, so even a lazy-create here (the preview path clones with a null accruing ledger and has no boundary
+            // EnsureAccruing before the formula) opens the window BEFORE the terms it is about to record - the first-touch class, closed by
             // construction on every path (2026-08-25).
             ApprovalAttribution ledger = ApprovalLedgerRecorder.EnsureAccruing(country, boundaryDate, approvalBeforeFormula);
-            ledger.Reversion = ApprovalReversionSpeed * (NeutralApprovalRating - (approvalBeforeFormula + country.TaxTermStock));   // A-LOOP q37 (M-1): the formula's own base, T not yet booked with this turn's impulse
-            ledger.GrowthEffect = growthEffect;
-            ledger.MiseryUnemployment = -(UnemploymentApprovalSensitivity * unemploymentPenaltyGap);
-            ledger.MiseryInflation = -(InflationApprovalSensitivity * inflationPenaltyGap);
-            ledger.MiseryCrime = -(CrimeApprovalSensitivity * crimePenaltyGap);
-            ledger.MiseryCorruption = -(CorruptionApprovalSensitivity * corruptionPenaltyGap);
-            ledger.TaxHikePenalty = -taxHikePenalty;
+            float spendingEffect = BoundarySpendingEffect(country, decision, totalMandatorySpendingChange);
+            float clampLoss = (state.ApprovalRating - approvalBeforeFormula) - (spendingEffect - taxTermImpulse);
+            ledger.TaxHikePenalty = -taxTermImpulse;
             ledger.SpendingEffect = spendingEffect;
-            ledger.WelfareEffect = GetWelfareApprovalEffect(country);
-            ledger.PaidLeaveEffect = LaborCouplings.PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks);
-            ledger.DrugPolicyEffect = CrimeJusticeCouplings.DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
-            ledger.GiniEffect = -GiniApprovalSensitivity * (state.Gini - country.BaselineGini);
-            ledger.ClampLoss = (state.ApprovalRating - approvalBeforeFormula) - ledger.FormulaTermSum;   // A-LOOP q37: the formula's own terms - the period's tax-term fading is a term of the period, not of this formula
-            ledger.ApprovalAfterFormula = state.ApprovalRating;
+            float wanted = approvalBeforeFormula + (spendingEffect - taxTermImpulse);
+            ledger.ClampLoss += clampLoss;
+            if (wanted < 0f || wanted > 100f || (ledger.ApprovalAfterFormula > 0f && ledger.ApprovalAfterFormula < 100f)) { ledger.ApprovalAfterFormula = state.ApprovalRating; }   // as the daily step: the last step's approval, held at the bound a clamped step left
         }
 
         // --- Category spending side-effects: small, separable per-category profiles (v1, not a full policy tree) ---

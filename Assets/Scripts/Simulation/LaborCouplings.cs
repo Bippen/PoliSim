@@ -167,7 +167,7 @@ namespace PoliSim.Simulation
         /// seeded BaselinePaidFamilyLeaveWeeks (and lost per week below) - a small, real political
         /// effect (paid-leave policy tends to be popular).</summary>
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the reasoning above is the basis for this coupling's SIGN and ORDER; the number itself is a game figure that no cited study fixes.</remarks>
-        public const float PaidFamilyLeaveApprovalSensitivity = 0.05f;
+        public const float PaidFamilyLeaveApprovalSensitivity = 0.05f;   // MF-13 (K135, K191): applied a day at x MacroSystem.SustainedApprovalTermScale (MacroSystem.ApplyApprovalDay), so its equilibrium (this ÷ 0.05) stands
 
         /// <summary>
         /// Round 3 item 5, Part B: points BirthRate moves per point Country.FamilyPolicyLevel sits

@@ -260,7 +260,9 @@ namespace PoliSim.EditorTools
                 foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
                 Country de = world.GetCountry(CountryId.Germany);
                 for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                float approvalBeforeLaw = de.State.ApprovalRating;   // MF-13 (K191): the law's enactment cost recorded on the approval ledger as the game's caller records it (SimulationManager's law resolution) - approval's daily step opens the period's ledger on its first day, so an unrecorded write here fails the ATTRIB audit at the next boundary (the integration finding of 2026-10-28)
                 typeof(SimulationManager).GetMethod("ApplyLawBillEffects", instance).Invoke(sim, new object[] { de, new LawBill { LawId = "household_electricity_tax_relief_act", IsRepeal = false } });
+                ApprovalLedgerRecorder.RecordEvent(de, sim.CurrentDate, "Enact: household electricity tax relief (EnergyPassThroughDiagnostic)", de.State.ApprovalRating - approvalBeforeLaw);
                 de.EnactedLaws.Add(new EnactedLaw { LawId = "household_electricity_tax_relief_act", EnactedOn = sim.CurrentDate });
                 sim.AdvanceTurn(decisions);
                 for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }

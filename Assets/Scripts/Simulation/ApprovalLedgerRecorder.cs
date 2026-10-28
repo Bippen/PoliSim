@@ -8,8 +8,10 @@ namespace PoliSim.Simulation
     /// Step 2's ledger lifecycle: events accrue during a period by OBSERVATION at the call sites
     /// (snapshot approval around the write, record the applied post-clamp delta with date and
     /// label - zero signature changes in the political systems, and it records what the
-    /// simulation DID, the FiscalTurnReport principle); the boundary formula records its terms
-    /// into the same accruing ledger (see MacroSystem.ApplyApprovalRating); then
+    /// simulation DID, the FiscalTurnReport principle); approval's daily step adds its reversion
+    /// and sustained terms into the same accruing ledger each day (MacroSystem.ApplyApprovalDay,
+    /// MF-13 K191), the tax term's fading its own named term, and the boundary formula's twin its
+    /// one-off terms (MacroSystem.RecordApprovalAttribution); then
     /// <see cref="CloseAtBoundary"/> runs the SELF-AUDIT and swaps closed-for-accruing.
     ///
     /// <para><b>The self-audit</b>: |observed period Δ − (events + terms + clamp)| must sit
@@ -40,7 +42,8 @@ namespace PoliSim.Simulation
                 country.ApprovalLedgerAccruing = new ApprovalAttribution
                 {
                     PeriodOpenDate = date,
-                    ApprovalAtPeriodOpen = openingApproval
+                    ApprovalAtPeriodOpen = openingApproval,
+                    ApprovalAfterFormula = openingApproval   // MF-13: the last approval step's approval starts at the opening, so a bound means a step left it there
                 };
             }
 
@@ -114,7 +117,10 @@ namespace PoliSim.Simulation
             // if the formula LEFT approval at exactly 0 or 100 - tested on ApprovalAfterFormula,
             // never on the close-time value, which a boundary event may have pulled back inside
             // the range (61 measured false positives on the close-time form, 2026-08-18). Away
-            // from a bound, a non-trivial ClampLoss means the recomputation drifted.
+            // from a bound, a non-trivial ClampLoss means the recomputation drifted. MF-13 (K191):
+            // ApprovalAfterFormula is the approval the period's last approval step left - the daily
+            // step's or the boundary formula's - held at the bound wherever a clamped step left it;
+            // the daily step records its own terms (no twin) and its float rounding into ClampLoss.
             bool formulaClamped = ledger.ApprovalAfterFormula <= 0f || ledger.ApprovalAfterFormula >= 100f;
             if (!formulaClamped && Mathf.Abs(ledger.ClampLoss) > AuditTolerance)
             {
@@ -123,12 +129,12 @@ namespace PoliSim.Simulation
                                "not at a bound. RecordApprovalAttribution no longer mirrors ApplyApprovalRating - re-twin them.");
             }
 
-            country.ApprovalLedgerLastPeriod = ledger;
-            PoliSim.Elections.ApprovalVote.AdvanceEconomyStock(country, ledger);   // A-LOOP q15: the vote's economy stock, from the period's own recorded terms
+            country.ApprovalLedgerLastPeriod = ledger;   // MF-13 (K191): the vote's economy stock advances on approval's daily step (ApprovalVote.AdvanceEconomyStockDay), not here
             country.ApprovalLedgerAccruing = new ApprovalAttribution
             {
                 PeriodOpenDate = date,
-                ApprovalAtPeriodOpen = country.State.ApprovalRating
+                ApprovalAtPeriodOpen = country.State.ApprovalRating,
+                ApprovalAfterFormula = country.State.ApprovalRating
             };
         }
     }

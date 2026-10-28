@@ -128,7 +128,9 @@ namespace PoliSim.EditorTools
                 throw new InvalidOperationException("COMPOSITION: SimulationManager.ApplyLawBillEffects not found by reflection - method renamed?");
             }
 
+            float approvalBeforeLaw = country.State.ApprovalRating;   // MF-13 (K191): the law's enactment cost recorded on the approval ledger as the game's caller records it (SimulationManager's law resolution) - approval's daily step opens the period's ledger on its first day, so an unrecorded write here fails the ATTRIB audit at the next boundary (the integration finding of 2026-10-28)
             method.Invoke(sim, new object[] { country, bill });
+            ApprovalLedgerRecorder.RecordEvent(country, sim.CurrentDate, (bill.IsRepeal ? "Repeal: " : "Enact: ") + bill.LawId + " (harness)", country.State.ApprovalRating - approvalBeforeLaw);
         }
 
         private static bool VerifyComposition(Country country, string label, string[] enactedIds)

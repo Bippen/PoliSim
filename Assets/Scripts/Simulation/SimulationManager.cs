@@ -532,6 +532,10 @@ namespace PoliSim.Simulation
                     // Expectations deliberately absent here - a boundary stance; see MacroSystem's
                     // Phase 5 block comment for the measured failure of the daily form.
 
+                    // MF-13 (K191): approval's daily step - its reversion at 0.81 a quarter and every sustained term, read off the state this day
+                    // settled (the misery gaps, crime, corruption, Gini, the dials) and the day's realised growth as Okun just read it
+                    MacroSystem.ApplyApprovalDay(country, annualizedDailyGrowth, CurrentDate);
+
                     // PHASE 4: the history point, moved here from AdvanceTurn - see the comment at its
                     // old site for the finding. After every system, so the day's point is the state the
                     // day actually produced (the publication-placement reasoning). Phase 5 note: with
@@ -6897,11 +6901,13 @@ namespace PoliSim.Simulation
             // runs BEFORE the formula: a run's FIRST boundary lazy-creates the ledger, and a
             // ledger created after the formula would open at the post-formula value - the audit
             // caught exactly that (observed Δ 0 vs nonzero terms, 2026-08-18).
-            TaxTerm.Reclamp(country);   // A-LOOP q37 (review 878b's M-5): the reversion below reads approval + T - a base a clamped write left outside [0, 100] since the day began is put back first (T only; nothing where T is 0)
+            // MF-13 (K191): the formula carries the turn's one-off terms alone (the tax impulse, the spending change); the reversion and the sustained
+            // terms ran on every day of the period (MacroSystem.ApplyApprovalDay in AdvanceDay), so approval takes no reversion step at the boundary.
+            TaxTerm.Reclamp(country);   // A-LOOP q37 (review 878b's M-5): a base a clamped write left outside [0, 100] since the day began is put back first (T only; nothing where T is 0)
             float approvalBeforeFormula = country.State.ApprovalRating;
             ApprovalLedgerRecorder.EnsureAccruing(country, CurrentDate, approvalBeforeFormula);
-            MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn);
-            MacroSystem.RecordApprovalAttribution(country, spendingResult.EffectiveDecision, actualGrowthRate, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, approvalBeforeFormula);
+            MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn);
+            MacroSystem.RecordApprovalAttribution(country, spendingResult.EffectiveDecision, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, approvalBeforeFormula);
             TaxTerm.BookFormula(country, taxTermImpulse, approvalBeforeFormula, country.ApprovalLedgerAccruing);   // A-LOOP q37: what landed of the turn's impulse into T, after the formula and its twin read T (the reversion reads approval + T)
 
             BoundaryLedger?.Invoke(country, "close");
@@ -7025,8 +7031,12 @@ namespace PoliSim.Simulation
         public PolicyPreview PreviewTurnWithBudgetDraft(CountryId countryId, PolicyDecision decision, BudgetBill draft)
         {
             Country clone = ClonePreviewCountry(_world.GetCountry(countryId));
+            // MF-13 (review 3's R3-1): the draft's bill charges its tax impulse to approval at once (TaxTerm.ChargeApproval: approval - I, T + I); the
+            // preview's approval change is measured from BEFORE the bill, so the charge is in it and the year's fading hands back only part of it -
+            // the draft previews -0.81^4 x I a year on, the figure the game reaches, never the +0.57 I of the fading alone
+            float approvalOrigin = clone.State.ApprovalRating;
             if (draft != null) { ParliamentSystem.ApplyBillResult(clone, draft, passed: true, ApplyBudgetBillSpendingAndSwf, PassageYear(countryId, draft)); }
-            return PreviewTurnOnClone(clone, countryId, decision);
+            return PreviewTurnOnCloneFrom(clone, countryId, decision, approvalOrigin);
         }
 
         /// <summary>P4-B3: each sector's change over the previewed turn, from the shares recorded before it.</summary>
@@ -7049,6 +7059,7 @@ namespace PoliSim.Simulation
         public PolicyPreview PreviewTurnWithSectorDraft(CountryId countryId, PolicyDecision decision, SectorPolicyBill draft)
         {
             Country clone = ClonePreviewCountry(_world.GetCountry(countryId));
+            float approvalOrigin = clone.State.ApprovalRating;
             if (draft != null)
             {
                 var sectorDecision = new PolicyDecision
@@ -7061,7 +7072,7 @@ namespace PoliSim.Simulation
                 };
                 ApplySectorPolicyChanges(clone, sectorDecision);
             }
-            return PreviewTurnOnClone(clone, countryId, decision);
+            return PreviewTurnOnCloneFrom(clone, countryId, decision, approvalOrigin);   // MF-13 (R3-1): measured from before the draft, as the budget draft is
         }
 
         /// <summary>
@@ -7075,6 +7086,11 @@ namespace PoliSim.Simulation
         /// way. A caller passing anything else is outside every guarantee this method has.
         /// </summary>
         private PolicyPreview PreviewTurnOnClone(Country previewCountry, CountryId countryId, PolicyDecision decision)
+            => PreviewTurnOnCloneFrom(previewCountry, countryId, decision, previewCountry.State.ApprovalRating);
+
+        /// <summary>MF-13 (review 3's R3-1): <see cref="PreviewTurnOnClone"/> with the approval its change is measured from given - a caller that
+        /// applied a draft's bill to the clone first passes approval as it stood BEFORE the bill, so the bill's immediate charge is in the change.</summary>
+        private PolicyPreview PreviewTurnOnCloneFrom(Country previewCountry, CountryId countryId, PolicyDecision decision, float approvalOrigin)
         {
             EconomyState state = previewCountry.State;
             // PS-6 K26 (Elias's ruling of 2026-10-23: "the budget preview shows the cut when the limit binds"): where the day tick has armed the played country's
@@ -7087,7 +7103,7 @@ namespace PoliSim.Simulation
             float gdpBeforeThisTurn = state.GDP;
             float unemploymentBefore = state.Unemployment;
             float inflationBefore = state.Inflation;
-            float approvalBefore = state.ApprovalRating;
+            float approvalBefore = approvalOrigin;   // MF-13 (R3-1): the clone's approval, or the caller's before a draft's bill
             float budgetBefore = state.Budget;
             float povertyBefore = state.PovertyRate;
             float laborForceParticipationBefore = state.LaborForceParticipationRate;
@@ -7236,14 +7252,25 @@ namespace PoliSim.Simulation
 
             TaxTerm.Reclamp(previewCountry);   // A-LOOP q37 (M-5): as the boundary does
             float previewApprovalBeforeFormula = state.ApprovalRating;
-            MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn);
-            MacroSystem.RecordApprovalAttribution(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, previewApprovalBeforeFormula);
+            MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn);
+            MacroSystem.RecordApprovalAttribution(previewCountry, spendingResult.EffectiveDecision, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, previewApprovalBeforeFormula);
             TaxTerm.BookFormula(previewCountry, taxTermImpulse, previewApprovalBeforeFormula, previewCountry.ApprovalLedgerAccruing);   // A-LOOP q37: as the boundary books it
+            // MF-13 (K191): the coming year of approval on the clone, as the real game will run it day by day - the tax term's fading first in each day
+            // (TaxTerm.AdvanceDay: it hands back what fades of the impulse just booked, so a draft tax move previews its cost a year on, not its day-one
+            // size; its fiscal-year reset empties only the clone's own net), then approval's daily step at the state the preview just resolved and its
+            // turn's growth; both record into the clone's own fresh ledger (review 2's N-2)
+            for (int d = 1; d <= DaysPerTurn; d++)
+            {
+                System.DateTime previewDay = CurrentDate.AddDays(d);
+                TaxTerm.AdvanceDay(previewCountry, previewDay);
+                MacroSystem.ApplyApprovalDay(previewCountry, actualGrowthRate, previewDay);
+            }
             if (previewPartner != null) { FinancePartner.Withdraw(decision, previewPartner); }   // §716: the caller's decision as it came in, after every reader the boundary keeps it for
 
             return new PolicyPreview
             {
-                // Step 2: the clone's own ledger, filled by the ApplyApprovalRating call above -
+                // Step 2: the clone's own ledger, filled by the boundary formula's twin above and,
+                // since MF-13 (K191), by the projected year's daily approval steps and tax-term fading -
                 // the preview-parity diagnostic compares these terms against the real boundary's,
                 // which is what turns a clone-escape into a mismatch that names its term.
                 ApprovalTerms = previewCountry.ApprovalLedgerAccruing,
@@ -7324,8 +7351,9 @@ namespace PoliSim.Simulation
             PolicyPreview standing = PreviewTurnOnClone(ClonePreviewCountry(real), countryId, decision);
 
             Country proposed = ClonePreviewCountry(real);
+            float approvalOrigin = proposed.State.ApprovalRating;   // MF-13 (R3-1): measured from before the bill, as the budget draft's preview is
             ParliamentSystem.ApplyBillResult(proposed, bill, passed: true, ApplyBudgetBillSpendingAndSwf, PassageYear(countryId, bill));
-            PolicyPreview withBill = PreviewTurnOnClone(proposed, countryId, decision);
+            PolicyPreview withBill = PreviewTurnOnCloneFrom(proposed, countryId, decision, approvalOrigin);
 
             return new BudgetBillEstimate
             {
@@ -7467,9 +7495,9 @@ namespace PoliSim.Simulation
                 AppliedBorderEnforcementCost = country.AppliedBorderEnforcementCost,
                 AppliedSectorSupportCost = country.AppliedSectorSupportCost,
                 AppliedEnergySupportCost = country.AppliedEnergySupportCost,   // EN-7a
-                ApprovalEconomyStock = country.ApprovalEconomyStock,   // A-LOOP q15: the vote's economy stock (the preview closes no period, so it stands)
+                ApprovalEconomyStock = country.ApprovalEconomyStock,   // A-LOOP q15: the vote's economy stock - a value; the preview's projected year (MF-13, K191) moves the clone's copy day by day, never the real one
                 VoteApprovalMarks = country.VoteApprovalMarks == null ? null : new List<ApprovalMark>(country.VoteApprovalMarks),   // A-LOOP q15: the approval term's references, the clone's own list
-                FiscalVoteRecord = country.FiscalVoteRecord?.Copy(),   // A-LOOP q13: the vote's fiscal book, the clone's own copy (the preview runs no day and closes no year, so it stands)
+                FiscalVoteRecord = country.FiscalVoteRecord?.Copy(),   // A-LOOP q13: the vote's fiscal book, the clone's own copy (the preview runs no fiscal day and closes no year - its projected year runs approval's days alone, MF-13 - so it stands)
                 SalienceShift = country.SalienceShift == null ? null : (float[])country.SalienceShift.Clone(),   // A-LOOP q5: what events hold of salience - the stance model's opinion cost reads it; the clone's own copy
                 SalienceRampPerDay = country.SalienceRampPerDay == null ? null : (float[])country.SalienceRampPerDay.Clone(),   // K94: each issue's ramp step to its peak, the clone's own copy
                 SalienceHoldDays = country.SalienceHoldDays == null ? null : (int[])country.SalienceHoldDays.Clone(),   // A-LOOP q5: the days each issue's jump is still held, the clone's own copy
@@ -7567,7 +7595,8 @@ namespace PoliSim.Simulation
                 ApprovalLedgerAccruing = new ApprovalAttribution
                 {
                     PeriodOpenDate = country.ApprovalLedgerAccruing != null ? country.ApprovalLedgerAccruing.PeriodOpenDate : default,
-                    ApprovalAtPeriodOpen = country.State.ApprovalRating
+                    ApprovalAtPeriodOpen = country.State.ApprovalRating,
+                    ApprovalAfterFormula = country.State.ApprovalRating   // MF-13: as every fresh ledger opens (ApprovalLedgerRecorder)
                 },
                 // Q3: the trend field rides too (its sentinel fallback happens to be exact here
                 // - the property falls back to PotentialGrowthRate, copied above via the ctor -

@@ -81,6 +81,7 @@ This is a PLAN: nothing here is built, and no constant moves until Elias rules o
 - **The rise is measured against the line's rate the moment before**, so a cut is free and the bill that restores it pays the whole penalty.
 - **The units are mixed (D-33):** lever points for a rate, effective-rate points for the bands and sub-rows (`TaxBases.EffectiveRate`), and the dial's per cent for a per-tonne line (EN-4c).
 - **Nothing decays the penalty but approval's own reversion**, 5 % of the gap a turn (`MacroSystem.ApprovalReversionSpeed`, :2098, CONVENTION). A turn is 365 days (`SimulationManager.DaysPerTurn`, :216), so a shock keeps 95 % of itself a year: effectively permanent.
+  - *Since MF-13 (rulings K134, K135, K191, 2026-10-27):* no longer so. Approval reverts DAILY at the tax term's persistence, 0.81 a quarter (`MacroSystem.ApprovalReversionSpeed` = 1 − `TaxTerm.DailyPersistence`, run in `MacroSystem.ApplyApprovalDay`), so a shock keeps 0.81⁴ ≈ 0.43 of itself a year; every sustained term is rescaled so its equilibrium is unchanged. The text above is the plan as written on 2026-10-19.
 - **Measured (GA-2-12, §828's recheck):** Sweden's sub-row floor bill, some 23 points of the effective rate down, left approval at 50. The bill putting the statute back took it from 52 to 18 in a day.
 
 **(2) Form.**
@@ -427,6 +428,7 @@ Fetched 2026-10-18 with `curl -sL -A "Mozilla/5.0 …"`, stored unaltered under 
    - Approval keeps 95 % of a shock a year; the popularity functions measure 0.79-0.84 a quarter.
    - **Recommended:** leave approval's reversion out of A-LOOP (the vote reads the change over the term, which bounds it), and rule the reversion as its own model family later.
    - Alternative: adopt the sourced persistence now, as a family across every country.
+   - **RULED:** J1 (2026-10-19) took the recommendation - the reversion stayed out of A-LOOP and became MF-13; K134 (0.81 a quarter, one persistence across approval), K135 (every sustained term rescaled to its old equilibrium) and K191 (the reversion on the daily step), all 2026-10-27, then built it (`docs/RULINGS_2026-10-23.md`).
 4. **Q4 (q13): Brender & Drazen measure re-election probability; the game counts shares.**
    - **Recommended:** convert through σ_v, the FITTED spread of incumbent vote swings.
    - Alternative: read their probability points as share points, which has no premise behind it.

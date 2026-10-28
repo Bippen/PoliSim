@@ -603,8 +603,14 @@ Elections, richer policy levers, and random events - all game-rule heuristics la
 economic core, not named theory, but built with the same discipline (small named methods, tunable
 constants, no magic numbers):
 
-- **Approval Rating** (`MacroSystem.ApplyApprovalRating`): mean-reverts toward a neutral
-  `NeutralApprovalRating` (50) at `ApprovalReversionSpeed`, adjusted by: the growth gap (strong
+- **Approval Rating** — since MF-13 (rulings K134, K135 and K191, recorded in `docs/RULINGS_2026-10-23.md`) in two parts. **Approval's
+  daily step** (`MacroSystem.ApplyApprovalDay`, every day of the country's day) reverts toward `NeutralApprovalRating` (50) at
+  `ApprovalReversionSpeed` - one less `TaxTerm.DailyPersistence`, 0.81 a quarter - and adds every SUSTAINED term at its authored figure ×
+  `SustainedApprovalTermScale` a day, so each term's equilibrium is the authored figure ÷ `PreMf13ApprovalReversionSpeed` (0.05), as when
+  the formula ran once a turn; the sustained terms are the growth gap, the misery gaps, welfare, paid leave, drug policy and Gini. **The
+  boundary formula** (`MacroSystem.ApplyApprovalRating`) carries the turn's one-off terms alone: the tax term's impulse and the spending
+  change. The paragraph below is the formula's description as it stood before MF-13, kept for its reasoning: it mean-reverted toward a
+  neutral `NeutralApprovalRating` (50) at `ApprovalReversionSpeed`, adjusted by: the growth gap (strong
   growth helps, weak growth hurts, `GrowthApprovalSensitivity`); a Phillips-curve-adjacent "misery
   index" of how far `Unemployment`/`Inflation` sit from `NaturalUnemploymentRate`/
   `TaylorRule.InflationTarget` — **gaps, not absolute levels**, since a healthy economy sitting at

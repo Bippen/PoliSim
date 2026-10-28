@@ -37,7 +37,7 @@ namespace PoliSim.EditorTools
     /// to the restating run's; and through a bound in two runs (a rise then a shock past the ceiling, a cut then a shock past the floor) the move run
     /// IS the no-move run every day for ten years; and (6g, review 879b's M-1) a shock that meets a bound AGAINST a standing T - a rise at 4 then an
     /// event of −2, a cut at 96 then +2, through `TaxTerm.Shock` as every clamped writer goes - leaves the move run the no-move run for ten years.</item>
-    /// <item><b>The reversion</b> (M-1): over ten years of the game's daily fading and its yearly formula, a rise's approval path stays at or below the
+    /// <item><b>The reversion</b> (M-1): over ten years of the game's daily fading, approval's daily step (MF-13, K191) and the yearly formula, a rise's approval path stays at or below the
     /// no-move path every day - it is exactly the no-move path less T - and converges to it.</item>
     /// <item><b>The half-life</b> on the game's own days: a rise's T is at half its size within ±10 days of the declared half-life
     /// (ln 0.5 ⁄ ln 0.81 quarters of 365 ⁄ 4 days, the plan's "some 300 days").</item>
@@ -499,12 +499,13 @@ namespace PoliSim.EditorTools
                 {
                     DateTime day = sim.CurrentDate.AddDays(d);
                     TaxTerm.AdvanceDay(c, day);
+                    MacroSystem.ApplyApprovalDay(c, c.PotentialGrowthRate, day);   // MF-13 (K191): approval's daily step, as the game's day runs it
                     if (d % SimulationManager.DaysPerTurn == 0)
                     {
                         TaxTerm.Reclamp(c);
                         float a0 = c.State.ApprovalRating;
-                        MacroSystem.ApplyApprovalRating(c, PolicyDecision.None(), c.PotentialGrowthRate, 0f, 0f);
-                        MacroSystem.RecordApprovalAttribution(c, PolicyDecision.None(), c.PotentialGrowthRate, 0f, 0f, day, a0);
+                        MacroSystem.ApplyApprovalRating(c, PolicyDecision.None(), 0f, 0f);
+                        MacroSystem.RecordApprovalAttribution(c, PolicyDecision.None(), 0f, 0f, day, a0);
                         TaxTerm.BookFormula(c, 0f, a0, c.ApprovalLedgerAccruing);
                     }
                     path[d - 1] = c.State.ApprovalRating;
@@ -577,12 +578,13 @@ namespace PoliSim.EditorTools
                 {
                     DateTime day = sim.CurrentDate.AddDays(d);
                     TaxTerm.AdvanceDay(c, day);
+                    MacroSystem.ApplyApprovalDay(c, c.PotentialGrowthRate, day);   // MF-13 (K191): approval's daily step, as the game's day runs it
                     if (d % SimulationManager.DaysPerTurn == 0)
                     {
                         TaxTerm.Reclamp(c);
                         float a0 = c.State.ApprovalRating;
-                        MacroSystem.ApplyApprovalRating(c, PolicyDecision.None(), c.PotentialGrowthRate, 0f, 0f);
-                        MacroSystem.RecordApprovalAttribution(c, PolicyDecision.None(), c.PotentialGrowthRate, 0f, 0f, day, a0);
+                        MacroSystem.ApplyApprovalRating(c, PolicyDecision.None(), 0f, 0f);
+                        MacroSystem.RecordApprovalAttribution(c, PolicyDecision.None(), 0f, 0f, day, a0);
                         TaxTerm.BookFormula(c, 0f, a0, c.ApprovalLedgerAccruing);
                     }
                     path[d - 1] = c.State.ApprovalRating;
@@ -595,7 +597,7 @@ namespace PoliSim.EditorTools
         // ============================================================ (7) the reversion
         private static void Reversion(float s)
         {
-            _sb.Append("    7. the reversion (review 878's M-1): ten years of the daily fading and the yearly formula, a rise against no move\n");
+            _sb.Append("    7. the reversion (review 878's M-1): ten years of the daily fading, approval's daily step and the yearly formula, a rise against no move\n");
             float vat = SeedRate(TaxType.VAT);
             (SimulationManager simA, World worldA, GameObject goA) = Open();
             (SimulationManager simB, World worldB, GameObject goB) = Open();
@@ -609,10 +611,12 @@ namespace PoliSim.EditorTools
                     DateTime day = simA.CurrentDate.AddDays(d);
                     TaxTerm.AdvanceDay(a, day);
                     TaxTerm.AdvanceDay(b, day);
+                    MacroSystem.ApplyApprovalDay(a, a.PotentialGrowthRate, day);   // MF-13 (K191): approval's daily step, as the game's day runs it
+                    MacroSystem.ApplyApprovalDay(b, b.PotentialGrowthRate, day);
                     if (d % SimulationManager.DaysPerTurn == 0)
                     {
-                        MacroSystem.ApplyApprovalRating(a, PolicyDecision.None(), a.PotentialGrowthRate, 0f, 0f);
-                        MacroSystem.ApplyApprovalRating(b, PolicyDecision.None(), b.PotentialGrowthRate, 0f, 0f);
+                        MacroSystem.ApplyApprovalRating(a, PolicyDecision.None(), 0f, 0f);
+                        MacroSystem.ApplyApprovalRating(b, PolicyDecision.None(), 0f, 0f);
                     }
                     float diff = a.State.ApprovalRating - b.State.ApprovalRating;
                     worstAbove = Mathf.Max(worstAbove, diff);

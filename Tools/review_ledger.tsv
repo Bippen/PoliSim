@@ -344,3 +344,9 @@ file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	d8a4fe76
 file	Assets/Scripts/Simulation/SimulationManager.cs	66ce967be7241c934bbc4dede5bee870888ddf40c098dc63e5e6af843b2a13e9	reviewed	2026-10-28	s925	Reviews/2026-10-27_coal1_review2.md	-
 file	Assets/Scripts/Simulation/SimulationManager.CoalitionExit.cs	61dfd94aa27d19ad2c034c721d1077b28f8f02be9ef23938a481fd4f5aac4b04	reviewed	2026-10-28	s925	Reviews/2026-10-27_coal1_review2.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	b0cccdc1665016f5971e835e5c0460086ecc3e16f5ecb73d5be8c0f2141d3196	reviewed	2026-10-28	s925	Reviews/2026-10-27_coal1_review2.md	integrator: the K59 read moved below the L5 break line (a statement order with no data dependency) for AverageCabinetDiagnostic's three-line guard
+file	Assets/Scripts/Simulation/SimulationManager.cs	a0926b42254db59c79589a8a8db2001efdd56887fb021683d877f067203147b5	reviewed	2026-10-28	s926	Reviews/2026-10-28_mf13_integrator.md	-
+file	Assets/Scripts/Simulation/MacroSystem.cs	d6374874c9be2aeba619beea51af3e6f6af4305f0ebb85436377a53c4ce57f19	reviewed	2026-10-28	s926	Reviews/2026-10-28_mf13_review4.md	-
+file	Assets/Scripts/Simulation/ApprovalLedgerRecorder.cs	1f9118ef3f2b88f8d1f35ba7b26c86c31e1e4f4d0ebbd9e15d373eef9545782e	reviewed	2026-10-28	s926	Reviews/2026-10-28_mf13_review3.md	-
+file	Assets/Scripts/Simulation/TaxTerm.cs	5d5fb659c627b3a111771b55c661b18259ddfd66e6d31aa3272a393960e79dcf	reviewed	2026-10-28	s926	Reviews/2026-10-28_mf13_review3.md	-
+baseline	777	33ee6c90f51226e5ce7ba5774199a93da20f51d4bc437f49376bc9532fff520f	reviewed	2026-10-28	s926	Reviews/2026-10-28_mf13_integrator.md	-
+baseline	424242	607c3f8deccb4a0558849ad0ddaa6a6a58eda313a586af5d6f61423594debe0c	reviewed	2026-10-28	s926	Reviews/2026-10-28_mf13_integrator.md	-

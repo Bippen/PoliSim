@@ -34,13 +34,13 @@ namespace PoliSim.Simulation
     /// approval and recorded as the approval ledger's named term `ApprovalAttribution.TaxTermFading` (with B inside the range the hand-back never
     /// meets a bound). <b>The fading is the ONLY way the term's points return</b> (review 878's M-1): approval's reversion reads approval
     /// without the standing term (approval + T), so it neither pays the term back a second time nor overshoots. Its speed and its other terms are
-    /// untouched (Q3: the reversion stays out of A-LOOP).</item>
+    /// untouched by q37 (Q3: the reversion stayed out of A-LOOP); MF-13 (K134, 2026-10-27) then gave approval's reversion the same 0.81 a quarter, and K191 its daily step (`MacroSystem.ApprovalReversionSpeed`, one less <see cref="DailyPersistence"/>, run in `MacroSystem.ApplyApprovalDay`), one persistence across approval.</item>
     /// </list>
     /// <para>⚠ <b>Declared readings</b> (the plan leaves them open): a clamped write between a day's start and the boundary formula is re-clamped at
     /// the formula (the reversion reads a base inside the range); a cut and its restore apart in time leave the cut's faded part standing,
     /// m·s·x·(1 − p^days), itself fading - the plan's "|Δapproval| ≤ 0.01" holds for a pair on one day; the income line's unit is its effective rate,
     /// which moves with its base daily, so a band cut and its restore months apart net to a residue of order 1e-3 points, priced at s or m·s (review
-    /// 878b's L-7: exact for a flat line only); the preview books the turn's impulse and does not run the coming year's fading.</para>
+    /// 878b's L-7: exact for a flat line only); the preview books the turn's impulse and, since MF-13 (K191), runs the coming year's fading with approval's daily step on its clone.</para>
     /// </summary>
     public static class TaxTerm
     {
@@ -157,8 +157,9 @@ namespace PoliSim.Simulation
         /// <summary>The turn's impulse, charged inside the boundary formula (`MacroSystem.ApplyApprovalRating`), booked into T AFTER the formula and its
         /// ledger twin (both read T before it - approval's reversion reads approval + T). <b>The contract</b> (review 878b's M-5, which generalises the
         /// same-direction rule of review 878's M-2): T after = the run without the term less the run with it, each through the formula's own clamp -
-        /// <c>T = Clamp(approvalBefore + T + (FormulaTermSum + impulse), 0, 100) − ApprovalAfterFormula</c>, where FormulaTermSum carries the impulse
-        /// as −impulse (`ApprovalAttribution.TaxHikePenalty`), so FormulaTermSum + impulse is the formula's step with the term absent. Where nothing binds
+        /// <c>T = Clamp(approvalBefore + T + (step + impulse), 0, 100) − approval after the formula</c>, where the formula's step (since MF-13 its
+        /// one-off terms alone, `ApprovalAttribution.TaxHikePenalty` + `ApprovalAttribution.SpendingEffect`) carries the impulse as −impulse, so
+        /// step + impulse is the formula's step with the term absent. Where nothing binds
         /// - the formula left approval strictly inside the range and the base's step stays inside it - this is T + impulse, booked exactly as that. It
         /// reduces to "the clamp's truncation is taken from the impulse first, never past zero" in the two same-direction quadrants (a penalty at the
         /// floor, a mirror at the ceiling), and forgives in the two opposite ones (a rise at the ceiling, a cut at the floor, where the run without the
@@ -166,8 +167,11 @@ namespace PoliSim.Simulation
         public static void BookFormula(Country country, float impulse, float approvalBeforeFormula, ApprovalAttribution ledger)
         {
             if (ledger == null) { country.TaxTermStock += impulse; return; }
-            float after = ledger.ApprovalAfterFormula;
-            float baseAfter = approvalBeforeFormula + country.TaxTermStock + (ledger.FormulaTermSum + impulse);
+            // MF-13 (K191): the boundary formula carries the turn's one-off terms alone - the impulse (TaxHikePenalty, −impulse) and the spending change -
+            // while the reversion and the sustained terms run on approval's daily step (`MacroSystem.ApplyApprovalDay`, which carries its own clamps into T
+            // through AfterShock); the formula's step is those two, and approval as the formula left it is approval now (this runs right after the formula)
+            float after = country.State.ApprovalRating;
+            float baseAfter = approvalBeforeFormula + country.TaxTermStock + (ledger.TaxHikePenalty + ledger.SpendingEffect + impulse);
             if (after > 0f && after < 100f && baseAfter >= 0f && baseAfter <= 100f) { country.TaxTermStock += impulse; return; }
             country.TaxTermStock = Mathf.Clamp(baseAfter, 0f, 100f) - after;
         }
