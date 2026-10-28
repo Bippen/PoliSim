@@ -41798,3 +41798,24 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** doc927 23 of 23; cheap927 142 of 142; sim927 78 of 78 (data, tooling and documents; no baseline can move)
 
 **Commit:** this one.
+
+## 928. MF-14 (q14; K138, K199-K202): THE UNEMPLOYMENT FLOOR FROM THE OECD SERIES, THE NATURAL RATE NEVER BELOW IT, THE CONVEX PHILLIPS CURVE, PRICES FREE TO FALL, NO NOMINAL PENSION CUT IN THE USA AND GERMANY - THE FAMILY `mf14` (2026-10-28)
+
+**The rulings:** q14 of 2026-10-18 (unemployment floors at the lowest rate since 1990, inflation convex in the gap, prices may fall; the audit's GA-2-4); K138 (the OECD harmonised annual series); on the reviews and asks K199 (every reader of the natural rate sees the higher of the composed rate and the floor), K200 (France seeded at the series' 2024 7.45), K201 (no nominal pension cut in the USA and Germany), K202 (France's margin answered by K199; Poland's seed definition filed; the drift measured).
+
+**Built** (an implementer on `wave/q14`: 15a6004b; review 7f53b1db NOT READY - H-1 the floor above the natural rate, M-1 the supply excess, M-2 France below its floor; fix round 67e7e497; review 2 6808bf6b READY with N-1..N-4 Low; cc7f2e94 N-1..N-3; squash-merged on §927):
+- The floors from the OECD SDMX CSV (byte-exact, `ElectionsData/macro/raw/oecd_hur/`) by `Tools/unemployment_floor_prep.pl` into `Generated/UnemploymentFloorData.cs`: USA 3.633 (2023), Sweden 1.717 (1990), Germany 2.95 (2019, the series from 1991), France 7.358 (2022), Italy 6.125 (2025), Poland 2.817 (2023, from 1997); a hard floor in Okun's step and the supply shock; the supply excess books the realised move.
+- `Country.EffectiveNaturalUnemploymentRate` = max(composed rate + demographic shift, floor) read by every gap reader (the Phillips slack, Okun's reversion, the Taylor gap, the poverty, crime, approval, real-wage and rating terms, the preview, the UI).
+- The Phillips slack NAIRU x ln(U/NAIRU) (Murphy, FOMC memo 2018, fetched byte-exact), the slope 0.3 at the natural rate unchanged; inflation's 0 floor replaced by a mirrored guard [-30, 30] (CONVENTION).
+- `SimulationManager.PensionNominalGuarantee` on the USA's and Germany's pension line (42 U.S.C. 415(i); SGB VI s68a (1), fetched byte-exact), in the boundary's index step and the NEXT YEAR projection; the law card reads the room above the floor a natural-rate act delivers.
+- `UnemploymentFloorPhillipsDiagnostic` (simulation, registered by the integrator). The integrator: the two generated helpers only the diagnostic called removed (UnwiredSubsystemCheck's ceiling); the US-8 and US-13 cards regenerated; UsMidtermCheck re-registered, verdict unchanged (the cause q14: m +0.16 -> +0.12).
+
+**Measured:** the family `mf14` against `mf13` (`Reviews/2026-10-28_q14_integrator.md`): every country first differs at turn 1 (the convex slack); France moves most - unemployment 7.33 -> 7.79 at turn 1 and held at its floor (7.37 at turn 100, where mf13 sank below it), its debt at turn 100 +23.5 % (777); elsewhere turn 100 moves little (debt Germany +0.4 %, Italy +1.9 %, Poland +2.7 %, Sweden +0.6 %, the USA -4.4 %; unemployment under 0.04 points). Mean inflation over the run: France -0.08, the USA -0.06, the rest within 0.03 - no upward drift from the log form. The sentinel re-pinned: 777 ac504769..., 424242 8367215c....
+
+**Evidence:** `Reviews/2026-10-28_q14_review.md`, `_review2.md`, `_integrator.md`; ledger rows s928 (`MacroSystem.cs`, `SimulationManager.cs`, both baseline digests).
+
+**Declared:** "since 1990" inclusive (Sweden's floor is 1990's); the hard floor; the guard mirrored, not sourced; the convex scale keeping the slope at the natural rate; Germany's catch-up (s68a (2)-(3)) not modelled; N-4 (a float local's bit-identity) by reading, not by a control dump; Poland's seed unemployment (5.4) reads the registered rate against the harmonised series' ~2.9 - filed, not changed.
+
+**Bars:** n928 12 of 12; dump928 (family mf14) explained above, the sentinel re-pinned; drys928 (France 1280) 0 failed and real928 (France 1280, 141 frames) 0 failed, no canvas clip; cheap928 3 of 142 (UnwiredSubsystemCheck - two generated helpers only the diagnostic called; the US-8 and US-13 cards stale; UsMidtermCheck's registered m) then the integrator's fixes, usread928 and midread928 regenerated, cheap928b 142 of 142 and sim928b 79 of 79 on the final tree
+
+**Commit:** this one.

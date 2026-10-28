@@ -8512,7 +8512,13 @@ namespace PoliSim.UI
                 foreach (StructuralDelta d in law.Structural)
                 {
                     StructuralParameters.Spec spec = StructuralParameters.Of(d.Parameter);
-                    GUILayout.Label($"{spec.Name}: {d.Delta:+0.00;-0.00} {spec.Unit}", _labelStyle, GUILayout.Width(contentWidth));
+                    // MF-14 (K199, the q14 review 2's N-1): the natural rate every reader sees never sits below the country's unemployment floor, so the
+                    // effect is the change THAT rate takes here; where the floor caps it, the law's own figure and the floor follow.
+                    float effect = d.Parameter == StructuralParameter.NaturalUnemploymentRate && _playerCountry != null ? MacroSystem.EffectiveNaturalRateChange(_playerCountry, d.Delta) : d.Delta;
+                    string capped = Mathf.Abs(effect - d.Delta) > 0.005f
+                        ? $" (law {d.Delta.ToString("+0.00;-0.00", CultureInfo.InvariantCulture)}; the floor {_playerCountry.UnemploymentFloorPercent.ToString("0.00", CultureInfo.InvariantCulture)} caps it)"
+                        : "";
+                    GUILayout.Label($"{spec.Name}: {effect:+0.00;-0.00} {spec.Unit}{capped}", _labelStyle, GUILayout.Width(contentWidth));
                 }
                 GUILayout.Space(4f);
             }

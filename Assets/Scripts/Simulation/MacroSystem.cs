@@ -264,6 +264,26 @@ namespace PoliSim.Simulation
         /// <summary>Gameplay ceiling for unemployment - a bug elsewhere in the feedback chain should never be able to push this past a sane bound.</summary>
         private const float MaxUnemploymentPercent = 30f;
 
+        /// <summary>MF-14 (q14; Elias's ruling K138, 2026-10-27): unemployment's floor - the lowest annual rate the OECD's harmonised series records for the
+        /// country from 1990 on (from the series' own start where it opens later), read from the generated table
+        /// (`UnemploymentFloorData.Floors`, written by `Tools/unemployment_floor_prep.pl` from the stored CSV). A HARD floor, replacing the clamp at 0: the
+        /// smallest form that is true to "unemployment floors at the lowest rate since 1990" - Okun's step and the supply shock clamp the rate to [floor, ceiling], and a
+        /// seed below the floor is lifted to it on its first step. A country the table does not hold keeps the old floor of 0. The natural rate every reader sees never sits below it (`Country.EffectiveNaturalUnemploymentRate`, K199).</summary>
+        public static float UnemploymentFloorPercent(Country country)
+            => country.UnemploymentFloorPercent;
+
+        /// <summary>MF-14 (K199; the q14 review 2's N-1): the change a structural delta to the natural rate makes, in this country today, to the natural rate
+        /// every reader sees (`Country.EffectiveNaturalUnemploymentRate`) - the composed rate moved by the delta inside the parameter's own bounds, the
+        /// demographic shift added, never below the floor, less today's figure. A cut larger than the room above the floor delivers only that room. Read by
+        /// the law card; the composition itself is the enacted set's (the parameter's bounds are `StructuralParameters`').</summary>
+        public static float EffectiveNaturalRateChange(Country country, float delta)
+        {
+            StructuralParameters.Spec spec = StructuralParameters.Of(StructuralParameter.NaturalUnemploymentRate);
+            float shift = country.State != null ? country.State.NaturalRateDemographicShift : 0f;
+            float after = Mathf.Max(Mathf.Clamp(country.NaturalUnemploymentRate + delta, spec.Min, spec.Max) + shift, country.UnemploymentFloorPercent);
+            return after - country.EffectiveNaturalUnemploymentRate;
+        }
+
         /// <summary>UBI's small, debated labor-supply effect: SLOWS unemployment's reversion toward NAIRU at full generosity - kept subtle deliberately, since the real-world effect is itself debated, not settled.</summary>
         /// <remarks>[AUTHORED-DRAFT] - the doc calls the real-world effect small and debated, and the number takes that shape without any study fixing it.</remarks>
         private const float UbiUnemploymentReversionPenalty = 0.05f;
@@ -366,8 +386,13 @@ namespace PoliSim.Simulation
                     (GetMinimumWageUnemploymentAdjustment(country) + GetOvertimeUnemploymentAdjustment(country) + GetRetrainingUnemploymentAdjustment(country) + GetSectorUnemploymentAdjustment(country)) * sliceFraction,
                     sliceFraction);
             }
+            // MF-14 (the q14 review's L-5): the clamp's share, recomputed for a subscriber alone in one expression and no local - the play path's store below untouched.
+            if (OkunClampLedger != null)
+            {
+                OkunClampLedger(country, Mathf.Clamp(state.Unemployment + unemploymentChange, UnemploymentFloorPercent(country), MaxUnemploymentPercent) - (state.Unemployment + unemploymentChange));
+            }
 
-            state.Unemployment = Mathf.Clamp(state.Unemployment + unemploymentChange, 0f, MaxUnemploymentPercent);
+            state.Unemployment = Mathf.Clamp(state.Unemployment + unemploymentChange, UnemploymentFloorPercent(country), MaxUnemploymentPercent);
         }
 
         /// <summary>§400: a measurement seam, null in play. A probe that subscribes receives every application of Okun's law with its three terms -
@@ -376,6 +401,12 @@ namespace PoliSim.Simulation
         /// recomputed for the subscriber alone), so a trajectory with the ledger unsubscribed is byte-identical to one before it existed - asserted by the
         /// p5okun2 diff against p5nairu in §400, after a first seam that used float locals parted them.</summary>
         public static System.Action<Country, float, float, float, float> OkunLedger;
+
+        /// <summary>MF-14 (the q14 review's L-5): a measurement seam beside <see cref="OkunLedger"/>, null in play. The three terms <see cref="OkunLedger"/> hands
+        /// are the step BEFORE the clamp; on a day the floor (or the ceiling) binds they no longer sum to the move. This hands the clamp's share of the same
+        /// application - the clamped rate minus the unclamped one, 0 on a day neither bound binds, positive on a floor day - so the three terms plus this sum to
+        /// the move on every day.</summary>
+        public static System.Action<Country, float> OkunClampLedger;
 
         /// <summary>Phase 5 daily wrapper. <paramref name="annualizedDailyGrowthPercent"/> is the
         /// day's realized GDP growth times DaysPerTurn - annualized so the gap against the annual
@@ -454,8 +485,13 @@ namespace PoliSim.Simulation
             float impact = (deltaP - deltaTrend) * (100f - state.Unemployment) / p;
             float excessBefore = state.SupplyUnemploymentExcess;
             float excessAfter = excessBefore * (1f - SupplyAbsorptionPerYear) + impact;
-            state.SupplyUnemploymentExcess = excessAfter;
-            state.Unemployment = Mathf.Clamp(state.Unemployment + (excessAfter - excessBefore), 0f, MaxUnemploymentPercent);
+            // MF-14 (the q14 review's M-1): the excess books the move that HAPPENED - where the floor (or the ceiling) absorbs part of it, the excess moves by
+            // the realised change only, so no phantom rise follows at the next boundary. Unclamped, the figure stored is excessAfter exactly, as before.
+            float unemploymentBefore = state.Unemployment;
+            float unemploymentRaw = unemploymentBefore + (excessAfter - excessBefore);
+            float unemploymentAfter = Mathf.Clamp(unemploymentRaw, UnemploymentFloorPercent(country), MaxUnemploymentPercent);
+            state.SupplyUnemploymentExcess = unemploymentAfter == unemploymentRaw ? excessAfter : excessBefore + (unemploymentAfter - unemploymentBefore);
+            state.Unemployment = unemploymentAfter;
         }
 
         /// <summary>FT-8 (§398), a BOUNDARY step beside the supply shock: the natural rate reads the labour force. The composition rate - the unemployment rate
@@ -488,43 +524,65 @@ namespace PoliSim.Simulation
         // --- Expectations-augmented Phillips Curve: inflation moves with the unemployment gap ---
 
         /// <summary>How many inflation points move per percentage point of unemployment gap versus NAIRU.</summary>
-        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the expectations-augmented Phillips curve is the standard shape; its slope is famously unstable across periods and countries, so no single published figure could be transplanted here.</remarks>
-        private const float PhillipsCurveSlope = 0.3f;
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the expectations-augmented Phillips curve is the standard shape; its slope is famously unstable across periods and countries, so no single published figure could be transplanted here. MF-14: since the curve went convex this is its slope AT the NAIRU (`MacroSystem.PhillipsSlack`); public so the diagnostics compute the print by hand.</remarks>
+        public const float PhillipsCurveSlope = 0.3f;
 
         /// <summary>Gameplay ceiling for inflation - a bug elsewhere in the feedback chain should never be able to push this past a sane bound. Public so EventSystem's inflation shocks share the same ceiling.</summary>
         public const float MaxInflationPercent = 30f;
 
+        /// <summary>MF-14 (q14, "prices may fall"): the gameplay floor for inflation - the 0 it replaces made deflation impossible. CONVENTION, a bound and not a
+        /// claim about the world: the ceiling mirrored, a guard that a bug elsewhere in the chain cannot push the print past (the price level's daily compounding
+        /// needs a print above -100); no source sets a deflation bound and none is claimed. In the model deflation is bounded on its own: slack is capped by the
+        /// unemployment ceiling and the expectations are anchored to the zone's target. Public so EventSystem's inflation shocks share it.</summary>
+        public const float MinInflationPercent = -MaxInflationPercent;
+
+        /// <summary>MF-14 (q14; the ruling "inflation rises convexly with the gap"): the slack the Phillips curve reads, CONVEX in unemployment - NAIRU × ln(U ÷ NAIRU)
+        /// in place of the linear gap U − NAIRU. SOURCED FORM: Murphy (Federal Reserve Bank of Dallas), "Metro Level Evidence on the Convexity of the U.S. Phillips
+        /// Curve", FOMC memo, January 2018, released by the FOMC Secretariat 1/12/2024 (`ElectionsData/macro/raw/phillips_convexity/FOMC20180116memo02.pdf`), section 4:
+        /// "In the non-linear specifications, convexity may be captured by using ln(um / uNRU) or ugapm / u as the slack terms" - the log form is one of the memo's
+        /// two estimated convex forms. DERIVED SCALE: the factor NAIRU makes the slope at the NAIRU exactly PhillipsCurveSlope, so the curve is the old line to
+        /// first order at the NAIRU and no new figure enters - the bend is the NAIRU's own: g points BELOW the NAIRU read NAIRU × ln(1 − g ÷ NAIRU), more slack
+        /// than g; g points ABOVE read NAIRU × ln(1 + g ÷ NAIRU), less. A sense of size only, NOT a check on this form: the memo's section-5 simulation - run on its OTHER
+        /// convex specification, the ratio form ugap ÷ u, not the log form used here - has a one-point fall in unemployment raise core CPI inflation 30 bp with
+        /// a linear curve and "less than 40 bps when it is convex" (a ratio under 1.33); this form's ratio at one point below a NAIRU of 4.0 is 4 ln(4 ÷ 3) =
+        /// 1.15, inside that range. The memo finds the convexity "modest, and not economically significant". Defined because unemployment never falls below its
+        /// floor (`MacroSystem.UnemploymentFloorPercent`, above 0 for every seeded country) and the natural rate every reader sees never sits below the same
+        /// floor (`Country.EffectiveNaturalUnemploymentRate`, K199); a non-positive argument (a country the floor table does not hold) reads the linear gap.</summary>
+        public static float PhillipsSlack(float unemployment, float naturalRate)
+            => unemployment > 0f && naturalRate > 0f ? naturalRate * Mathf.Log(unemployment / naturalRate) : unemployment - naturalRate;
+
         /// <summary>
-        /// Phillips Curve: inflation equals expected inflation, minus the unemployment gap versus
-        /// NAIRU scaled by PhillipsCurveSlope. Unemployment above NAIRU (slack) is disinflationary;
-        /// below NAIRU (overheating) is inflationary. Unemployment's own mean-reversion (see
+        /// Phillips Curve: inflation equals expected inflation, minus the slack versus NAIRU
+        /// (`MacroSystem.PhillipsSlack`, convex since MF-14) scaled by PhillipsCurveSlope. Unemployment above NAIRU (slack) is disinflationary;
+        /// below NAIRU (overheating) is inflationary, and more so per point the tighter it is. Unemployment's own mean-reversion (see
         /// ApplyOkunsLaw) keeps this gap from growing without bound, so inflation settling back down
-        /// is a consequence of that rather than a separate correction here.
+        /// is a consequence of that rather than a separate correction here. MF-14: the print is clamped to
+        /// [MinInflationPercent, MaxInflationPercent] - prices may fall.
         ///
         /// Pass 6 (2026-08-27): <paramref name="priceLevelTermsPp"/> is the period's PRICE-LEVEL terms - the tariff
         /// pass-through, the change in the tariff take the boundary planned, as inflation points for
         /// the year it lands (FiscalPeriod.PlannedTariffPassThroughPp; TradeCosts.ImportPricePassThrough), and since
         /// EN-5 (2026-09-11) the electricity pass-through beside it (FiscalPeriod.PlannedEnergyPassThroughPp; EnergyPassThrough) -
-        /// price-LEVEL terms added to the level map inside the SAME [0, MaxInflationPercent] clamp -
+        /// price-LEVEL terms added to the level map inside the SAME [MinInflationPercent, MaxInflationPercent] clamp -
         /// rule 11 by folding, audited against BOTH bounds. The base print is computed exactly as
         /// before and the term is a second, guarded statement, so the no-tariff-change path is
         /// bit-identical. Returns the contribution that ACTUALLY printed (the clamped print with the
         /// term minus the clamped print without it - 0 when the term is 0), which
         /// ApplyInflationExpectations looks through at the boundary: a cut whose negative wedge floors
-        /// the print at 0 must not read as a ratchet in expectations, and the PLANNED figure would.
+        /// the print at a bound must not read as a ratchet in expectations, and the PLANNED figure would.
         /// </summary>
         public static float ApplyPhillipsCurveInflation(Country country, float priceLevelTermsPp = 0f)
         {
             EconomyState state = country.State;
-            float unemploymentGap = state.Unemployment - country.EffectiveNaturalUnemploymentRate;   // FT-8 (§398): the natural rate reads the labour force
+            float unemploymentGap = PhillipsSlack(state.Unemployment, country.EffectiveNaturalUnemploymentRate);   // FT-8 (§398): the natural rate reads the labour force; MF-14: the slack convex
             float inflation = state.InflationExpectations - PhillipsCurveSlope * unemploymentGap;
 
-            state.Inflation = Mathf.Clamp(inflation, 0f, MaxInflationPercent);
+            state.Inflation = Mathf.Clamp(inflation, MinInflationPercent, MaxInflationPercent);
 
             if (priceLevelTermsPp != 0f)
             {
                 float basePrint = state.Inflation;
-                state.Inflation = Mathf.Clamp(inflation + priceLevelTermsPp, 0f, MaxInflationPercent);
+                state.Inflation = Mathf.Clamp(inflation + priceLevelTermsPp, MinInflationPercent, MaxInflationPercent);
                 return state.Inflation - basePrint;
             }
 
@@ -553,7 +611,7 @@ namespace PoliSim.Simulation
         /// and these are expectations of the RATE - fed in, half of a one-off level shift would become
         /// permanent inflation by this model's own recorded fixed point (elevated inflation at NAIRU never
         /// decays). Because it is the realized, clamped contribution, the target is by construction the
-        /// no-wedge print, in [0, MaxInflationPercent] at either bound. The parameter sits SECOND so a
+        /// no-wedge print, in [MinInflationPercent, MaxInflationPercent] at either bound. The parameter sits SECOND so a
         /// positional call can never bind it to the adaptation speed; every pre-pass-6 caller uses the
         /// one-argument form and is untouched.</summary>
         public static void ApplyInflationExpectations(EconomyState state, float lookThroughPp = 0f, float adaptationSpeed = ExpectationsAdaptationSpeed,

@@ -805,7 +805,7 @@ namespace PoliSim.UI
                 + (dialCost != 0f ? " · ON THE LINE'S OWN PATH, ITS DIAL COST ON TOP" : string.Empty));
             SpendingDriver of = SpendingDrivers.Of(line.Category);
             slip.Add((line.Pinned ? "PINNED" : of == SpendingDriver.None ? "NO DRIVER" : "DRIVEN BY " + SpendingDrivers.Short(of, _playerCountry))
-                + " · NEXT YEAR " + UiFormat.Money(line.ProjectNextYear(_playerCountry.State.Inflation), MoneyUnit.Billions));
+                + " · NEXT YEAR " + UiFormat.Money(SimulationManager.ProjectLineNextYear(_playerCountry, line, _playerCountry.State.Inflation), MoneyUnit.Billions));
             string delta = SpendingDeltaText(line, drafted ? draft : standing);
             if (delta != null) { slip.Add(delta + " SINCE THE YEAR OPENED · ITS TICK ON THE TRACK"); }
             if (track.width > 0f)

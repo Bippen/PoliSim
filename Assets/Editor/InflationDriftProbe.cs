@@ -18,8 +18,8 @@ namespace PoliSim.EditorTools
     public static class InflationDriftProbe
     {
         private const int Turns = 300;
-        /// <summary>MacroSystem.PhillipsCurveSlope (private there), restated for the arithmetic below.</summary>
-        private const float PhillipsSlope = 0.3f;
+        /// <summary>MacroSystem.PhillipsCurveSlope, the slope at the NAIRU; since MF-14 the slack is convex, so slope × −gap below is the first-order reading.</summary>
+        private const float PhillipsSlope = MacroSystem.PhillipsCurveSlope;
 
         public static void Run()
         {

@@ -106,8 +106,8 @@ namespace PoliSim.EditorTools
             foreach (Country c in world.Countries)
             {
                 EconomyState s = c.State;
-                Check(c, "Unemployment", s.Unemployment, 0f, 30f, day, date);
-                Check(c, "Inflation", s.Inflation, 0f, 30f, day, date);
+                Check(c, "Unemployment", s.Unemployment, MacroSystem.UnemploymentFloorPercent(c), 30f, day, date);   // MF-14: the floor is the sourced series' lowest (K138)
+                Check(c, "Inflation", s.Inflation, MacroSystem.MinInflationPercent, MacroSystem.MaxInflationPercent, day, date);   // MF-14: prices may fall
                 Check(c, "GDP", s.GDP, 1f, float.MaxValue, day, date);
                 Check(c, "PriceLevel", s.PriceLevel, 0.0001f, float.MaxValue, day, date);
                 Check(c, "ApprovalRating", s.ApprovalRating, 0f, 100f, day, date);

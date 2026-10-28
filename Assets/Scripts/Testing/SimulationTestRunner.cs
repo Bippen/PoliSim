@@ -804,12 +804,12 @@ namespace PoliSim.Testing
                 anomalies.Add($"Turn {turn} {country.Name}: negative GDP ({state.GDP:F1})");
             }
 
-            if (state.Unemployment < 0f || state.Unemployment > MaxUnemploymentPercent)
+            if (state.Unemployment < MacroSystem.UnemploymentFloorPercent(country) || state.Unemployment > MaxUnemploymentPercent)   // MF-14: the floor is the sourced series' lowest, not 0
             {
                 anomalies.Add($"Turn {turn} {country.Name}: unemployment out of range ({state.Unemployment:F2}%)");
             }
 
-            if (state.Inflation < 0f || state.Inflation > MaxInflationPercent)
+            if (state.Inflation < MacroSystem.MinInflationPercent || state.Inflation > MaxInflationPercent)   // MF-14: prices may fall - below the model's guard is the anomaly, not below 0
             {
                 anomalies.Add($"Turn {turn} {country.Name}: inflation out of range ({state.Inflation:F2}%)");
             }

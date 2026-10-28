@@ -1,0 +1,2 @@
+url	file	fetched_utc	http_status	bytes
+https://www.federalreserve.gov/monetarypolicy/files/FOMC20180116memo02.pdf	FOMC20180116memo02.pdf	2026-10-28T02:03:33Z	200	1548191

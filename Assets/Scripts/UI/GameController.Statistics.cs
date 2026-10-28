@@ -95,7 +95,7 @@ namespace PoliSim.UI
         {
             EconomyState state = _playerCountry.State;
             float sum = 0f;
-            foreach (SpendingLine line in _playerCountry.SpendingLines) { sum += line.ProjectNextYear(state.Inflation); }
+            foreach (SpendingLine line in _playerCountry.SpendingLines) { sum += SimulationManager.ProjectLineNextYear(_playerCountry, line, state.Inflation); }   // MF-14 (K201): the pension guarantee rides the projection
             float nextNominalGdp = state.NominalGdp * (1f + _playerCountry.PotentialGrowthRate / 100f) * (1f + state.Inflation / 100f);
             return 100f * sum / Mathf.Max(0.0001f, nextNominalGdp);
         }

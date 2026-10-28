@@ -30,7 +30,7 @@ namespace PoliSim.Simulation
         public float TariffPassThroughPp;
         /// <summary>EN-5 (2026-09-11): the electricity pass-through the previous boundary planned for the period that just closed, inflation points (FiscalPeriod.PlannedEnergyPassThroughPp) - the household price's change relative to the general price level times its index weight.</summary>
         public float EnergyPassThroughPp;
-        /// <summary>EN-5: what of the two level terms together ACTUALLY printed on the boundary day (FiscalPeriod.AppliedPriceLevelTermsPp) - net of the [0, MaxInflationPercent] clamp; the expectations step looks through this figure.</summary>
+        /// <summary>EN-5: what of the two level terms together ACTUALLY printed on the boundary day (FiscalPeriod.AppliedPriceLevelTermsPp) - net of the [MinInflationPercent, MaxInflationPercent] clamp; the expectations step looks through this figure.</summary>
         public float PriceLevelTermsAppliedPp;
         public float WelfareCost;
         public float SwfContribution;
@@ -8283,6 +8283,7 @@ namespace PoliSim.Simulation
                 // block a finance ministry sizes against the economy, and follows real potential growth as before. The player's lines are unchanged.
                 bool driverless = driver == SpendingDriver.None;
                 float factor = prices * driverRatio * (driverless ? realGrowth : wages);   // RF-2 re-formed (§384): a caseload at the going real wage, a discretionary line at the economy's growth
+                factor = PensionNominalGuarantee(country.Id, line.Category, prices, driverRatio, driverless ? realGrowth : wages, factor);   // MF-14 (K201): no nominal pension cut in the USA and Germany
                 line.SeedAmount *= factor;
                 if (line.Pinned) { continue; }
                 // SC-1 (ruled 2026-09-15, §503): the line's OWN PATH indexes and is clamped to its seed band; the applied dial cost rides the same factor
@@ -8290,6 +8291,40 @@ namespace PoliSim.Simulation
                 // The own path's product is taken here, before the trackers move. Zero cost at no policy: the old expression's value to the bit.
                 IndexComposedLine(country, line, (line.Amount - AppliedDialCostOn(country, line)) * factor, factor);
             }
+        }
+
+        /// <summary>MF-14 (K201, 2026-10-28; prices may fall since MF-14): the pension line (`SpendingCategory.SocialSecurity`) of the USA and Germany is never
+        /// cut in nominal terms per pensioner by deflation - the statutes' own guarantees, stored under `ElectionsData/macro/raw/pension_guarantee/`:
+        /// <list type="bullet">
+        /// <item>the USA - 42 U.S.C. 415(i) (USCODE-2024, title 42, sec. 415(i)(1)(B)): a cost-of-living computation quarter is one "with respect to which the
+        /// applicable increase percentage is greater than zero" - a falling CPI pays no COLA and cuts nothing, so the line's PRICE term is floored at 1
+        /// (the caseload and the real term still move);</item>
+        /// <item>Germany - SGB VI § 68a (1) (Schutzklausel): "Abweichend von § 68 vermindert sich der bisherige aktuelle Rentenwert nicht" - the pension
+        /// value, which follows the wage development, does not fall, so the line's PER-PENSIONER term (prices × the real term) is floored at 1 and the
+        /// caseload alone moves it. DECLARED: § 68a (2)-(3)'s catch-up (the forgone cut offset against later rises, which are halved until it is
+        /// cleared) is not modelled - the line keeps the floor and later rises in full.</item>
+        /// </list>
+        /// Every other country and line returns <paramref name="factor"/> unchanged, and so do these two wherever the guarantee does not bind.</summary>
+        public static float PensionNominalGuarantee(CountryId id, SpendingCategory category, float prices, float driverRatio, float realTerm, float factor)
+        {
+            if (category != SpendingCategory.SocialSecurity) { return factor; }
+            if (id == CountryId.USA && prices < 1f) { return driverRatio * realTerm; }
+            if (id == CountryId.Germany && prices * realTerm < 1f) { return driverRatio; }
+            return factor;
+        }
+
+        /// <summary>MF-14 (K201; the q14 review 2's N-2): a line's NEXT YEAR projection (`SpendingLine.ProjectNextYear`) under the same guarantee the boundary
+        /// applies - the USA's and Germany's pension line projects no nominal fall per pensioner at a negative print (the projection carries no real term,
+        /// so the per-pensioner term is the price term for both). Every other line, and these where the guarantee does not bind, project exactly as before.</summary>
+        public static float ProjectLineNextYear(Country country, SpendingLine line, float inflationPercent)
+        {
+            float plain = line.ProjectNextYear(inflationPercent);
+            if (country == null || line.Pinned) { return plain; }
+            float prices = 1f + Mathf.Max(-50f, inflationPercent) / 100f;
+            float driverRatio = line.LastDriverRatio > 0f ? line.LastDriverRatio : 1f;
+            float factor = prices * driverRatio;
+            float guaranteed = PensionNominalGuarantee(country.Id, line.Category, prices, driverRatio, 1f, factor);
+            return guaranteed == factor ? plain : line.Amount * guaranteed;
         }
 
         /// <summary>SC-1: one line's index step - its dial costs ride the factor, then the line is written from its indexed own path (<see cref="ComposeLine"/>).</summary>

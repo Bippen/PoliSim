@@ -211,8 +211,16 @@ namespace PoliSim.Data
         public float CompositionNaturalRateAtSeed;
         /// <summary>FT-8 (§398): the natural rate the macro core reads - the seeded figure as the labour-institution laws compose it, plus the labour force's
         /// demographic shift (EconomyState.NaturalRateDemographicShift). EVERY gap reader reads THIS - a standing rule since §399 (ONE NATURAL RATE: a natural rate two readers disagree on is not one) - Okun's reversion, the Phillips curve, the Taylor rule, and (§398's measurement forced
-        /// the rest) the discouraged-worker, poverty, crime, approval, real-wage, hoarding and rating terms; NaturalUnemploymentRate stays the figure the laws compose and the shift is measured from.</summary>
-        public float EffectiveNaturalUnemploymentRate => NaturalUnemploymentRate + (State != null ? State.NaturalRateDemographicShift : 0f);
+        /// the rest) the discouraged-worker, poverty, crime, approval, real-wage, hoarding and rating terms; NaturalUnemploymentRate stays the figure the laws compose and the shift is measured from.
+        /// MF-14 (K199, 2026-10-28): never below the country's unemployment floor (<see cref="UnemploymentFloorPercent"/>) - a reform or an older labour force that
+        /// composes the natural rate below the floor would otherwise leave unemployment pinned at the floor with a standing positive slack: inflation below target,
+        /// the Taylor gap negative and the reform's payoff zero, for ever. Every reader sees max(composed rate, floor), the UI's NAIRU included.</summary>
+        public float EffectiveNaturalUnemploymentRate => Math.Max(NaturalUnemploymentRate + (State != null ? State.NaturalRateDemographicShift : 0f), UnemploymentFloorPercent);
+
+        /// <summary>MF-14 (q14; Elias's ruling K138, 2026-10-27): unemployment's floor - the lowest annual rate the OECD's harmonised series records for the
+        /// country from 1990 on (from the series' own start where it opens later), read from the generated table (`UnemploymentFloorData.Floors`, written by
+        /// `Tools/unemployment_floor_prep.pl` from the stored CSV). A country the table does not hold has a floor of 0.</summary>
+        public float UnemploymentFloorPercent => Generated.UnemploymentFloorData.Floors.TryGetValue(Id, out var row) ? row.Floor : 0f;
         public float CollectionEfficiencyBase;
         public float GovernmentSpendingRateBase;
         /// <summary>P4-C3 (2026-09-05, the labour institutions' second reach): the seeded benefit rate per point of unemployment; the labour laws that cut benefit levels or duration compose on it.</summary>

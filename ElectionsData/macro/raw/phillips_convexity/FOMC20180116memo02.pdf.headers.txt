@@ -1,0 +1,16 @@
+HTTP/1.1 200 OK
+Date: Wed, 28 Oct 2026 02:03:33 GMT
+Content-Type: application/pdf
+Content-Length: 1548191
+Connection: keep-alive
+set-cookie: __cf_bm=GctfI9gqNog7_SBiRp_id9etPmrKV1pTSb.W_9jQ22Q-1793153013.571194-1.0.1.1-syv4mQowM31ysB9BCC0U_EHQlwbHnjJjO9HUe9oHsU2rY2ky.QbWJ18ihZtzmi3BJ4yiPF8x.ty7TZ7ehxJm7FVrmDfJ8lcxaTu9o42WlxonWPO9t54UaVH5Vbe_nd.D; HttpOnly; SameSite=None; Secure; Path=/; Domain=federalreserve.gov; Expires=Wed, 28 Oct 2026 02:33:33 GMT
+set-cookie: _cfuvid=HesijlrC5VIODuC90Uendo_Re.JaL9jYnNfFpgkv1Vw-1793153013.571194-1.0.1.1-lLeKBtJET1hsc_yP1GeFoZ9qLvWcP.vHnHlTtU2EMJw; HttpOnly; SameSite=None; Secure; Path=/; Domain=federalreserve.gov
+CF-Ray: a5165d5ecb1182bf-ARN
+CF-Cache-Status: REVALIDATED
+Accept-Ranges: bytes
+ETag: "c586c106845da1:0"
+Last-Modified: Fri, 12 Jan 2024 15:00:20 GMT
+Server: cloudflare
+X-Frame-Options: SAMEORIGIN
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+

@@ -350,3 +350,7 @@ file	Assets/Scripts/Simulation/ApprovalLedgerRecorder.cs	1f9118ef3f2b88f8d1f35ba
 file	Assets/Scripts/Simulation/TaxTerm.cs	5d5fb659c627b3a111771b55c661b18259ddfd66e6d31aa3272a393960e79dcf	reviewed	2026-10-28	s926	Reviews/2026-10-28_mf13_review3.md	-
 baseline	777	33ee6c90f51226e5ce7ba5774199a93da20f51d4bc437f49376bc9532fff520f	reviewed	2026-10-28	s926	Reviews/2026-10-28_mf13_integrator.md	-
 baseline	424242	607c3f8deccb4a0558849ad0ddaa6a6a58eda313a586af5d6f61423594debe0c	reviewed	2026-10-28	s926	Reviews/2026-10-28_mf13_integrator.md	-
+file	Assets/Scripts/Simulation/MacroSystem.cs	0703b66b8ef28fa71b14e8f444a5222ab4f0e06f9d3311d01a4eaf1fd7894f43	reviewed	2026-10-28	s928	Reviews/2026-10-28_q14_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	54e9eaa1aa74af174e9592e3bdfa048439778bf0bf4e3350c6345a9e22767618	reviewed	2026-10-28	s928	Reviews/2026-10-28_q14_integrator.md	-
+baseline	777	ac5047698d87ff88b3d92befc3620227460d51803602c9c9ebe26f03f1ad6fcb	reviewed	2026-10-28	s928	Reviews/2026-10-28_q14_integrator.md	-
+baseline	424242	8367215c29fa670ab91b120f837b527abf8a15b96a55074ec463f017689bda3d	reviewed	2026-10-28	s928	Reviews/2026-10-28_q14_integrator.md	-

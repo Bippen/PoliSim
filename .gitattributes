@@ -20,3 +20,9 @@ ElectionsData/italy/raw/collegi2020/** -text
 ElectionsData/italy/raw/statutes/** -text
 ElectionsData/italy/raw/confidence_2021/** -text
 ElectionsData/italy/collegi2020/** -text
+# MF-14 (q14, K138): the OECD harmonised unemployment series and the Fed memo the convex Phillips form reads, byte-exact as fetched (digests in each
+# folder's SHA256SUMS.txt); the generated floor table is the generator's output byte for byte
+ElectionsData/macro/raw/oecd_hur/** -text
+ElectionsData/macro/raw/phillips_convexity/** -text
+Assets/Scripts/Data/Generated/UnemploymentFloorData.cs -text
+ElectionsData/macro/raw/pension_guarantee/** -text

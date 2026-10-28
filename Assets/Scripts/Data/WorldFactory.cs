@@ -164,9 +164,12 @@ namespace PoliSim.Data
                 eurozone, baseTariffRate: 1f,
                 naturalUnemploymentRate: 3.3f, potentialGrowthRate: 0.938f, governmentSpendingRate: 21f, benefitRatePerUnemployed: 0.20f);
 
+            // MF-14 (K200, 2026-10-28): France's seed unemployment is the OECD harmonised series' latest year, 2024: 7.45 (the stored CSV,
+            // ElectionsData/macro/raw/oecd_hur/oecd_DF_IALFS_UNE_M_A_N_T_Y_GE15.csv, FRA 2024, annual, not adjusted, 15+) - the 7.3 before it sat
+            // below the same series' floor (7.358, 2022) and below every French year in it since 1990.
             var france = new Country(
                 CountryId.France, "France",
-                new EconomyState(gdp: 3200f, inflation: 3.0f, unemployment: 7.3f, approvalRating: 50f, budget: 0f,
+                new EconomyState(gdp: 3200f, inflation: 3.0f, unemployment: 7.45f, approvalRating: 50f, budget: 0f,
                     governmentDebt: 3200f * 1.16f, povertyRate: 8f, laborForceParticipationRate: 56.0f, crimeIndex: 30f, prisonPopulationRate: 111f, organizedCrimeIndex: 28f, corruptionIndex: 30f,
                     population: 69.1f, birthRate: 9.7f, deathRate: 9.5f, netMigrationRate: 1.1f, dependencyRatio: 33f),
                 eurozone, baseTariffRate: 1f,

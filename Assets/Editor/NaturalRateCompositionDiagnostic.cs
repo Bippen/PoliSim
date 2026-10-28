@@ -62,7 +62,10 @@ namespace PoliSim.EditorTools
             EconomyState before = s.State.Clone();
             s.State.NaturalRateDemographicShift = 0f; MacroSystem.ApplyPhillipsCurveInflation(s); float pi0 = s.State.Inflation; s.State = before.Clone();
             s.State.NaturalRateDemographicShift = 0.5f; MacroSystem.ApplyPhillipsCurveInflation(s); float pi1 = s.State.Inflation; s.State = before.Clone();
-            if (Mathf.Abs((pi1 - pi0) - 0.3f * 0.5f) > 1e-4f) { Debug.LogError($"NATURAL RATE: the Phillips print moved {pi1 - pi0:F5} for a shift of 0.5 (expected +slope 0.3 × 0.5 = +0.15: a higher natural rate is a tighter market at the same unemployment) - the curve does not read the effective natural rate."); ok = false; }
+            // MF-14: the slack is convex, n × ln(U ÷ n), so the shift's move is the slope × the slack's change, computed here by hand (no longer slope × 0.5).
+            double uNow = before.Unemployment, n0 = s.NaturalUnemploymentRate, n1 = n0 + 0.5;
+            double expectedMove = MacroSystem.PhillipsCurveSlope * (n0 * System.Math.Log(uNow / n0) - n1 * System.Math.Log(uNow / n1));
+            if (!(expectedMove > 0) || System.Math.Abs((pi1 - pi0) - expectedMove) > 1e-4) { Debug.LogError($"NATURAL RATE: the Phillips print moved {pi1 - pi0:F5} for a shift of 0.5 (expected {expectedMove:+0.00000;-0.00000} by hand from the convex slack: a higher natural rate is a tighter market at the same unemployment) - the curve does not read the effective natural rate."); ok = false; }
             float u0 = Okun(s, before, 0f), u05 = Okun(s, before, 0.5f), u1 = Okun(s, before, 1.0f);
             if (!(u05 > u0) || Mathf.Abs((u1 - u0) - 2f * (u05 - u0)) > 1e-4f) { Debug.LogError($"NATURAL RATE: Okun's reversion reads the shift as {u05 - u0:F5} at 0.5 and {u1 - u0:F5} at 1.0 - not linear in the effective natural rate."); ok = false; }
 

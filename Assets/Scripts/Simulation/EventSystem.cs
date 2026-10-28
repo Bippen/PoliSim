@@ -496,7 +496,7 @@ namespace PoliSim.Simulation
             state.EventGdpShockPerDay = state.GDP * (economicEvent.GdpShockPercent / 100f) / ShockDurationDays;
             state.EventGdpShockDaysLeft = ShockDurationDays;
             state.EventGdpShockAppliedThisPeriod = 0f;
-            state.Inflation = Mathf.Clamp(state.Inflation + economicEvent.InflationShockPoints, 0f, MacroSystem.MaxInflationPercent);
+            state.Inflation = Mathf.Clamp(state.Inflation + economicEvent.InflationShockPoints, MacroSystem.MinInflationPercent, MacroSystem.MaxInflationPercent);
             TaxTerm.Shock(country, economicEvent.ApprovalEffect);   // A-LOOP q37 (review 879b M-1): the shock through TaxTerm.Shock - the same write, and the run without the tax term takes it through its own clamp
             EventSalience.Land(country, economicEvent);   // A-LOOP q5 (§6 (2)): an adverse event raises the issue its tag names by its class's fitted jump (nothing for a political or a favourable one)
         }

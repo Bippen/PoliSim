@@ -1,0 +1,18 @@
+HTTP/1.1 200 OK
+Date: Wed, 28 Oct 2026 02:03:33 GMT
+Content-Type: application/vnd.sdmx.structure+xml; charset=utf-8; version=2.1
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: public,max-age=86400
+Last-Modified: 2023-11-14
+Vary: Accept, Accept-Language, Accept-Encoding, Accept-Charset,Accept,Accept-Encoding,Accept-Encoding
+Strict-Transport-Security: max-age=2592000
+api-supported-versions: 1
+X-Server-Node: Server 1
+set-cookie: __cf_bm=BPBSCX.XxJqRnXQ9QzQ5TA7P2eEQmxqm3Pw4VtM9HPI-1793153013.1591527-1.0.1.1-dPwbAMMQBo94ECGYlanZBiQokXmPppld4QdkZsyF24SA0Bu8qIv.gbil2N8RgSsru3nAa8ICtdFjNFYDHDAW7l27XhWJfsNC6csRkpxTGUi_GrWJ_X4KNVIs7bK5PrmQ; HttpOnly; SameSite=None; Secure; Path=/; Domain=oecd.org; Expires=Wed, 28 Oct 2026 02:33:33 GMT
+Age: 232
+cf-cache-status: HIT
+Server: cloudflare
+CF-RAY: a5165d5c39103bf5-ARN
+alt-svc: h3=":443"; ma=86400
+

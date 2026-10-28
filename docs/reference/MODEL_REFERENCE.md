@@ -72,12 +72,27 @@ named constants:
   actual GDP growth this turn and the country's structural `PotentialGrowthRate`, scaled by
   `OkunCoefficient`, plus mean-reversion pulling it back toward the country's NAIRU
   (`UnemploymentReversionSpeed`) each turn absent a growth shock — unemployment drifts home to its
-  structural rate rather than accumulating a growth-gap delta indefinitely. Hard-clamped to
-  `[0, MaxUnemploymentPercent]` as a gameplay safety net.
+  structural rate rather than accumulating a growth-gap delta indefinitely. Hard-clamped below at
+  the country's FLOOR (MF-14, ruling K138: the lowest annual rate of the OECD harmonised
+  unemployment series since 1990, from the series' own start where it opens later -
+  `MacroSystem.UnemploymentFloorPercent`, the generated table `UnemploymentFloorData` written by
+  `Tools/unemployment_floor_prep.pl` from `ElectionsData/macro/raw/oecd_hur/`) and above at
+  `MaxUnemploymentPercent` as a gameplay safety net. The natural rate every reader sees,
+  `Country.EffectiveNaturalUnemploymentRate`, never sits below the same floor (K199): a reform or an
+  older labour force that composes it lower leaves it at the floor, so no permanent slack opens. The
+  supply shock's excess books the move that happened, so a fall the floor absorbs books nothing;
+  `MacroSystem.OkunClampLedger` hands a probe the clamp's share of each Okun step.
 - **Phillips Curve, expectations-augmented** (`MacroSystem.ApplyPhillipsCurveInflation` +
-  `ApplyInflationExpectations`): inflation = `InflationExpectations` minus the unemployment gap
-  versus the country's structural NAIRU (`NaturalUnemploymentRate`), scaled by `PhillipsCurveSlope`,
-  hard-clamped to `[0, MaxInflationPercent]` as a gameplay safety net. `InflationExpectations` itself
+  `ApplyInflationExpectations`): inflation = `InflationExpectations` minus the slack versus the
+  country's NAIRU, scaled by `PhillipsCurveSlope`. Since MF-14 the slack is CONVEX,
+  NAIRU × ln(U ÷ NAIRU) (`MacroSystem.PhillipsSlack`; the log form of Murphy's FOMC memo of
+  January 2018, stored under `ElectionsData/macro/raw/phillips_convexity/`), so the slope at the
+  NAIRU is `PhillipsCurveSlope` and a tight market raises inflation more per point than slack
+  lowers it. Prices may fall: the print is clamped to `[MinInflationPercent, MaxInflationPercent]`,
+  the floor a mirrored gameplay guard, not a sourced bound. A deflating year indexes the spending
+  lines down with prices, except the pension line of the USA (42 U.S.C. 415(i): no negative COLA)
+  and Germany (SGB VI § 68a: the pension value does not fall) - `SimulationManager.PensionNominalGuarantee`
+  (K201). `InflationExpectations` itself
   adapts each turn partway toward realized inflation (`ExpectationsAdaptationSpeed`) — standard
   adaptive-expectations formulation. Monetary policy no longer touches inflation directly; the
   interest rate's effect flows through the real chain: rate → Consumption/Investment → GDP growth →
@@ -3181,7 +3196,7 @@ age-cohort/population-pyramid model - one scalar per demographic concept per cou
     this task - all three only affect `Unemployment` (`GetMinimumWageUnemploymentAdjustment`/
     `GetOvertimeUnemploymentAdjustment` add directly to it in `ApplyOkunsLaw`; UBI/childcare instead
     nudge its reversion SPEED via `GetWelfareAdjustedReversionSpeed`), a genuinely separate tracked
-    variable with its own independent hard clamp (`[0, MaxUnemploymentPercent]`). Their influence on
+    variable with its own independent hard clamp (`[floor, MaxUnemploymentPercent]`, the floor MF-14's sourced one). Their influence on
     `LaborForceParticipationRate` is therefore always INDIRECT, mediated entirely through
     `Unemployment`'s own already-bounded value and the single discouraged-worker pass-through term -
     already covered by Unemployment's own clamp, the same "each variable owns its own hard bound"

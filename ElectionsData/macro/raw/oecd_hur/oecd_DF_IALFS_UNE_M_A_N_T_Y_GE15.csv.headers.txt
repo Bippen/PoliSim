@@ -1,0 +1,20 @@
+HTTP/1.1 200 OK
+Date: Wed, 28 Oct 2026 02:03:32 GMT
+Content-Type: application/vnd.sdmx.data+csv; charset=utf-8; version=2; labels=name
+Transfer-Encoding: chunked
+Connection: keep-alive
+Cache-Control: public,max-age=7200
+Content-Language: en,en-US
+Last-Modified: 2023-11-14
+Vary: X-Range, Accept, Accept-Language, Accept-Encoding, Accept-Charset,Accept,Accept-Encoding,Accept-Encoding
+Strict-Transport-Security: max-age=2592000
+Content-Disposition: attachment; filename="OECD.SDD.TPS,DSD_LFS@DF_IALFS_UNE_M,1.0,filtered,2026-10-28 03-00-03.csv"
+api-supported-versions: 1
+X-Server-Node: Server 2
+set-cookie: __cf_bm=7upyDblEVnyxXEN2aRBrYhsLX_VdHR.NUt.qLahfr58-1793153012.7579126-1.0.1.1-xu2tYBfYpLgj1etI1coAqHvJq7RrRgr6qLipWg5W8IAWvB0Fo8wOh5aHcoQIrMMPM9qLN520LvV5Zk4uTVXHYyph92Y7lLsCT8wkj_nLj_JB5a36u8sAvFq06kzouFTI; HttpOnly; SameSite=None; Secure; Path=/; Domain=oecd.org; Expires=Wed, 28 Oct 2026 02:33:32 GMT
+Age: 208
+cf-cache-status: HIT
+Server: cloudflare
+CF-RAY: a5165d59af67a961-ARN
+alt-svc: h3=":443"; ma=86400
+

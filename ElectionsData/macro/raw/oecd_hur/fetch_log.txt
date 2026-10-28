@@ -1,0 +1,3 @@
+url	file	fetched_utc	http_status	bytes
+https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_LFS@DF_IALFS_UNE_M,1.0/FRA+DEU+ITA+POL+SWE+USA.UNE_LF_M.PT_LF_SUB._Z.N._T.Y_GE15._Z.A?startPeriod=1980&format=csvfilewithlabels	oecd_DF_IALFS_UNE_M_A_N_T_Y_GE15.csv	2026-10-28T02:03:32Z	200	86374
+https://sdmx.oecd.org/public/rest/dataflow/OECD.SDD.TPS/DSD_LFS@DF_IALFS_UNE_M/latest?references=all	oecd_DF_IALFS_UNE_M_structure.xml	2026-10-28T02:03:32Z	200	2068439

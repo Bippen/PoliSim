@@ -1,0 +1,4 @@
+url	file	fetched_utc	http_status	bytes
+https://www.gesetze-im-internet.de/sgb_6/__68a.html	sgb6_68a.html	2026-10-28T02:27:32Z	200	5608
+https://www.govinfo.gov/content/pkg/USCODE-2024-title42/html/USCODE-2024-title42-chap7-subchapII-sec415.htm	USCODE-2024-title42-chap7-subchapII-sec415.htm	2026-10-28T02:27:33Z	200	258305
+# curl -A Mozilla/5.0, byte-exact; headers beside each file. Refused: https://www.ssa.gov/OP_Home/ssact/title02/0215.htm answered 403 Access Denied (2026-10-28); uscode.house.gov's granule URL answered 404.
