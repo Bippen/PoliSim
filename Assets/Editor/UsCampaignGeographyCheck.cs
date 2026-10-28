@@ -583,6 +583,7 @@ namespace PoliSim.EditorTools
             var stamp = new StringBuilder();
             foreach (CountryId country in (CountryId[])Enum.GetValues(typeof(CountryId)))
             {
+                if (country == CountryId.Poland) { continue; }   // PL-C: Poland's okregi are counted by `ParliamentaryCount`'s own branch on the swing from 2023, never derived by W-D1's mirror - `PolishCampaignDiagnostic` holds its count
                 if (country == CountryId.USA) { continue; }
                 using (SimulationManager.EpochScope())
                 {

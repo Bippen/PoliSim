@@ -387,7 +387,7 @@ namespace PoliSim.UI
             Text title = CanvasChrome.MakeText(column.transform, "Title", $"CHOOSE YOUR CANDIDATE — {country.Name.ToUpperInvariant()}, {StartPoints.DateLine(start)}", PoliSimTheme.Display, 30,
                 PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
             title.gameObject.AddComponent<LayoutElement>().minHeight = 40f;
-            Text subtitle = CanvasChrome.MakeText(column.transform, "Subtitle", "THE FIELD OF RECORD · YOUR PARTY IS THE ONE THAT BACKS YOU · NO CAMPAIGN IS STAGED",
+            Text subtitle = CanvasChrome.MakeText(column.transform, "Subtitle", "THE FIELD OF RECORD · YOUR PARTY IS THE ONE THAT BACKS YOU · IT CAMPAIGNS FOR YOU",   // PL-C: the campaign staged
                 PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
             subtitle.gameObject.AddComponent<LayoutElement>().minHeight = SubtitleMinHeight;
 

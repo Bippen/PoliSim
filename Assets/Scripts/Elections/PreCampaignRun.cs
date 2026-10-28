@@ -116,7 +116,7 @@ namespace PoliSim.Elections
             double tariff = LetterTariff(s.Country);
             if (double.IsNaN(tariff)) { return false; }
             double letters = Math.Floor(Math.Min(MailingLetters, SupportersLeft(s)));
-            return letters > 0.0 && s.Money >= letters * tariff / LiveCampaignSetup.PursePerUnit(s.Country);   // K110: the postage in the purse's units
+            return letters > 0.0 && s.Money >= letters * tariff / LiveCampaignSetup.PursePerUnit(s.Country, s.Staged);   // K110: the postage in the purse's units
         }
 
         /// <summary>K84: the party's supporters the run-up can write to - its prior share of the staging's electorate (the regions' eligible), less the letters already sent.</summary>
@@ -249,7 +249,7 @@ namespace PoliSim.Elections
                 case CampaignActionKind.RecruitStaff: return CampaignStaff.SalaryPerDay;
                 case CampaignActionKind.CommissionPolling: return s.Staged.InternalHouse.Cost;
                 case CampaignActionKind.PrepareAdvertising: return CampaignActions.Spec(CampaignActionKind.TelevisionAd).MoneyCost;
-                case CampaignActionKind.Fundraise: { double tariff = LetterTariff(s.Country); return double.IsNaN(tariff) ? 0.0 : Math.Min(MailingLetters, SupportersLeft(s)) * tariff / LiveCampaignSetup.PursePerUnit(s.Country); }   // K84: the mailing's postage, in the purse's units (K110)
+                case CampaignActionKind.Fundraise: { double tariff = LetterTariff(s.Country); return double.IsNaN(tariff) ? 0.0 : Math.Min(MailingLetters, SupportersLeft(s)) * tariff / LiveCampaignSetup.PursePerUnit(s.Country, s.Staged); }   // K84: the mailing's postage, in the purse's units (K110)
                 default: return 0.0;
             }
         }
@@ -358,7 +358,7 @@ namespace PoliSim.Elections
                         if (double.IsNaN(tariff)) { entry.Refusal = "no postal tariff is on disk for this country"; break; }
                         double letters = Math.Floor(Math.Min(MailingLetters, SupportersLeft(s)));
                         if (letters <= 0.0) { entry.Refusal = "every supporter has been written to"; break; }
-                        double perUnit = LiveCampaignSetup.PursePerUnit(s.Country);   // K110: a sourced national price enters the purse in its units
+                        double perUnit = LiveCampaignSetup.PursePerUnit(s.Country, s.Staged);   // K110: a sourced national price enters the purse in its units
                         entry.Cost = letters * tariff / perUnit;
                         if (s.Money < entry.Cost) { entry.Refusal = "the chest cannot pay the postage"; break; }
                         double raised = letters * RevenuePerLetter(s.Country) / perUnit;

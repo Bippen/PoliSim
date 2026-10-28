@@ -17,8 +17,8 @@ namespace PoliSim.Elections
     /// <item><b>Ask 4 (4b), a stated deviation for presidential starts only.</b> The world opens on <see cref="PolandOpens"/>, the day the Marshal ordered
     /// the election and the campaign opened, not on §618's standard run-up; the Sejm starts keep §618's rule (`WorldClock.StartDate` is unchanged). The card
     /// and the brief say so (`StartPoints.ModeLine`, `StartBrief`).</item>
-    /// <item><b>Ask 3 (3a).</b> No campaign is staged: the candidate plays through the backing party's role until the first vote; the card and the brief
-    /// say it plainly. A Polish campaign is PL-C's (filed), not this start's.</item>
+    /// <item><b>Ask 3 (3a).</b> The candidate plays through the backing party's role until the first vote; no campaign was staged until PL-C, whose Polish
+    /// campaign this start takes up (`LiveCampaignSetup.TryPoland`: the first vote on the wojewodztwa, the run-off the two finalists'); the card and the brief say so.</item>
     /// </list>
     /// The start's key (<see cref="KeyOf"/>) rides the save on the player's country (<see cref="Country.PlayerStart"/>) beside the candidate
     /// (<see cref="Country.PlayerCandidate"/>) - format 50.

@@ -146,6 +146,13 @@ namespace PoliSim.Elections
             {
                 regional = UsRegionalShares(keys, prior, day, regions, stands, played, out names, out why);
             }
+            else if (country == CountryId.Poland)
+            {
+                // PL-C: the okregi by the count's own spread of the prior (`PolishSejmAllocation.SwungVotes`, the swing from 2023 the chamber is divided on), each
+                // okreg's votes over their sum; a presidential staging's wojewodztwa have no such derivation (its count is national) and match no name here
+                regional = PolishRegionalShares(keys, prior, out names);
+                if (regional == null) { why = "the swing derives no okregi from the prior"; }
+            }
             else
             {
                 regional = NationalElection.RegionalOf(country, keys, prior, day, out names, out double[] _);
@@ -162,6 +169,30 @@ namespace PoliSim.Elections
                 for (int p = 0; p < keys.Length; p++) { offset[r][p] = regional[i][p] - prior[p]; }
             }
             return offset;
+        }
+
+        /// <summary>PL-C: each okreg's shares at <paramref name="prior"/> (in <paramref name="keys"/>' order) - the swing's votes there over their sum, on the prior read as
+        /// fractions summing to one (the swing's own reading), each row then scaled back to the prior's own total so every okreg's offset sums to zero; null where none sums.</summary>
+        private static double[][] PolishRegionalShares(string[] keys, double[] prior, out string[] names)
+        {
+            double total = 0.0;
+            foreach (double v in prior) { total += v; }
+            names = null;
+            if (!(total > 0.0)) { return null; }
+            var shares = new Dictionary<string, double>(StringComparer.Ordinal);
+            for (int p = 0; p < keys.Length; p++) { shares[keys[p]] = prior[p] / total; }
+            double[][] votes = PolishSejmAllocation.SwungVotes(keys, shares);
+            names = Generated.PolishOkregElectorates2023.Names;
+            var regional = new double[votes.Length][];
+            for (int d = 0; d < votes.Length; d++)
+            {
+                double sum = 0.0;
+                foreach (double v in votes[d]) { sum += v; }
+                if (!(sum > 0.0)) { return null; }
+                regional[d] = new double[keys.Length];
+                for (int p = 0; p < keys.Length; p++) { regional[d][p] = votes[d][p] / sum * total; }
+            }
+            return regional;
         }
 
         private static double[][] UsRegionalShares(string[] keys, double[] prior, DateTime day, RegionAudience[] regions, bool[][] stands, Country played, out string[] names, out string why)

@@ -107,25 +107,64 @@ namespace PoliSim.EditorTools
                         Check(!PresidentialStart.Seat(pl, start, PresidencyOfRecord.NameOfRecord(CountryId.Poland, 2025, "BRAUN"), out string braunWhy) && braunWhy == PresidentialStart.UnbackedReason && pl.PlayerCandidate == trzaskowski,
                             F("(c) a candidate no Sejm party backs is not seated - \"{0}\"", braunWhy));
 
+                        Step(s, w, FirstVote.AddDays(-1));
+                        Dictionary<string, double> eveSpent = FirstRoundSpentOnTheEve(s);   // N1: the finished first-round campaign's own figures, by party name
                         Step(s, w, FirstVote);
                         PresidentialElection.Contest held = pl.PresidentialElections.Count == 1 ? pl.PresidentialElections[0] : null;
                         Check(held != null && held.FirstVote == FirstVote && held.PlayerCandidate == trzaskowski && held.PlayerStood() && PresidentialElection.PlayerContestOn(pl, FirstVote) == held,
                             F("(c) one contest on {0}, the player's candidate marked and in the field: {1}", Day(FirstVote), held?.Line));
 
+                        // PL-C: both worlds campaign now (LiveCampaignSetup.TryPoland), and the control's opening reseeds the process's streams - the player's world's
+                        // streams are kept across it and put back, so its run-off campaign's draws stay contiguous and the save across the rounds below replays it
+                        SimulationRandom.LiveState playerStreams = SimulationRandom.CaptureLive();
                         (SimulationManager sc, World wc, Country plc) = Open(hosts, start, null);
                         Step(sc, wc, FirstVote);
                         PresidentialElection.Contest control = plc.PresidentialElections.Count == 1 ? plc.PresidentialElections[0] : null;
+                        SimulationRandom.Reinstate(playerStreams);
+
+                        // PL-C (the review's M3): THE GAME'S OWN PRESIDENTIAL DAY LOOP - the first vote read the player's campaign, the game wrote each committee's
+                        // first-round spending on the contest, and the run-off's campaign opened tonight (L7) with the two finalists' chests the one limit less it
+                        string[] cast = LiveCampaignSetup.Keys(CountryId.Poland);
+                        bool spentWritten = held?.FirstRoundSpent != null && held.FirstRoundSpent.Count == cast.Length && held.FirstRoundSpent.TryGetValue("KO", out double koSpent)
+                                            && koSpent > 0.0 && koSpent <= LiveCampaignSetup.WarChest && held.FirstRoundSpent.Values.All(v => v >= 0.0 && v <= LiveCampaignSetup.WarChest);
+                        bool pairedByName = eveSpent != null && held?.FirstRoundSpent != null && eveSpent.Count == held.FirstRoundSpent.Count
+                                            && eveSpent.All(kv => held.FirstRoundSpent.TryGetValue(kv.Key, out double written) && Math.Abs(written - kv.Value) < 1e-9);
+                        Check(pairedByName, F("(c) PL-C (N1): the spending the game wrote is the finished first-round campaign's own, party by name ({0} on the eve: {1})",
+                            eveSpent == null ? 0 : eveSpent.Count, eveSpent == null ? "no finished campaign on the eve" : string.Join(", ", eveSpent.Where(kv => kv.Value > 0.0).Select(kv => F("{0} {1:N0}", kv.Key, kv.Value)))));
+                        Check(spentWritten, F("(c) PL-C: the first vote read the game's campaign - the game wrote every committee's first-round spending on the contest (KO {0:N0} of its {1:N0} units)",
+                            held?.FirstRoundSpent != null && held.FirstRoundSpent.TryGetValue("KO", out double ko0) ? ko0 : double.NaN, LiveCampaignSetup.WarChest));
+                        CampaignRun.State runOffState = s.PlayerCampaign;
+                        string partyA = held?.Field.Find(c => c.Name == held.RunOffA)?.Party, partyB = held?.Field.Find(c => c.Name == held.RunOffB)?.Party;
+                        bool koFinalist = held != null && held.RunOffPending() && (partyA == "KO" || partyB == "KO");
+                        if (koFinalist)
+                        {
+                            bool chests = runOffState != null && Enumerable.Range(0, cast.Length).All(p => cast[p] == partyA || cast[p] == partyB
+                                ? Math.Abs(runOffState.Setup.Parties[p].StartingMoney - (LiveCampaignSetup.WarChest - held.FirstRoundSpent[cast[p]])) < 1e-6
+                                : runOffState.Setup.Parties[p].StartingMoney == 0.0);
+                            Check(runOffState != null && runOffState.Setup.Contest == CampaignContest.PresidentialRunOff && runOffState.TotalDays == 14 && runOffState.Day == 1
+                                  && runOffState.Setup.Calendar.ElectionDate == held.RunOffOn && chests,
+                                F("(c) PL-C: the run-off's campaign opened on the first vote's own day, its day 0 stepped ({0} of {1} days); {2} and {3} hold the limit less their first round, every other party nothing",
+                                    runOffState?.Day ?? -1, runOffState?.TotalDays ?? -1, partyA, partyB));
+                        }
+                        else
+                        {
+                            Check(held != null && held.RunOffPending() && runOffState?.Setup.Contest != CampaignContest.PresidentialRunOff,
+                                F("(c) PL-C: the player's party backs neither finalist ({0}, {1}) - no run-off campaign is the player's (L6)", partyA, partyB));
+                        }
                         bool same = held != null && control != null && control.PlayerCandidate == null && control.Field.Count == held.Field.Count
                                     && control.Field.Zip(held.Field, (a, b) => a.Name == b.Name && a.Share == b.Share).All(x => x) && control.Line == held.Line;
                         Check(same, F("(c) THE FACTOR OF RECORD STANDS: the same world with no candidate seated holds the same first round, share for share ({0} candidates; {1}) - the mark changes no share",
                             held?.Field.Count ?? 0, held == null ? "-" : string.Join(", ", held.Field.Select(c => F("{0} {1:0.00} %", WorldClock.SurnameOf(c.Name), c.Share)))));
 
                         Step(s, w, CutRounds);
+                        int runOffDayAtCut = s.PlayerCampaign != null && s.PlayerCampaign.Setup.Contest == CampaignContest.PresidentialRunOff ? s.PlayerCampaign.Day : -1;
                         string jsonRounds = SaveGameService.Serialize(SaveGameService.CreateSaveGame(s, w, CountryId.Poland, null));
                         Step(s, w, RunOff);
                         bool decided = held != null && held.RunOffHeld && held.Decided();
                         string elected = held?.Elected;
                         double shareA = held?.RunOffShareA ?? double.NaN;
+                        double transferA = held?.RunOffTransferShareA ?? double.NaN;
+                        if (koFinalist) { Check(!double.IsNaN(transferA) && held.Line.Contains("the finalists' campaign between the rounds"), F("(c) PL-C: the run-off counted the campaign's share of the two in B4's place: {0}", held?.Line)); }
                         Check(decided && pl.PresidentialElections.Count == 1, F("(c) the run-off on {0}, once: {1}", Day(RunOff), held?.Line));
                         bool plantedWin = decided && held.Elected != trzaskowski;
                         if (plantedWin) { held.Elected = trzaskowski; held.ElectedParty = "KO"; held.Line += " - PLANTED by PolishPresidentialStartDiagnostic: the player's win forced"; }
@@ -258,6 +297,11 @@ namespace PoliSim.EditorTools
                         }
                         else { Check(false, "(c) a third statute held, to run unanswered (the Sejm passed fewer than three)"); }
 
+                        // ============================================================ (c2) N2: A PLANTED RUN-OFF - the player's party backing one finalist, whatever the
+                        // first round produced: the game opens its campaign, its chests are the limit less the first round, a save inside it loads and replays to the
+                        // same run-off
+                        PlantedRunOff(hosts, start, trzaskowski, Check);
+
                         // ============================================================ (d) the save across the rounds, and the loss
                         SaveGame rounds = SaveGameService.Deserialize(jsonRounds);
                         (SimulationManager sa, PoliSim.UI.GameController _) = Adopt(rounds, hosts, out string errorA);
@@ -268,7 +312,11 @@ namespace PoliSim.EditorTools
                             PresidentialElection.Contest pending0 = la.PresidentialElections.Count == 1 ? la.PresidentialElections[0] : null;
                             bool between = rounds.SaveVersion == SaveGameService.CurrentSaveVersion && pending0 != null && pending0.RunOffPending() && pending0.PlayerCandidate == trzaskowski && la.PlayerCandidate == trzaskowski
                                            && la.PlayerStart == "PRESIDENTIAL ELECTION 2025";
+                            // PL-C (M3): the run-off's campaign replayed by the load to the day it was cut on, on the saved first-round spending
+                            bool replayed = !koFinalist || (sa.PlayerCampaign != null && sa.PlayerCampaign.Setup.Contest == CampaignContest.PresidentialRunOff && sa.PlayerCampaign.Day == runOffDayAtCut
+                                            && pending0?.FirstRoundSpent != null && pending0.FirstRoundSpent.Count == held.FirstRoundSpent.Count && pending0.FirstRoundSpent.All(kv => held.FirstRoundSpent[kv.Key] == kv.Value));
                             Step(sa, sa.World, RunOff);
+                            Check(replayed && (!koFinalist || pending0.RunOffTransferShareA == transferA), F("(d) PL-C: the load replays the run-off's campaign to its day {0} on the saved first-round spending, and counts the same run-off (B4's transfer {1:0.00} % beside it)", runOffDayAtCut, transferA));
                             Check(between && pending0.Decided() && pending0.Elected == elected && pending0.RunOffShareA == shareA && la.PresidentialElections.Count == 1,
                                 F("(d) a save cut on {0}, between the rounds, at format {1}: loaded INTO THE GAME (RestoreFromSave) with the contest pending and the player's candidate marked; stepped, the run-off on {2} is the one the world it was cut from held - {3} {4:0.00} % of the two",
                                     Day(CutRounds), rounds.SaveVersion, Day(RunOff), elected, shareA));
@@ -356,6 +404,68 @@ namespace PoliSim.EditorTools
                                     : F("=== PolishPresidentialStartDiagnostic: {0} FAILURE(S) ===\n", failures));
             if (failures == 0) { Debug.Log(sb.ToString()); CheckExit.Finish(0); }
             else { Debug.LogError(sb.ToString()); CheckExit.Finish(1); }
+        }
+
+        /// <summary>N1: the finished first-round campaign's spending on the eve of the vote, by its party's name, as the limit reads it - the committee's limit in
+        /// the purse's units (the model's chest where it stands) less what its run left; null where no finished presidential campaign is in hand.</summary>
+        private static Dictionary<string, double> FirstRoundSpentOnTheEve(SimulationManager s)
+        {
+            if (s.PlayerCampaign == null || s.PlayerCampaignResult == null || s.PlayerCampaign.Setup.Contest != CampaignContest.PresidentialFirstVote) { return null; }
+            var spent = new Dictionary<string, double>(StringComparer.Ordinal);
+            CampaignRun.Setup setup = s.PlayerCampaign.Setup;
+            for (int p = 0; p < setup.Parties.Length; p++)
+            {
+                double limit = setup.StandingShare(p) > 0.0 ? LiveCampaignSetup.WarChest : 0.0;
+                spent[setup.Parties[p].Name] = Math.Max(0.0, limit - s.PlayerCampaignResult.Parties[p].MoneyLeft);
+            }
+            return spent;
+        }
+
+        /// <summary>N2: a fresh presidential-start world stepped to the first vote; where the first round did not put the player's party (KO) in a run-off, one is
+        /// PLANTED on the contest - KO's candidate against the strongest other placed one, on the 14th day - so the game's own loop opens the run-off's
+        /// campaign the next day. Held: its chests, the count in B4's place, a save inside it loading INTO THE GAME and replaying to the same run-off.</summary>
+        private static void PlantedRunOff(List<GameObject> hosts, StartPoints.StartPoint start, string trzaskowski, Action<bool, string> Check)
+        {
+            (SimulationManager s, World w, Country pl) = Open(hosts, start, trzaskowski);
+            Step(s, w, FirstVote);
+            PresidentialElection.Contest c = pl.PresidentialElections.Count == 1 ? pl.PresidentialElections[0] : null;
+            PresidentialElection.Candidate ko = c?.Field.Find(x => x.Party == "KO" && x.Placed);
+            PresidentialElection.Candidate other = c?.Field.Where(x => x.Party != null && x.Party != "KO" && x.Placed).OrderByDescending(x => x.Share).FirstOrDefault();
+            if (c == null || ko == null || other == null || c.FirstRoundSpent == null) { Check(false, "(c2) N2: no first vote to plant a run-off on (" + (c?.Line ?? "no contest") + ")"); return; }
+            bool planted = !(c.RunOffPending() && (c.Field.Find(x => x.Name == c.RunOffA)?.Party == "KO" || c.Field.Find(x => x.Name == c.RunOffB)?.Party == "KO"));
+            if (planted)
+            {
+                c.Elected = null; c.ElectedParty = null; c.RunOffHeld = false;
+                c.RunOffA = ko.Name; c.RunOffB = other.Name; c.RunOffOn = FirstVote.AddDays(14);
+                c.Line += " - PLANTED by PolishPresidentialStartDiagnostic (N2): " + ko.Name + " against " + other.Name + " in the run-off";
+            }
+            Step(s, w, FirstVote.AddDays(2));
+            CampaignRun.State ro = s.PlayerCampaign;
+            string[] cast = LiveCampaignSetup.Keys(CountryId.Poland);
+            string a = c.Field.Find(x => x.Name == c.RunOffA)?.Party, b = c.Field.Find(x => x.Name == c.RunOffB)?.Party;
+            bool chests = ro != null && Enumerable.Range(0, cast.Length).All(p => cast[p] == a || cast[p] == b
+                ? Math.Abs(ro.Setup.Parties[p].StartingMoney - (LiveCampaignSetup.WarChest - c.FirstRoundSpent[cast[p]])) < 1e-6
+                : ro.Setup.Parties[p].StartingMoney == 0.0 && !Enumerable.Range(0, ro.Setup.Regions.Length).Any(r => ro.Setup.StandsIn(p, r)));
+            Check(ro != null && ro.Setup.Contest == CampaignContest.PresidentialRunOff && ro.TotalDays == 14 && ro.Setup.Calendar.ElectionDate == c.RunOffOn && chests,
+                F("(c2) N2: {0}the run-off {1} ({2}) against {3} ({4}) is campaigned by the game's own loop - {5} of 14 days stepped two days on; the finalists hold the limit less their first round, every other party stands nowhere and holds nothing",
+                    planted ? "PLANTED - " : string.Empty, c.RunOffA, a, c.RunOffB, b, ro?.Day ?? -1));
+            DateTime cut = c.RunOffOn.AddDays(-7);
+            Step(s, w, cut);
+            int dayAtCut = s.PlayerCampaign != null ? s.PlayerCampaign.Day : -1;
+            string json = SaveGameService.Serialize(SaveGameService.CreateSaveGame(s, w, CountryId.Poland, null));
+            Step(s, w, c.RunOffOn);
+            Check(c.Decided() && c.RunOffHeld && !double.IsNaN(c.RunOffTransferShareA) && c.Line.Contains("the finalists' campaign between the rounds"),
+                F("(c2) N2: the run-off counted the campaign's share of the two in B4's place - {0}", c.Line));
+            (SimulationManager sa, PoliSim.UI.GameController _) = Adopt(SaveGameService.Deserialize(json), hosts, out string error);
+            if (sa == null) { Check(false, "(c2) N2: the save inside the run-off loaded into the game: " + error); return; }
+            Country la = sa.World.GetCountry(CountryId.Poland);
+            PresidentialElection.Contest lc = la.PresidentialElections.Count == 1 ? la.PresidentialElections[0] : null;
+            bool replayed = sa.PlayerCampaign != null && sa.PlayerCampaign.Setup.Contest == CampaignContest.PresidentialRunOff && sa.PlayerCampaign.Day == dayAtCut && lc != null && lc.RunOffPending()
+                            && lc.RunOffA == c.RunOffA && lc.RunOffB == c.RunOffB && lc.FirstRoundSpent != null && lc.FirstRoundSpent.All(kv => c.FirstRoundSpent[kv.Key] == kv.Value);
+            Step(sa, sa.World, c.RunOffOn);
+            Check(replayed && lc.Decided() && lc.Elected == c.Elected && lc.RunOffShareA == c.RunOffShareA && lc.RunOffTransferShareA == c.RunOffTransferShareA,
+                F("(c2) N2: a save cut on {0}, inside the run-off, loads INTO THE GAME and replays its campaign to day {1}; stepped, the run-off is the one the world it was cut from held - {2} {3:0.00} % of the two",
+                    Day(cut), dayAtCut, c.RunOffA, c.RunOffShareA));
         }
 
         /// <summary>A world opened on <paramref name="start"/> as a new game opens it: the epoch set before the world exists, the player's country Poland, the

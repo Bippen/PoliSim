@@ -42046,3 +42046,23 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nkf 4/4 (DEBT HOLD PASS, 7 REGISTERED, every figure the prereg's); dumpkf byte-identical to refit; simkf 88/88; cheapkf clean but the ledger (row added); gate.sh guards tested (absolute, relative, missing root).
 
 **Commit:** this one.
+
+## 941. PL-C (K167-K169, K147; K253-K267): A POLISH CAMPAIGN - THE SEJM ON THE 41 OKRĘGI, THE PRESIDENCY ON THE 16 WOJEWÓDZTWA AND ITS RUN-OFF THE TWO FINALISTS'; THE PURSE THE KODEKS WYBORCZY'S LIMIT; THE POLISH COUNT READS THE OKRĘG MOVEMENT - THE FAMILY `plc` (2026-10-28)
+
+**What was owed:** PL-C's row (a Polish campaign staged and counted); K167-K169; §936's owed line (the Polish count did not read the regional shift).
+
+**Built** (an implementer on `wave/plstage`: 5172cab2, b0adc430; review NOT READY (H1 PollingDay asserting no campaign, H2 the refit owed, the game's presidential day loop untested, a false claim about voters abroad), review 2 READY; then the cap caption, F7 registered under K267, the films' order):
+- `LiveCampaignSetup.Poland.cs` / `PolishCampaign`: the Sejm on the 41 okręgi (who stands where read off the seated election), the presidential first vote on the 16 województwa (2020 and 2025 KBW tables, voters abroad netted out by the KBW powiat file), the run-off the two finalists' through the 14 days on B4's prior, campaigned only where the player's party backs a finalist.
+- The purse each committee's statutory limit (Kodeks wyborczy art. 199 § 1, art. 327 § 1; the regulations' k and the PKW's registers fetched byte-exact, 17 files): Sejm 2023 32,007,253.30 zł, President 2025 24,603,420 zł, one limit across both rounds (`FirstRoundSpent`); no Polish act adds money.
+- The Polish count reads the okręg movement (a sole committee's handed back, each list centred at the 2023 sizes; the chamber and the night one count, the shift saved). SP-7's presidential start now campaigns. Save format 68.
+- `PolishCampaignDiagnostic` (simulation, registered by the integrator); PollingDayDiagnostic, PolishDeclarationsDiagnostic, PolishPresidentialStartDiagnostic and the start checks updated to the game's path; films plc01-plc04.
+
+**Measured** (`Reviews/2026-10-28_plc_integrator.md`): the Gate18 Poland refit (s941; MN 1.5e-2; one pass, the gate holds); F7 - a Polish game's own 2023 election seats KO+TD on NL's support where the record's cabinet was KO+TD+NL: the formation's own score (support not scored) prefers it even at the record's seats, the campaign moving the count toward the record (KO+TD 225 against 222, NL 26 against 26); the old pass came from a count far from it (KO 126, NL 45) - REGISTERED under K267, a formation-scoring ruling owed. The no-player dump byte-identical; the Polish films with plc01-plc04 (the run-off HQ: PiS and KO alone, 80 % of the 24,603,420 cap spent).
+
+**Evidence:** `Reviews/2026-10-28_plc_review.md`, `_review2.md`, `_integrator.md`; ledger row s941 (`SimulationManager.cs`).
+
+**Declared:** K253-K267. Owed: a formation-scoring ruling (K267); run-off debates; art. 136's sub-cap; older Polish Eurobarometer waves; the run-off HQ's strip chip reading the Sejm date and its footer announcing a debate after polling day.
+
+**Bars:** g18p1 (Poland DUE A REFIT, as K248 makes it) -> refit s941 -> g18p2 the gate holds, --check OK; nplc 14/15 (F7 - REGISTERED under K267 after diagnosis); nplc2 3/3; dumpplc byte-identical to refit; slrtplc 12/12; dryplc/realplci overflow (the cap caption) -> fixed; plc03 missing (the films' order) -> fixed; dryplc3 / realplci3 Poland 1280 22 captured 0 failed, realplc clean; cheapplc clean but the ledger (row added); simplc 89/89 (31.5 min, past the runner's default timeout).
+
+**Commit:** this one.

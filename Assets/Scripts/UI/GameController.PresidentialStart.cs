@@ -181,7 +181,7 @@ namespace PoliSim.UI
                 string standing = PresidentialElection.PlayerCandidateFor(_playerCountry, today);
                 if (standing == null) { return null; }   // the start's contest is held and over, or the presidency ended (end-i)
                 slipLine = "YOU STAND AS " + standing.ToUpperInvariant() + ", BACKED BY " + PartySystems.ShortName(_playerCountry.Id, _playerCountry.PlayerPartyAbbrev).ToUpperInvariant()
-                           + " · YOUR VOTE MOVES WITH YOUR PARTY'S STANDING · NO CAMPAIGN IS STAGED";
+                           + " · YOUR VOTE MOVES WITH YOUR PARTY'S STANDING AND ITS CAMPAIGN";   // PL-C: the campaign staged
                 return "YOUR CANDIDATE " + LastName(standing);
             }
             if (!verdictOpen) { return null; }   // the term the contest was for has begun and the player does not hold it (lost, or his presidency ended) - the row is the party's again

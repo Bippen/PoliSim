@@ -187,9 +187,10 @@ namespace PoliSim.EditorTools
                     EnergyMarket.ResetTurnState();   // the review (§619): the year crossed one boundary, whose BeginTurn set the process's water value and deficit share - put back, as PlayProtocolCheck does
                 }
 
-                // 5. §762 (PS-5): A POLISH GAME'S OWN PATH - from Poland's start (the run-up's first day) through its polling day, 15 Oct 2023. No campaign
-                // is staged for Poland (LiveCampaignSetup stages Sweden's and Germany's), so on the day the controller counts the live prediction
-                // (GameController.RunNationalElection's no-campaign path, done here as it does it) - through the 41 districts.
+                // 5. §762 (PS-5): A POLISH GAME'S OWN PATH - from Poland's start (the run-up's first day) through its polling day, 15 Oct 2023. PL-C (s941):
+                // Poland's campaign is staged (LiveCampaignSetup.TryPoland, the Sejm on the 41 okregi), so the run-up and the campaign run on the way and the
+                // day is counted as the game counts it - the world's own election call (SimulationManager.RunPlayerElection) on the campaign's shares, its okreg
+                // movement and its doors - through the 41 districts.
                 WorldClock.ApplyStart(CountryId.Poland);
                 var goPl = new GameObject("PollingDayDiagnostic Poland");
                 try
@@ -207,22 +208,24 @@ namespace PoliSim.EditorTools
                     var none = new System.Collections.Generic.Dictionary<CountryId, PolicyDecision>();
                     foreach (Country c in world.Countries) { none[c.Id] = PolicyDecision.None(); }
                     int flagged = 0; DateTime flaggedDate = DateTime.MinValue; bool staged = false;
-                    ElectionRecord counted = null; System.Collections.Generic.Dictionary<string, double> predicted = null;
+                    ElectionRecord counted = null; bool runUp = false, campaignOnDay = false; ParliamentaryCount.Held held = null;
                     for (int day = 1; day <= 400 && sim.CurrentDate < new DateTime(2023, 10, 20); day++)
                     {
                         if (sim.AdvanceDay()) { sim.AdvanceTurn(none); }
-                        if (sim.PlayerPreCampaign != null || sim.PlayerCampaign != null) { staged = true; }
+                        if (sim.PlayerPreCampaign != null) { runUp = true; }
+                        if (sim.PlayerCampaign != null) { staged = true; }
                         if (sim.PollingDayToday)
                         {
                             flagged++; flaggedDate = sim.CurrentDate;
-                            if (NationalElection.TryPredictShares(CountryId.Poland, out predicted, EconomicVote.RecordOverTerm(player, sim.CurrentDate, out _), on: sim.CurrentDate))
-                            {
-                                counted = NationalElection.Run(CountryId.Poland, sim.CurrentTurn, predicted, sim.CurrentDate);
-                            }
+                            campaignOnDay = sim.PlayerCampaignResult != null && sim.CampaignRecord != null && sim.CampaignRecord.ElectionDate == sim.CurrentDate;
+                            counted = sim.RunPlayerElection();   // the game's own count - what GameController.CheckElection calls
+                            held = sim.LastPlayerCount;
                         }
                     }
                     Check(flagged == 1 && flaggedDate == new DateTime(2023, 10, 15), F("a Polish game raised PollingDayToday {0} time(s) between {1:yyyy-MM-dd} and 20 Oct 2023 - on {2:yyyy-MM-dd}", flagged, start, flaggedDate));
-                    Check(!staged, "no run-up or campaign was staged for Poland on the way (LiveCampaignSetup stages none) - the day is counted by the prediction");
+                    Check(runUp && staged && campaignOnDay, F("PL-C: a Polish game played as PiS stages its run-up and its campaign on the way, the campaign's result in hand on polling day (run-up {0}, campaign {1}, result {2})", runUp, staged, campaignOnDay));
+                    Check(held != null && held.Setup.HasValue && held.Setup.Value.Regions.Length == 41 && held.RegionalShift != null && held.Counted != null && held.Counted.OkregShift != null && !double.IsNaN(held.Counted.Turnout),
+                        F("the day is counted on the campaign's path: its shares, its okreg movement ({0} okregi moved) and its doors (turnout {1:0.00} %)", held?.Counted?.CampaignRegionsMoved ?? 0, 100.0 * (held?.Counted?.Turnout ?? double.NaN)));
                     int seated = 0; var shareLine = new StringBuilder(); var seatLine = new StringBuilder();
                     if (counted != null)
                     {
@@ -230,7 +233,7 @@ namespace PoliSim.EditorTools
                         foreach (System.Collections.Generic.KeyValuePair<string, double> kv in counted.Shares) { if (kv.Value > 0.0005) { shareLine.Append(kv.Key).Append(' ').Append((100.0 * kv.Value).ToString("0.0", CultureInfo.InvariantCulture)).Append(" %, "); } }
                     }
                     Check(counted != null && counted.Method == ElectionMethod.PolandDistricts && seated == 460,
-                        F("on 15 Oct 2023 the prediction ({0}) counted through the 41 districts - {1}: {2}", shareLine.ToString().TrimEnd(',', ' '), counted?.Method.ToString() ?? "NOT COUNTED", seatLine.ToString().TrimEnd(',', ' ')));
+                        F("on 15 Oct 2023 the campaign's shares ({0}) counted through the 41 districts - {1}: {2}", shareLine.ToString().TrimEnd(',', ' '), counted?.Method.ToString() ?? "NOT COUNTED", seatLine.ToString().TrimEnd(',', ' ')));
                     Check(sim.TryPlayerPollingDay(out DateTime plNext) && plNext == new DateTime(2027, 10, 17), F("after 15 Oct 2023 the manager offers {0:yyyy-MM-dd} - the 10th term's window, its first Sunday (D3)", plNext));
                 }
                 finally

@@ -271,9 +271,10 @@ namespace PoliSim.EditorTools
                             Names(formed.Government.Cabinet), formed.Government.Support != 0 ? " on " + Names(formed.Government.Support) + "'s support" : string.Empty, formed.Government.SupportedSeats));
                 }
 
-                // (h) THE PLAYED COUNT (the review's finding 9): the chamber a Polish game forms - its own 2023 count, by a copy of the path
-                // `GameController.RunNationalElection` takes with no campaign staged (Poland's start, no policy, the live prediction counted through the 41
-                // districts on polling day; `PollingDayDiagnostic` (5) runs the same path) - formed by the game's own entry and under every reading. The
+                // (h) THE PLAYED COUNT (the review's finding 9): the chamber a Polish game forms - its own 2023 count, on the path the game takes - PL-C
+                // (s941): the run-up and the Sejm campaign staged on the way (`LiveCampaignSetup.TryPoland`), the day counted by the world's own election call
+                // (`SimulationManager.RunPlayerElection`, what `GameController.CheckElection` calls) on the campaign's shares, its okreg movement and its doors,
+                // the record's factors on them (Poland's start, no policy; `PollingDayDiagnostic` (5) runs the same path) - formed by the game's own entry and under every reading. The
                 // entry is the government the night STORES, `GovernmentFormation.ViewOf` on the election's dated reading (the second review's finding 11):
                 // its cabinet and its support are held to R1's, and to F7's acceptance test - "in a world that follows history, a Polish game's own 2023
                 // election forms KO+TD+NL" (READ AS: the world stepped from the start with no policy - the reading the record's §12 states and puts to Elias)
@@ -294,14 +295,18 @@ namespace PoliSim.EditorTools
                         var none = new Dictionary<CountryId, PolicyDecision>();
                         foreach (Country c in world.Countries) { none[c.Id] = PolicyDecision.None(); }
                         ElectionRecord counted = null;
+                        bool campaigned = false;
                         for (int day = 1; day <= 400 && counted == null && sim.CurrentDate <= PollingDay; day++)
                         {
                             if (sim.AdvanceDay()) { sim.AdvanceTurn(none); }
-                            if (sim.PollingDayToday && NationalElection.TryPredictShares(CountryId.Poland, out Dictionary<string, double> predicted, EconomicVote.RecordOverTerm(player, sim.CurrentDate, out _), on: sim.CurrentDate))
+                            if (sim.PollingDayToday)
                             {
-                                counted = NationalElection.Run(CountryId.Poland, sim.CurrentTurn, predicted, sim.CurrentDate);
+                                campaigned = sim.PlayerCampaignResult != null && sim.CampaignRecord != null && sim.CampaignRecord.ElectionDate == sim.CurrentDate;
+                                counted = sim.RunPlayerElection();   // the game's own count, on the campaign's path
                             }
                         }
+                        Check(campaigned && sim.LastPlayerCount != null && sim.LastPlayerCount.Setup.HasValue && sim.LastPlayerCount.RegionalShift != null,
+                            "PL-C: the played count is the campaign's - the run's shares, its okreg movement and its doors, as the game counts them");
                         Check(counted != null && counted.Date == PollingDay && counted.Seats.Values.Sum() == recordSeats.Sum(),
                             F("a Polish game's own count on {0:yyyy-MM-dd} (seed {1}, no policy): {2}", PollingDay, PlayedSeed,
                                 counted == null ? "NOT COUNTED" : string.Join(", ", counted.Seats.Where(kv => kv.Value > 0).Select(kv => kv.Key + " " + kv.Value))));
@@ -321,9 +326,19 @@ namespace PoliSim.EditorTools
                                 F("the game's own entry - the government the night stores - forms the played count as R1 does: {0} (R1: {1})",
                                     view.HasGovernment ? Say(view.Cabinet.Select(c => c.Abbrev), view.Support.Select(c => c.Abbrev)) : "no government - " + view.Reason,
                                     Say(Keys(r1Played.Government.Cabinet), Keys(r1Played.Government.Support))));
-                            Check(view.HasGovernment && gameCabinet.SetEquals(Keys(ofRecord)),
-                                F("F7's ACCEPTANCE: in a world that follows history, a Polish game's own 2023 election forms KO+TD+NL - the game's entry seats {0}",
-                                    view.HasGovernment ? Say(view.Cabinet.Select(c => c.Abbrev), view.Support.Select(c => c.Abbrev)) : "no government - " + view.Reason));
+                            // K267 (2026-10-28, Code's recommendation under Elias's standing instruction): F7's condition is kept exactly, and REGISTERED - the
+                            // formation's base score (0.5 cohesion, 0.3 seat share, 0.2 negotiating power; support not scored) seats KO+TD on NL's support at the
+                            // record's own seats, and KO+TD+NL wins only at NL >= 30 with KO+TD about 200-210; a miss is printed, never failed, until a
+                            // formation-scoring ruling (its own item); the old pass came from a no-campaign count far from the record
+                            bool f7 = view.HasGovernment && gameCabinet.SetEquals(Keys(ofRecord));
+                            CoalitionFormation.Chamber f7Prepared = CoalitionFormation.Prepare(played, GovernmentFormation.Compatibility(parties), WithDeclarations(), negative, new List<InOrAgainst>(),
+                                ChamberRules.JointMasks(CountryId.Poland, parties, played));
+                            int koTd = Mask("KO", "TD"), nlSeats = played[Index("NL")];
+                            string f7Line = F("F7's ACCEPTANCE: in a world that follows history, a Polish game's own 2023 election forms KO+TD+NL - the game's entry seats {0}; KO+TD {1} seats, NL {2}; base scores KO+TD+NL {3:0.000}, KO+TD {4:0.000}",
+                                view.HasGovernment ? Say(view.Cabinet.Select(c => c.Abbrev), view.Support.Select(c => c.Abbrev)) : "no government - " + view.Reason,
+                                played[Index("KO")] + played[Index("TD")], nlSeats, f7Prepared.BaseScore[ofRecord], f7Prepared.BaseScore[koTd]);
+                            if (f7) { sb.Append("    ok        ").Append(f7Line).Append(" - the registration (K267) can be lifted\n"); }
+                            else { sb.Append("    REGISTERED MISS (K267) ").Append(f7Line).Append('\n'); }
                         }
                     }
                     finally

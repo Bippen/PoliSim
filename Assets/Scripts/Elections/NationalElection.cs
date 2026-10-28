@@ -44,6 +44,10 @@ namespace PoliSim.Elections
         public Dictionary<string, double> Shares = new Dictionary<string, double>();
         /// <summary>Plain English for a screen when `Method` is `NotImplemented` - never an empty result passed off as a real one.</summary>
         public string NotHeldReason;
+        /// <summary>PL-C (K147): a Polish Sejm count's campaign movement per okreg by key (`ParliamentaryCount.Result.OkregShift`), which the chamber was
+        /// divided on and the night declares (`PolishSejmNight.At`); null where no campaign moved an okreg. Saved with the record (format 68), so a night built after
+        /// a load divides the votes the chamber was divided on.</summary>
+        public Dictionary<string, double[]> OkregShift;
     }
     /// <summary>
     /// W-G1: an election on the live path, for the countries whose electoral system this model
@@ -630,7 +634,8 @@ namespace PoliSim.Elections
                     // among the lists that clear 5 % (a coalition 8 %; the minority exempt) - no national tier (PolishSejmAllocation)
                     record.Method = ElectionMethod.PolandDistricts;
                     foreach (PoliticalParty party in PartySystems.For(country)) { record.Shares[party.Abbrev] = shares != null && shares.TryGetValue(party.Abbrev, out double s) ? s : 0.0; }
-                    foreach (KeyValuePair<string, int> kv in PolishSejmAllocation.Allocate(record.Shares, out _, rosterShareOfVote)) { record.Seats[kv.Key] = kv.Value; }
+                    record.OkregShift = counted?.OkregShift;   // PL-C (K147): the okregi the campaign moved, divided as counted
+                    foreach (KeyValuePair<string, int> kv in PolishSejmAllocation.Allocate(record.Shares, out _, rosterShareOfVote, record.OkregShift)) { record.Seats[kv.Key] = kv.Value; }
                     return record;
 
                 case CountryId.Italy:

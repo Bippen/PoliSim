@@ -31,12 +31,12 @@ namespace PoliSim.Elections
     /// Moving them here changes nothing about their provenance; it changes who can call them.
     /// Sweden's was the first staged campaign - the spec's own first case (§3's calendar is
     /// `CampaignCalendar.Sweden2026`); §697 staged Germany's on the Länder (<see cref="Germany"/>), PS-6 US-30 the USA's on its 51
-    /// jurisdictions (<see cref="TryUsa"/>), and <see cref="TryFor"/> says so for the other three rather than inventing one.
+    /// jurisdictions (<see cref="TryUsa"/>), PL-C Poland's on the okregi and the wojewodztwa (<see cref="TryPoland"/>), and <see cref="TryFor"/> says so for the other two rather than inventing one.
     ///
     /// **Proven by the harness's own digest:** `CampaignAiHarness.BuildSetup` now delegates here, and
     /// its decision digest under seed 777 is the one it had before the move.
     /// </summary>
-    public static class LiveCampaignSetup
+    public static partial class LiveCampaignSetup
     {
         /// <summary>DERIVED scaling anchor: the largest party's compatibility at the fixed point; the rest follow `PreferenceModel.Sharpness`.</summary>
         public const double CompatibilityCeiling = 70.0;
@@ -58,6 +58,10 @@ namespace PoliSim.Elections
         /// <summary>K110: the purse's national currency per model unit - `UsDollarsPerUnit` for the USA, 1 elsewhere. The HQ prints a figure times it, and a
         /// sourced national price (the postage, a letter's revenue) enters the purse divided by it.</summary>
         public static double PursePerUnit(CountryId? country) => country == CountryId.USA ? UsDollarsPerUnit : 1.0;
+
+        /// <summary>PL-C (K167): the purse's national currency per unit for a staging - its own (<see cref="CampaignRun.Setup.PurseUnit"/>: Poland's, the full committee's
+        /// statutory limit over the model's chest) where it carries one, else the country's (<see cref="PursePerUnit(CountryId?)"/>).</summary>
+        public static double PursePerUnit(CountryId? country, CampaignRun.Setup? setup) => setup.HasValue && setup.Value.PurseUnit > 0.0 ? setup.Value.PurseUnit : PursePerUnit(country);
         /// <summary>[AUTHORED-DRAFT] W-B11: 800 volunteers × 3 h a day, equal for all by design (W-B4's offices grow them).</summary>
         public const int Volunteers = 800;
         /// <summary>[AUTHORED-DRAFT] W-B4: what each staged office puts into its own daily ground operation (400 doors a day at 5 kr).</summary>
@@ -190,12 +194,16 @@ namespace PoliSim.Elections
                     : Germany(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate, played);
                 return true;
             }
+            if (country == CountryId.Poland)   // PL-C (K167-K169): Poland's campaign - the Sejm's on the okregi, the presidency's on the wojewodztwa, its run-off the two finalists' - always on the vote model
+            {
+                return TryPoland(scandals, calendar, out setup, out note, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate, played);
+            }
             if (country == CountryId.USA)   // PS-6 US-30: the USA's campaign on the jurisdictions, its own staging - always on the vote model (the prediction's only inputs)
             {
                 return TryUsa(scandals, calendar, out setup, out note, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate, played);
             }
             setup = default;
-            note = $"no campaign is staged for {country}: the calendar, the regions and the personality cast exist for Sweden, Germany and the USA only; staging another country is its own item, not a copy of theirs";
+            note = $"no campaign is staged for {country}: the calendar, the regions and the personality cast exist for Sweden, Germany, the USA and Poland only; staging another country is its own item, not a copy of theirs";
             return false;
         }
 

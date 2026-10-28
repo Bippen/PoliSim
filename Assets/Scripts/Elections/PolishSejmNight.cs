@@ -155,9 +155,9 @@ namespace PoliSim.Elections
         /// Each okreg's votes per key (rows okreg 1 to 41, columns <paramref name="keys"/>): the spread `PolishSejmAllocation.Allocate` divides, read from
         /// the same function (`PolishSejmAllocation.SwungVotes`, whose class head declares it). A key the shares do not carry has none.
         /// </summary>
-        public static double[][] DistrictVotes(IReadOnlyList<string> keys, IReadOnlyDictionary<string, double> shares)
+        public static double[][] DistrictVotes(IReadOnlyList<string> keys, IReadOnlyDictionary<string, double> shares, IReadOnlyDictionary<string, double[]> okregShift = null)
         {
-            return PolishSejmAllocation.SwungVotes(keys, shares);
+            return PolishSejmAllocation.SwungVotes(keys, shares, okregShift);   // PL-C (K147): the campaign's okreg movement the chamber was divided on, where one was counted
         }
 
         /// <summary>
@@ -179,11 +179,11 @@ namespace PoliSim.Elections
 
         /// <summary>The night at <paramref name="minute"/> on the national <paramref name="shares"/> (fractions of the valid vote, keyed by the roster's
         /// abbreviations - an election record's). Null where no shares are given.</summary>
-        public static State At(int minute, IReadOnlyDictionary<string, double> shares)
+        public static State At(int minute, IReadOnlyDictionary<string, double> shares, IReadOnlyDictionary<string, double[]> okregShift = null)
         {
             if (shares == null || shares.Count == 0) { return null; }
             string[] keys = KeysFor(shares);
-            double[][] votes = DistrictVotes(keys, shares);
+            double[][] votes = DistrictVotes(keys, shares, okregShift);
             int districts = votes.Length;
             int[] order = DeclarationOrder();
             var rank = new int[districts];

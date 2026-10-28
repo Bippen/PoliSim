@@ -211,7 +211,7 @@ namespace PoliSim.UI
             }
             try
             {
-                PolishSejmNight.State state = PolishSejmNight.At(PolishSejmNight.FinalMinute, latest.Shares);
+                PolishSejmNight.State state = PolishSejmNight.At(PolishSejmNight.FinalMinute, latest.Shares, latest.OkregShift);   // PL-C (K147): the okregi as the campaign moved them, the votes the chamber was divided on
                 if (state == null) { Debug.Log("ELECTION: no election night for Poland - the count carries no shares."); return; }
                 var differ = new List<string>();
                 for (int k = 0; k < state.Keys.Length; k++)

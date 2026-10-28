@@ -124,6 +124,11 @@ namespace PoliSim.Elections
             /// <summary>Regional 5a (K149): each region's offset from the national shares at the staging's prior ([region][party], fractions: the count's own derivation of the
             /// prior's regions less the prior) - what a bought regional poll reads the region's truth through (`RegionalPolling.TruthIn`); null = no regional poll can be bought.</summary>
             public readonly double[][] RegionalOffset;
+            /// <summary>PL-C (K167): the national currency one unit of this staging's purse is - Poland's, the full committee's statutory limit over the model's
+            /// chest (`PolishCampaign`), so a committee's chest is its limit; 0 = the country's own unit (`LiveCampaignSetup.PursePerUnit`).</summary>
+            public readonly double PurseUnit;
+            /// <summary>PL-C (K168): which contest the staging campaigns for - the chamber (every staging before PL-C), a presidential first vote, or the run-off.</summary>
+            public readonly CampaignContest Contest;
 
             /// <summary>§697: whether <paramref name="party"/> stands in <paramref name="region"/> - everywhere where no candidacy is staged.</summary>
             public bool StandsIn(int party, int region) => Stands == null || party < 0 || party >= Stands.Length || Stands[party] == null || region < 0 || region >= Stands[party].Length || Stands[party][region];
@@ -166,23 +171,26 @@ namespace PoliSim.Elections
 
             /// <summary>PS-3k (§638): this setup with the government's record applied.</summary>
             public Setup WithRecordShift(double[] shift) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping, Positions, Stands, Targeting, DoorCacePp, RegionalOffset);
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping, Positions, Stands, Targeting, DoorCacePp, RegionalOffset, PurseUnit, Contest);
 
             /// <summary>Regional 5a: this setup with each region's offset from the national shares (<see cref="RegionalOffset"/>).</summary>
             public Setup WithRegionalOffset(double[][] offset) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, Families, AwarenessStart, Grouping, Positions, Stands, Targeting, DoorCacePp, offset);
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, Families, AwarenessStart, Grouping, Positions, Stands, Targeting, DoorCacePp, offset, PurseUnit, Contest);
 
             /// <summary>§681: this setup with the entrant layer's families and opening awareness.</summary>
             public Setup WithEntrants(int[] families, double[] awarenessStart, double[] grouping, double[][] positions) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, families, awarenessStart, grouping, positions, Stands, Targeting, DoorCacePp, RegionalOffset);
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, families, awarenessStart, grouping, positions, Stands, Targeting, DoorCacePp, RegionalOffset, PurseUnit, Contest);
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
                 PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0,
                 MediaOutlet[] outlets = null, int[] debateDays = null, (int Day, int Party, Scandal Scandal)[] scandals = null,
                 double liveScandalRatePerPartyDay = 0.0, double[] recordShift = null, int[] families = null, double[] awarenessStart = null, double[] grouping = null, double[][] positions = null,
-                bool[][] stands = null, RegionTargeting targeting = null, double doorCacePp = 0.0, double[][] regionalOffset = null)
+                bool[][] stands = null, RegionTargeting targeting = null, double doorCacePp = 0.0, double[][] regionalOffset = null, double purseUnit = 0.0,
+                CampaignContest contest = CampaignContest.Chamber)
             {
+                PurseUnit = purseUnit;   // PL-C (K167): Poland's purse unit; 0 everywhere else
+                Contest = contest;   // PL-C (K168): the chamber everywhere but Poland's presidential stagings
                 RegionalOffset = regionalOffset;   // Regional 5a: the regions' offsets a regional poll reads; null = none on sale
                 DoorCacePp = doorCacePp;   // A-LOOP q24 5b: the staging's door CACE; 0 wherever the count reads none
                 Targeting = targeting;   // PS-6 US-31: the USA's targeting rule; null everywhere else

@@ -34,3 +34,5 @@ Assets/Scripts/Elections/Generated/ItalianCount2022.cs -text
 EnergyData/raw/voll/** -text
 EnergyData/raw/reliability/** -text
 Assets/Scripts/Data/Generated/ValueOfLostLoadData.cs -text
+# PL-C (s941, K167): the Kodeks wyborczy spending-limit regulations and the PKW register notices, byte-exact as fetched (digests in the folder's SHA256SUMS.txt)
+ElectionsData/poland/raw/spending_limits/** -text

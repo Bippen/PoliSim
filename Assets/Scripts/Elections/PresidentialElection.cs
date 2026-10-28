@@ -98,6 +98,12 @@ namespace PoliSim.Elections
             /// one, which is every contest of a Sejm-start game and every contest a save from before carries. The field and its factors are the record's either
             /// way (the factor of record stands, I14's side question): the mark changes no share.</summary>
             public string PlayerCandidate;
+            /// <summary>PL-C (K168): B4's transfer share of the two for <see cref="RunOffA"/> (%) where a run-off campaign was counted in its place - what the
+            /// campaign moved, printed beside it; NaN where none ran (B4's share is then <see cref="RunOffShareA"/> itself).</summary>
+            public double RunOffTransferShareA = double.NaN;
+            /// <summary>PL-C (K167): what each committee spent on the first round's campaign, by its party's key, in the staging's purse units - the run-off
+            /// campaign's chest is the committee's one statutory limit less it (Kodeks wyborczy art. 327: one limit for the election); null where no campaign ran.</summary>
+            public Dictionary<string, double> FirstRoundSpent;
 
             public bool Decided() => Elected != null;
             /// <summary>A run-off the first vote called and the day has not yet held.</summary>
@@ -243,17 +249,23 @@ namespace PoliSim.Elections
 
         /// <summary>The next first vote not yet held, on or after <paramref name="onOrAfter"/>, and the end of the term it elects a successor for; false
         /// where the country elects no president in two rounds, none is in office to count a term from, or no such day falls in the next four terms.</summary>
-        public static bool TryNextFirstVote(Country country, DateTime onOrAfter, out DateTime day, out DateTime termEnds, out string basis)
+        public static bool TryNextFirstVote(Country country, DateTime onOrAfter, out DateTime day, out DateTime termEnds, out string basis) =>
+            TryNextFirstVote(country.Id, country.PresidentialElections, onOrAfter, out day, out termEnds, out basis);
+
+        /// <summary>PL-C: the same on <paramref name="held"/>, the contests a world has held (an empty list for a world that has held none) - so a staging with
+        /// no country of its own (a harness's) finds the day the game's would.</summary>
+        public static bool TryNextFirstVote(CountryId id, List<Contest> held, DateTime onOrAfter, out DateTime day, out DateTime termEnds, out string basis)
         {
             day = termEnds = DateTime.MinValue;
             basis = null;
-            TwoRoundElection.Rule rule = TwoRoundElection.RuleOf(country.Id);
-            if (rule == null || !PresidentAt(country.Id, country.PresidentialElections, onOrAfter, out PresidencyOfRecord.President incumbent)) { return false; }
+            held = held ?? new List<Contest>();
+            TwoRoundElection.Rule rule = TwoRoundElection.RuleOf(id);
+            if (rule == null || !PresidentAt(id, held, onOrAfter, out PresidencyOfRecord.President incumbent)) { return false; }
             termEnds = incumbent.TookOffice.AddYears(rule.TermYears);
             for (int term = 0; term < 4; term++)
             {
-                DateTime candidateDay = FirstVoteFor(rule, country.Id, termEnds, out basis);
-                if (candidateDay >= onOrAfter && !country.PresidentialElections.Exists(c => c.FirstVote == candidateDay)) { day = candidateDay; return true; }
+                DateTime candidateDay = FirstVoteFor(rule, id, termEnds, out basis);
+                if (candidateDay >= onOrAfter && !held.Exists(c => c.FirstVote == candidateDay)) { day = candidateDay; return true; }
                 termEnds = termEnds.AddYears(rule.TermYears);
             }
             termEnds = DateTime.MinValue;
@@ -264,15 +276,17 @@ namespace PoliSim.Elections
         /// <summary>
         /// The game's presidential rounds on <paramref name="date"/>: the run-off of a contest whose day it is, or the first vote where today is its day
         /// (the field and the count from <paramref name="predicted"/>, the live prediction - null where none could be made, and nothing is held).
-        /// Returns the contest a round was held in today, or null.
+        /// Returns the contest a round was held in today, or null. PL-C (K168): <paramref name="runOffShareA"/> - where the two finalists campaigned through the
+        /// days between rounds (`LiveCampaignSetup.PolandRunOff`, staged on B4's transfer as its prior) - is the campaign's share of the two for the first
+        /// finalist (%), counted in place of B4's; NaN (no campaign) counts B4's as before.
         /// </summary>
-        public static Contest HoldRounds(Country country, DateTime date, IReadOnlyDictionary<string, double> predicted)
+        public static Contest HoldRounds(Country country, DateTime date, IReadOnlyDictionary<string, double> predicted, double runOffShareA = double.NaN)
         {
             TwoRoundElection.Rule rule = TwoRoundElection.RuleOf(country.Id);
             if (rule == null) { return null; }
             foreach (Contest c in country.PresidentialElections)
             {
-                if (c.RunOffPending() && c.RunOffOn == date) { HoldRunOff(c); return c; }
+                if (c.RunOffPending() && c.RunOffOn == date) { HoldRunOff(c, runOffShareA); return c; }
             }
             if (predicted == null || !TryNextFirstVote(country, date, out DateTime day, out DateTime termEnds, out string basis) || day != date) { return null; }
             string player = PlayerCandidateFor(country, date);   // SP-7b: read before the contest joins the country - the first contest after a presidential start is the start's
@@ -371,7 +385,21 @@ namespace PoliSim.Elections
             return contest;
         }
 
-        private static void HoldRunOff(Contest contest)
+        /// <summary>PL-C (K168): B4's run-off for a pending <paramref name="contest"/> - the first finalist's share of the two (%) by the transfer from the first
+        /// round's field, and the first round's voters who vote in it (%) - the prior a run-off campaign is staged on; NaN where a finalist has no position.</summary>
+        public static double RunOffShareOf(Contest contest, out double voting)
+        {
+            voting = double.NaN;
+            Candidate a = contest != null ? Find(contest, contest.RunOffA) : null, b = contest != null ? Find(contest, contest.RunOffB) : null;
+            if (a == null || b == null || !a.Placed || !b.Placed) { return double.NaN; }
+            var firstRound = new List<(string Name, double Share, Point? At)>();
+            foreach (Candidate c in contest.Field) { firstRound.Add((c.Name, c.Share, c.Placed ? new Point(c.Galtan, c.Nationalism, c.Eu) : (Point?)null)); }
+            return RunOffShare(firstRound, a.Name, b.Name, new Point(a.Galtan, a.Nationalism, a.Eu), new Point(b.Galtan, b.Nationalism, b.Eu), TransferTau, AbstentionDraftMax, out voting);
+        }
+
+        /// <summary>The run-off's count: B4's transfer, or (PL-C) the run-off campaign's share of the two where one ran (<paramref name="campaignShareA"/>, not NaN) -
+        /// the abstention stays B4's either way (the campaign moves who the voters choose, not who votes).</summary>
+        private static void HoldRunOff(Contest contest, double campaignShareA = double.NaN)
         {
             contest.RunOffHeld = true;
             Candidate a = Find(contest, contest.RunOffA), b = Find(contest, contest.RunOffB);
@@ -380,9 +408,12 @@ namespace PoliSim.Elections
                 contest.Line += "; the run-off cannot be counted - a finalist has no position in the sovereignty space; nothing is decided";
                 return;
             }
-            var firstRound = new List<(string Name, double Share, Point? At)>();
-            foreach (Candidate c in contest.Field) { firstRound.Add((c.Name, c.Share, c.Placed ? new Point(c.Galtan, c.Nationalism, c.Eu) : (Point?)null)); }
-            contest.RunOffShareA = RunOffShare(firstRound, a.Name, b.Name, new Point(a.Galtan, a.Nationalism, a.Eu), new Point(b.Galtan, b.Nationalism, b.Eu), TransferTau, AbstentionDraftMax, out contest.RunOffVoting);
+            contest.RunOffShareA = RunOffShareOf(contest, out contest.RunOffVoting);
+            if (!double.IsNaN(campaignShareA))
+            {
+                contest.RunOffTransferShareA = contest.RunOffShareA;
+                contest.RunOffShareA = campaignShareA;
+            }
             long votesA = (long)Math.Round(PartsPerMillion * contest.RunOffShareA / 100.0);
             string elected = TwoRoundElection.CountRunOff(new List<(string Candidate, long Votes)> { (a.Name, votesA), (b.Name, (long)PartsPerMillion - votesA) });
             if (elected == null) { contest.Line += "; the run-off tied - the statute's resolution is not modelled; nothing is decided"; return; }
@@ -390,7 +421,9 @@ namespace PoliSim.Elections
             contest.ElectedParty = Find(contest, elected).Party;
             double winner = elected == a.Name ? contest.RunOffShareA : 100.0 - contest.RunOffShareA;
             contest.Line += string.Format(CultureInfo.InvariantCulture, "; {0} elected in the run-off of {1:yyyy-MM-dd} with {2:0.00} % of the two, taking office {3:yyyy-MM-dd}",
-                elected, contest.RunOffOn, winner, contest.TakesOffice);
+                elected, contest.RunOffOn, winner, contest.TakesOffice)
+                + (double.IsNaN(contest.RunOffTransferShareA) ? string.Empty
+                    : string.Format(CultureInfo.InvariantCulture, " (the finalists' campaign between the rounds: {0} {1:0.00} % of the two against B4's transfer {2:0.00} %)", a.Name, contest.RunOffShareA, contest.RunOffTransferShareA));
         }
 
         /// <summary>The candidate a party outside the field of record fields (see the class): the incumbent within the term limit, the party's leader

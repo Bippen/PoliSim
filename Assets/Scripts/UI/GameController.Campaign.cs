@@ -547,6 +547,13 @@ namespace PoliSim.UI
             string spent = s.MoneyAtCampaignStart > 0
                 ? string.Format(CultureInfo.InvariantCulture, Purse + " · {0:F0} % OF THE CHEST SPENT", s.MoneySpentShare * 100.0)
                 : Purse + " · WAR CHEST";
+            // PL-C (K167): a Polish committee's purse is its statutory cap - the caption names the cap in the one line the chest's share took, at the caption's
+            // own size (the film's OVERFLOW: the cap and its article beside the share needed half as much again as the rect); the article is in the staging note
+            double cap = LiveCampaignSetup.SpendingLimit(_simulationManager?.PlayerCampaign?.Setup ?? _simulationManager?.PlayerPreCampaign?.Staged, _simulationManager?.PlayerPartyIndexForCampaign() ?? -1);
+            if (!double.IsNaN(cap))
+            {
+                spent = string.Format(CultureInfo.InvariantCulture, Purse + " · {0:F0} % OF THE {1:N0} CAP SPENT", cap > 0.0 ? 100.0 * System.Math.Max(0.0, 1.0 - s.Resources.Money * PoliSim.Elections.LiveCampaignSetup.PursePerUnit(PlayerCountryId, _simulationManager?.PlayerCampaign?.Setup ?? _simulationManager?.PlayerPreCampaign?.Staged) / cap) : 0.0, cap);   // the share of the cap spent, the run-up's spending in it
+            }
             PoliSimWidgets.MeasuredLabel(
                 new Rect(captionLeft, y, Mathf.Max(1f, r.xMax - captionLeft), heroSize.y - Mathf.Round(4f * uy)),
                 spent, heroCaption);
@@ -1346,7 +1353,7 @@ namespace PoliSim.UI
         /// </summary>
         private string Kronor(double amount)
         {
-            return (amount * PoliSim.Elections.LiveCampaignSetup.PursePerUnit(PlayerCountryId)).ToString("N0", CultureInfo.InvariantCulture);
+            return (amount * PoliSim.Elections.LiveCampaignSetup.PursePerUnit(PlayerCountryId, _simulationManager?.PlayerCampaign?.Setup ?? _simulationManager?.PlayerPreCampaign?.Staged)).ToString("N0", CultureInfo.InvariantCulture);
         }
 
         /// <summary>

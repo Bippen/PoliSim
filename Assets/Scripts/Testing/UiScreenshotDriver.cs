@@ -5768,7 +5768,7 @@ namespace PoliSim.Testing
             var noDecisions = new Dictionary<CountryId, PolicyDecision>();
             if (_countryId == CountryId.Poland)
             {
-                // D-PL: a Polish game stages no run-up and no campaign (§767), so its film walks the day path straight to its polling day and its nights
+                // D-PL: a Polish game's film walks the day path to its polling day and its nights - PL-C: filming its Sejm campaign's HQ on the way and its presidential campaign's after
                 yield return CapturePolishInterrupts(controller, sim, noDecisions);
                 yield break;
             }
@@ -6241,7 +6241,7 @@ namespace PoliSim.Testing
                 yield break;
             }
             int minute = PolishSejmNight.ArrivalMinute(30, PolishOkregiCartogramCount);
-            PolishSejmNight.State partial = PolishSejmNight.At(minute, latest.Shares);
+            PolishSejmNight.State partial = PolishSejmNight.At(minute, latest.Shares, latest.OkregShift);   // PL-C: the okregi as counted
             if (partial == null || partial.Complete)
             {
                 Debug.LogError($"SHOT: D-PL - the Polish night at minute {minute} is {(partial == null ? "not built" : "already complete")}; the night part-way is NOT filmed.");
@@ -6292,6 +6292,18 @@ namespace PoliSim.Testing
                     sim.AdvanceCountryDayTick(_countryId);
                     days++;
                     if (boundary) { sim.AdvanceTurn(noDecisions); }
+                    // PL-C: the presidential campaign's HQ and the run-off's, filmed on this walk - it is the one that crosses 2025 (the walk after the nights
+                    // starts past the run-off, and the next first vote is beyond any search)
+                    if (!_plcFirstFilmed && sim.PlayerCampaign != null && sim.PlayerCampaign.Setup.Contest == CampaignContest.PresidentialFirstVote && sim.PlayerCampaign.Day >= 1)
+                    {
+                        _plcFirstFilmed = true;
+                        yield return FilmPolishHq(controller, sim, "plc03_presidential_campaign_hq");
+                    }
+                    if (!_plcRunOffFilmed && sim.PlayerCampaign != null && sim.PlayerCampaign.Setup.Contest == CampaignContest.PresidentialRunOff && sim.PlayerCampaign.Day >= 2)
+                    {
+                        _plcRunOffFilmed = true;
+                        yield return FilmPolishHq(controller, sim, "plc04_runoff_campaign_hq");
+                    }
                     foreach (PresidentialElection.Contest c in poland.PresidentialElections)
                     {
                         if (wantRunOff ? c == contest && c.RunOffHeld && c.RunOffOn == sim.CurrentDate : c.FirstVote == sim.CurrentDate) { contest = c; found = true; }
@@ -6387,12 +6399,16 @@ namespace PoliSim.Testing
         /// <summary>
         /// D-PL: THE POLISH INTERRUPTS FILM - a Polish game played from its start as play steps it (the day path, the country's day tick, the clock paused
         /// while the harness walks) to its polling day, the Sejm's night opened by the controller's own election call and held as a takeover the clock
-        /// cannot pass, dismissed by its CONTINUE; then `CapturePolishNights`. The run-up and campaign frames of the other countries' film have no Polish
-        /// counterpart (no campaign is staged for Poland), and the film says so.
+        /// cannot pass, dismissed by its CONTINUE; then `CapturePolishNights`. PL-C: on the way the Sejm campaign's HQ is filmed - the run-up's first day
+        /// (`plc01_sejm_runup_hq`) and the campaign's second (`plc02_sejm_campaign_hq`), the cap stated beside the chest - and on the nights' walk through 2025
+        /// the presidential campaign's HQ (`plc03_presidential_campaign_hq`, on the wojewodztwa) and the run-off's (`plc04_runoff_campaign_hq`, the two
+        /// finalists alone; out of reach where the film's party backs neither).
         /// </summary>
         private IEnumerator CapturePolishInterrupts(GameController controller, SimulationManager sim, Dictionary<CountryId, PolicyDecision> noDecisions)
         {
-            Debug.Log("SHOT: -shotinterrupts - Poland stages no run-up and no campaign; the film walks to the polling day and films the nights.");
+            Debug.Log("SHOT: -shotinterrupts - Poland's campaign (PL-C): the film walks to the polling day, filming the Sejm campaign's HQ on the way, then the nights, then the presidential campaign's HQ and the run-off's.");
+            Expect("plc01_sejm_runup_hq", "plc02_sejm_campaign_hq", "plc03_presidential_campaign_hq", "plc04_runoff_campaign_hq");
+            bool runUpFilmed = false, campaignFilmed = false;
             SetPrivateField(controller, "_onDesk", true);
             FieldInfo walkSpeedField = controller.GetType().GetField("_gameSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
             object walkSpeed = walkSpeedField?.GetValue(controller);
@@ -6405,8 +6421,13 @@ namespace PoliSim.Testing
                 sim.AdvanceCountryDayTick(_countryId);
                 days++;
                 if (boundary) { sim.AdvanceTurn(noDecisions); }
+                // PL-C: the Sejm campaign's HQ, once each - the run-up's first day and the campaign's second
+                if (!runUpFilmed && sim.PlayerPreCampaign != null && sim.PlayerCampaign == null) { runUpFilmed = true; yield return FilmPolishHq(controller, sim, "plc01_sejm_runup_hq"); }
+                if (!campaignFilmed && sim.PlayerCampaign != null && sim.PlayerCampaign.Day >= 1) { campaignFilmed = true; yield return FilmPolishHq(controller, sim, "plc02_sejm_campaign_hq"); }
                 if (sim.PollingDayToday) { break; }
             }
+            if (!runUpFilmed) { Debug.LogError("SHOT: PL-C plc01_sejm_runup_hq - MISSING: no run-up began before the polling day (the player's party is in no Polish cast?)"); _failed++; }
+            if (!campaignFilmed) { Debug.LogError("SHOT: PL-C plc02_sejm_campaign_hq - MISSING: no Sejm campaign ran before the polling day"); _failed++; }
             bool over = false;
             if (!sim.PollingDayToday)
             {
@@ -6443,6 +6464,7 @@ namespace PoliSim.Testing
                     {
                         yield return ReportClockAfterDismissal(controller, sim, "election night");
                         yield return CapturePolishNights(controller, sim, noDecisions);
+                        yield return CapturePolishPresidentialHq(controller, sim, noDecisions);   // PL-C: the presidential campaign and its run-off
                     }
                 }
             }
@@ -6450,6 +6472,47 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
             Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
             Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
+        /// <summary>PL-C: whether the Polish nights' walk filmed the presidential campaign's HQ and the run-off's.</summary>
+        private bool _plcFirstFilmed, _plcRunOffFilmed;
+
+        /// <summary>PL-C: the live campaign's HQ opened through the rail's own branch, filmed as <paramref name="frame"/> with the staging's cap in the log, then closed
+        /// back to the Desk.</summary>
+        private IEnumerator FilmPolishHq(GameController controller, SimulationManager sim, string frame)
+        {
+            CampaignRun.Setup? staged = sim.PlayerCampaign?.Setup ?? sim.PlayerPreCampaign?.Staged;
+            Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: PL-C {0} on {1:yyyy-MM-dd} - the {2}, {3} regions, the player's cap: {4}", frame, sim.CurrentDate,
+                staged.HasValue ? staged.Value.Contest.ToString() : "(no staging)", staged.HasValue ? staged.Value.Regions.Length : 0, LiveCampaignSetup.SpendingLimitLine(staged, sim.PlayerPartyIndexForCampaign()) ?? "none"));
+            InvokeNoArg(controller, "OpenLiveCampaign");
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture(frame);
+            InvokeNoArg(controller, "CloseLiveCampaign");
+            SetPrivateField(controller, "_onDesk", true);
+            yield return Settle();
+        }
+
+        /// <summary>PL-C (K168, K169): after the Sejm's nights the Polish game walks on by the day path to the presidential campaign - its HQ on its second day
+        /// (the wojewodztwa) - and to the run-off's, the two finalists alone, on its second day.</summary>
+        private IEnumerator CapturePolishPresidentialHq(GameController controller, SimulationManager sim, Dictionary<CountryId, PolicyDecision> noDecisions)
+        {
+            // PL-C: the nights' walk (CapturePolishNights) crosses 2025 and films both HQs on its way; this says what it filmed, or why not - no second walk
+            if (!_plcFirstFilmed) { Debug.LogError("SHOT: PL-C plc03_presidential_campaign_hq - MISSING: no PresidentialFirstVote campaign ran on the walk to the 2025 first vote (the film's party, " + (sim.World.GetCountry(CountryId.Poland)?.PlayerPartyAbbrev ?? "none") + ", in no cast?)"); _failed++; }
+            if (!_plcRunOffFilmed)
+            {
+                Country poland = sim.World.GetCountry(CountryId.Poland);
+                PresidentialElection.Contest held = poland?.PresidentialElections.Find(c => c.RunOffA != null);
+                string a = held?.Field.Find(c => c.Name == held.RunOffA)?.Party, b = held?.Field.Find(c => c.Name == held.RunOffB)?.Party;
+                if (held == null || (poland.PlayerPartyAbbrev != a && poland.PlayerPartyAbbrev != b))
+                {
+                    // the review's L6: a run-off is campaigned only by a player whose party backs a finalist - out of reach otherwise, said and not failed
+                    Debug.Log("SHOT: PL-C plc04_runoff_campaign_hq - out of reach: " + (held == null ? "no run-off was called (the first vote decided it)" : "the player's party, " + poland.PlayerPartyAbbrev + ", backs neither finalist (" + a + ", " + b + ")"));
+                    _expectedFrames.Remove("plc04_runoff_campaign_hq");
+                }
+                else { Debug.LogError("SHOT: PL-C plc04_runoff_campaign_hq - MISSING: the player's party backs a finalist and no run-off campaign reached its second day on the walk"); _failed++; }
+            }
+            yield break;
         }
 
         /// <summary>The okręgi the Polish night counts - the generated cartogram's, so the staged state's place in the order is the night's own.</summary>

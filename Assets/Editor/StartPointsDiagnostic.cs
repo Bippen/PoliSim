@@ -53,12 +53,12 @@ namespace PoliSim.EditorTools
                 Check(StartPoints.For(CountryId.France)[0].Kind.StartsWith("PRESIDENTIAL", StringComparison.Ordinal) && StartPoints.For(CountryId.France)[0].DateNote == null && StartPoints.For(CountryId.France)[0].PollingDay == new DateTime(2022, 4, 10) && !StartPoints.For(CountryId.France)[0].Playable, "France's presidential card: first round 10 April 2022 [CC-195] (E-49 closed, §629), locked, before the legislative");
                 Check(StartPoints.For(CountryId.France)[0].Line == "LOCKED · THE PRESIDENTIAL START IS NOT YET BUILT", "France's locked presidential card carries the one reason in the player's words (18b)");
                 // SP-7b (Elias's ruling I14): Poland's presidential card PLAYABLE - a candidate's start, opening on the Marshal's order (4b: a stated deviation for
-                // presidential starts only - the Sejm start keeps the standard run-up), its card saying the deviation and that no campaign is staged (3a); the
+                // presidential starts only - the Sejm start keeps the standard run-up), its card saying the deviation and (PL-C) its run-up; the
                 // default start (TryPlayable, the sheet's pre-selection) stays the Sejm's
                 StartPoints.StartPoint plPres = StartPoints.For(CountryId.Poland)[1];
                 StartPoints.TryPlayable(CountryId.Poland, out StartPoints.StartPoint plDefault);
                 Check(plPres.Playable && PresidentialStart.IsCandidateStart(plPres) && plPres.Opens == new DateTime(2025, 1, 15) && plPres.Opens == PresidentialStart.PolandOpens
-                      && StartPoints.ModeLine(plPres) == "THE MARSHAL'S ORDER · NO CAMPAIGN · OPENS 15 JAN 2025" && StartPoints.DateLine(plPres) == "18 MAY 2025"
+                      && StartPoints.ModeLine(plPres) == "THE MARSHAL'S ORDER · RUN-UP · OPENS 15 JAN 2025" && StartPoints.DateLine(plPres) == "18 MAY 2025"
                       && plDefault.Kind == "SEJM ELECTION" && plDefault.Opens == WorldClock.StartDate(CountryId.Poland) && WorldClock.StartDate(CountryId.Poland) == new CampaignCalendar(WorldClock.LatestElectionDay(CountryId.Poland)).PreCampaignStart
                       && !PresidentialStart.IsCandidateStart(plDefault) && PresidentialStart.KeyOf(plPres) == "PRESIDENTIAL ELECTION 2025",
                     F("SP-7b: Poland's presidential card is a candidate's start, playable - stamp {0} · {1}; it opens {2:yyyy-MM-dd} (the Marshal's order) while the Sejm start, the default, opens {3:yyyy-MM-dd} on the standard run-up; its key \"{4}\"",

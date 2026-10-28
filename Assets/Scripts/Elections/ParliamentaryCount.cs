@@ -19,8 +19,8 @@ namespace PoliSim.Elections
     /// night read, `NationalElection.RegionalOf`, `PolishSejmAllocation.SwungVotes`).</description></item>
     /// <item><description><b>Turnout.</b> Each region's base turnout is its own record's: its valid votes over its electorate (the valkrets roll, the
     /// Land's Wahlberechtigte). A party's supporters turn out at that base plus 5b's lift on the share its doors reached (`GotvTurnout`). Poland's
-    /// okregi carry no electorate on disk and no campaign is staged for Poland, so its okregi count their 2023 size at a base of one (DECLARED: with
-    /// no doors anywhere a uniform rate cancels from every share; no Polish turnout is printed).</description></item>
+    /// okregi, with no Sejm campaign staged on them, count their 2023 size at a base of one (DECLARED: with no doors anywhere a uniform rate cancels from
+    /// every share; no Polish turnout is printed); PL-C: a campaign staged on them brings the PKW's electorates, so its doors count.</description></item>
     /// <item><description><b>The noise is keyed, never counted</b>: drawn on `SimulationRandom.RegionalElectionNoiseSeedOn` (the master seed, the
     /// country, the polling day), as the US count's (`UsGroundGame`), so the played world, a load and every fork draw the same numbers for the same
     /// count and no counted stream moves. σ is W-D1's declared regional figure, `RegionalAggregation.RegionalNoiseSigmaPp` ([AUTHORED-DRAFT] there).
@@ -76,6 +76,9 @@ namespace PoliSim.Elections
             /// name), and how many regions it moved; false and 0 where none was handed or the country's regions are not counted on their own electorate.</summary>
             public bool CampaignRegional;
             public int CampaignRegionsMoved;
+            /// <summary>PL-C (K147): Poland's - the campaign's movement per okreg by key that the count laid on the swing (`PolishCampaign.OkregShiftOf`), which the
+            /// chamber is divided on (`NationalElection.Run`) and the night declares; null where no Sejm campaign moved an okreg, and for every other country.</summary>
+            public Dictionary<string, double[]> OkregShift;
             /// <summary>GATE-18 q3: Sweden's allocation of this count by the Riksdag's law, per valkrets - set by `NationalElection.Run` when it allocates
             /// the count; null until then, and for every other country.</summary>
             public SeatConversion.Result Riksdag;
@@ -149,30 +152,40 @@ namespace PoliSim.Elections
             double[][] preference;
             double[] eligible, baseTurnout;
             bool hasElectorate;
+            bool handBack = false;
             int regionalMoved = 0;
+            Dictionary<string, double[]> okregShift = null;
             if (country == CountryId.Poland || country == CountryId.Italy)
             {
-                // Regional 5a (review L-r6): this branch does not read the campaign's regional movement (`regionalShift`) - no Polish or Italian campaign is staged.
-                // Poland's okregi already carry the keys a staging would match ("okreg N", `PolishOkregElectorates2023`); laying the movement here, as the
-                // Swedish and German branch does through `NationalElection.RegionalOf`, is owed with a Polish staging.
+                // PL-C (K147, closing Regional 5a's review L-r6 and §936's owed line): a staged Sejm campaign's movement per okreg is laid on the swing
+                // (`PolishSejmAllocation.SwungVotes`), so the okreg a contact landed in carries it and every okreg still sums to its size and every list to its
+                // national share before the floor; the chamber and the night divide the same votes (`Result.OkregShift`). No staging or no movement: the swing alone.
                 // PS-7 (K205): Italy's Camera colleges on K150's swing (`ItalianCount.SwungVotes`), counted as Poland's okregi are - a college with no list vote
                 // (Valle d'Aosta's, its seat held by record) is no counted region; MAIE and UV stand in no college, so the hand-back keeps their shares as handed. L5' (DECLARED): the regions are keyed by college and the frame base is one, so a staged Italian campaign's doors would match no region and count nothing - an Italian staging (SP-5 Italy) must key its regions to the colleges and bring their electorates first
                 names = null;
-                double[][] votes = country == CountryId.Poland ? PolishSejmAllocation.SwungVotes(keys, shares) : ItalianColleges(keys, shares, out names);
+                if (country == CountryId.Poland) { okregShift = PolishCampaign.OkregShiftOf(setup, regionalShift, keys, out regionalMoved); }
+                double[][] votes = country == CountryId.Poland ? PolishSejmAllocation.SwungVotes(keys, shares, okregShift) : ItalianColleges(keys, shares, out names);
                 if (country == CountryId.Poland) { names = new string[votes.Length]; }
+                // PL-C: a Sejm campaign staged on the okregi brings each okreg's electorate (`PolishOkregElectorates2023`, the PKW's), so its doors count at the
+                // turnout CACE - each okreg's base turnout its counted votes over its electorate (DECLARED: the roster lists' swung votes, so the okreg's weight in
+                // the national sum is the frame's; the gap, stated - the committees the roster does not carry are no one's votes, so the base sits under
+                // the PKW's valid list votes over the electorate, and the printed Polish turnout under the PKW's of record: it is the roster's turnout); with no such staging the base of one stays a frame, as before
+                bool staged = country == CountryId.Poland && StagedOnOkregi(setup);
                 preference = votes;
                 eligible = new double[votes.Length];
                 baseTurnout = new double[votes.Length];
                 for (int d = 0; d < votes.Length; d++)
                 {
                     if (country == CountryId.Poland) { names[d] = "okreg " + (d + 1).ToString(CultureInfo.InvariantCulture); }
-                    foreach (double v in votes[d]) { eligible[d] += v; }
-                    baseTurnout[d] = 1.0;
+                    double cast = 0.0;
+                    foreach (double v in votes[d]) { cast += v; }
+                    eligible[d] = staged ? Generated.PolishOkregElectorates2023.Eligible[d] : cast;
+                    baseTurnout[d] = staged ? (eligible[d] > 0.0 ? cast / eligible[d] : 0.0) : 1.0;
                 }
-                // DECLARED (the review 2's L3): a base of one is a frame, not a turnout - every supporter already votes, so a door could add nothing
-                // here (the clamp in `GotvTurnout.PartyTurnout`). No Polish campaign is staged, so no door reaches this count; a Polish staging must bring
-                // each okreg's electorate before its doors can count.
-                hasElectorate = false;
+                // DECLARED (the review 2's L3): without a staging a base of one is a frame, not a turnout - every supporter already votes, so a door could add
+                // nothing here (the clamp in `GotvTurnout.PartyTurnout`) and no Polish turnout is printed.
+                hasElectorate = staged;
+                handBack = true;
             }
             else
             {
@@ -203,15 +216,15 @@ namespace PoliSim.Elections
             // Poland: the okregi's swing floors a list at zero and is not re-solved (`PolishSejmAllocation.SwungVotes`), so their vote-weighted sum can sit off the
             // shares handed; the count hands back the shares handed plus what the count moved (the count less the same count at sigma 0 with no doors), so
             // the floor's residue never becomes a share (DECLARED; the review's M1)
-            ElectionDay.Result still = hasElectorate ? null : ElectionDay.Count(names, preference, none, baseTurnout, cace, new System.Random(seed), 0.0);
+            ElectionDay.Result still = handBack ? ElectionDay.Count(names, preference, none, baseTurnout, cace, new System.Random(seed), 0.0) : null;
 
             var result = new Result
             {
                 Shares = new Dictionary<string, double>(), Handed = new Dictionary<string, double>(), GroundPp = new Dictionary<string, double>(), GroundBoundPp = new Dictionary<string, double>(),
                 Turnout = hasElectorate ? counted.NationalTurnout : double.NaN, TurnoutWithoutGround = hasElectorate ? idle.NationalTurnout : double.NaN,
                 Regions = n, SigmaPp = sigma, NoiseSeed = seed, Digest = counted.Digest,
-                Regional = hasElectorate ? counted : null, RegionKeys = keys, RegionNames = names,
-                CampaignRegional = regionalMoved > 0, CampaignRegionsMoved = regionalMoved,
+                Regional = hasElectorate && !handBack ? counted : null, RegionKeys = keys, RegionNames = names,
+                CampaignRegional = regionalMoved > 0, CampaignRegionsMoved = regionalMoved, OkregShift = okregShift,
             };
             double highest = 0.0;
             // Poland's hand-back, held at zero and renormalised so the 5 % and 8 % lines are read on shares summing to one (the review 2's L2)
@@ -246,7 +259,7 @@ namespace PoliSim.Elections
             }
             result.HighestPartyTurnout = hasElectorate ? highest : double.NaN;   // Poland's base of one is a frame, not a turnout (the review's L3)
 
-            if (writeReadout && hasElectorate)
+            if (writeReadout && hasElectorate && !handBack)
             {
                 var regional = new double[n][];
                 var weights = new double[n];
@@ -263,6 +276,16 @@ namespace PoliSim.Elections
             }
             result.Line = LineOf(country, result, keys, gotv != null);
             return result;
+        }
+
+        /// <summary>PL-C: whether <paramref name="setup"/> is a Sejm campaign staged on the 41 okregi (`LiveCampaignSetup.TryPoland`) - its regions the PKW's okregi by name.</summary>
+        private static bool StagedOnOkregi(CampaignRun.Setup? setup)
+        {
+            if (!setup.HasValue || setup.Value.Contest != CampaignContest.Chamber || setup.Value.Regions == null) { return false; }
+            string[] names = Generated.PolishOkregElectorates2023.Names;
+            if (setup.Value.Regions.Length != names.Length) { return false; }
+            for (int d = 0; d < names.Length; d++) { if (setup.Value.Regions[d].Name != names[d]) { return false; } }
+            return true;
         }
 
         /// <summary>Regional 5a (K147): the campaign's movement as the swing reads it - (region name, key index) to the movement of the staged party of that key in the
@@ -344,7 +367,7 @@ namespace PoliSim.Elections
                 noiseMost = Math.Max(noiseMost, Math.Abs(100.0 * (r.Shares[k] - r.Handed[k]) - ground));
             }
             string turnout = double.IsNaN(r.Turnout)
-                ? "no turnout is counted (the okregi carry no electorate on disk)"
+                ? "no turnout is counted (no campaign was staged on the okregi - their base of one is a frame)"
                 : string.Format(CultureInfo.InvariantCulture, "turnout {0:0.00} % ({1:0.00} % without the doors)", 100.0 * r.Turnout, 100.0 * r.TurnoutWithoutGround);
             return string.Format(CultureInfo.InvariantCulture,
                 "{0} - {1} regions counted, each on its own turnout, the doors at the turnout effect ({2}) and the regional noise (sigma {3:0.0} points at a share of one half, scaled by the square root of s(1-s), keyed); {4}; the ground game moved {5}; the noise moved a national share by at most {6:0.00} points; digest {7}",

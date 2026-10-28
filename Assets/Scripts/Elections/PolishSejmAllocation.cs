@@ -61,14 +61,17 @@ namespace PoliSim.Elections
         /// <summary>
         /// The Sejm the game's national vote returns: <paramref name="shares"/> (fractions of the valid vote, keyed by the roster's abbreviations) spread over
         /// the 41 okregi by the uniform swing, d'Hondt in each among the lists that clear the threshold. Every key of <paramref name="shares"/> is in the
-        /// result (0 where it wins nothing). <paramref name="perDistrict"/>: each okreg's seats by list, for a caller that shows them.
+        /// result (0 where it wins nothing). <paramref name="perDistrict"/>: each okreg's seats by list, for a caller that shows them. PL-C (K147):
+        /// <paramref name="okregShift"/> - the campaign's movement per okreg by key (`PolishCampaign.OkregShiftOf`, the count's own) - laid on the swing as
+        /// <see cref="SwungVotes"/> lays it, so the chamber divides the votes the count counted; null, the swing alone, as before.
         /// </summary>
-        public static Dictionary<string, int> Allocate(IReadOnlyDictionary<string, double> shares, out List<Dictionary<string, int>> perDistrict, double rosterShareOfVote = 1.0)
+        public static Dictionary<string, int> Allocate(IReadOnlyDictionary<string, double> shares, out List<Dictionary<string, int>> perDistrict, double rosterShareOfVote = 1.0,
+            IReadOnlyDictionary<string, double[]> okregShift = null)
         {
             var keys = new List<string>();
             foreach (KeyValuePair<string, double> kv in shares) { keys.Add(kv.Key); }
             keys.Sort(StringComparer.Ordinal);   // a fixed order, whatever the caller's dictionary
-            double[][] spread = SwungVotes(keys, shares);
+            double[][] spread = SwungVotes(keys, shares, okregShift);
             var seats = new Dictionary<string, int>();
             foreach (string k in keys) { seats[k] = 0; }
             perDistrict = new List<Dictionary<string, int>>();
@@ -110,8 +113,15 @@ namespace PoliSim.Elections
         /// <paramref name="shares"/> - the spread the head of this class declares: the uniform swing from 2023, a sole committee's votes in its own okreg
         /// alone and the other lists' swing carrying its change, floored at zero, times the okreg's 2023 size. A key the shares do not carry has none.
         /// The chamber divides these (`Allocate`) and the night declares them (`PolishSejmNight.DistrictVotes`): one count.
+        /// <para>PL-C (K147, closing §936's owed line): <paramref name="okregShift"/> - a Sejm campaign's movement per okreg by key - is laid on each list that
+        /// stood in several okregi before the floor, so the okreg a contact landed in carries it. DECLARED, the identity it keeps: in each okreg the movement a
+        /// sole committee took there (the MN's gain in okreg 21) is handed back to the other lists in proportion to their national shares (the swing's own
+        /// carry, (ii) above, already moves its national change); then each list's movement is centred on its own mean over the okregi at their 2023 sizes. So
+        /// each okreg's lists still sum to its 2023 size and each list's national total is still its national share times the base, both exactly before the
+        /// floor - the national total the count was handed, the campaign's whole national movement inside it, is unchanged. Null: the swing above, expression
+        /// for expression.</para>
         /// </summary>
-        internal static double[][] SwungVotes(IReadOnlyList<string> keys, IReadOnlyDictionary<string, double> shares)
+        internal static double[][] SwungVotes(IReadOnlyList<string> keys, IReadOnlyDictionary<string, double> shares, IReadOnlyDictionary<string, double[]> okregShift = null)
         {
             string[] committees = PolishSejmDistricts2023.Committees;
             long[][] votes = PolishSejmDistricts2023.Votes;
@@ -141,6 +151,7 @@ namespace PoliSim.Elections
             sorted.Sort(StringComparer.Ordinal);
             double others = 0.0;
             foreach (string k in sorted) { int c = Array.IndexOf(committees, k); if (c < 0 || sole[c] < 0) { others += shares[k]; } }
+            double[][] laid = okregShift != null && shares != null ? Centred(keys, shares, okregShift, sole, others, size, sum2023) : null;
 
             var result = new double[districts][];
             for (int d = 0; d < districts; d++)
@@ -159,13 +170,54 @@ namespace PoliSim.Elections
                     }
                     else
                     {
-                        double part = others > 0.0 ? national / others * carry[d] : 0.0;
+                        // PL-C (K147): the campaign's movement here, centred (see the summary), in the one expression - none handed adds an exact zero
+                        double part = (others > 0.0 ? national / others * carry[d] : 0.0) + (laid != null ? laid[d][k] : 0.0);
                         local = c >= 0 ? Math.Max(0.0, (double)votes[d][c] / size[d] + (national - national2023[c]) + part) : Math.Max(0.0, national + part);
                     }
                     if (local > 0.0) { result[d][k] = local * size[d]; }
                 }
             }
             return result;
+        }
+
+        /// <summary>PL-C (K147): the campaign's movement as <see cref="SwungVotes"/> lays it ([okreg][key], fractions of the okreg's vote): in each okreg a sole
+        /// committee's movement there handed back to the other lists by their national shares, then each other list's movement less its mean over the okregi at
+        /// their 2023 sizes; a sole committee's own column zero (its national change already places it).</summary>
+        private static double[][] Centred(IReadOnlyList<string> keys, IReadOnlyDictionary<string, double> shares, IReadOnlyDictionary<string, double[]> shift, int[] sole,
+            double others, long[] size, long sum2023)
+        {
+            string[] committees = PolishSejmDistricts2023.Committees;
+            int districts = size.Length;
+            var isSole = new bool[keys.Count];
+            var rows = new double[keys.Count][];
+            for (int k = 0; k < keys.Count; k++)
+            {
+                int c = Array.IndexOf(committees, keys[k]);
+                isSole[k] = c >= 0 && sole[c] >= 0;
+                rows[k] = shift.TryGetValue(keys[k], out double[] row) ? row : null;
+            }
+            var laid = new double[districts][];
+            for (int d = 0; d < districts; d++)
+            {
+                laid[d] = new double[keys.Count];
+                double soleTook = 0.0;
+                for (int k = 0; k < keys.Count; k++) { if (isSole[k] && rows[k] != null && d < rows[k].Length) { soleTook += rows[k][d]; } }
+                for (int k = 0; k < keys.Count; k++)
+                {
+                    if (isSole[k]) { continue; }
+                    double own = rows[k] != null && d < rows[k].Length ? rows[k][d] : 0.0;
+                    double national = shares.TryGetValue(keys[k], out double n) ? n : 0.0;
+                    laid[d][k] = own + (others > 0.0 ? national / others * soleTook : 0.0);
+                }
+            }
+            for (int k = 0; k < keys.Count; k++)
+            {
+                if (isSole[k]) { continue; }
+                double mean = 0.0;
+                for (int d = 0; d < districts; d++) { mean += (double)size[d] / sum2023 * laid[d][k]; }
+                for (int d = 0; d < districts; d++) { laid[d][k] -= mean; }
+            }
+            return laid;
         }
 
         /// <summary>d'Hondt in one okreg: each seat to the highest quotient votes / (won + 1); a tie to the list with more votes, then the first in order.</summary>

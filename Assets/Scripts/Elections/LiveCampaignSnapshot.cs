@@ -259,7 +259,7 @@ namespace PoliSim.Elections
             return string.Format(System.Globalization.CultureInfo.InvariantCulture,
                 "A REGIONAL POLL: {0:N0} INTERVIEWS IN ONE REGION FOR {1:N0} {2}, ±{3:0.0} PP AT A SHARE OF ONE HALF - THE NATIONAL COMMISSION HOLDS SOME {4:N0} OF ITS INTERVIEWS THERE (±{5:0.0} PP). " +
                 "THE MAP IS YOUR PICKER: A TILE SETS WHERE THE NEXT LOCAL ACT AND THE NEXT REGIONAL POLL GO; A REGION NOT POLLED READS AS UNKNOWN.",
-                sample, RegionalPolling.Cost * LiveCampaignSetup.PursePerUnit(country.Id), purse, RegionalPolling.MarginOfErrorPp(0.5, sample),
+                sample, RegionalPolling.Cost * LiveCampaignSetup.PursePerUnit(country.Id, s.Setup), purse, RegionalPolling.MarginOfErrorPp(0.5, sample),
                 sub, RegionalPolling.MarginOfErrorPp(0.5, sub));
         }
 
@@ -327,7 +327,7 @@ namespace PoliSim.Elections
             string purse = country.Id == CountryId.Sweden ? "KR" : EnergyLayer.CurrencyCode(country.Id);
             if (pre.Day > 0)
             {
-                double perUnit = LiveCampaignSetup.PursePerUnit(country.Id);   // K110 (the delta review's M-1): purse units printed in the purse's currency, as the HQ's other figures
+                double perUnit = LiveCampaignSetup.PursePerUnit(country.Id, pre.Staged);   // PL-C: the staging's own unit where it carries one; K110 (the delta review's M-1): purse units printed in the purse's currency, as the HQ's other figures
                 foreach (PreCampaignRun.Entry e in PreCampaignRun.EntriesOn(pre, pre.Day - 1))
                 {
                     notes.Add(e.Refusal == null

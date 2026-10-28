@@ -72,7 +72,7 @@ namespace PoliSim.Elections
                     // §720 (PS-5 with S7, part one): the presidential start reads its record through the two-round rule - the first vote's day from the
                     // PKW's returns, the verdict, the run-off and the term counted, not typed; §770: the game holds its own presidential election from a Sejm start.
                     // SP-7b (Elias's ruling I14): PLAYABLE - the player a candidate of record (ask 1 (a)), the world opened on the Marshal's order (ask 4 (4b), a
-                    // stated deviation for presidential starts only - `PresidentialStart.PolandOpens`), no campaign staged (ask 3 (3a))
+                    // stated deviation for presidential starts only - `PresidentialStart.PolandOpens`), PL-C: the campaign staged on it since (ask 3 (3a) stood until PL-C landed)
                     TwoRoundElection.RoundOfRecord(id, 2025, 1, out DateTime firstVote2025);
                     list.Add(new StartPoint(id, "PRESIDENTIAL ELECTION", firstVote2025, null, PresidentialStart.PolandOpens, true,
                         CandidateLine(PresidentialStart.PolandOpens, firstVote2025),
@@ -100,10 +100,10 @@ namespace PoliSim.Elections
         private static StartPoint Ruled(CountryId id, string kind, string basis) =>
             new StartPoint(id, kind, WorldClock.LatestElectionDay(id), null, WorldClock.StartDate(id), true, WorldClock.StartLine(id), basis);
 
-        /// <summary>SP-7b: a candidate's start in the selector's words - its opening on the Marshal's order (I14 (4b), the stated deviation), no campaign staged
-        /// (I14 (3a)), and the first vote.</summary>
+        /// <summary>SP-7b: a candidate's start in the selector's words - its opening on the Marshal's order (I14 (4b), the stated deviation), that the party campaigns
+        /// (PL-C; until it landed none was staged, I14 (3a)), and the first vote.</summary>
         private static string CandidateLine(DateTime opens, DateTime firstVote) =>
-            "OPENS " + Stamp(opens) + " · THE MARSHAL'S ORDER · NO CAMPAIGN IS STAGED · THE FIRST VOTE " + Stamp(firstVote);
+            "OPENS " + Stamp(opens) + " · THE MARSHAL'S ORDER · YOUR PARTY CAMPAIGNS · THE FIRST VOTE " + Stamp(firstVote);
 
         private static DateTime Day(StartPoint p) => p.PollingDay != DateTime.MinValue ? p.PollingDay : new DateTime(Math.Max(1, p.Year), 1, 1);
 
@@ -135,7 +135,7 @@ namespace PoliSim.Elections
         {
             if (!p.Playable) { return null; }
             string opens = "OPENS " + Stamp(p.Opens);
-            if (PresidentialStart.IsCandidateStart(p)) { return "THE MARSHAL'S ORDER · NO CAMPAIGN · " + opens; }   // SP-7b (I14 (4b), (3a)): the deviation's day and no campaign staged, said on the card
+            if (PresidentialStart.IsCandidateStart(p)) { return "THE MARSHAL'S ORDER · RUN-UP · " + opens; }   // SP-7b (I14 (4b)): the deviation's day, said on the card; PL-C: the run-up and the campaign are staged (the start takes the Polish campaign up, the PL-C row)
             if (WorldClock.GoverningModeOnly(p.Country)) { return "WHAT-IF · YOUR PARTY GOVERNS · " + opens; }   // PS-3d (§631, ruled): the card states the what-if plainly
             if (WorldClock.NoElectionYet(p.Country)) { return "NO ELECTION YET · " + opens; }   // PS-6 US-1 (its review), PS-7-interim: the card the folder opens onto promises no run-up and no snap election
             return (WorldClock.IsSnapStart(p.Country) ? "SNAP ELECTION · " : "RUN-UP · ") + opens;

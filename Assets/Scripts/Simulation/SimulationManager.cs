@@ -5883,6 +5883,8 @@ namespace PoliSim.Simulation
         private static double[] RecordShiftFor(Elections.CampaignRun.Setup setup, System.Collections.Generic.Dictionary<string, double> byParty)
         {
             if (byParty == null || byParty.Count == 0) { return null; }
+            // PL-C (DECLARED): a Polish run-off reads no record - the first vote's shares already carried it, and B4's transfer from them is the run-off's prior
+            if (setup.Contest == Elections.CampaignContest.PresidentialRunOff) { return null; }
             var shift = new double[setup.Parties.Length];
             for (int i = 0; i < shift.Length; i++) { shift[i] = byParty.TryGetValue(setup.Parties[i].Name, out double by) ? by : double.NaN; }   // NaN: not named, absorbs (a 0 would name it and leave no one to absorb - the §638 film's finding)
             return shift;
@@ -5946,14 +5948,60 @@ namespace PoliSim.Simulation
             Country country = _world.GetCountry(PlayerCountryId.Value);
             if (country == null || !Elections.PresidentialElection.IsRoundDay(country, CurrentDate, out bool runOff)) { return; }
             Dictionary<string, double> predicted = null;
-            if (!runOff && !Elections.NationalElection.TryPredictShares(country.Id, out predicted, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate, played: country))   // PS-6 US-26: the chamber's poll on its history rolled forward
+            // PL-C (K168): where the player's campaign ran up to this round (`LiveCampaignSetup.TryPoland`), the first vote reads its final shares as its poll and
+            // the run-off its share of the two; with no campaign, the prediction and B4's transfer as before
+            bool campaigned = PlayerCampaignResult != null && CampaignRecord != null && CampaignRecord.ElectionDate == CurrentDate && PlayerCampaign != null && PlayerCampaign.Finished;
+            Elections.CampaignContest ran = campaigned ? PlayerCampaign.Setup.Contest : Elections.CampaignContest.Chamber;
+            double runOffShare = double.NaN;
+            if (!runOff && ran == Elections.CampaignContest.PresidentialFirstVote)
+            {
+                predicted = new Dictionary<string, double>();
+                for (int p = 0; p < PlayerCampaign.Setup.Parties.Length; p++) { predicted[PlayerCampaign.Setup.Parties[p].Name] = PlayerCampaignResult.FinalShares[p]; }
+                Debug.Log("PRESIDENTIAL: the first vote reads the campaign's final shares - " + string.Join(" ", System.Array.ConvertAll(PlayerCampaignResult.FinalShares, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
+            }
+            else if (runOff && ran == Elections.CampaignContest.PresidentialRunOff)
+            {
+                runOffShare = RunOffCampaignShare(country, PlayerCampaign.Setup, PlayerCampaignResult);
+            }
+            if (!runOff && predicted == null && !Elections.NationalElection.TryPredictShares(country.Id, out predicted, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate, played: country))   // PS-6 US-26: the chamber's poll on its history rolled forward
             {
                 predicted = null;
                 Debug.LogWarning("PRESIDENTIAL: no prediction could be made on the first vote's day - nothing is held, and the office stands as it is");
             }
-            Elections.PresidentialElection.Contest held = Elections.PresidentialElection.HoldRounds(country, CurrentDate, predicted);
+            Elections.PresidentialElection.Contest held = Elections.PresidentialElection.HoldRounds(country, CurrentDate, predicted, runOffShare);
+            if (held != null && !runOff && ran == Elections.CampaignContest.PresidentialFirstVote)
+            {
+                // K167: what each committee spent on the first round, kept with the contest - the run-off's chest is the one limit less it (a save carries it)
+                held.FirstRoundSpent = new Dictionary<string, double>();
+                for (int p = 0; p < PlayerCampaign.Setup.Parties.Length && p < PlayerCampaignResult.Parties.Length; p++)
+                {
+                    double limitUnits = PlayerCampaign.Setup.StandingShare(p) > 0.0 ? Elections.LiveCampaignSetup.WarChest : 0.0;   // the committee's limit in the purse's units - a run-up's spending counts against it too
+                    held.FirstRoundSpent[PlayerCampaign.Setup.Parties[p].Name] = System.Math.Max(0.0, limitUnits - PlayerCampaignResult.Parties[p].MoneyLeft);
+                }
+            }
             if (held != null) { Debug.Log("PRESIDENTIAL: " + held.Line); }
+            if (held != null && !runOff && held.RunOffPending() && PlayerPartyIndexForCampaign() >= 0)
+            {
+                // PL-C (the review's L6, L7): the run-off's campaign opens on the first vote's own day, after the count - its day 0 stepped tonight, so the player's
+                // queue reaches its day 1 tomorrow; a player whose party backs neither finalist runs no run-off campaign, and is told so
+                if (PlayerBacksAFinalist(country, held)) { AdvanceCampaign(); }
+                else { Debug.Log($"PRESIDENTIAL: {country.Id} - your party, {country.PlayerPartyAbbrev}, backs neither finalist: the run-off of {held.RunOffOn:yyyy-MM-dd} is {held.RunOffA} against {held.RunOffB}, and its campaign is theirs alone"); }
+            }
             NotePlayerVerdict(country, held);   // SP-7b: what the round means for the player, where his candidate stood
+        }
+
+        /// <summary>PL-C (K168): the run-off campaign's share of the two for the pending contest's first finalist (%) - its party's final share over the two finalists'
+        /// parties'; NaN where the contest or a finalist's party cannot be found in the staging (B4's transfer then counts).</summary>
+        private static double RunOffCampaignShare(Country country, Elections.CampaignRun.Setup setup, Elections.CampaignRun.Result result)
+        {
+            Elections.PresidentialElection.Contest contest = country.PresidentialElections.Find(c => c.RunOffPending() && c.RunOffOn.Date == setup.Calendar.ElectionDate);
+            if (contest == null || result == null) { return double.NaN; }
+            string a = contest.Field.Find(c => c.Name == contest.RunOffA)?.Party, b = contest.Field.Find(c => c.Name == contest.RunOffB)?.Party;
+            int ia = -1, ib = -1;
+            for (int p = 0; p < setup.Parties.Length; p++) { if (setup.Parties[p].Name == a) { ia = p; } if (setup.Parties[p].Name == b) { ib = p; } }
+            if (ia < 0 || ib < 0 || ia == ib) { return double.NaN; }
+            double two = result.FinalShares[ia] + result.FinalShares[ib];
+            return two > 0.0 ? 100.0 * result.FinalShares[ia] / two : double.NaN;
         }
 
         /// <summary>
@@ -6085,6 +6133,58 @@ namespace PoliSim.Simulation
         /// PS-6 US-27 (DECLARED, the conservative reading, asked): none for a US midterm - US-30 staged the presidential campaign on the 51 jurisdictions, and nothing
         /// rules a campaign for the House and a Senate class, so a midterm runs no run-up and no campaign and is counted on the prediction.</summary>
         private Elections.CampaignCalendar? CurrentCampaignCalendar()
+        {
+            // PL-C (K168): Poland's presidential rounds campaign too - whichever of the Sejm's and the presidency's polling days comes first opens its window
+            Elections.CampaignCalendar? chamber = ChamberCampaignCalendar();
+            Elections.CampaignCalendar? presidential = PolishPresidentialCalendar();
+            if (!presidential.HasValue) { return chamber; }
+            return !chamber.HasValue || presidential.Value.ElectionDate < chamber.Value.ElectionDate ? presidential : chamber;
+        }
+
+        /// <summary>
+        /// PL-C (K168): the player's next Polish presidential round's campaign calendar - a pending run-off's (the two weeks from the first vote, no run-up,
+        /// `LiveCampaignSetup.PolandRunOffCalendar`), else the next first vote's (the standard windows from the world's start); null outside Poland, where none
+        /// is ahead, or - DECLARED - where the player plays no party in the cast: a world with no player's party (E1's reference world, a no-player dump) counts
+        /// its presidential rounds on the prediction as before, so the world the factors of record were fitted on is the world they are read on.
+        /// </summary>
+        private Elections.CampaignCalendar? PolishPresidentialCalendar()
+        {
+            if (!PlayerCountryId.HasValue || PlayerCountryId.Value != CountryId.Poland || PlayerPartyIndexForCampaign() < 0) { return null; }
+            Country country = _world?.GetCountry(CountryId.Poland);
+            if (country == null) { return null; }
+            Elections.CampaignCalendar? next = null;
+            foreach (Elections.PresidentialElection.Contest c in country.PresidentialElections)
+            {
+                // L6 (the review): a run-off is campaigned only where the player's party backs a finalist - else the run-off is the finalists' alone, said on the first vote's day
+                if (c.RunOffPending() && c.RunOffOn.Date >= CurrentDate.Date && PlayerBacksAFinalist(country, c) && (!next.HasValue || c.RunOffOn.Date < next.Value.ElectionDate)) { next = Elections.LiveCampaignSetup.PolandRunOffCalendar(c.RunOffOn); }
+            }
+            if (Elections.PresidentialElection.TryNextFirstVote(country, CurrentDate.Date, out System.DateTime firstVote, out System.DateTime _, out string _)
+                && (!next.HasValue || firstVote < next.Value.ElectionDate))
+            {
+                next = Elections.CampaignCalendar.FromWorldStart(firstVote, EpochDate);
+            }
+            return next;
+        }
+
+        /// <summary>PL-C (the review's L6): whether the player's party backs one of <paramref name="contest"/>'s two finalists - the run-off's campaign is theirs alone.</summary>
+        private static bool PlayerBacksAFinalist(Country country, Elections.PresidentialElection.Contest contest)
+        {
+            if (country == null || contest == null || string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { return false; }
+            string a = contest.Field.Find(x => x.Name == contest.RunOffA)?.Party, b = contest.Field.Find(x => x.Name == contest.RunOffB)?.Party;
+            return country.PlayerPartyAbbrev == a || country.PlayerPartyAbbrev == b;
+        }
+
+        /// <summary>PL-C: the calendar a campaign record of <paramref name="electionDate"/> was stepped on, for its replay - a Polish run-off's two weeks where the
+        /// world holds a first vote whose run-off falls that day, else the standard windows from the world's start (§697), as every record before PL-C replayed.</summary>
+        private Elections.CampaignCalendar CampaignCalendarOfRecord(System.DateTime electionDate)
+        {
+            Country country = PlayerCountryId == CountryId.Poland ? _world?.GetCountry(CountryId.Poland) : null;
+            if (country != null && country.PresidentialElections.Exists(c => c.RunOffA != null && c.RunOffOn.Date == electionDate.Date)) { return Elections.LiveCampaignSetup.PolandRunOffCalendar(electionDate); }
+            return Elections.CampaignCalendar.FromWorldStart(electionDate, EpochDate);
+        }
+
+        /// <summary>The chamber's campaign calendar - the window before the player's country's next polling day (see <see cref="CurrentCampaignCalendar"/>).</summary>
+        private Elections.CampaignCalendar? ChamberCampaignCalendar()
         {
             if (!TryPlayerPollingDay(out System.DateTime pollingDay)) { return null; }
             if (PlayerCountryId.HasValue && Elections.UsCongressElection.ElectsIn(PlayerCountryId.Value) && Elections.UsCongressElection.IsMidterm(pollingDay)) { return null; }
@@ -6389,6 +6489,7 @@ namespace PoliSim.Simulation
             }
             if (PlayerCampaign.Finished) { refusal = "the campaign is over"; return false; }
             if (PlayerPartyIndexForCampaign() < 0) { refusal = "your party is not in this campaign"; return false; }
+            if (PlayerCampaign.Setup.StandingShare(PlayerPartyIndexForCampaign()) <= 0.0) { refusal = "your party stands nowhere in this contest - its candidate is not in this round"; return false; }   // PL-C: a Polish run-off's cast keeps every party, only the finalists stand
             int day = PlayerCampaign.Day;
             Elections.CampaignPhase phase = PlayerCampaign.Setup.Calendar.PhaseOn(PlayerCampaign.Setup.Calendar.CampaignStart.AddDays(day));
             if (!Elections.CampaignLegality.IsLegal(kind, phase)) { refusal = $"{kind} is not legal in the {phase} phase"; return false; }
@@ -6426,7 +6527,7 @@ namespace PoliSim.Simulation
             PlayerCampaignResult = null;
             if (record == null || !PlayerCountryId.HasValue) { return; }
             if (record.DaysStepped <= 0 && record.PreCampaignDaysStepped <= 0) { return; }
-            var calendar = Elections.CampaignCalendar.FromWorldStart(record.ElectionDate, EpochDate);   // §697: the calendar the record was stepped on
+            Elections.CampaignCalendar calendar = CampaignCalendarOfRecord(record.ElectionDate);   // §697: the calendar the record was stepped on (PL-C: a Polish run-off's two weeks)
             int me = PlayerPartyIndexForCampaign();
             // CL-1: the run-up first - its one stream rewound to its count at the run-up's start, the same days re-stepped on
             // the same queue; its outcome is then what the campaign's replay hands the player's party, as the original run did.
