@@ -759,11 +759,43 @@ namespace PoliSim.Data
                     latest   = new[] { 35.38, 30.70, 14.40, 8.61, 7.16, 0.0, 0.0, 0.12 };   // 2023
                     previous = new[] { 43.59, 27.40, 8.55, 12.56, 6.81, 0.0, 0.0, 0.17 };   // 2019
                     return true;
+                // PS-7: ITALY'S LISTS CARRY OVER BY LINEAGE onto the 2022 roster's keys, as Poland's do (§767) - DECLARED, asked: the 2018 lists by the count's
+                // own lineage (`Tools/it_count_prep.pl`, reading (1): LeU -> AVS, +Europa -> PlusE, Noi con l'Italia-UDC -> NM, SVP-PATT -> SVP, the five parties by
+                // name), 2013's by `ElectionsData/priors/previous_elections.md` (PdL -> FI, Lega Nord -> Lega, SEL -> AVS, UDC -> NM; that file names the joins as
+                // mostly unsafe - the coverage constraint, ~53 %). The 2018 and 2022 figures are read from the catalog (the Ministry's national list votes,
+                // Eligendo's published cifre), never typed; 2013's are the file's (Eligendo, Area Italia). A key with no list in an election is a true zero there.
+                case CountryId.Italy when vintage == ElectionVintage.Italy2018:
+                    latest = ItalyShares(Elections.Generated.ItalianCount2022.National2018Votes, Elections.Generated.ItalianCount2022.National2018Valid);   // 2018
+                    previous = ItalyByKey(new Dictionary<string, double> { { "FdI", 1.96 }, { "PD", 25.43 }, { "Lega", 4.09 }, { "M5S", 25.56 }, { "FI", 21.56 }, { "AVS", 3.20 }, { "NM", 1.79 } });   // 2013, previous_elections.md
+                    return true;
+                case CountryId.Italy:
+                    latest = ItalyShares(Elections.Generated.ItalianCount2022.CameraPublished2022Votes, Elections.Generated.ItalianCount2022.CameraPublished2022Valid);   // 2022
+                    previous = ItalyShares(Elections.Generated.ItalianCount2022.National2018Votes, Elections.Generated.ItalianCount2022.National2018Valid);   // 2018
+                    return true;
                 case CountryId.USA:
                     return TryUsHouseHistory(vintage, out latest, out previous);   // PS-6 US-6: R-US15 (a), the House national vote - read from the catalog, never typed
                 default:
                     latest = null; previous = null; return false;
             }
+        }
+
+        /// <summary>PS-7: a vote of the Italian catalog's keys (<see cref="Elections.Generated.ItalianCount2022.Keys"/>' order) as per-cent shares of
+        /// <paramref name="valid"/> in <see cref="For"/>'s order - a roster key the catalog does not carry at zero.</summary>
+        private static double[] ItalyShares(long[] votes, long valid)
+        {
+            var byKey = new Dictionary<string, double>();
+            string[] keys = Elections.Generated.ItalianCount2022.Keys;
+            for (int k = 0; k < keys.Length; k++) { byKey[keys[k]] = valid > 0 ? 100.0 * votes[k] / valid : 0.0; }
+            return ItalyByKey(byKey);
+        }
+
+        /// <summary>PS-7: per-cent shares by key in <see cref="For"/>'s order for Italy, zero where a key is not named.</summary>
+        private static double[] ItalyByKey(Dictionary<string, double> byKey)
+        {
+            IReadOnlyList<PoliticalParty> roster = ItalyParties;
+            var shares = new double[roster.Count];
+            for (int i = 0; i < roster.Count; i++) { shares[i] = byKey.TryGetValue(roster[i].Abbrev, out double s) ? s : 0.0; }
+            return shares;
         }
 
         /// <summary>

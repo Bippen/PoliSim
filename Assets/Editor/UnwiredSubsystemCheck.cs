@@ -47,7 +47,7 @@ namespace PoliSim.EditorTools
     {
         /// <summary>⚠ The ceiling, measured when this check was built on 2026-09-01. Lower it when a
         /// subsystem is wired or deleted; never raise it.</summary>
-        private const int UnwiredCeiling = 2;   // 3 -> 2 at D11 boards (2026-09-02 evening): the bar measured 2 and RatchetSlackCheck named the slack; 5 -> 4 at F2 step 4; 4 -> 3 at C-R4b step 1 (2026-09-02): the bar measured 3 and a ratchet is lowered to what it measures. F3 (2026-09-02) tried 2 and the bar MEASURED 3: CohortVoterGroups is Editor-consumed (the campaign has no age-group mechanic), so it stays counted - a ratchet is lowered to what is measured, never to what was hoped
+        private const int UnwiredCeiling = 1;   // 2 -> 1 at PS-7 (2026-10-28): the Rosatellum is wired - the game's Camera count calls its national stage (ItalianCount), measured at the merge's bar; 3 -> 2 at D11 boards (2026-09-02 evening): the bar measured 2 and RatchetSlackCheck named the slack; 5 -> 4 at F2 step 4; 4 -> 3 at C-R4b step 1 (2026-09-02): the bar measured 3 and a ratchet is lowered to what it measures. F3 (2026-09-02) tried 2 and the bar MEASURED 3: CohortVoterGroups is Editor-consumed (the campaign has no age-group mechanic), so it stays counted - a ratchet is lowered to what is measured, never to what was hoped
 
         /// <summary>
         /// ⚠ **THE SECOND CEILING — this check's OWN blind spot, measured 2026-09-01.**
@@ -71,7 +71,7 @@ namespace PoliSim.EditorTools
         /// may rise when the INSTRUMENT is corrected and the correction is written down — never because
         /// the backlog grew, and never to make a run pass.</para>
         /// </summary>
-        private const int UnreachableCeiling = 1;   // 2 -> 1 at PS-6 US-8 (2026-10-16): the game's US presidential count calls the elector allocator from the day loop (UsPresidentialElection.Count, in code, not a comment), so the allocator's file is reachable - the bar's measurement owed to confirm it, and a ratchet is lowered to what it measures; 3 -> 2 at D11 boards (2026-09-02 evening): measured 2, the slack named by RatchetSlackCheck; 4 -> 3 at D-10 (a) (2026-09-02): TacticalVoting is reachable from election night; a ratchet is lowered to what it measures. F3 (2026-09-02) tried 2 and the bar MEASURED 3: the voter-group view has no game-path reader yet (its consumer is the per-group design)
+        private const int UnreachableCeiling = 0;   // 1 -> 0 at PS-7 (2026-10-28): the Rosatellum is reachable from the player's Italian count, measured at the merge's bar; 2 -> 1 at PS-6 US-8 (2026-10-16): the game's US presidential count calls the elector allocator from the day loop (UsPresidentialElection.Count, in code, not a comment), so the allocator's file is reachable - the bar's measurement owed to confirm it, and a ratchet is lowered to what it measures; 3 -> 2 at D11 boards (2026-09-02 evening): measured 2, the slack named by RatchetSlackCheck; 4 -> 3 at D-10 (a) (2026-09-02): TacticalVoting is reachable from election night; a ratchet is lowered to what it measures. F3 (2026-09-02) tried 2 and the bar MEASURED 3: the voter-group view has no game-path reader yet (its consumer is the per-group design)
 
         /// <summary>A `public static` method declaration. Instance methods are excluded: they need an
         /// object, and tracing who constructs it is beyond what a name scan can honestly claim.</summary>

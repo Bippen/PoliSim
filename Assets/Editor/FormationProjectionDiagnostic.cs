@@ -122,7 +122,7 @@ namespace PoliSim.EditorTools
                         SimulationManager m = probe.AddComponent<SimulationManager>();
                         m.PlayerCountryId = c;
                         string procedure = m.RoundsApply(c) ? (ConfidenceProcedure.RulesOf(c) == ConfidenceProcedure.Rules.Bundestag ? "the chancellor's election" : "the Speaker's round")
-                            : m.SejmStepsApply(c) ? "the Sejm's steps" : null;
+                            : m.SejmStepsApply(c) ? "the Sejm's steps" : m.ItalianMandatesApply(c) ? "the President's mandates" : null;   // PS-7 (K204)
                         counted.Add(F("{0} ({1}): {2}", c, record.Method, procedure ?? "NONE"));
                         if (procedure == null) { orphans.Add(c.ToString()); }
                     }
@@ -131,7 +131,7 @@ namespace PoliSim.EditorTools
                     + (orphans.Count > 0 ? " - NONE FOR " + string.Join(", ", orphans) : string.Empty));
 
                 // (2)-(3) Sweden at its start, the player's party SD
-                foreach (CountryId id in new[] { CountryId.Sweden, CountryId.Germany, CountryId.Poland })
+                foreach (CountryId id in new[] { CountryId.Sweden, CountryId.Germany, CountryId.Poland, CountryId.Italy })   // PS-7 (K204): Italy's mandates
                 {
                     using (SimulationManager.EpochScope())
                     {
@@ -151,10 +151,11 @@ namespace PoliSim.EditorTools
                         var record = new ElectionRecord
                         {
                             Turn = s.CurrentTurn, Date = day, CountryId = id.ToString(),
-                            Method = id == CountryId.Sweden ? ElectionMethod.SwedenTwoTier : id == CountryId.Germany ? ElectionMethod.GermanyNationalProportional : ElectionMethod.PolandDistricts,
+                            Method = id == CountryId.Sweden ? ElectionMethod.SwedenTwoTier : id == CountryId.Germany ? ElectionMethod.GermanyNationalProportional : id == CountryId.Italy ? ElectionMethod.ItalyRosatellum : ElectionMethod.PolandDistricts,
                         };
                         foreach (KeyValuePair<string, int> kv in country.ParliamentSeats) { record.Seats[kv.Key] = kv.Value; }
                         country.ElectionHistory.Add(record);
+                        if (id == CountryId.Italy) { country.SecondChamberSeats = new Dictionary<string, int>(country.ParliamentSeats); }   // PS-7: a Senato planted as the seated Camera, so the mandates have both chambers to stand before
                         s.SeatPlayerElection(record, out DeclarationReading _, out GovernmentFormation.Formed _, out SejmFormation sejm);
                         bool untouched = before != null && ReferenceEquals(country.Government, before) && (country.Government.Round == null || !country.Government.Round.Open);
 
@@ -181,6 +182,21 @@ namespace PoliSim.EditorTools
                         {
                             Check(p.View == null && (p.Expected ? p.Cabinet.Count > 0 && p.PmParty != null && p.Step != null : p.Reason != null),
                                 F("Poland: the steps' projection names {0}", p.Expected ? F("a cabinet, its prime minister's party and its step ({0})", p.Step) : "why none is expected"));
+                            continue;
+                        }
+                        if (id == CountryId.Italy)
+                        {
+                            // PS-7 (K204): the mandates' own projection - what ItalianFormation.Run forms on the same chambers under the same reading, and the board's
+                            // view of it (the step line, the Camera's seats, Italy's foot and words)
+                            List<ItalianFormation.Mandate> mandates = ItalianFormation.Run(country, DeclarationReading.OfElection(id, day), out ItalianFormation.Mandate granted);
+                            bool same = granted != null
+                                ? p.Expected && p.PmParty == granted.Camera.PmParty && new HashSet<string>(p.Cabinet).SetEquals(granted.View.Cabinet.Select(x => x.Abbrev)) && new HashSet<string>(p.Support).SetEquals(granted.View.Support.Select(x => x.Abbrev))
+                                  && p.Step != null && p.View != null && p.View.HasGovernment && p.View.ProjectionStep == p.Step && p.View.Cabinet.Count == p.Cabinet.Count && p.View.ProjectionVote != null
+                                : !p.Expected && p.Reason != null && p.View != null && !p.View.HasGovernment && p.View.NoneWords != null && p.View.ProjectionVote != null;
+                            Check(same && p.Steps.Count >= mandates.Count,
+                                F("Italy: the projection is what the mandates form - {0}; the board's view carries {1}", p.Expected ? F("{0} led by {1} ({2})", string.Join("+", p.Cabinet), p.PmParty, p.Step) : "none: " + p.Reason,
+                                    p.View == null ? "NOTHING" : p.View.HasGovernment ? "the step line and the foot's vote (" + p.View.ProjectionVote + ")" : "Italy's words (" + p.View.NoneWords + ")"));
+                            Check(ReferenceEquals(country.Government, before), "Italy: office has not changed - the outgoing government serves on until the mandates run on the first sitting");
                             continue;
                         }
                         GovernmentFormation.View view = p.View;

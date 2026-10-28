@@ -29,7 +29,7 @@ namespace PoliSim.Elections
     public static class RecordFactors
     {
         /// <summary>The chamber elections of record the table carries: those inside a start's window whose country the game counts (`ParliamentaryCount.CountsIn`).</summary>
-        public static readonly ElectionVintage[] Elections = { ElectionVintage.Sweden2026, ElectionVintage.Germany2025, ElectionVintage.Poland2023 };
+        public static readonly ElectionVintage[] Elections = { ElectionVintage.Sweden2026, ElectionVintage.Germany2025, ElectionVintage.Poland2023, ElectionVintage.Italy2022 };   // PS-7 (K205): Italy's Camera of 25 Sep 2022, inside its start's window
 
         /// <summary>
         /// [FITTED] n = 1 per election (that election's own count), on the idle game's count of the polling day of record (the day `WorldClock.Chambers`
@@ -64,6 +64,25 @@ namespace PoliSim.Elections
             (ElectionVintage.Poland2023, "SLD", 1),
             (ElectionVintage.Poland2023, "PSL", 1),
             (ElectionVintage.Poland2023, "MN", 0.71411636220926122),
+            // PS-7 (K205): Italy's Camera of 25 Sep 2022 - fitted from Gate18Diagnostic's FIT lines (patched by Tools/chamber_factor_patch.pl from the Italy run's log)
+            (ElectionVintage.Italy2022, "FdI", 2.7556079508528666),
+            (ElectionVintage.Italy2022, "PD", 1.3099090205481287),
+            (ElectionVintage.Italy2022, "Lega", 0.734806712710914),
+            (ElectionVintage.Italy2022, "M5S", 0.61198708056273732),
+            (ElectionVintage.Italy2022, "FI", 0.79366154800378963),
+            (ElectionVintage.Italy2022, "AzIV", 0.47460415849208903),
+            (ElectionVintage.Italy2022, "AVS", 1.2354423240932009),
+            (ElectionVintage.Italy2022, "NM", 0.82962342623323415),
+            (ElectionVintage.Italy2022, "SVP", 1.2019524834966961),
+            (ElectionVintage.Italy2022, "PlusE", 1.3082743177439526),
+            (ElectionVintage.Italy2022, "IC", 1),
+            (ElectionVintage.Italy2022, "ScN", 1),
+            (ElectionVintage.Italy2022, "MAIE", 1),
+            (ElectionVintage.Italy2022, "UV", 1),
+            (ElectionVintage.Italy2022, "LeU", 1),
+            (ElectionVintage.Italy2022, "CP", 1),
+            (ElectionVintage.Italy2022, "NcI", 1),
+            (ElectionVintage.Italy2022, "Misto", 1),
         };
 
         /// <summary>The country an election of the table belongs to; throws for one the table does not carry.</summary>
@@ -74,6 +93,7 @@ namespace PoliSim.Elections
                 case ElectionVintage.Sweden2026: return CountryId.Sweden;
                 case ElectionVintage.Germany2025: return CountryId.Germany;
                 case ElectionVintage.Poland2023: return CountryId.Poland;
+                case ElectionVintage.Italy2022: return CountryId.Italy;   // PS-7 (K205)
                 default: throw new ArgumentException($"the record's factors carry no election {election}");
             }
         }

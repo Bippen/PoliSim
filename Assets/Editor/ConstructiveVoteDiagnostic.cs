@@ -60,8 +60,8 @@ namespace PoliSim.EditorTools
                     // (a) the rules
                     Check(ConfidenceProcedure.RulesOf(CountryId.Germany) == ConfidenceProcedure.Rules.Bundestag && ConfidenceProcedure.RulesOf(CountryId.Sweden) == ConfidenceProcedure.Rules.Riksdag
                           && ConfidenceProcedure.RulesOf(CountryId.Poland) == ConfidenceProcedure.Rules.Sejm && ConfidenceProcedure.RulesOf(CountryId.USA) == ConfidenceProcedure.Rules.Presidential
-                          && ConfidenceProcedure.RulesOf(CountryId.Italy) == ConfidenceProcedure.Rules.Unsourced && ConfidenceProcedure.RulesOf(CountryId.France) == ConfidenceProcedure.Rules.Unsourced,
-                        "the rules: the Bundestag's constructive vote, the Riksdag's unchanged, the USA's presidential (PS-6 US-7), Poland's the Sejm's constructive vote (COAL-1, K133), the other two unsourced");
+                          && ConfidenceProcedure.RulesOf(CountryId.Italy) == ConfidenceProcedure.Rules.Parlamento && ConfidenceProcedure.RulesOf(CountryId.France) == ConfidenceProcedure.Rules.Unsourced,
+                        "the rules: the Bundestag's constructive vote, the Riksdag's unchanged, the USA's presidential (PS-6 US-7), Poland's the Sejm's constructive vote (COAL-1, K133), Italy's art. 94 (PS-7, K155), France's unsourced");
 
                     // (b) the record's chamber
                     (SimulationManager sim, Country de) = Open("ConstructiveVoteDiagnostic real", "CDU");

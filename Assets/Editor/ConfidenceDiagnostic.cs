@@ -421,8 +421,8 @@ namespace PoliSim.EditorTools
 
             // §698: Germany's rules are the Bundestag's constructive vote now (ConstructiveVoteDiagnostic proves them); COAL-1 (K133): Poland's the Sejm's (CoalitionExitDiagnostic); the unsourced cases are Italy's and France's
             Check(ConfidenceProcedure.RulesOf(CountryId.Poland) == ConfidenceProcedure.Rules.Sejm && ConfidenceProcedure.RulesOf(CountryId.Germany) == ConfidenceProcedure.Rules.Bundestag
-                  && ConfidenceProcedure.RulesOf(CountryId.Italy) == ConfidenceProcedure.Rules.Unsourced && ConfidenceProcedure.RulesOf(CountryId.France) == ConfidenceProcedure.Rules.Unsourced,
-                "Poland's rules are the Sejm's constructive vote (Art. 158, COAL-1); Germany's the Bundestag's (§698); Italy's and France's not yet modelled - no motion is taken up there");
+                  && ConfidenceProcedure.RulesOf(CountryId.Italy) == ConfidenceProcedure.Rules.Parlamento && ConfidenceProcedure.RulesOf(CountryId.France) == ConfidenceProcedure.Rules.Unsourced,
+                "Poland's rules are the Sejm's constructive vote (Art. 158, COAL-1); Germany's the Bundestag's (§698); Italy's art. 94 (PS-7, K155; no mid-term motion taken up yet); France's not yet modelled - no motion is taken up there");
             Check(ConfidenceProcedure.ExtraElectionDay(new DateTime(2026, 3, 4)) == new DateTime(2026, 5, 31), "the extra election's day: the Sunday on or before three months (4 Mar -> 4 Jun is a Thursday -> 31 May)");
 
             if (failures > 0) { Debug.LogError($"CONFIDENCE: {failures} failure(s).\n{sb}"); CheckExit.Finish(1); return; }

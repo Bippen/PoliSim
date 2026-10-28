@@ -7,7 +7,7 @@ namespace PoliSim.Elections
     /// R-EL9 (ruled by Elias, Day-1 2026-08-29): Italy's Rosatellum — the NATIONAL PROPORTIONAL
     /// STAGE of the Camera allocation, implemented from the statute now that it is sourced
     /// (`ElectionsData/italy/rosatellum_allocation.md`; DPR 361/1957 art. 83 as consolidated,
-    /// in force at 25-9-2022). PURE FUNCTIONS, WIRED TO NOTHING (R-N2).
+    /// in force at 25-9-2022). PURE FUNCTIONS; since PS-7 the national stage of the game's Camera count (`ItalianCount`).
     ///
     /// The method is **Hare with largest remainders, applied twice, with the quotient TRUNCATED
     /// to an integer both times** — not a divisor method, which is why it could not be run on the
@@ -29,11 +29,9 @@ namespace PoliSim.Elections
     /// POOL before this runs, never from a party's entitlement. There is no scorporo, so nothing
     /// here takes a party's college wins as input — that absence is the model, not an omission.
     ///
-    /// Scope, stated so silence claims nothing: this is the NATIONAL stage only. The devolution to
-    /// the 28 circoscrizioni (lett. h/i) and the 49 collegi plurinominali (art. 83-bis), and the
-    /// art. 84 incapienza cascade, are NOT implemented — they need per-circoscrizione and
-    /// per-collegio cifre elettorali that exist only as HTML on Eligendo. Those stages change WHICH
-    /// deputies sit, not the per-list national totals this returns.
+    /// Scope, stated so silence claims nothing: this is the NATIONAL stage only. PS-7 built the devolution to the circoscrizioni
+    /// (lett. h/i, K151) in `ItalianCount`, on the cifre the open data's comune returns give per college; the collegi plurinominali (art. 83-bis) and the
+    /// art. 84 incapienza cascade are NOT built (K151) - they change WHICH deputies sit, not a list's seats.
     /// </summary>
     public static class Rosatellum
     {

@@ -744,7 +744,7 @@ namespace PoliSim.UI
             }
             if (!government.HasGovernment)
             {
-                Row(parent, "NO GOVERNMENT EXPECTED TO FORM", government.Partial ? "THE BALLOTS GO ON" : "THE ROUND BREAKS OFF", 13, PoliSimTheme.Bad, bold: true);
+                Row(parent, "NO GOVERNMENT EXPECTED TO FORM", government.NoneWords ?? (government.Partial ? "THE BALLOTS GO ON" : "THE ROUND BREAKS OFF"), 13, PoliSimTheme.Bad, bold: true);   // PS-7: Italy's words where it carries them
                 Wrapped(parent, government.Reason ?? string.Empty, 11, PoliSimTheme.TextSecondary);
             }
             else
@@ -766,7 +766,7 @@ namespace PoliSim.UI
                     Wrapped(parent, "projected on DERIVED red lines only - this country's declared refusals are not sourced", 10, PoliSimTheme.TextMuted);
                 }
             }
-            if (!string.IsNullOrEmpty(government.ProjectionStep) || !government.HasGovernment) { Wrapped(parent, ProjectionFoot(government, "THE RIKSDAG VOTES"), 10, PoliSimTheme.TextMuted); }   // q20
+            if (!string.IsNullOrEmpty(government.ProjectionStep) || !government.HasGovernment) { Wrapped(parent, ProjectionFoot(government, government.ProjectionVote ?? "THE RIKSDAG VOTES"), 10, PoliSimTheme.TextMuted); }   // q20; PS-7: Italy's vote where it carries one
 
             // The player's outcome, by C-R4's rule, in one plain line.
             if (government.PlayerParty == null)

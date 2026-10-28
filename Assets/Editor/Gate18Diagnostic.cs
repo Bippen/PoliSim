@@ -172,8 +172,10 @@ namespace PoliSim.EditorTools
                     string plantedKey = roster[0].Abbrev;
                     var planted = new Dictionary<string, double>(held.BeforeFactors, StringComparer.Ordinal) { [plantedKey] = 0.0 };
                     Dictionary<string, double> plantedBase = RecordFactors.Based(election, planted);
-                    Check(plantedBase[plantedKey] == target[plantedKey] && planted.Where(kv => kv.Key != plantedKey).All(kv => plantedBase[kv.Key] == kv.Value),
-                        F("K109 (planted): {0} handed nothing takes its share of record {1:0.000000} as its base, every other list its handed share", plantedKey, target[plantedKey]));
+                    // PS-7: every other list keeps its own base - its handed share, or K109's share of record where the model handed it nothing too (Italy's IC and ScN, which no 2018 list carries)
+                    Dictionary<string, double> unplantedBase = RecordFactors.Based(election, held.BeforeFactors);
+                    Check(plantedBase[plantedKey] == target[plantedKey] && planted.Where(kv => kv.Key != plantedKey).All(kv => plantedBase[kv.Key] == unplantedBase[kv.Key]) && held.BeforeFactors.Where(kv => kv.Value > 0.0).All(kv => unplantedBase[kv.Key] == kv.Value),   // K109: a list handed a positive share keeps it as its base
+                        F("K109 (planted): {0} handed nothing takes its share of record {1:0.000000} as its base, every other list its own base (its handed share, or its share of record where it was handed nothing too)", plantedKey, target[plantedKey]));
 
                     // the fit, by the count itself, on the shares the idle game handed it
                     Dictionary<string, double> fit = Fit(id, election, held, target, out double fitMiss, out int iterations);
@@ -354,7 +356,7 @@ namespace PoliSim.EditorTools
             {
                 SpeakerRound r = s.RoundOf(id);
                 if (roundOf == null && r != null && r.ReadsOn == poll.Date) { roundOf = r; }
-                return !Formed(s, country, id, poll) && ((roundOf != null && roundOf.Stage == RoundStage.Concluded) || (sejmOf != null && !sejmOf.Open));
+                return !Formed(s, country, id, poll) && ((roundOf != null && roundOf.Stage == RoundStage.Concluded) || (sejmOf != null && !sejmOf.Open) || s.ItalianMandatesEndedWithout(country, poll));   // PS-7 (K204): Italy's three mandates failed
             }
             for (int day = 0; day < WorldClock.FormationWindowDays && !Formed(s, country, id, poll) && !EndedWithout(); day++)
             {
@@ -369,6 +371,7 @@ namespace PoliSim.EditorTools
                     : F("{0} led by {1}, formed {2:yyyy-MM-dd}", string.Join("+", gov.Cabinet), gov.PmParty, gov.FormedOn))
                 : endedWithout ? (roundOf != null && roundOf.Stage == RoundStage.Concluded
                     ? F("none formed - the procedure ended within its own limit on {0:yyyy-MM-dd}, the round concluded after {1} rejection(s) of {2}", s.CurrentDate, roundOf.Rejections, SpeakerRound.ProposalLimit)
+                    : id == CountryId.Italy ? F("none formed - the procedure ended within its own limit on {0:yyyy-MM-dd}, three mandates failing both chambers' confidence (art. 94) and the chambers dissolved (art. 88)", s.CurrentDate)
                     : F("none formed - the procedure ended within its own limit on {0:yyyy-MM-dd}, the Sejm's steps concluded with no cabinet elected", s.CurrentDate))
                 : F("none formed by {0:yyyy-MM-dd} - THE WINDOW ENDED with the procedure still open ({1})", s.CurrentDate,
                     roundOf != null ? "the round at " + roundOf.Stage : sejmOf != null ? "the Sejm's steps at " + sejmOf.Stage : "no procedure of this election seen");

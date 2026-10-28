@@ -20,6 +20,9 @@ namespace PoliSim.Elections
         /// elected, by party; seated on 3 January by the day loop, never by the chamber path. No parliamentary formation, round or night reads it
         /// (`NationalElection.CountsParliament`). Appended last, so every stored value keeps its number.</summary>
         UsCongress,
+        /// <summary>PS-7 (K150-K158): Italy's Camera by the Rosatellum - the 147 uninominal colleges on the swung 2018 returns, the national and circoscrizione stages (art. 83
+        /// lett. b-i), the Estero - with the Senato counted beside it on its regional basis (`ItalianCount`). Appended last, so every stored value keeps its number.</summary>
+        ItalyRosatellum,
     }
 
     /// <summary>
@@ -59,7 +62,7 @@ namespace PoliSim.Elections
     /// round in this model and no candidate-level contest to hold one in.</description></item>
     /// <item><description>ITALY is MIXED - 147 uninominal colleges, 245 proportional seats, 8
     /// overseas - and the project's own returns file flags every per-party seat total as
-    /// unconfirmed.</description></item>
+    /// unconfirmed. PS-7 counts it by its own statutes (`ItalianCount`), the Senato beside it.</description></item>
     /// <item><description>USA is 435 SINGLE-MEMBER DISTRICTS, first past the post. A proportional
     /// allocation of the national House vote is famously not what that produces.</description></item>
     /// </list>
@@ -118,11 +121,12 @@ namespace PoliSim.Elections
         public static bool ExemptFromThreshold(CountryId country, string abbrev) => (country == CountryId.Germany && abbrev == "SSW") || (country == CountryId.Poland && abbrev == "MN");
 
         /// <summary>GATE-18 q22: the national line a party's list must clear in <paramref name="country"/>'s chamber count, as `Run` allocates it - Sweden's,
-        /// Germany's and Poland's party threshold; NaN for a country whose chamber the game does not count by a national line.</summary>
+        /// Germany's and Poland's party threshold, and since PS-7 Italy's for a list standing alone; NaN for a country whose chamber the game does not count by a national line.</summary>
         public static double ThresholdOf(CountryId country) =>
             country == CountryId.Sweden ? SeatConversion.NationalThreshold
             : country == CountryId.Germany ? GermanThreshold
             : country == CountryId.Poland ? PolishSejmAllocation.PartyThreshold
+            : country == CountryId.Italy ? Rosatellum.ListThreshold   // PS-7: a list standing alone, 3 % - DPR 361/1957 art. 83 c.1 lett. e) (a coalition's lists are counted on its own 10 %)
             : double.NaN;
 
         /// <summary>GATE-18 q22: the line a list must clear inside one region to share in that region's seats, where the country has such a route
@@ -601,6 +605,14 @@ namespace PoliSim.Elections
                     foreach (KeyValuePair<string, int> kv in PolishSejmAllocation.Allocate(record.Shares, out _, rosterShareOfVote)) { record.Seats[kv.Key] = kv.Value; }
                     return record;
 
+                case CountryId.Italy:
+                    // PS-7 (K150-K158): the Camera by the statutes in force on 25 Sep 2022 - the colleges on the swung 2018 returns, art. 83's national and
+                    // circoscrizione stages, the Estero (ItalianCount); the Senato is counted beside it by the player's election (SimulationManager)
+                    record.Method = ElectionMethod.ItalyRosatellum;
+                    foreach (PoliticalParty party in PartySystems.For(country)) { record.Shares[party.Abbrev] = shares != null && shares.TryGetValue(party.Abbrev, out double s) ? s : 0.0; }
+                    foreach (KeyValuePair<string, int> kv in ItalianCount.Camera(record.Shares, rosterShareOfVote).Seats) { if (record.Shares.ContainsKey(kv.Key)) { record.Seats[kv.Key] = kv.Value; } }
+                    return record;
+
                 default:
                     record.Method = ElectionMethod.NotImplemented;
                     record.NotHeldReason = NotHeldReason(country);
@@ -622,10 +634,8 @@ namespace PoliSim.Elections
                 case CountryId.France:
                     return "France elects 577 single-member seats in two rounds. This model holds no second round.";
                 case CountryId.Italy:
-                    // PS-7's "until then" (PS-7-interim): what holds instead, until Italy's mixed-system stages and the Senato are built (PS-7) - never the snap election's day
-                    return "No Italian election is held in this game yet: the Camera and the government seated at the start hold. " +
-                           "Italy is a mixed system - 147 uninominal colleges, 245 proportional seats, 8 overseas - that the game does not count yet, " +
-                           "and the per-party seat totals on disk are unconfirmed; no Senato is modelled.";
+                    // PS-7: Italy's Camera and Senato are counted (ItalianCount); a day this reason is read is a day the vote model could not predict
+                    return "No Italian election could be counted: the vote model holds no prediction for Italy on this day, so the Camera and the Senato in office stay.";
                 case CountryId.USA:
                     // PS-6 US-8 (R-US1 (a), RULED - F8: "after that only Congress, until the game elects it"), in place of US-1's line: the polling day elects the
                     // president through the Electoral College (the day loop's count) and no chamber - Congress stays the record's, by date, until the House races

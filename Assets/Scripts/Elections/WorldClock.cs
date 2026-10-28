@@ -104,19 +104,16 @@ namespace PoliSim.Elections
         /// <summary>§8: France is selectable in governing mode only - its government of record, no election - until its two-round, 577-constituency system is modelled (R-EL10).</summary>
         public static bool GoverningModeOnly(CountryId id) => id == CountryId.France;
 
-        /// <summary>The starts whose elections the game does not hold yet, each until its own item builds them and each retired from here by that item:
-        /// <list type="bullet">
-        /// <item><description>PS-7's "until then" (PS-7-interim): Italy's snap start, until Italy's mixed-system stages and the Senato are built (PS-7). Its calendar
-        /// offers no polling day (<see cref="TryNextPollingDay"/>), so the snap election the start is cut on is not held: the Camera and the government seated at
-        /// the start hold (the government the formation's stand-in for the caretaker's cabinet, which the record does not name), and no Senato is modelled.</description></item>
-        /// </list>
+        /// <summary>The starts whose elections the game does not hold yet, each until its own item builds them and each retired from here by that item - none
+        /// today. PS-7 retired Italy's snap start (PS-7-interim put it here): the game counts the Camera and the Senato on the snap election's own polling day,
+        /// 25 Sep 2022, and on every ordinary one after it (<see cref="TryNextPollingDay"/>, `ItalianCount`).
         /// PS-6 US-8 retired the USA's start from here (US-1 put it here): the game holds its presidential election on 3 U.S.C. §21(1)'s day
         /// (<see cref="TryNextPollingDay"/>), while the House stays the record's, by date (R-US1 (a), <see cref="RecordSeatsChamber"/>) until US-16 elects it.
         /// The folder card's line (<see cref="StartLine"/>) and the start card's mode line (`StartPoints.ModeLine`) say only that no election is held; the brief, its
         /// ledger and the not-held reason say what holds, each country in its own words in its own branch - so retiring one country (US-8, the USA) left
         /// another's words untouched. The card stays playable (§618). Not a general test of whether a start's election is held: that is
         /// <see cref="TryNextPollingDay"/>'s answer (`StartBriefDiagnostic` holds this predicate and that answer together over every playable start).</summary>
-        public static bool NoElectionYet(CountryId id) => id == CountryId.Italy;
+        public static bool NoElectionYet(CountryId id) => false;
 
         /// <summary>PS-6 US-2 (Elias's ruling F8, R-US1 (a): "whatever the game does not elect is seated on its record's dates"): the chamber the game does not
         /// elect is the record's, seated on the day the record seats it - the USA's House, until the game elects it (US-16). The second chamber has its own gate,
@@ -487,6 +484,17 @@ namespace PoliSim.Elections
         /// is refused and the government's bill is voted alone - the readers that asked "is the procedure unsourced" ask this.</summary>
         public static bool WeighsAlternative(CountryId id) => BudgetProcedureOf(id) == BudgetProcedure.RiksdagFrameDecision;
 
+        /// <summary>PS-7 (Elias's ruling K157): Draghi's cabinet - the Camera's groups that voted the confidence motion of 18 Feb 2021 by a majority of their votes,
+        /// read onto the keys the chamber seated at the start holds (the XVIII Camera by its groups of 20 Apr 2018): M5S, LEGA, PD (Italia Viva's deputies sit in PD's
+        /// seats there), FI and LEU; FDI voted against. DERIVED; `ItalianCountDiagnostic` (h) re-reads the vote file and fails while this list differs.</summary>
+        public static readonly string[] ItalyDraghiCabinet = { "M5S", "Lega", "PD", "FI", "LeU" };
+
+        /// <summary>PS-7 (K157): the mixed group's components that voted it by a majority, as the seated key whose name they bear (SEAT-1's rule): Minoranze
+        /// linguistiche (M-MIN) as SVP, Noi con l'Italia (M-NCI) as NcI, Centro Democratico-Italiani in Europa (M-CDIE) as PlusE (the 2018 component
+        /// "+Europa-Centro Democratico"), Europeisti-MAIE-PSI (M-EUMP) as MAIE - in support, DECLARED (a component is no group; asked). Components bearing no
+        /// seated key's name (M-CPP, M-AERI, M-ALT) carry no key.</summary>
+        public static readonly string[] ItalyDraghiSupport = { "SVP", "NcI", "PlusE", "MAIE" };
+
         /// <summary>The governments of record per country, oldest first. Keys are the roster's; a cabinet the record cannot name is unsourced (the formation stands in).</summary>
         public static IReadOnlyList<GovernmentOfRecord> Governments(CountryId id)
         {
@@ -517,7 +525,8 @@ namespace PoliSim.Elections
                 case CountryId.Italy:
                     return new[]
                     {
-                        new GovernmentOfRecord("Mario Draghi", null, null, D(2021, 2, 13), D(2022, 10, 22), false, "in office 2021-02-13 → 2022-10-22 [GV-DR]; caretaker from 2022-07-21 [CAM-729]; the cabinet's party list is a GAP (italy records G5) - the formation's result stands in, PROVISIONAL"),
+                        new GovernmentOfRecord("Mario Draghi", ItalyDraghiCabinet, ItalyDraghiSupport, D(2021, 2, 13), D(2022, 7, 21), true, "in office 2021-02-13 [GV-DR]; resignation tendered 14 July and refused [CAM-726]; Elias's ruling K157: the cabinet carries the national-unity parties of the Camera's confidence vote of 18 Feb 2021 (votazione 1, seduta 459; ElectionsData/italy/raw/confidence_2021/) - DERIVED onto the chamber seated at the start: the groups whose deputies voted for it by a majority in the cabinet, the mixed group's components in support (no minister's party is on a fetched page, G5)", cabinetDerived: true),
+                        new GovernmentOfRecord("Mario Draghi, caretaker", ItalyDraghiCabinet, ItalyDraghiSupport, D(2022, 7, 21), D(2022, 10, 22), true, "K207: the same cabinet as a caretaker (\"per il disbrigo degli affari correnti\") from 2022-07-21, the resignation reiterated and taken note of and the chambers dissolved that day [CAM-729] [DPR-96], to 2022-10-22 [GV-DR]; installed at the start discharged (GovernmentRecord.AtStart)", cabinetDerived: true),
                         new GovernmentOfRecord("Giorgia Meloni (FdI)", new[] { "FdI", "Lega", "FI", "NM" }, null, D(2022, 10, 22), Open, true, "in office from 2022-10-22 [GV-ME]; the Camera's confidence 2022-10-25, 235-154 [CAM-S4]; the cabinet's parties DERIVED by the record from the confidence motion's signatories (its GAP G5)", cabinetDerived: true),
                     };
                 case CountryId.USA:
@@ -640,6 +649,7 @@ namespace PoliSim.Elections
             id == CountryId.Sweden ? "regeringsformen 3 kap. 3 § - every fourth year [RF-3-3]; vallagen 1 kap. 3 § - the second Sunday of September [VL-1-3] (sweden/election_calendar.md)"
             : id == CountryId.Germany ? "the snap election's day, 23 Feb 2025, set with the dissolution of 27 Dec 2024 - BGBl. 2024 I Nr. 435 [BWL-WT25] (germany/records_by_date.md); no later polling day on record"   // §697
             : id == CountryId.USA ? "3 U.S.C. §21(1) as the Electoral Count Reform Act of 2022 wrote it - \"election day\" means \"the Tuesday next after the first Monday in November, in every fourth year succeeding every election of a President and Vice President\" (GPO, govinfo_uscode_3_21.html; usa/president_returns.md) - 5 Nov 2024 the latest of record [EC-DATES]; and 2 U.S.C. §7 - \"The Tuesday next after the 1st Monday in November, in every even numbered year\" (GPO, govinfo_uscode_2_7_election_day.html) [USC-7] (usa/records_by_date.md): every even year elects the House and a Senate class, a presidential year the president with them, a midterm no president"   // PS-6 US-8; PS-6 US-27 the midterm days
+            : id == CountryId.Italy ? "the snap election's day, 25 Sep 2022, with the first sitting on 13 Oct 2022 - DPR 97/2022 (\"I comizi ... sono convocati per il giorno di domenica 25 settembre 2022. La prima riunione delle Camere avrà luogo il giorno 13 ottobre 2022\") [DPR-97]; then Costituzione art. 60 - the chambers are elected for five years, the term running from the first sitting (DPR 361/1957 art. 7) - and Elias's ruling K156: the ordinary polling day is the last Sunday before the term's fifth anniversary (10 Oct 2027 for the term that first sat on 13 Oct 2022); a term the game elects first sits on the 20th day after its polling day (art. 61: \"La prima riunione ha luogo non oltre il ventesimo giorno dalle elezioni\" - its last day, DECLARED as Poland's E2)"   // PS-7
             : id == CountryId.Poland ? "the 10th Sejm's election day, 15 Oct 2023 - the PKW's notices (Dz.U. 2023 poz. 2234; the Senate's poz. 2235, held: \"przeprowadzonych w dniu 15 października 2023 r.\") [PKW-SEN-2023] (poland/records_by_date.md); then Konstytucja Art. 98 ust. 2 - a non-working day within the 30 days before the fourth anniversary of the term's first sitting [TK-KONST] - its first Sunday, Elias's ruling D3 (2019 and 2023 took it; 2015 the exception, on record); the 10th term first sat on 13 Nov 2023 [API-TERM], so 17 Oct 2027; a term the game elects first sits on the 30th day after its polling day (Art. 109 ust. 2's last day - ruled, E2); the principle for both of Poland's votes, ruled with it: the most recent practice"   // §762, §767, §773
             : null;
 
@@ -659,6 +669,60 @@ namespace PoliSim.Elections
         /// the record's 2019 Sejm sat first on the 30th day, 2023's on the 29th.</summary>
         public const int PolandFirstSittingAfterDays = 30;
 
+        /// <summary>PS-7: the first sitting of the chambers elected on 25 Sep 2022 - fixed by the decree that called the election, DPR 97/2022 ("La prima riunione
+        /// delle Camere avrà luogo il giorno 13 ottobre 2022") [DPR-97]; the game's own count that day elects the chambers that sit then.</summary>
+        public static readonly DateTime ItalyFirstSitting2022 = new DateTime(2022, 10, 13);
+
+        /// <summary>PS-7: a term the game elects first sits on this day after its polling day - Costituzione art. 61's last day ("La prima riunione ha luogo non
+        /// oltre il ventesimo giorno dalle elezioni"), DECLARED as Poland's E2 took Art. 109 ust. 2's last day; the record's 2022 chambers sat on the 18th day.</summary>
+        public const int ItalyFirstSittingAfterDays = 20;
+
+        /// <summary>PS-7: the first sitting of the chambers an Italian polling day elects - 13 Oct 2022 for the snap election of record's day (DPR 97/2022), else
+        /// <see cref="ItalyFirstSittingAfterDays"/> after it.</summary>
+        public static DateTime ItalyFirstSittingAfter(DateTime pollingDay) =>
+            pollingDay.Date == LatestElectionDay(CountryId.Italy) ? ItalyFirstSitting2022 : pollingDay.Date.AddDays(ItalyFirstSittingAfterDays);
+
+        /// <summary>PS-7 (K206): Italy's next ordinary polling day on or after <paramref name="onOrAfter"/> after a game that last voted on <paramref name="lastPolled"/> -
+        /// whatever that election was (ordinary, or after an art. 88 dissolution), its chambers' term runs five years from their own first sitting (Costituzione
+        /// art. 60), so the calendar re-anchors on it: the last Sunday before that term's fifth anniversary, and every term after it the same way.</summary>
+        public static DateTime ItalyOrdinaryAfter(DateTime lastPolled, DateTime onOrAfter)
+        {
+            DateTime day = lastPolled.Date;
+            DateTime firstSitting = ItalyFirstSittingAfter(day);
+            while (day < onOrAfter.Date) { day = LastSundayBeforeFifthAnniversary(firstSitting); firstSitting = day.AddDays(ItalyFirstSittingAfterDays); }
+            return day;
+        }
+
+        /// <summary>PS-7 (K206): the President of the Republic's oath of record - Sergio Mattarella, 3 Feb 2022 [CAM-PR] [CAM-GIU] (italy/records_by_date.md) - and
+        /// Costituzione art. 85: "Il Presidente della Repubblica è eletto per sette anni". Terms after the record's run seven years each from this day (DECLARED:
+        /// the game elects no president; every successor is read as taking office on the day the term before ends).</summary>
+        public static readonly DateTime ItalyPresidentSworn = new DateTime(2022, 2, 3);
+        public const int ItalyPresidentTermYears = 7;
+
+        /// <summary>PS-7 (K206): Costituzione art. 88 c. 2 - the President "Non può esercitare tale facoltà negli ultimi sei mesi del suo mandato, salvo che essi
+        /// coincidano in tutto o in parte con gli ultimi sei mesi della legislatura" (the semestre bianco). True where a dissolution on <paramref name="day"/> is
+        /// barred for a legislature that first sat on <paramref name="termFirstSitting"/>; <paramref name="opens"/> is the day the bar lifts (the term's end).</summary>
+        public static bool ItalyDissolutionBarred(DateTime day, DateTime termFirstSitting, out DateTime opens)
+        {
+            DateTime termEnd = ItalyPresidentSworn;
+            while (termEnd <= day.Date) { termEnd = termEnd.AddYears(ItalyPresidentTermYears); }
+            opens = termEnd;
+            DateTime lastSix = termEnd.AddMonths(-6);
+            if (day.Date < lastSix) { return false; }
+            DateTime legislatureEnd = termFirstSitting.Date.AddYears(5), legislatureLastSix = legislatureEnd.AddMonths(-6);
+            bool coincide = lastSix < legislatureEnd && legislatureLastSix < termEnd;   // the two half-years overlap, in whole or in part
+            return !coincide;
+        }
+
+        /// <summary>PS-7 (Elias's ruling K156): the ordinary polling day - the last Sunday before the fifth anniversary of the term's first sitting (Costituzione
+        /// art. 60: elected for five years; DPR 361/1957 art. 7: the five years run from the first sitting). A Sunday anniversary is not "before" itself.</summary>
+        public static DateTime LastSundayBeforeFifthAnniversary(DateTime termFirstSitting)
+        {
+            DateTime anniversary = termFirstSitting.Date.AddYears(5);
+            int back = (int)anniversary.DayOfWeek;
+            return anniversary.AddDays(back == 0 ? -7 : -back);
+        }
+
         /// <summary>
         /// The country's next ordinary polling day on or after <paramref name="onOrAfter"/>, false where the country's election calendar
         /// is not modelled (the countries before their stages: their chambers hold as of record).
@@ -674,6 +738,9 @@ namespace PoliSim.Elections
         /// §7's same Tuesday "in every even numbered year" ([USC-7]), the House's and a Senate class's - so a US game votes every second year from the same anchor:
         /// a presidential year (<see cref="UsPresidentialElection.IsPresidentialYear"/>) counts the president, the House and the class on one day, a midterm the
         /// House and the class (`UsCongressElection.IsMidterm`); the next presidential day alone is <see cref="UsPresidentialElection.TryNextPresidentialDay"/>.
+        /// PS-7 (K156): <b>Italy's</b> - the snap election's own day, 25 Sep 2022 (DPR 97/2022), then the last Sunday before each term's fifth anniversary
+        /// (<see cref="LastSundayBeforeFifthAnniversary"/>): 10 Oct 2027 from the first sitting of 13 Oct 2022, every later one from the first sitting its own
+        /// election gives (<see cref="ItalyFirstSittingAfterDays"/>). A dissolution before the term's end is the formation's (K155), not this calendar's.
         /// </summary>
         public static bool TryNextPollingDay(CountryId id, DateTime onOrAfter, out DateTime pollingDay)
         {
@@ -703,6 +770,20 @@ namespace PoliSim.Elections
                 {
                     day = FirstSundayOfTermWindow(firstSitting);
                     firstSitting = day.AddDays(PolandFirstSittingAfterDays);
+                }
+                pollingDay = day;
+                return true;
+            }
+            if (id == CountryId.Italy)
+            {
+                // PS-7 (K156): the snap election's own day, 25 Sep 2022, whose first sitting DPR 97/2022 fixed on 13 Oct 2022; then the last Sunday before each
+                // term's fifth anniversary, a term the game elects first sitting on the 20th day after its polling day (ItalyFirstSittingAfterDays)
+                DateTime day = LatestElectionDay(id);
+                DateTime firstSitting = ItalyFirstSitting2022;
+                while (day < onOrAfter.Date)
+                {
+                    day = LastSundayBeforeFifthAnniversary(firstSitting);
+                    firstSitting = day.AddDays(ItalyFirstSittingAfterDays);
                 }
                 pollingDay = day;
                 return true;
@@ -845,7 +926,7 @@ namespace PoliSim.Elections
                 else
                 {
                     // The review (§619): the sentence is generic - a caretaker head means the chamber had not chosen by the record's date; any other unsourced
-                    // cabinet (Italy's Draghi) means the record names the head but not the cabinet's parties.
+                    // cabinet means the record names the head but not the cabinet's parties (France's; Italy's Draghi until K157 derived his).
                     bool caretaker = after.Value.Head != null && after.Value.Head.IndexOf("caretaker", StringComparison.OrdinalIgnoreCase) >= 0;
                     r.HeadIsCaretaker = caretaker;
                     r.GovernmentLine = after.Value.From.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + " · " + after.Value.Head.ToUpperInvariant()

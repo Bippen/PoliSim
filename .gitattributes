@@ -28,3 +28,5 @@ Assets/Scripts/Data/Generated/UnemploymentFloorData.cs -text
 ElectionsData/macro/raw/pension_guarantee/** -text
 # MF q29 (2026-10-28): the long-run anchors, byte-exact as fetched (digests in the folder's SHA256SUMS.txt)
 ElectionsData/macro/raw/q29_longrun/** -text
+ElectionsData/italy/raw/seats_2022/** -text
+Assets/Scripts/Elections/Generated/ItalianCount2022.cs -text

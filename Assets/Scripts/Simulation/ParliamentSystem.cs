@@ -115,6 +115,15 @@ namespace PoliSim.Simulation
             country.ParliamentSeats = seats;
         }
 
+        /// <summary>PS-7 (K153): the second chamber the game elected - Italy's Senato, seated with the count on its polling day (`ItalianCount.SenatoSeated`, the
+        /// senators for life beside the elected) - every roster party held, zero where it holds no seat, as <see cref="SetSeatsFromElection"/> does the first.</summary>
+        public static void SetSecondChamberFromElection(Country country, IReadOnlyDictionary<string, int> wonSeats)
+        {
+            var seats = new Dictionary<string, int>();
+            foreach (PoliticalParty p in PartySystems.For(country.Id)) { seats[p.Abbrev] = wonSeats != null && wonSeats.TryGetValue(p.Abbrev, out int w) ? w : 0; }
+            country.SecondChamberSeats = seats;
+        }
+
         /// <summary>
         /// Bill's net fiscal direction: positive = net expansionary (more tax revenue and/or more
         /// spending), negative = net contractionary, 0 = neutral/mixed - the SAME "big government vs.

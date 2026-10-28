@@ -6530,6 +6530,7 @@ namespace PoliSim.UI
                 return;
             }
             if (_simulationManager.SejmStepsApply(PlayerCountryId)) { ResolveSejmVerdict(latest, government, sejm); return; }   // AF-8 (q8): Poland's government changes by Art. 162 and 154's steps, not tonight (GameController.SejmVerdict.cs)
+            if (_simulationManager.ItalianMandatesApply(PlayerCountryId)) { ResolveItalianVerdict(latest, government); return; }   // PS-7 (K204): Italy's mandates run from the first sitting, not tonight (GameController.ItalianVerdict.cs)
             // PS-3e (§632): a formed government was installed with its arrival budget by the manager's seating above; none formed, the previous record stands
             Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the government is {(_playerCountry.Government != null && _playerCountry.Government.Cabinet.Count > 0 ? string.Join("+", _playerCountry.Government.Cabinet) + " led by " + _playerCountry.Government.PmParty : "none")}; the player's {_playerCountry.PlayerPartyAbbrev} is {(_playerCountry.Government?.RoleOf(_playerCountry.PlayerPartyAbbrev) ?? PoliSim.Elections.PlayerRole.None)}");
             if (!government.HasGovernment)

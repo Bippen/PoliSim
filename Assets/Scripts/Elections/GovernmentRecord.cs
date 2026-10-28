@@ -409,7 +409,10 @@ namespace PoliSim.Elections
                 var installed = new GovernmentRecord { FormedOn = record.AsOf, Provisional = false, Basis = record.Basis, Outcome = "of record", Kind = ofRecord.Kind, Executive = ofRecord.President };
                 installed.Cabinet.AddRange(record.Cabinet);
                 if (record.Support != null) { installed.Support.AddRange(record.Support); }
-                installed.PmParty = HeadParty(country.Id, start) ?? Largest(country, installed.Cabinet);
+                installed.PmParty = HeadParty(country.Id, start) ?? LargestAt(country.Id, start, installed.Cabinet);   // PS-7: on the chamber the record seats on the start's day, whatever epoch the world was opened on
+                // PS-7 (K207): a government of record named as a caretaker on the start's day is installed discharged from the row's first day (Italy's Draghi,
+                // 21 Jul 2022) - the same words the reference reads a caretaker head by
+                if (ofRecord.Head != null && ofRecord.Head.IndexOf("caretaker", StringComparison.OrdinalIgnoreCase) >= 0) { installed.Discharge(ofRecord.From); }
                 installed.AllocatePortfolios(country);
                 installed.FormAgreements(country, start, world);
                 return installed;
@@ -463,6 +466,17 @@ namespace PoliSim.Elections
             record.AllocatePortfolios(country);
             record.FormAgreements(country, formedOn, world);
             return record;
+        }
+
+        /// <summary>PS-7: a non-party head's stand-in PM party (Italy's Draghi) - the cabinet's largest party on the chamber the record seats on <paramref name="date"/>
+        /// (`WorldClock.SeatedVintage`; the XVIII Camera at Italy's start), read off the record's table, never off a world opened on another epoch; ties to the
+        /// earlier party in the cabinet's order.</summary>
+        private static string LargestAt(CountryId id, DateTime date, List<string> cabinet)
+        {
+            Dictionary<string, int> seats = PartySystems.InitialSeats(id, WorldClock.SeatedVintage(id, date));
+            string best = null; int bestSeats = -1;
+            foreach (string abbrev in cabinet) { int n = seats.TryGetValue(abbrev, out int s) ? s : 0; if (n > bestSeats) { best = abbrev; bestSeats = n; } }
+            return best;
         }
 
         /// <summary>The head of government's party from the record's own line, e.g. "Ulf Kristersson (M)" - null where the record names none.</summary>

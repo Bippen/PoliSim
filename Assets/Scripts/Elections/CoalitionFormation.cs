@@ -585,16 +585,17 @@ namespace PoliSim.Elections
                 foreach (int m in chamber.Joint)
                 {
                     if ((cabinet & m) != 0) { continue; }
-                    int larger = -1, smaller = -1;
-                    for (int p = 0; p < n; p++)
+                    // K216: a group of any size (Italy's cabinet blocs) - every member but the larger takes its side; a pair is the CDU/CSU's case, unchanged
+                    int larger = -1;
+                    for (int p = 0; p < n; p++) { if ((m & (1 << p)) != 0 && (larger < 0 || seats[p] > seats[larger])) { larger = p; } }
+                    if (larger < 0) { continue; }
+                    for (int smaller = 0; smaller < n; smaller++)
                     {
-                        if ((m & (1 << p)) == 0) { continue; }
-                        if (larger < 0 || seats[p] > seats[larger]) { smaller = larger; larger = p; } else { smaller = p; }
+                        if (smaller == larger || (m & (1 << smaller)) == 0) { continue; }
+                        e.Sides[smaller] = e.Sides[larger];
+                        e.Reasons[smaller] = "votes with its parliamentary group, as one - " + e.Reasons[larger];
+                        if ((opposeMask & (1 << larger)) != 0) { opposeMask |= 1 << smaller; } else { opposeMask &= ~(1 << smaller); }
                     }
-                    if (larger < 0 || smaller < 0) { continue; }
-                    e.Sides[smaller] = e.Sides[larger];
-                    e.Reasons[smaller] = "votes with its parliamentary group, as one - " + e.Reasons[larger];
-                    if ((opposeMask & (1 << larger)) != 0) { opposeMask |= 1 << smaller; } else { opposeMask &= ~(1 << smaller); }
                 }
             }
 

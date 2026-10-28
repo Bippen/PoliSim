@@ -4261,6 +4261,7 @@ namespace PoliSim.Simulation
             Elections.GovernmentRecord g = country.Government;
             if (country.PlayerHoldsPresidency) { refusedBecause = PresidentOfficeWords; return false; }   // SP-7b (I14 (2a)): the party is the AI's while the player is President
             if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Unsourced) { refusedBecause = "THIS COUNTRY'S CONFIDENCE RULES ARE NOT YET MODELLED"; return false; }
+            if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Parlamento) { refusedBecause = "A MOTION OF NO CONFIDENCE UNDER ART. 94 IS NOT YET MODELLED"; return false; }   // PS-7: the investiture by mandates is built, the mid-term motion is not
             if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Presidential) { refusedBecause = "A PRESIDENCY SERVES A FIXED TERM · NO MOTION OF NO CONFIDENCE IS TAKEN UP"; return false; }   // PS-6 US-7: Art. II §1 - a fixed term, no confidence vote
             switch (g.RoleOf(country.PlayerPartyAbbrev))
             {
@@ -4408,10 +4409,12 @@ namespace PoliSim.Simulation
             return true;
         }
 
-        private void ScheduleExtraElection(Country country, string why)
+        private void ScheduleExtraElection(Country country, string why, System.DateTime? dissolvedOn = null)
         {
             _extraElectionOrderedOn = CurrentDate;
-            _extraElectionDate = Elections.ConfidenceProcedure.ExtraElectionDay(CurrentDate);
+            _extraElectionDate = Elections.ConfidenceProcedure.RulesOf(country.Id) == Elections.ConfidenceProcedure.Rules.Parlamento
+                ? Elections.ConfidenceProcedure.ItalianElectionDay(dissolvedOn ?? CurrentDate)   // PS-7 (K155): art. 61's seventy days from the dissolution, the last Sunday in them (K206: a dissolution the semestre bianco defers is dated the day it lifts)
+                : Elections.ConfidenceProcedure.ExtraElectionDay(CurrentDate);
             // §640 (the reader): a run-up begun for another polling day is dropped - the extra election comes first, and that run-up re-begins on its own
             // calendar once the extra election is held; left standing it would be adopted by the wrong campaign. Stated: where the procedure resumes after
             // an election, the day's campaign step has already run by the time the order lands, so that run-up drew its day before it was dropped.
@@ -4435,6 +4438,7 @@ namespace PoliSim.Simulation
             Elections.GovernmentRecord g = country?.Government;
             if (g == null) { return; }
             if (AdvanceSejmFormation(country, g)) { return; }   // AF-8 (q8): Poland's Art. 162 and 154 steps run their days (SimulationManager.Sejm.cs)
+            if (AdvanceItalianMandates(country, g)) { return; }   // PS-7 (K204): Italy's mandates on the new chambers' first sitting (SimulationManager.Italy.cs)
             // §646: a round open runs its day; the day after an election a round opens (R2 - §640's resumption is this); a caretaker waits on either.
             if (OpenRoundAfterElection(country, g)) { return; }   // first: an election held while a round is open ends that round (the reader, §646)
             if (g.Round != null && g.Round.Open) { AdvanceSpeakerRound(country, g); return; }
@@ -6031,6 +6035,8 @@ namespace PoliSim.Simulation
         {
             pollingDay = System.DateTime.MinValue;
             bool ordinary = PlayerCountryId.HasValue && Elections.WorldClock.TryNextPollingDay(PlayerCountryId.Value, CurrentDate, out pollingDay);
+            // PS-7 (K206): Italy's calendar re-anchors on the game's last count - an art. 88 dissolution starts a new five-year term (art. 60)
+            if (ordinary && PlayerCountryId.Value == CountryId.Italy && LastItalianCount(out System.DateTime lastCount)) { pollingDay = Elections.WorldClock.ItalyOrdinaryAfter(lastCount, CurrentDate); }
             // PS-3i (§636): an ordered EXTRA election is the next polling day where it falls first; the four-year cycle carries on beside it.
             if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate && (!ordinary || _extraElectionDate < pollingDay)) { pollingDay = _extraElectionDate; return true; }
             return ordinary;

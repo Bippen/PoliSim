@@ -18,7 +18,7 @@ namespace PoliSim.EditorTools
     /// led by M (the record's own head); by party the four roles read S OPPOSITION, M PRIME MINISTER, KD and L JUNIOR PARTNER, SD SUPPORT; the
     /// one test `PlayerGoverns` is true for M alone (a junior partner's portfolios are PS-3's next part, stated); the AI finance ministry's
     /// gate follows it (a Sweden the player's S does not lead is AI-governed); the record survives a save round trip; Germany's start reads SPD PRIME MINISTER;
-    /// Poland's start reads its PiS government of record (§763), Italy's stand-in is printed. PS-3b (§629): every start stores a record - the USA's president and party, France's cabinet under its president -
+    /// Poland's start reads its PiS government of record (§763), Italy's Draghi government of record (K157) is pinned. PS-3b (§629): every start stores a record - the USA's president and party, France's cabinet under its president -
     /// and a country with none FAILS LOUDLY at AtStart and at PlayerGoverns (proved red on §628's build first: Reviews/evidence/2026-09-25_s629_probe_red.txt).
     /// PS-6 US-7, the US rows: the president's party is the head's, the other in opposition; a planted decided contest makes its party the PRESIDENT-ELECT on the days
     /// before the oath and nothing else; the record yields from the game's polling day; the government a president forms at the oath is a presidency of one party.
@@ -133,7 +133,7 @@ namespace PoliSim.EditorTools
                 GovernmentRecord gde = de.Government = GovernmentRecord.AtStart(de, WorldClock.StartDate(CountryId.Germany), world);
                 Check(gde.PmParty == "SPD" && gde.Cabinet.Contains("SPD"), F("Germany's start: {0} led by {1}{2}", string.Join("+", gde.Cabinet), gde.PmParty, gde.Provisional ? " (provisional)" : string.Empty));
                 Check(gde.Cabinet.Contains("FDP"), "6 November 2024 is the day BEFORE the FDP ministers were dismissed - the record's SPD+Grüne+FDP cabinet still stands (§618)");
-                // The other starts, printed: the USA's president and France's cabinet under its president (§629), Poland's PiS government of record (§763), Italy's the formation's stand-in.
+                // The other starts, printed: the USA's president and France's cabinet under its president (§629), Poland's PiS government of record (§763), Italy's Draghi (K157).
                 foreach (CountryId other in new[] { CountryId.Poland, CountryId.Italy, CountryId.USA, CountryId.France })
                 {
                     Country c = world.GetCountry(other);
@@ -143,7 +143,11 @@ namespace PoliSim.EditorTools
                 GovernmentRecord gpl = world.GetCountry(CountryId.Poland).Government;
                 Check(gpl != null && !gpl.Provisional && gpl.PmParty == "PiS" && gpl.Cabinet.Contains("PiS"),
                     F("Poland's start (§763, the PiS start): Morawiecki's government of record installed - {0} led by {1}{2}", gpl != null ? string.Join("+", gpl.Cabinet) : "NONE", gpl?.PmParty, gpl != null && gpl.Provisional ? " (provisional)" : string.Empty));
-                Check(world.GetCountry(CountryId.Italy).Government != null && world.GetCountry(CountryId.Italy).Government.Provisional, "Italy: the formation's stand-in, marked provisional (§605)");
+                GovernmentRecord git = world.GetCountry(CountryId.Italy).Government;
+                // PS-7 (K157): Draghi's government of record installed - the national-unity parties of the Camera's confidence vote of 18 Feb 2021, derived onto the
+                // seated XVIII Camera (WorldClock.ItalyDraghiCabinet / ItalyDraghiSupport); a non-party head, so the cabinet's largest party stands as his (M5S)
+                Check(git != null && !git.Provisional && git.Cabinet.SequenceEqual(WorldClock.ItalyDraghiCabinet) && git.Support.SequenceEqual(WorldClock.ItalyDraghiSupport) && git.PmParty == "M5S" && git.Caretaker && git.CaretakerSince == new System.DateTime(2022, 7, 21),
+                    F("Italy's start (K157, K207): Draghi's government of record installed, a caretaker from 21 Jul 2022 - {0} led by {1} (the stand-in PM party, declared), support {2}{3}", git != null ? string.Join("+", git.Cabinet) : "NONE", git?.PmParty, git != null ? string.Join("+", git.Support) : "NONE", git != null && git.Provisional ? " (provisional)" : string.Empty));
 
                 // PS-3b (§629): THE EXECUTIVES, AND NO SILENT DEFAULT. Every playable start stores a government of record - the USA's is its president
                 // and their party, France's its cabinet under its president - and a country with none FAILS LOUDLY: `AtStart` throws, and `PlayerGoverns`

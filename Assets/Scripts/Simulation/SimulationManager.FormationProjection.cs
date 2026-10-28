@@ -38,6 +38,7 @@ namespace PoliSim.Simulation
             if (country == null) { return null; }
             if (RoundsApply(country.Id)) { return ProjectRound(country, pollingDay.Date); }
             if (SejmStepsApply(country.Id)) { return ProjectSejm(country, pollingDay.Date); }
+            if (ItalianMandatesApply(country.Id)) { return ProjectMandates(country, pollingDay.Date); }   // PS-7 (K204): Italy's mandates from the first sitting (SimulationManager.Italy.cs)
             return null;
         }
 
@@ -211,6 +212,53 @@ namespace PoliSim.Simulation
             projection.Steps.Add(projection.Reason);
             return projection;
         }
+
+        /// <summary>
+        /// PS-7 (K204, q20's one formation code): <b>Italy's mandates</b> (Costituzione art. 92, 94; K155) projected from the night - the very mandates
+        /// `ItalianFormation.Run` tries on the chambers the count seated, as the day loop runs them on the first sitting (`AdvanceItalianMandates`); nothing installed,
+        /// nothing stored. The board's view is the Camera's (its seats, the confidence vote's For and Against there), whichever arithmetic the granted mandate was
+        /// formed on - the step line names it; where three mandates fail, the dissolution (art. 88, the semestre bianco of art. 88 c. 2 deferring it) and art. 61's
+        /// polling day.
+        /// </summary>
+        private FormationProjection ProjectMandates(Country country, DateTime pollingDay)
+        {
+            var projection = new FormationProjection
+            {
+                Country = country.Id, PollingDay = pollingDay,
+                Procedure = "the President's mandates, each government to the confidence of both chambers (Costituzione art. 92, 94)",
+            };
+            DateTime firstSitting = WorldClock.ItalyFirstSittingAfter(pollingDay);
+            List<ItalianFormation.Mandate> mandates = ItalianFormation.Run(country, DeclarationReading.OfElection(country.Id, pollingDay), out ItalianFormation.Mandate granted);
+            foreach (ItalianFormation.Mandate m in mandates) { projection.Steps.Add(ItalianFormation.Line(m)); }
+            if (granted != null)
+            {
+                string step = Pf("MANDATE {0} OF AT MOST {1} · FORMED ON {2} · CONFIDENCE OF BOTH CHAMBERS ({3}-{4} CAMERA, {5}-{6} SENATO) · FROM THE FIRST SITTING, {7} · SEATS SHOWN ARE THE CAMERA'S",
+                    granted.Number, ConfidenceProcedure.ItalianMandates, granted.Arithmetic.ToUpperInvariant(), granted.Camera.For, granted.Camera.Against, granted.Senato.For, granted.Senato.Against,
+                    firstSitting.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant());
+                ExpectNamed(projection, granted.Camera.PmParty, Keys(granted.View.Cabinet), Keys(granted.View.Support), step, null, granted.Camera.For, granted.Camera.Members);
+                GovernmentFormation.View view = ProjectedView(country, projection, null);
+                foreach ((string _, int seats) in view.Cabinet) { view.CabinetSeats += seats; }
+                view.SupportedSeats = granted.Camera.For;
+                view.OpposedSeats = granted.Camera.Against;
+                view.Outcome = granted.View.Outcome;
+                view.ProjectionVote = ItalianVote;
+                projection.View = view;
+                return projection;
+            }
+            bool barred = Dissolution(firstSitting, out DateTime dissolvedOn, out DateTime polling);
+            projection.Reason = Pf("{0} mandates fail - the chambers are dissolved{1} (art. 88), and the new ones elected on {2} (art. 61)",
+                ConfidenceProcedure.ItalianMandates, barred ? " on " + dissolvedOn.ToString("d MMMM yyyy", CultureInfo.InvariantCulture) + ", when the President's last six months end" : string.Empty,
+                polling.ToString("d MMMM yyyy", CultureInfo.InvariantCulture));
+            projection.Steps.Add(projection.Reason);
+            GovernmentFormation.View none = NoneView(country, projection);
+            none.ProjectionVote = ItalianVote;
+            none.NoneWords = "THE MANDATES FAIL - DISSOLUTION";
+            projection.View = none;
+            return projection;
+        }
+
+        /// <summary>PS-7: the vote office changes on in Italy, in the board's foot ("A PROJECTION - OFFICE CHANGES ONLY WHEN ...").</summary>
+        private const string ItalianVote = "BOTH CHAMBERS VOTE CONFIDENCE";
 
         /// <summary>The expected government from the proposal the procedure carries, with its supporters as the install reads them (`Install`: the invited
         /// parties outside the cabinet that accept) and the board's view of it.</summary>

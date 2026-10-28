@@ -119,7 +119,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>Whether <paramref name="country"/>'s chamber is counted here: Sweden, Germany and Poland - the three with a chamber count and regions.</summary>
-        public static bool CountsIn(CountryId country) => country == CountryId.Sweden || country == CountryId.Germany || country == CountryId.Poland;
+        public static bool CountsIn(CountryId country) => country == CountryId.Sweden || country == CountryId.Germany || country == CountryId.Poland || country == CountryId.Italy;   // PS-7 (K205): Italy's colleges, as Poland's okregi
 
         /// <summary>
         /// The count of <paramref name="country"/>'s polling day <paramref name="pollingDay"/> on the national <paramref name="shares"/> (fractions of the valid vote summing to one, as play hands them - the uniform swing reads them so, DECLARED), with the ground
@@ -143,16 +143,19 @@ namespace PoliSim.Elections
             double[][] preference;
             double[] eligible, baseTurnout;
             bool hasElectorate;
-            if (country == CountryId.Poland)
+            if (country == CountryId.Poland || country == CountryId.Italy)
             {
-                double[][] votes = PolishSejmAllocation.SwungVotes(keys, shares);
-                names = new string[votes.Length];
+                // PS-7 (K205): Italy's Camera colleges on K150's swing (`ItalianCount.SwungVotes`), counted as Poland's okregi are - a college with no list vote
+                // (Valle d'Aosta's, its seat held by record) is no counted region; MAIE and UV stand in no college, so the hand-back keeps their shares as handed. L5' (DECLARED): the regions are keyed by college and the frame base is one, so a staged Italian campaign's doors would match no region and count nothing - an Italian staging (SP-5 Italy) must key its regions to the colleges and bring their electorates first
+                names = null;
+                double[][] votes = country == CountryId.Poland ? PolishSejmAllocation.SwungVotes(keys, shares) : ItalianColleges(keys, shares, out names);
+                if (country == CountryId.Poland) { names = new string[votes.Length]; }
                 preference = votes;
                 eligible = new double[votes.Length];
                 baseTurnout = new double[votes.Length];
                 for (int d = 0; d < votes.Length; d++)
                 {
-                    names[d] = "okreg " + (d + 1).ToString(CultureInfo.InvariantCulture);
+                    if (country == CountryId.Poland) { names[d] = "okreg " + (d + 1).ToString(CultureInfo.InvariantCulture); }
                     foreach (double v in votes[d]) { eligible[d] += v; }
                     baseTurnout[d] = 1.0;
                 }
@@ -246,6 +249,25 @@ namespace PoliSim.Elections
             }
             result.Line = LineOf(country, result, keys, gotv != null);
             return result;
+        }
+
+        /// <summary>PS-7: the Camera's colleges with list votes, their swung votes in <paramref name="keys"/>' order (`ItalianCount.SwungVotes`).</summary>
+        private static double[][] ItalianColleges(List<string> keys, IReadOnlyDictionary<string, double> shares, out string[] names)
+        {
+            double[][] swung = ItalianCount.SwungVotes(ItalianCount.Chamber.Camera, shares, out string[] columns);
+            var rows = new List<double[]>();
+            var named = new List<string>();
+            for (int c = 0; c < swung.Length; c++)
+            {
+                var row = new double[keys.Count];
+                double sum = 0.0;
+                for (int i = 0; i < keys.Count; i++) { int k = Array.IndexOf(columns, keys[i]); if (k >= 0) { row[i] = swung[c][k]; sum += row[i]; } }
+                if (!(sum > 0.0)) { continue; }
+                rows.Add(row);
+                named.Add(Generated.ItalianCount2022.CameraColleges[c]);
+            }
+            names = named.ToArray();
+            return rows.ToArray();
         }
 
         /// <summary>The count's mobilization: each counted region's doors per party key, carried from the campaign's own (its regions and parties found by

@@ -457,7 +457,11 @@ namespace PoliSim.EditorTools
                     where, electionDay, bal0Read ? F("{0} at {1:+0.0;-0.0} %", e, record[e0].Percent) : F("none ({0} {1})", e, e0 < 0 ? "not published" : "opened before the tenure"),
                     expect.Count, expect.Count > 0 ? string.Join(", ", expect.Select(x => F("{0} at {1:+0.0;-0.0} %", x.Year, 100.0 * x.Ratio))) : "none",
                     tenure, expect.Count >= 4 ? "the four-year form" : expect.Count >= 2 ? "the two-year fallback" : "no term variable", FiscalVote.Describe(r)));
-            if (election) { Check(r.HasTerm || r.HasElectionYear, F("(8d) {0}: the first count, on {1:yyyy-MM-dd}, carries a fiscal term read from the source alone - {2}", where, electionDay, FiscalVote.Describe(r))); }
+            // PS-7 (declared): a term is owed only where the tenure lets the source in - Italy's start is governed by Draghi's caretaker cabinet, a non-party head
+            // whose tenure opens on the start (21 Jul 2022), after every closed source year, so its first count reads none and carries no fiscal term (K101's tenure rule, as built)
+            bool owed = expect.Count >= 2 || (bal0Read && expect.Count >= 1);
+            if (election && owed) { Check(r.HasTerm || r.HasElectionYear, F("(8d) {0}: the first count, on {1:yyyy-MM-dd}, carries a fiscal term read from the source alone - {2}", where, electionDay, FiscalVote.Describe(r))); }
+            else if (election) { Check(!r.HasTerm && !r.HasElectionYear, F("(8d) {0}: the first count, on {1:yyyy-MM-dd}, carries no fiscal term - the tenure from {2:yyyy-MM-dd} opens after every closed source year (declared) - {3}", where, electionDay, tenure, FiscalVote.Describe(r))); }
             double? gameBal0 = FiscalVote.OpenRatio(k);
             _sb.Append(F("        (printed) {0}: the governing party {1}, tenure from {2:yyyy-MM-dd}; BAL0 the source's {3} against the game's own after one day {4} (the gap K98 keeps out of the vote)\n",
                 where, k.Government?.PmParty, tenure, double.IsNaN(r.Bal0) ? "n/a" : F("{0:+0.000;-0.000} %", 100.0 * r.Bal0), gameBal0.HasValue ? F("{0:+0.000;-0.000} %", 100.0 * gameBal0.Value) : "n/a"));

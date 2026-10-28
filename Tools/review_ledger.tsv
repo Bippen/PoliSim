@@ -364,3 +364,7 @@ baseline	424242	b00f7a61b6a028b2f0c9ec958a04ed0e3c4aee31b87ed20ade2fac393a826991
 file	Assets/Scripts/Simulation/DebtLedgerRecorder.cs	a068474563077352ed009f1c8bccc1c6bb8b353349da83a6bd5e3702d4929cf9	reviewed	2026-10-28	s930	Reviews/2026-10-28_q32_review2.md	-
 file	Assets/Scripts/Data/DebtAttribution.cs	8c25b26b627b2916c6ff2966d71e6a6e30298219fe9b964706a47193051628ad	reviewed	2026-10-28	s930	Reviews/2026-10-28_q32_review2.md	-
 file	Assets/Scripts/Elections/FiscalVote.cs	13e22cb57efbd4b85fceb8f8896b48b4fd81fbf58f11836c9a900a0573d0da78	reviewed	2026-10-28	s930	Reviews/2026-10-28_q32_review2.md	-
+file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	887f608af800bdccf551ac493da09b4033359e769e76a7e59cf222ba13e3378f	reviewed	2026-10-28	s931	Reviews/2026-10-28_ps7_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.Italy.cs	bf04ceff86176bd2f5c5b281268c7d9617e9e90ef5e4e7c4677b89bab2e8b39b	reviewed	2026-10-28	s931	Reviews/2026-10-28_ps7_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	2d0bcb11ffea496ad16039a8cda12626c6d8a7afd77376668699fbf8bf74efb9	reviewed	2026-10-28	s931	Reviews/2026-10-28_ps7_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	15fd0f6bd0aeac28fa06e43846dab3b5ad1aef5d14ed32bcc1a9994983364ce8	reviewed	2026-10-28	s931	Reviews/2026-10-28_ps7_integrator.md	-

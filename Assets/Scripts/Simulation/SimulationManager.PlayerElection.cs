@@ -209,6 +209,12 @@ namespace PoliSim.Simulation
             if (NationalElection.CountsParliament(record.Method))   // PS-6 K74: the parliamentary methods
             {
                 ParliamentSystem.SetSeatsFromElection(country, record.Seats);
+                // PS-7 (K153, K154): Italy's Senato is elected the same day on the same vote - seated with the count, the senators for life beside it by record
+                // as on the new term's first sitting; until this count no Senato sits (an Italian world is created with none)
+                if (record.Method == ElectionMethod.ItalyRosatellum)
+                {
+                    ParliamentSystem.SetSecondChamberFromElection(country, ItalianCount.SenatoSeated(record.Shares, WorldClock.ItalyFirstSittingAfter(CurrentDate), factors != null && factoredElection == ElectionVintage.Italy2022 ? ItalianCount.SenatoRosterShare2022 : 1.0));   // L3': the Senato's own roster share on the record's day
+                }
 
                 // C-D4 (§38): the result carries into each party's long-term capital. ⚠ Its rule holds no
                 // invented constant - organisational strength moves by the ratio of the party's new seat
@@ -249,6 +255,9 @@ namespace PoliSim.Simulation
             if (RoundsApply(id)) { return true; }
             // AF-8 (q8): Poland's government changes by Art. 162 and 154's steps, not tonight
             if (SejmStepsApply(id)) { sejm = OpenSejmFormation(country, latest.Date); return true; }
+            // PS-7 (K155, K204): Italy's government by mandates, each to the confidence of both chambers (art. 94), run from the new chambers' first sitting by the
+            // day loop (AdvanceItalianMandates) - the night installs nothing and projects them (ProjectFormation)
+            if (ItalianMandatesApply(id)) { return true; }
             // No government formed: the previous record stands - the verdict's own words, "you stay in office until one can" - so the AI does not take a book nobody was given.
             if (formedView != null && formedView.HasGovernment)
             {

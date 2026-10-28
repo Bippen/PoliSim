@@ -108,10 +108,16 @@ namespace PoliSim.EditorTools
                 Check(WorldClock.PollingDayBasis(CountryId.USA) != null && WorldClock.PollingDayBasis(CountryId.USA).Contains("3 U.S.C. §21(1)") && WorldClock.PollingDayBasis(CountryId.USA).Contains("[EC-DATES]")
                       && WorldClock.PollingDayBasis(CountryId.USA).Contains("the Tuesday next after the first Monday in November"),
                     "the USA's basis cites 3 U.S.C. §21(1) in its words and NARA's day of record [EC-DATES]");
-                foreach (CountryId other in new[] { CountryId.Italy, CountryId.France })
-                {
-                    Check(!WorldClock.TryNextPollingDay(other, new DateTime(2026, 1, 18), out _) && WorldClock.PollingDayBasis(other) == null, other + ": no polling day and no basis - its calendar is not modelled, its chamber holds as of record");
-                }
+                Check(!WorldClock.TryNextPollingDay(CountryId.France, new DateTime(2026, 1, 18), out _) && WorldClock.PollingDayBasis(CountryId.France) == null, "France: no polling day and no basis - its calendar is not modelled, its chamber holds as of record");
+                // PS-7 (K156): Italy's - the snap election of record's day from the start, then the last Sunday before each term's fifth anniversary: 13 Oct 2027 is a
+                // Wednesday, so 10 Oct 2027; that term first sits 20 days on (30 Oct 2027), its fifth anniversary 30 Oct 2032 is a Saturday, so 24 Oct 2032
+                bool itStart = WorldClock.TryNextPollingDay(CountryId.Italy, WorldClock.StartDate(CountryId.Italy), out DateTime it22);
+                bool itNext = WorldClock.TryNextPollingDay(CountryId.Italy, new DateTime(2022, 9, 26), out DateTime it27);
+                bool itAfter = WorldClock.TryNextPollingDay(CountryId.Italy, it27.AddDays(1), out DateTime it32);
+                Check(itStart && it22 == new DateTime(2022, 9, 25) && itNext && it27 == new DateTime(2027, 10, 10) && itAfter && it32 == new DateTime(2032, 10, 24)
+                      && WorldClock.ItalyFirstSittingAfter(it22) == new DateTime(2022, 10, 13) && WorldClock.LastSundayBeforeFifthAnniversary(new DateTime(2021, 10, 17)) == new DateTime(2026, 10, 11)
+                      && WorldClock.PollingDayBasis(CountryId.Italy) != null && WorldClock.PollingDayBasis(CountryId.Italy).Contains("[DPR-97]") && WorldClock.PollingDayBasis(CountryId.Italy).Contains("K156"),
+                    F("PS-7 (K156): Italy's polling days - {0:yyyy-MM-dd} from the start (DPR 97/2022), then {1:yyyy-MM-dd} and {2:yyyy-MM-dd} (the last Sunday before each term's fifth anniversary; a Sunday anniversary is not before itself)", it22, it27, it32));
 
                 // 3. The declarations an election reads, and the reference.
                 Check(WorldClock.VintageOfElection(CountryId.Sweden, new DateTime(2026, 9, 13)) == ElectionVintage.Sweden2026, "13 Sep 2026 reads Sweden2026's declarations");

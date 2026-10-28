@@ -30,7 +30,7 @@ namespace PoliSim.Elections
         /// at the oath (<see cref="UsPresidentialElection"/>). Removal on impeachment (Art. II §4: "shall be removed from Office on Impeachment for, and Conviction
         /// of, Treason, Bribery, or other high Crimes and Misdemeanors") is not modelled, stated - nor the Twenty-fifth Amendment.
         /// </summary>
-        public enum Rules { Unsourced, Riksdag, Bundestag, Presidential, Sejm }
+        public enum Rules { Unsourced, Riksdag, Bundestag, Presidential, Sejm, Parlamento }
 
         /// <summary>
         /// §698 (PS-4): <b>the Bundestag's rule is the CONSTRUCTIVE vote</b> - Art. 67 GG, quoted from gesetze-im-internet.de in
@@ -42,7 +42,7 @@ namespace PoliSim.Elections
         /// the model reads moves a party's vote inside them). AF-8 (ruling q8): who may move it is the standing orders' rule, GO-BT § 97 Abs. 1 [GOBT-4] - a quarter of the members
         /// or a Fraktion of a quarter sign it, or it is not put on the agenda (`SimulationManager.MoveNoConfidence`).
         /// </summary>
-        public static Rules RulesOf(CountryId id) => id == CountryId.Sweden ? Rules.Riksdag : id == CountryId.Germany ? Rules.Bundestag : id == CountryId.USA ? Rules.Presidential : id == CountryId.Poland ? Rules.Sejm : Rules.Unsourced;
+        public static Rules RulesOf(CountryId id) => id == CountryId.Sweden ? Rules.Riksdag : id == CountryId.Germany ? Rules.Bundestag : id == CountryId.USA ? Rules.Presidential : id == CountryId.Poland ? Rules.Sejm : id == CountryId.Italy ? Rules.Parlamento : Rules.Unsourced;
 
         /// <summary>
         /// COAL-1 (Elias's ruling K133, 2026-10-27): <b>the Sejm's rule is the CONSTRUCTIVE vote too</b> - Konstytucja Art. 158, quoted from the Tribunal's text in
@@ -84,6 +84,8 @@ namespace PoliSim.Elections
             public bool Constructive;
             /// <summary>COAL-1 (K133): the rule a constructive vote is taken under - the Bundestag's (Art. 67 GG) or the Sejm's (Art. 158); the title says whose.</summary>
             public Rules Under;
+            /// <summary>PS-7 (Art. 94): the chamber an Italian confidence vote is taken in - Camera or Senato; null for every other vote.</summary>
+            public string ChamberName;
             public List<string> SuccessorCabinet = new List<string>();
             public List<string> SuccessorSupport = new List<string>();
             /// <summary>§698: the drafted parties that refuse the successor - its answer says no, or a sitting partner stays where it has posts; they are not bound
@@ -102,7 +104,10 @@ namespace PoliSim.Elections
             public bool SeatedByGroup;
             public List<DivisionSide> Sides = new List<DivisionSide>();
 
-            public string Title() => Constructive && Under == Rules.Sejm
+            public string Title() => Under == Rules.Parlamento
+                ? string.Format(CultureInfo.InvariantCulture, "Confidence of the {0} in the government ({1}): {2}, {3} for and {4} against of {5} members (Art. 94 Costituzione)",
+                    ChamberName, PmParty, Carried ? "granted" : "refused", For, Against, Members)
+                : Constructive && Under == Rules.Sejm
                 ? string.Format(CultureInfo.InvariantCulture, "Constructive vote of no confidence in the Council of Ministers ({0}): {1} candidate {2}, {3} of {4} deputies for, {5} needed (Art. 158 Konstytucja)",
                     PmParty, PoliSim.Wording.EnglishText.Possessive(Mover, false, true), Carried ? "elected" : "not elected", For, Members, Needed)
                 : Constructive
@@ -277,6 +282,53 @@ namespace PoliSim.Elections
             tenth = (members + 9) / 10;
             moverSeats = country.ParliamentSeats.TryGetValue(mover ?? string.Empty, out int held) ? held : 0;
             return moverSeats >= tenth;
+        }
+
+        /// <summary>
+        /// PS-7 (Elias's ruling K155): <b>ITALY'S CONFIDENCE, ART. 94 COSTITUZIONE</b> (`ElectionsData/italy/raw/statutes/`, vigente al 25-9-2022): <i>"Il Governo deve
+        /// avere la fiducia delle due Camere. Ciascuna Camera accorda o revoca la fiducia mediante mozione motivata e votata per appello nominale. Entro dieci giorni
+        /// dalla sua formazione il Governo si presenta alle Camere per ottenerne la fiducia."</i> Art. 64: a chamber's decision is valid with the majority of its members
+        /// present and taken "a maggioranza dei presenti". One chamber's vote on <paramref name="cabinet"/>: the cabinet's parties and its <paramref name="support"/> vote for
+        /// it, every other seated party against - the opposition's vote of the record's two (18 Feb 2021: FdI against Draghi; 25 Oct 2022, 235-154 for Meloni) - so it is
+        /// granted where the government holds more of the chamber's members than it does not (DECLARED: every member present and voting, no abstention modelled - the
+        /// chambers' standing orders on abstention are not on disk). <paramref name="seats"/>: the chamber's seats by key - the Camera's, or the Senato's with the
+        /// senators for life in their groups' keys (K154: they vote on confidence as their group does).
+        /// </summary>
+        public static MotionVote Article94(Country country, string chamberName, IReadOnlyDictionary<string, int> seats, IReadOnlyList<string> cabinet, IReadOnlyList<string> support, string pmParty)
+        {
+            var vote = new MotionVote { PmParty = pmParty, Under = Rules.Parlamento, ChamberName = chamberName };
+            var keys = new List<string>();
+            if (seats != null) { foreach (KeyValuePair<string, int> kv in seats) { if (kv.Value > 0) { keys.Add(kv.Key); } } }
+            keys.Sort(StringComparer.Ordinal);
+            foreach (string key in keys)
+            {
+                int n = seats[key];
+                bool inCabinet = cabinet != null && ContainsKey(cabinet, key), supports = support != null && ContainsKey(support, key);
+                int side = inCabinet || supports ? 1 : -1;
+                vote.Members += n;
+                if (side > 0) { vote.For += n; } else { vote.Against += n; }
+                vote.Sides.Add(new DivisionSide { Abbrev = key, ShortName = PartySystems.ShortName(country.Id, key), Seats = n, Side = side, Alignment = side,
+                    Reason = inCabinet ? "the government's own party" : supports ? "carries the government from outside" : "outside the government - votes against (the opposition's vote of record)" });
+            }
+            vote.Needed = vote.Against + 1;   // Art. 64: the majority of those present - more for than against
+            return vote;
+        }
+
+        private static bool ContainsKey(IReadOnlyList<string> keys, string key) { foreach (string k in keys) { if (k == key) { return true; } } return false; }
+
+        /// <summary>PS-7 (K155): the mandates the formation tries before the chambers are dissolved - "after three failed mandates, Art. 88 dissolution".</summary>
+        public const int ItalianMandates = 3;
+
+        /// <summary>PS-7 (K155): Costituzione art. 61 - "Le elezioni delle nuove Camere hanno luogo entro settanta giorni dalla fine delle precedenti".</summary>
+        public const int ItalianElectionWithinDays = 70;
+
+        /// <summary>PS-7 (K155): the polling day after an Art. 88 dissolution decided on <paramref name="decidedOn"/> - the Sunday on or before art. 61's seventieth day.
+        /// Which Sunday in the window is the most recent practice (ruling E2's principle): the 2022 dissolution of 21 Jul (DPR 96/2022) polled on 25 Sep (DPR 97/2022),
+        /// the last Sunday within the seventy days.</summary>
+        public static DateTime ItalianElectionDay(DateTime decidedOn)
+        {
+            DateTime limit = decidedOn.Date.AddDays(ItalianElectionWithinDays);
+            return limit.AddDays(-(int)limit.DayOfWeek);
         }
 
         /// <summary>The extra election's polling day: the Sunday on or before three months after the decision - the constitution gives the limit; AF-8 (ruling q8)

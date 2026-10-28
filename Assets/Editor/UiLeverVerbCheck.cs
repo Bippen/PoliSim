@@ -124,7 +124,7 @@ namespace PoliSim.EditorTools
             ("GetPendingTaxProgramBills", "a read"), ("GetPendingTradeBill", "a read"), ("GetPendingWelfareProgramBills", "a read"), ("GetWageGrowthGapAtPeriodOpen", "a read"),
             ("IsIncomingGovernmentBudgetWindow", "a read"), ("PendingPlayerScandal", "a read"), ("PlayerGoverns", "a read"), ("PlayerMayIntroduce", "a read"),
             ("PlayerPartyIndexForCampaign", "a read"), ("PreviewFormation", "a read - the verdict before the player submits"), ("ProjectConstructiveVote", "a read"),
-            ("ProjectPersonBallot", "a read"), ("QueuedScandalResponse", "a read"), ("RoundOf", "a read"), ("RoundsApply", "a read"), ("SejmStepsApply", "a read"),
+            ("ProjectPersonBallot", "a read"), ("QueuedScandalResponse", "a read"), ("RoundOf", "a read"), ("RoundsApply", "a read"), ("SejmStepsApply", "a read"), ("ItalianMandatesApply", "a read"),
             ("SpeakerOrder", "a read"), ("TryPassedCarbonFigure", "a read"), ("TryPlayerPollingDay", "a read"), ("TryUnansweredDocketItem", "a read"),
         };
 

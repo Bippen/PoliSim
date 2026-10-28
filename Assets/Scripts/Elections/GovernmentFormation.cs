@@ -187,6 +187,10 @@ namespace PoliSim.Elections
             /// (the Speaker's proposal it is, the ballot), and whether it read a wait on the player by the AI's rule for the player's party, or stops
             /// short of the procedure's end. Null where the view is a staged fixture's (a film with no world).</summary>
             public string ProjectionStep;
+            /// <summary>PS-7: the vote office changes on, in the board's foot - Italy's "BOTH CHAMBERS VOTE CONFIDENCE"; null for the board's own words (the Riksdag's).</summary>
+            public string ProjectionVote;
+            /// <summary>PS-7: where no government is expected, the board's short line for why - Italy's dissolution; null for the board's own words.</summary>
+            public string NoneWords;
             public bool ReadsPlayersAnswer;
             public bool Partial;
         }
@@ -490,7 +494,7 @@ namespace PoliSim.Elections
         public static IReadOnlyList<(string A, string B)> JointGroups(CountryId country) =>
             country == CountryId.Germany ? new[] { ("CDU", "CSU") } : System.Array.Empty<(string, string)>();
 
-        /// <summary>§705: each joint group as a bitmask over <paramref name="parties"/>; null where there is none. A group missing a member is
+        /// <summary>§705: each joint group as a bitmask over <paramref name="parties"/> - and, K216, each cabinet bloc (<see cref="CabinetBlocs"/>, its seated members, two at least); null where there is none. A group missing a member is
         /// dropped, and so is one a member of which holds no seat (<paramref name="seats"/>): a Fraktion is formed by the parties seated - the model has
         /// no Grundmandat, so a played CSU can fall under the 5 % line, and a seatless member in the mask made every CDU cabinet a split group and
         /// put the seatless CSU into support masks (the review's defect 7).</summary>
@@ -505,7 +509,28 @@ namespace PoliSim.Elections
                 if (seats != null && (ia >= seats.Count || ib >= seats.Count || seats[ia] <= 0 || seats[ib] <= 0)) { continue; }
                 masks.Add((1 << ia) | (1 << ib));
             }
+            // K216: a cabinet bloc - Italy's pre-election coalitions sit in a cabinet whole or not at all; its members with no seat are left out of the mask
+            foreach (string[] bloc in CabinetBlocs(country))
+            {
+                int mask = 0, members = 0;
+                for (int p = 0; p < parties.Count; p++)
+                {
+                    if (System.Array.IndexOf(bloc, parties[p].Abbrev) < 0 || (seats != null && (p >= seats.Count || seats[p] <= 0))) { continue; }
+                    mask |= 1 << p; members++;
+                }
+                if (members >= 2) { masks.Add(mask); }
+            }
             return masks.Count > 0 ? masks.ToArray() : null;
         }
+
+        /// <summary>
+        /// PS-7 (Elias's ruling K216): CABINET BLOCS - the parties that enter a cabinet as one unit, beside the parliamentary groups (<see cref="JointGroups"/>):
+        /// Italy's pre-election coalitions, the record's 2022 links fixed (K152; Eligendo's grouping of the lists under each coalition's uninominal candidates,
+        /// `ItalianCount.Coalitions`) - Italian practice under the Rosatellum's collegamento, the coalition governing or opposing whole (DECLARED, K216). Read by the
+        /// formation's masks only (<see cref="JointMasks"/>): a bloc sits in a cabinet whole or not at all, and outside one its members vote alike (the larger
+        /// member's side); unlike a parliamentary group, its members keep their own groups everywhere else (the ink, the votes on bills). Empty for every other country.
+        /// </summary>
+        public static IReadOnlyList<string[]> CabinetBlocs(CountryId country) =>
+            country == CountryId.Italy ? (IReadOnlyList<string[]>)ItalianCount.Coalitions(ItalianCount.Chamber.Camera) : System.Array.Empty<string[]>();
     }
 }
