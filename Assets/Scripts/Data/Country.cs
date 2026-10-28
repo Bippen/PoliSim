@@ -337,9 +337,11 @@ namespace PoliSim.Data
 
         /// <summary>
         /// The country's ORIGINAL, un-adjusted trend GDP growth rate, exactly as seeded in
-        /// WorldFactory - never mutated by any policy/condition/performance effect. PotentialGrowthRate
-        /// itself is recomputed each turn as this base plus the combined infrastructure/sector
-        /// adjustments - keeping the true structural anchor separate from those adjustments is what
+        /// WorldFactory - never mutated by any policy/condition/performance effect. The productivity trend
+        /// is recomputed each turn as the ANCHOR plus the combined infrastructure/sector/education
+        /// adjustments, and the anchor is this base through the WEO's horizon and the trend pulled toward the
+        /// Ageing Report's / CBO's path after it (K210, ProductivityPull.Anchor, which reads this base as the
+        /// seed's distance from that path) - keeping the structural anchor separate from those adjustments is what
         /// lets each adjustment's own combined ceiling be enforced against a fixed reference point
         /// rather than a value the adjustments themselves could otherwise drift.
         /// </summary>

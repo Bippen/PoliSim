@@ -6797,7 +6797,7 @@ namespace PoliSim.Simulation
             // AdvanceDay. Only the discrete investment credit belongs here now - applying either of the
             // continuous flows again would double-count a full turn's worth on top of the daily steps.
             MacroSystem.ApplyInfrastructureInvestment(country, spendingResult.EffectiveDecision);
-            MacroSystem.ApplySectorGrowthEffect(country);
+            MacroSystem.ApplySectorGrowthEffect(country, ComingBoundaryDate);   // K210: the productivity anchor read for this boundary - the preview passes the same date
             MacroSystem.ApplyWelfareProgramEffects(country);
             BoundaryLedger?.Invoke(country, "spending");
             HealthFamily.AdvanceYear(country);   // P5-C2 (2026-09-05): the family's yearly step - a readout of the year's health line, the age-cost index and the minister; no feedback into the model
@@ -7239,7 +7239,7 @@ namespace PoliSim.Simulation
             // now their only remaining callers, which is correct rather than dead code.
             MacroSystem.ApplyInfrastructureCondition(previewCountry, spendingResult.EffectiveDecision);
             MacroSystem.ApplySectorEffects(previewCountry);
-            MacroSystem.ApplySectorGrowthEffect(previewCountry);
+            MacroSystem.ApplySectorGrowthEffect(previewCountry, ComingBoundaryDate);   // K210 (the review's M1): the anchor the boundary it previews will apply, whatever day the preview is drawn
             MacroSystem.ApplyWelfareProgramEffects(previewCountry);
 
             float unemploymentBenefitCost = GetUnemploymentBenefitCost(previewCountry);

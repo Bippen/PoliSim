@@ -2222,13 +2222,15 @@ namespace PoliSim.Simulation
         /// The single method that finalizes PotentialGrowthRate each turn - combines Infrastructure's
         /// own already-ceilinged contribution (ApplyInfrastructureGrowthEffect) with Sector's own
         /// already-ceilinged contribution (GetSectorGrowthAdjustment) under the further, all-sources
-        /// MaxTotalPotentialGrowthAdjustment ceiling, then sets PotentialGrowthRate = Clamp
-        /// (BasePotentialGrowthRate + total, 0, MaxPotentialGrowthRate). Must run AFTER ApplySectorEffects
+        /// MaxTotalPotentialGrowthAdjustment ceiling, then sets the trend = Clamp(the anchor + total, 0,
+        /// MaxPotentialGrowthRate) - the anchor the seed's BasePotentialGrowthRate through the WEO's horizon and
+        /// the pulled trend after it (K210, ProductivityPull.Anchor, read for the boundary on
+        /// <paramref name="boundaryDay"/>: the turn and the preview both pass the coming boundary's date). Must run AFTER ApplySectorEffects
         /// (so Sector's contribution reflects this turn's just-updated Output) and after
         /// ApplyInfrastructureCondition/ApplyCategorySpendingEffects (see ApplyInfrastructureGrowthEffect's
         /// own ordering requirement).
         /// </summary>
-        public static void ApplySectorGrowthEffect(Country country)
+        public static void ApplySectorGrowthEffect(Country country, System.DateTime boundaryDay)
         {
             float infrastructureAdjustment = ApplyInfrastructureGrowthEffect(country);
             float sectorAdjustment = GetSectorGrowthAdjustment(country);
@@ -2254,7 +2256,9 @@ namespace PoliSim.Simulation
             // in the next line: potential is ASSIGNED from this value, so a cyclical term in this
             // ledger would be a cyclical potential feeding Okun's own growth gap and the identity's
             // attractor, which would make a recession permanently lower a country's potential.
-            country.ProductivityTrendGrowthRate = Mathf.Clamp(country.BasePotentialGrowthRate + totalAdjustment, 0f, MaxPotentialGrowthRate);
+            // K210: the anchor the adjustments add to is the seed's trend through the WEO's horizon and the trend pulled toward the Ageing Report's /
+            // CBO's productivity path after it (ProductivityPull.Anchor) - the adjustments, their ceiling and the clamp unchanged.
+            country.ProductivityTrendGrowthRate = Mathf.Clamp(ProductivityPull.Anchor(country, boundaryDay) + totalAdjustment, 0f, MaxPotentialGrowthRate);
             // P5-B7 (2026-09-05): potential growth is DERIVED - the trend compounded with the labour input's growth since
             // the last turn (PotentialOutput.DerivedGrowthPercent) - so Okun's growth gap, the AI's budget rule and every
             // other reader see the growth of the potential that ApplyPotentialGdpGrowthDaily actually writes. Without the

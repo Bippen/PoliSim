@@ -31,6 +31,11 @@
 #     the USA: np2023_a3.csv E0, SEX 0, 2023-2100.
 #   - Potential growth: the same annex's table II.1.14 (potential GDP, growth rate), 2022-2070; the USA: CBO's March 2025 LTBO economic file
 #     (57054-2025-03-LTBO-econ.xlsx, sheet 1, "Real potential GDP"), 2025-2055.
+#   - K210 (docs/RULINGS_2026-10-23.md): the two parts of that potential growth. Productivity: the annex's table II.1.21 (potential GDP per
+#     worker, growth rate), 2022-2070; the USA: the same CBO sheet's "Potential labor force productivity" (real potential GDP over the potential
+#     labour force), 2025-2055 - both per WORKER, the unit the model's labour input counts (PotentialOutput.LabourInput, persons employed).
+#     Labour: the annex's table II.1.15 (employment 15-74, growth rate); the USA: CBO's "Potential labor force". Each source's potential
+#     growth is held to (1 + productivity)(1 + labour) - 1 within PART_TOLERANCE every year, or the script stops.
 #   - Real GDP growth to the WEO's horizon: the IMF DataMapper's NGDP_RPCH as the Internet Archive kept it on 5 October 2026 (its horizon,
 #     2031, is the April 2026 edition's), 2024 to the last year it carries.
 # A pattern that does not match, a figure absent, or a digest that is not SHA256SUMS.txt's stops the script. ASCII only.
@@ -269,6 +274,10 @@ my $potAr = arTable('Table II.1.14: Potential GDP (growth rate)');
 plausible('life expectancy at birth, men', $leMen, 70, 95);
 plausible('life expectancy at birth, women', $leWomen, 70, 95);
 plausible('potential growth', $potAr, -3, 6);
+my $pwAr = arTable('Table II.1.21: Potential GDP per worker (growth rate)');
+my $empAr = arTable('Table II.1.15: Employment (15-74y; growth rate)');
+plausible('potential growth per worker', $pwAr, -3, 6);
+plausible('employment growth', $empAr, -4, 4);
 for my $n (sort keys %$leMen) { for my $i (0 .. $#{ $leMen->{$n} }) { die "Ageing Report: $n men's e0 not below women's at " . (2022 + $i) . "\n" unless $leMen->{$n}[$i] < $leWomen->{$n}[$i]; } }
 
 # ---- Census a3: E0, both sexes
@@ -282,7 +291,7 @@ my @usE0;
 }
 
 # ---- CBO: real potential GDP growth, 2025-2055
-my @cboPot;
+my (@cboPot, @cboPw, @cboLab);
 {
     my $c = sheet("$raw/$F{cbo}", 2);
     my ($rp) = grep { ($c->{$_}{A} // '') =~ /^Real potential GDP/ } keys %$c;
@@ -291,6 +300,30 @@ my @cboPot;
     die "CBO: the year row\n" unless $ry;
     my %yc; for my $col (keys %{ $c->{$ry} }) { $yc{ $c->{$ry}{$col} } = $col if $c->{$ry}{$col} =~ /^\d{4}$/; }
     @cboPot = map { must($c->{$rp}{ must($yc{$_}, "CBO year $_") }, "CBO potential $_") } 2025 .. 2055;
+    # K210: the two parts (the footnote letter rides the label: "Potential labor forceb", "Potential labor force productivityc")
+    # each label must match exactly one row: a second match stops the script (the review's L7, as arTable since q29's H-1)
+    my @rw = grep { ($c->{$_}{A} // '') =~ /^Potential labor force productivity[a-z]?$/ } keys %$c;
+    my @rl = grep { ($c->{$_}{A} // '') =~ /^Potential labor force[a-z]?$/ } keys %$c;
+    die "CBO: the potential labor force productivity row matches " . scalar(@rw) . " rows, not one\n" unless @rw == 1;
+    die "CBO: the potential labor force row matches " . scalar(@rl) . " rows, not one\n" unless @rl == 1;
+    my ($rw, $rl) = ($rw[0], $rl[0]);
+    @cboPw = map { must($c->{$rw}{ $yc{$_} }, "CBO productivity $_") } 2025 .. 2055;
+    @cboLab = map { must($c->{$rl}{ $yc{$_} }, "CBO labour force $_") } 2025 .. 2055;
+}
+
+# ---- K210: each source's potential growth is its two parts compounded, every year (the published figures are rounded; CBO's to two decimals)
+my $PART_TOLERANCE = 0.05;   # percentage points
+{
+    my $worst = 0;
+    my %pot = (%$potAr, USA => \@cboPot); my %pw = (%$pwAr, USA => \@cboPw); my %lab = (%$empAr, USA => \@cboLab);
+    for my $n (sort keys %pot) {
+        for my $i (0 .. $#{ $pot{$n} }) {
+            my $d = abs(((1 + $pw{$n}[$i] / 100) * (1 + $lab{$n}[$i] / 100) - 1) * 100 - $pot{$n}[$i]);
+            die "K210: $n year index $i - potential $pot{$n}[$i] is not productivity $pw{$n}[$i] with labour $lab{$n}[$i] (off $d pp)\n" if $d > $PART_TOLERANCE;
+            $worst = $d if $d > $worst;
+        }
+    }
+    printf "K210: potential = productivity x labour, worst year off by %.4f pp (tolerance %.2f)\n", $worst, $PART_TOLERANCE;
 }
 
 # ---- WEO: NGDP_RPCH from 2024 to the last year every one of the six carries
@@ -370,6 +403,16 @@ $cs .= "        };\n";
 $cs .= "        /// <summary>Potential GDP growth, per cent a year: the EU five the Ageing Report 2024's table II.1.14; the USA CBO's real potential GDP (LTBO, March 2025).</summary>\n";
 $cs .= "        public static readonly Dictionary<CountryId, float[]> PotentialGrowth = new Dictionary<CountryId, float[]>\n        {\n";
 $cs .= "            { CountryId.$_, " . arr($_ eq 'USA' ? @cboPot : @{ $potAr->{$_} }) . " },\n" for @order;
+$cs .= "        };\n";
+$cs .= "        /// <summary>K210: the productivity part of that potential growth, per cent a year, per WORKER - the EU five the Ageing Report 2024's table II.1.21\n";
+$cs .= "        /// (potential GDP per worker); the USA CBO's potential labor force productivity (LTBO, March 2025). Same first years as PotentialGrowth.</summary>\n";
+$cs .= "        public static readonly Dictionary<CountryId, float[]> ProductivityGrowth = new Dictionary<CountryId, float[]>\n        {\n";
+$cs .= "            { CountryId.$_, " . arr($_ eq 'USA' ? @cboPw : @{ $pwAr->{$_} }) . " },\n" for @order;
+$cs .= "        };\n";
+$cs .= "        /// <summary>K210: the labour part, per cent a year - the EU five the Ageing Report 2024's table II.1.15 (employment 15-74); the USA CBO's potential\n";
+$cs .= "        /// labor force. Same first years as PotentialGrowth.</summary>\n";
+$cs .= "        public static readonly Dictionary<CountryId, float[]> LabourGrowth = new Dictionary<CountryId, float[]>\n        {\n";
+$cs .= "            { CountryId.$_, " . arr($_ eq 'USA' ? @cboLab : @{ $empAr->{$_} }) . " },\n" for @order;
 $cs .= "        };\n\n";
 $cs .= "        /// <summary>Real GDP growth, per cent a year, from the first year to the WEO's horizon (the IMF DataMapper's NGDP_RPCH).</summary>\n";
 $cs .= "        public const int WeoFirstYear = 2024, WeoLastYear = $weoLast;\n";

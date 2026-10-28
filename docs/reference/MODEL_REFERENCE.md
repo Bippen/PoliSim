@@ -2314,6 +2314,10 @@ mechanic since has used.
     rate (seeded in `WorldFactory` equal to each country's real `potentialGrowthRate` constructor
     argument - USA 2.0%, Sweden 1.5%, Germany/France/Italy 0.8%, Poland 3.5%) - never mutated by any
     policy/condition effect, the fixed reference point every adjustment is measured against.
+    ⚠ **K210 (§937) amends what the adjustments add to:** the ledger's ANCHOR is `ProductivityPull.Anchor` - this base
+    through the WEO's horizon and, after it, the trend pulled toward the Ageing Report's / CBO's per-worker productivity path
+    (read for the boundary's date, the preview's too). The base stays immutable and is read as the seed's distance from that
+    path; every `Clamp(BasePotentialGrowthRate + ...)` below reads the anchor in the base's place since K210.
   - **`Country.InfrastructureSpendingGrowthAdjustment`**: the accumulator the OLD mechanic used to
     mutate `PotentialGrowthRate` directly now targets instead - a lasting, ratcheting investment
     effect (only ever non-negative, since spending can only ever help, never hurt, this specific

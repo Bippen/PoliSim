@@ -33,9 +33,19 @@ namespace PoliSim.EditorTools
     /// ten-year window's mean potential growth within PotentialBandPp of the Ageing Report's (the EU five) or CBO's (the USA, K139) mean over that
     /// window, to the sourced path's last year; and the run's life-expectancy gain since its opening inside the sourced gain's band, widened by
     /// LifeExpectancyBandYears, at every tenth year the band covers.</item>
+    /// <item><b>(e) The productivity pull (K210, ProductivityPull).</b> (e1) Through the WEO's horizon the ledger's anchor is the seed's trend, the
+    /// same float; (e2) after it the anchor equals this file's own recomputation from the generated path - the path's year plus the seed's distance
+    /// from it at the horizon, closing at the pull rate; (e3) a planted infrastructure adjustment moves the trend by the same amount around the
+    /// pulled anchor as around the seed's - policy still moves growth around the trend; (e4) the ledger's trend is the anchor plus the same
+    /// adjustments on either side of the horizon.</item>
     /// </list>
-    /// K211: until K210 lands, a (d1) or (d2) band miss is a named REGISTERED MISS line (its figures, tagged with the prereg and K210) that does
-    /// not fail the run; (d)'s zero-iteration guards, (c4) and (d3) still fail.
+    /// K210's prereg (Reviews/2026-10-28_k210_prereg.md, written before this tree's first run and amended after it, tightening only; K211 ends): a (d2)
+    /// window outside the band FAILS unless the window's labour part alone - the model's potential growth net of its productivity index's growth,
+    /// against the source's labour part - misses by more than the band AND the rest of the window's miss (its potential miss less its labour miss) is
+    /// inside the band; that window is a named REGISTERED MISS (the labour input, not K210's to close) and does not fail. The productivity part is
+    /// printed beside it. (d1) lies inside the WEO's horizon, where K210 does not act: its miss stays a named REGISTERED MISS (K245). (d)'s
+    /// zero-iteration guards, (c4), (d3) and (e) fail. (e5) a preview drawn before the horizon's boundary previews the anchor that boundary applies;
+    /// (e6) every boundary of every no-policy century wrote the anchor for its own day plus the adjustments it read.
     /// Prints `LONG-RUN ANCHORS: PASS` and exits 0 when every check holds; each failure is a `LONG-RUN ANCHORS: FAIL` error naming its check.
     /// Run: `Unity.exe -batchmode -nographics -projectPath &lt;path&gt; -executeMethod PoliSim.EditorTools.LongRunAnchorsDiagnostic.Run -logFile &lt;path&gt;`.
     /// </summary>
@@ -77,6 +87,24 @@ namespace PoliSim.EditorTools
         /// <summary>The bar on the shock's kept share: the identity is float arithmetic on GDP levels near 10^4.</summary>
         private const double PersistenceTolerance = 2e-3;
 
+        /// <summary>K210 (e): the bar on the anchor against this file's recomputation, points a year - float's step near 3 is under 3e-7.</summary>
+        private const double AnchorTolerance = 1e-5;
+
+        /// <summary>K210 (e3)/(e4): the bar on the ledger's trend, points a year - one float sum and one clamp.</summary>
+        private const double TrendTolerance = 1e-4;
+
+        /// <summary>K210 (e2; the review's L1): the pull rate K210's prereg states - the recomputation reads this literal, never the model's constant,
+        /// and the model's constant is held to it.</summary>
+        private const double PreregPullRate = 0.5;
+
+        /// <summary>K210 (e3): the planted infrastructure adjustment, points a year - well inside the infrastructure channel's own cap and the
+        /// all-sources ceiling at the seed.</summary>
+        private const float PlantedAdjustment = 0.1f;
+
+        /// <summary>The REGISTERED MISS tags under K210's prereg.</summary>
+        private const string LabourTag = "REGISTERED MISS (K210 prereg; the labour input - not K210's to close)";
+        private const string HorizonTag = "REGISTERED MISS (K245; inside the WEO's horizon, where K210 does not act)";
+
         private static readonly CountryId[] Six = { CountryId.Sweden, CountryId.Germany, CountryId.France, CountryId.Italy, CountryId.Poland, CountryId.USA };
 
         private static int _failures;
@@ -96,12 +124,13 @@ namespace PoliSim.EditorTools
                 Directions();
                 Persistence();
                 NoPolicyBand();
+                Pull();
             }
             catch (Exception e) { Check(false, "the run threw " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace); }
             Debug.Log(_sb.ToString());
-            Debug.Log(F("LONG-RUN ANCHORS: {0} REGISTERED MISS line(s) in (d1)/(d2) (K211: printed, not failed, until K210 lands)", _registered));
+            Debug.Log(F("LONG-RUN ANCHORS: {0} REGISTERED MISS line(s) under K210's prereg ((d1) inside the WEO's horizon; (d2) windows whose labour part alone misses the band)", _registered));
             Debug.Log(_failures == 0
-                ? "LONG-RUN ANCHORS: PASS - life expectancy equals its derivation from the sourced schedules every day, the multipliers' directions hold, the gap keeps the HLW persistence a turn in both forms with kappa on D-13 (b)'s basis, the no-policy gap inside its bound at years 10, 30 and 100, and every country's life-expectancy gain inside its band (the WEO and Ageing Report / CBO bands REGISTERED, K211)"
+                ? "LONG-RUN ANCHORS: PASS - life expectancy equals its derivation from the sourced schedules every day, the multipliers' directions hold, the gap keeps the HLW persistence a turn in both forms with kappa on D-13 (b)'s basis, the no-policy gap inside its bound at years 10, 30 and 100, every country's life-expectancy gain inside its band, every (d2) window inside the Ageing Report / CBO band or missing it on its labour part alone, and the productivity pull built as K210 rules it (K210's prereg)"
                 : F("LONG-RUN ANCHORS: FAIL - {0} check(s) failed.", _failures));
             CheckExit.Finish(_failures == 0 ? 0 : 1);
         }
@@ -302,10 +331,11 @@ namespace PoliSim.EditorTools
                 NoPolicyCentury.Year open = NoPolicyCentury.Opening(id);
                 var real = new Dictionary<int, double>();
                 var potential = new Dictionary<int, double>();
+                var productivity = new Dictionary<int, double>();
                 foreach (NoPolicyCentury.Year r in run)
                 {
                     int y = (int)Math.Floor(r.SpanMidYear);
-                    if (!real.ContainsKey(y)) { real[y] = r.RealGrowth; potential[y] = r.PotentialGrowth; }
+                    if (!real.ContainsKey(y)) { real[y] = r.RealGrowth; potential[y] = r.PotentialGrowth; productivity[y] = r.ProductivityGrowth; }
                 }
 
                 // the WEO window
@@ -317,11 +347,31 @@ namespace PoliSim.EditorTools
                     sumModel += real[y]; sumWeo += weo[y - LongRunAnchors.WeoFirstYear]; n++; firstY = Math.Min(firstY, y);
                 }
                 Check(n > 0, F("(d1) {0,-8} {1} WEO year(s) inside the run - none is a check that did not run", id, n));
-                Registered(n > 0 && Math.Abs(sumModel / n - sumWeo / n) <= WeoBandPp,
+                {
+                    // K210: the (d1) years' parts, printed for the miss's diagnosis - the run's potential, its productivity and labour parts, against the
+                    // Ageing Report's / CBO's over the years both carry (the WEO publishes no parts)
+                    double pm = 0, wm = 0, lm = 0, ps = 0, ws = 0, ls = 0; int m = 0;
+                    int sourceFirst = LongRunAnchors.PotentialGrowthFirstYear[id];
+                    for (int y = Math.Max(LongRunAnchors.WeoFirstYear, sourceFirst); y <= LongRunAnchors.WeoLastYear; y++)
+                    {
+                        if (!potential.ContainsKey(y)) { continue; }
+                        pm += potential[y]; wm += productivity[y]; lm += ((1.0 + potential[y] / 100.0) / (1.0 + productivity[y] / 100.0) - 1.0) * 100.0;
+                        ps += LongRunAnchors.PotentialGrowth[id][y - sourceFirst]; ws += LongRunAnchors.ProductivityGrowth[id][y - sourceFirst]; ls += LongRunAnchors.LabourGrowth[id][y - sourceFirst];
+                        m++;
+                    }
+                    if (m > 0)
+                    {
+                        _sb.Append(F("        info {0,-8} (d1)'s years, {1} of them: potential {2:F2} % a year against the long-run source's {3:F2}; productivity {4:F2} against {5:F2}; labour {6:F2} against {7:F2}; the gap at year 1 {8:+0.00%;-0.00%}, at year 10 {9:+0.00%;-0.00%}\n",
+                            id, m, pm / m, ps / m, wm / m, ws / m, lm / m, ls / m, run.Count > 0 ? run[0].OutputGap : double.NaN, run.Count > 9 ? run[9].OutputGap : double.NaN));
+                    }
+                }
+                Registered(n > 0 && Math.Abs(sumModel / n - sumWeo / n) <= WeoBandPp, HorizonTag,
                     F("(d1) {0,-8} real GDP growth {1}-{2}: the no-policy run's mean {3:F2} % a year against the WEO's {4:F2} %", id, firstY, LongRunAnchors.WeoLastYear, n > 0 ? sumModel / n : double.NaN, n > 0 ? sumWeo / n : double.NaN));
 
-                // beyond the WEO's horizon: the Ageing Report (EU five) or CBO (the USA, K139)
+                // beyond the WEO's horizon: the Ageing Report (EU five) or CBO (the USA, K139); K210's prereg - a miss fails unless the labour part alone
+                // misses by more than the band
                 float[] path = LongRunAnchors.PotentialGrowth[id];
+                float[] pathProductivity = LongRunAnchors.ProductivityGrowth[id], pathLabour = LongRunAnchors.LabourGrowth[id];
                 int pathFirst = LongRunAnchors.PotentialGrowthFirstYear[id], pathLast = pathFirst + path.Length - 1;
                 string source = id == CountryId.USA ? "CBO" : "the Ageing Report";
                 int windows = 0;
@@ -330,11 +380,32 @@ namespace PoliSim.EditorTools
                     int end = Math.Min(start + WindowYears - 1, pathLast);
                     if (end - start + 1 < MinWindowYears) { break; }
                     windows++;
-                    double sm = 0, ss = 0; int k = 0;
-                    for (int y = start; y <= end; y++) { if (!potential.ContainsKey(y)) { continue; } sm += potential[y]; ss += path[y - pathFirst]; k++; }
+                    double sm = 0, ss = 0, wm = 0, ws = 0, lm = 0, ls = 0; int k = 0;
+                    for (int y = start; y <= end; y++)
+                    {
+                        if (!potential.ContainsKey(y)) { continue; }
+                        sm += potential[y]; ss += path[y - pathFirst];
+                        wm += productivity[y]; ws += pathProductivity[y - pathFirst];
+                        lm += ((1.0 + potential[y] / 100.0) / (1.0 + productivity[y] / 100.0) - 1.0) * 100.0; ls += pathLabour[y - pathFirst];
+                        k++;
+                    }
                     Check(k == end - start + 1, F("(d2) {0,-8} {1} of the window {2}-{3}'s years inside the run", id, k, start, end));
-                    Registered(k > 0 && Math.Abs(sm / k - ss / k) <= PotentialBandPp,
-                        F("(d2) {0,-8} potential growth {1}-{2}: the no-policy run's mean {3:F2} % a year against {4}'s {5:F2} %", id, start, end, k > 0 ? sm / k : double.NaN, source, k > 0 ? ss / k : double.NaN));
+                    if (k == 0) { continue; }
+                    sm /= k; ss /= k; wm /= k; ws /= k; lm /= k; ls /= k;
+                    _sb.Append(F("        info {0,-8} {1}-{2}: the productivity part {3:F2} % a year against {4}'s {5:F2} ({6:+0.00;-0.00}); the labour part {7:F2} against {8:F2} ({9:+0.00;-0.00})\n",
+                        id, start, end, wm, source, ws, wm - ws, lm, ls, lm - ls));
+                    string window = F("(d2) {0,-8} potential growth {1}-{2}: the no-policy run's mean {3:F2} % a year against {4}'s {5:F2} %", id, start, end, sm, source, ss);
+                    if (Math.Abs(sm - ss) <= PotentialBandPp) { Check(true, window); }
+                    else if (Math.Abs(lm - ls) > PotentialBandPp && Math.Abs((sm - ss) - (lm - ls)) <= PotentialBandPp)
+                    {
+                        Registered(false, LabourTag, F("{0} - its labour part {1:F2} against {2:F2} misses by more than the band alone, and the rest of the miss ({3:+0.00;-0.00}) is inside it",
+                            window, lm, ls, (sm - ss) - (lm - ls)));
+                    }
+                    else
+                    {
+                        Check(false, F("{0} - its labour part {1:F2} against {2:F2} ({3:+0.00;-0.00}) and the rest of the miss {4:+0.00;-0.00}: the productivity trend's share is outside the band or the labour part alone is inside it (K210; the prereg as amended)",
+                            window, lm, ls, lm - ls, (sm - ss) - (lm - ls)));
+                    }
                 }
                 Check(windows > 0, F("(d2) {0,-8} {1} window(s) held beyond the WEO's horizon - none is a check that did not run", id, windows));
 
@@ -357,6 +428,198 @@ namespace PoliSim.EditorTools
                 }
                 Check(marks > 0, F("(d3) {0,-8} {1} life-expectancy mark(s) held - none is a check that did not run", id, marks));
             }
+        }
+
+        // ============================================================ (e) the productivity pull (K210)
+        private static void Pull()
+        {
+            double lambda = Value(typeof(ProductivityPull), "PullRatePerYear");
+            int horizon = LongRunAnchors.WeoLastYear;
+            float ceiling = (float)Value(typeof(MacroSystem), "MaxPotentialGrowthRate");
+            _sb.Append(F("    e. the productivity pull (K210): after {0} the ledger's anchor is the source's per-worker path plus the seed's distance from it at {0}, closing at {1} a year (the prereg's {2})\n", horizon, lambda, PreregPullRate));
+            Check(lambda == PreregPullRate, F("(e2) the model's pull rate {0} is the prereg's {1}", lambda, PreregPullRate));
+            foreach (CountryId id in Six)
+            {
+                World world = SeededWorld();
+                Country c = world.GetCountry(id);
+                float seed = c.BasePotentialGrowthRate;
+                Check(ProductivityPull.Has(id), F("(e1) {0,-8} carries a sourced productivity path", id));
+
+                // (e1) through the horizon: the seed's float, bit for bit - the last boundary whose coming span's midpoint is still inside it included
+                bool inside = true;
+                foreach (DateTime day in new[] { new DateTime(LongRunAnchors.SeedYear, 1, 1), new DateTime(horizon, 1, 1), new DateTime(horizon, 6, 30) })
+                {
+                    inside &= ProductivityPull.Anchor(c, day) == seed;
+                }
+                Check(inside, F("(e1) {0,-8} the anchor is the seed's trend {1:F3} exactly for boundaries from {2} to 30 Jun {3}", id, seed, LongRunAnchors.SeedYear, horizon));
+
+                // (e2) after it: this file's own recomputation from the generated path, at the prereg's rate (a literal, not the model's constant)
+                double worst = 0;
+                var marks = new StringBuilder();
+                foreach (int y in new[] { horizon + 1, horizon + 9, horizon + 29, horizon + 49 })
+                {
+                    var boundary = new DateTime(y, 1, 1);
+                    double mid = 0.5 * (MortalitySchedule.YearOf(boundary) + MortalitySchedule.YearOf(boundary.AddDays(SimulationManager.DaysPerTurn)));   // the span's key, as NoPolicyCentury keys it
+                    double expected = PathAt(id, (int)Math.Floor(mid)) + (seed - PathAt(id, horizon)) * Math.Pow(1.0 - PreregPullRate, mid - (horizon + 1));
+                    float anchor = ProductivityPull.Anchor(c, boundary);
+                    worst = Math.Max(worst, Math.Abs(anchor - expected));
+                    marks.Append(F(" {0}: {1:F3} (path {2:F3})", y, anchor, PathAt(id, (int)Math.Floor(mid))));
+                }
+                Check(worst <= AnchorTolerance, F("(e2) {0,-8} the pulled anchor against this file's recomputation, worst {1:E1} (bar {2:E0}):{3}", id, worst, AnchorTolerance, marks));
+
+                // (e3)/(e4) the ledger: the same adjustments on either side of the horizon, and a planted one moves both alike
+                var early = new DateTime(horizon - 1, 1, 1);
+                var late = new DateTime(horizon + 14, 1, 1);
+                MacroSystem.ApplySectorGrowthEffect(c, early);
+                float before = c.ProductivityTrendGrowthRate;
+                MacroSystem.ApplySectorGrowthEffect(c, late);
+                float after = c.ProductivityTrendGrowthRate;
+                float pulled = ProductivityPull.Anchor(c, late);
+                double adjustments = after - pulled;
+                Check(Math.Abs(before - Mathf.Clamp(seed + (float)adjustments, 0f, ceiling)) <= TrendTolerance,
+                    F("(e4) {0,-8} the ledger's trend {1:F4} before the horizon is the seed {2:F3} plus the adjustments {3:+0.0000;-0.0000} it carries at {4} ({5:F4} on the pulled {6:F4})",
+                      id, before, seed, adjustments, horizon + 14, after, pulled));
+                c.InfrastructureSpendingGrowthAdjustment += PlantedAdjustment;
+                MacroSystem.ApplySectorGrowthEffect(c, early);
+                float beforePlanted = c.ProductivityTrendGrowthRate;
+                MacroSystem.ApplySectorGrowthEffect(c, late);
+                float afterPlanted = c.ProductivityTrendGrowthRate;
+                // the seed side may sit on the ledger's floor (a low seed under a condition drag): the planted step is what the clamp lets through
+                float seedSide = Mathf.Clamp(seed + (float)adjustments + PlantedAdjustment, 0f, ceiling) - before;
+                Check(Math.Abs((afterPlanted - after) - PlantedAdjustment) <= TrendTolerance && Math.Abs((beforePlanted - before) - seedSide) <= TrendTolerance,
+                    F("(e3) {0,-8} a planted infrastructure adjustment of {1:+0.00} moves the trend {2:+0.0000;-0.0000} around the seed's anchor and {3:+0.0000;-0.0000} around the pulled one",
+                      id, PlantedAdjustment, beforePlanted - before, afterPlanted - after));
+            }
+
+            PreviewAtTheHorizon(horizon, ceiling);
+            LiveLoop(horizon, ceiling);
+        }
+
+        /// <summary>K210 (e5; the review's M1): a preview drawn on 1 March of the horizon's year previews the anchor the 30 September boundary applies - a
+        /// live world at the default epoch (1 October starts, so that boundary's coming span's midpoint is past the horizon while 1 March's is not). The
+        /// anchor each side used is its trend less the adjustments it read (the preview's clone after its turn form; the boundary at SimulationManager's
+        /// "spending" ledger point), so the clause holds the anchor exactly while the two sides' adjustments may differ.</summary>
+        private static void PreviewAtTheHorizon(int horizon, float ceiling)
+        {
+            var drawn = new DateTime(horizon, 3, 1);
+            _sb.Append(F("    e5. a preview drawn on {0:d MMM yyyy} against the boundary it previews (the default epoch)\n", drawn));
+            SimulationRandom.Seed(777);
+            EnergyMarket.ResetCalibration();
+            using IDisposable epoch = SimulationManager.EpochScope();
+            World world = WorldFactory.CreateDefault();
+            var go = new GameObject("K210_PREVIEW_HORIZON");
+            var previewAnchor = new Dictionary<CountryId, double>();
+            var boundaryAnchor = new Dictionary<CountryId, double>();
+            Action<Country, string> ledger = (k, point) =>
+            {
+                if (point != "spending" || !ReferenceEquals(k, world.GetCountry(k.Id)) || !Unclamped(k.ProductivityTrendGrowthRate, ceiling)) { return; }   // this world's countries only - the hook is static
+                boundaryAnchor[k.Id] = k.ProductivityTrendGrowthRate - Adjustments(k);
+            };
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(world);
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
+                int dayInTurn = 0;
+                while (sim.CurrentDate < drawn)
+                {
+                    sim.AdvanceDay();
+                    if (++dayInTurn == SimulationManager.DaysPerTurn) { sim.AdvanceTurn(decisions); dayInTurn = 0; }
+                }
+                MethodInfo cloneOf = typeof(SimulationManager).GetMethod("ClonePreviewCountry", BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo previewOn = typeof(SimulationManager).GetMethod("PreviewTurnOnClone", BindingFlags.NonPublic | BindingFlags.Instance);
+                Check(cloneOf != null && previewOn != null, "(e5) the preview's two steps (ClonePreviewCountry, PreviewTurnOnClone) found");
+                if (cloneOf == null || previewOn == null) { return; }
+                foreach (CountryId id in Six)
+                {
+                    var clone = (Country)cloneOf.Invoke(null, new object[] { world.GetCountry(id) });
+                    previewOn.Invoke(sim, new object[] { clone, id, PolicyDecision.None() });
+                    if (Unclamped(clone.ProductivityTrendGrowthRate, ceiling)) { previewAnchor[id] = clone.ProductivityTrendGrowthRate - Adjustments(clone); }
+                }
+                SimulationManager.BoundaryLedger += ledger;
+                for (; dayInTurn < SimulationManager.DaysPerTurn; dayInTurn++) { sim.AdvanceDay(); }
+                PropertyInfo comingBoundary = typeof(SimulationManager).GetProperty("ComingBoundaryDate", BindingFlags.NonPublic | BindingFlags.Instance);
+                DateTime boundaryDay = comingBoundary != null ? (DateTime)comingBoundary.GetValue(sim) : sim.CurrentDate;   // the date the boundary passes the ledger
+                sim.AdvanceTurn(decisions);
+                SimulationManager.BoundaryLedger -= ledger;
+                int held = 0;
+                foreach (CountryId id in Six)
+                {
+                    Country c = world.GetCountry(id);
+                    double pulled = ProductivityPull.Anchor(c, boundaryDay), today = ProductivityPull.Anchor(c, drawn);
+                    bool both = previewAnchor.TryGetValue(id, out double p) & boundaryAnchor.TryGetValue(id, out double b);
+                    if (!both)
+                    {
+                        // review 2's N-L5: a trend on the ledger's clamp hides the anchor it read - skipped and said, not failed; the zero-held guard below still fails
+                        _sb.Append(F("        skip {0,-8} (e5) a side's trend sits on the ledger's clamp (preview {1}, boundary {2}), so the anchor it read is not readable\n",
+                            id, previewAnchor.ContainsKey(id) ? "off it" : "on it", boundaryAnchor.ContainsKey(id) ? "off it" : "on it"));
+                        continue;
+                    }
+                    held++;
+                    Check(Math.Abs(p - b) <= AnchorTolerance && Math.Abs(b - pulled) <= AnchorTolerance,
+                        F("(e5) {0,-8} the preview's anchor {1:F5} is the {2:d MMM yyyy} boundary's {3:F5} (the pulled {4:F5}; read on the preview's own day it would be {5:F5})",
+                          id, p, boundaryDay, b, pulled, today));
+                }
+                Check(held > 0, F("(e5) {0} countr(ies) held - none is a check that did not run", held));
+            }
+            finally
+            {
+                SimulationManager.BoundaryLedger -= ledger;
+                Object.DestroyImmediate(go);
+            }
+        }
+
+        /// <summary>K210 (e6; the review's L5): the live loop reads the anchor for the boundary it writes at - every year of every no-policy century, the
+        /// ledger as the boundary left it (NoPolicyCentury's ledger fields) is ProductivityPull's anchor for that boundary's day plus the adjustments it
+        /// read, under the ledger's clamps.</summary>
+        private static void LiveLoop(int horizon, float ceiling)
+        {
+            _sb.Append("    e6. the live loop: each boundary's trend is the anchor for its own day plus the adjustments it read\n");
+            double maxTotal = Value(typeof(MacroSystem), "MaxTotalPotentialGrowthAdjustment");
+            foreach (CountryId id in Six)
+            {
+                float seed = SeededWorld().GetCountry(id).BasePotentialGrowthRate;
+                int read = 0, after = 0, offClock = 0;
+                double worst = 0;
+                string first = "none";
+                foreach (NoPolicyCentury.Year r in NoPolicyCentury.For(id))
+                {
+                    if (r.LedgerDay == default) { continue; }
+                    read++;
+                    if (r.LedgerClockDay != r.LedgerDay) { offClock++; }
+                    double year = ProductivityPull.YearAhead(r.LedgerDay);
+                    double anchor = ProductivityPull.AnchorAt(id, seed, year);
+                    float total = Mathf.Clamp(r.LedgerInfrastructure + r.LedgerSector + r.LedgerEducation, (float)-maxTotal, (float)maxTotal);
+                    float expected = Mathf.Clamp((float)anchor + total, 0f, ceiling);
+                    worst = Math.Max(worst, Math.Abs(r.LedgerTrend - expected));
+                    if (year >= horizon + 1 && after++ == 0) { first = F("{0:d MMM yyyy} (span {1:F2}): anchor {2:F4}, trend {3:F4}", r.LedgerDay, year, anchor, r.LedgerTrend); }
+                }
+                Check(read > 0 && after > 0 && worst <= TrendTolerance,
+                    F("(e6) {0,-8} {1} boundaries read, {2} past the horizon, worst {3:E1} (bar {4:E0}); the first past it {5}", id, read, after, worst, TrendTolerance, first));
+                Check(read > 0 && offClock == 0,
+                    F("(e6) {0,-8} the date each boundary passed the ledger is the clock's own day at it - {1} of {2} differ", id, offClock, read));
+            }
+        }
+
+        /// <summary>K210 (e5): the three adjustments the ledger adds to its anchor, under their all-sources ceiling, read off the country as it stands.</summary>
+        private static float Adjustments(Country k)
+        {
+            MethodInfo sector = typeof(MacroSystem).GetMethod("GetSectorGrowthAdjustment", BindingFlags.NonPublic | BindingFlags.Static);
+            float maxTotal = (float)Value(typeof(MacroSystem), "MaxTotalPotentialGrowthAdjustment");
+            float sum = MacroSystem.ApplyInfrastructureGrowthEffect(k) + (sector != null ? (float)sector.Invoke(null, new object[] { k }) : float.NaN) + EducationFamily.ProductivityTrendTerm(k);
+            return Mathf.Clamp(sum, -maxTotal, maxTotal);
+        }
+
+        /// <summary>A trend strictly inside the ledger's clamp, so trend less adjustments is the anchor it read.</summary>
+        private static bool Unclamped(float trend, float ceiling) => trend > 0f && trend < ceiling;
+
+        /// <summary>K210 (e2): the generated per-worker path for a calendar year, held at its ends - read here from LongRunAnchors, not through the model.</summary>
+        private static double PathAt(CountryId id, int year)
+        {
+            float[] path = LongRunAnchors.ProductivityGrowth[id];
+            int i = year - LongRunAnchors.PotentialGrowthFirstYear[id];
+            return path[Math.Max(0, Math.Min(path.Length - 1, i))];
         }
 
         /// <summary>A yearly series read at a fractional year, linear between its years and held at its ends.</summary>
@@ -460,14 +723,14 @@ namespace PoliSim.EditorTools
             return raw is float f ? f : Convert.ToDouble(raw, CultureInfo.InvariantCulture);
         }
 
-        /// <summary>K211: (d1) and (d2) are REGISTERED MISSES until K210 lands - a miss prints its figures under a named tag and does not fail the
-        /// run (the K113/K114 pattern); every other departure still fails.</summary>
-        private static void Registered(bool ok, string what)
+        /// <summary>K210's prereg (K211 ended): a miss the prereg registers prints its figures under its named tag and does not fail the run (the
+        /// K113/K114 pattern) - (d1) inside the WEO's horizon, a (d2) window whose labour part alone misses the band; every other departure fails.</summary>
+        private static void Registered(bool ok, string tag, string what)
         {
             if (ok) { _sb.Append("        ok   ").Append(what).Append('\n'); return; }
             _registered++;
-            _sb.Append("        REGISTERED MISS (prereg 117aa45b; K210 to close) ").Append(what).Append('\n');
-            Debug.Log("LONG-RUN ANCHORS: REGISTERED MISS (prereg 117aa45b; K210 to close) - " + what);
+            _sb.Append("        ").Append(tag).Append(' ').Append(what).Append('\n');
+            Debug.Log("LONG-RUN ANCHORS: " + tag + " - " + what);
         }
 
         private static void Check(bool ok, string what)

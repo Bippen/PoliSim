@@ -50,6 +50,20 @@ namespace PoliSim.EditorTools
             public double SpanMidYear;
             public double RealGrowth;
             public double PotentialGrowth;
+            /// <summary>K210: the growth of potential's productivity index over the span, per cent (Country.PotentialProductivityIndex - the trend the
+            /// ledger compounded, its pulled anchor and its adjustments together); the labour part is the potential growth net of it.</summary>
+            public double ProductivityGrowth;
+            /// <summary>K210 (the review's L5): the productivity ledger as the year's boundary left it, read at the boundary itself (SimulationManager's
+            /// "spending" ledger point, straight after MacroSystem.ApplySectorGrowthEffect): the trend it wrote, the three adjustments it read
+            /// (infrastructure, sector, education) and the boundary's day - so the live loop's anchor is checked against ProductivityPull.Anchor.
+            /// LedgerDay is default where the boundary never reached that point.</summary>
+            public float LedgerTrend;
+            public float LedgerInfrastructure;
+            public float LedgerSector;
+            public float LedgerEducation;
+            public System.DateTime LedgerDay;
+            /// <summary>K210 (review 2's N-L4): the clock's own day at that ledger point - held equal to LedgerDay, so the date the boundary passes is the day it is.</summary>
+            public System.DateTime LedgerClockDay;
             /// <summary>MF q29: the output gap at the record, GDP / potential - 1, and the mortality multiplier.</summary>
             public double OutputGap;
             public float MortalityMultiplier;
@@ -99,39 +113,67 @@ namespace PoliSim.EditorTools
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
                 var years = new Year[Years];
-                Openings[player] = new Year { LifeExpectancy = c.State.LifeExpectancy, CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate), OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0, MortalityMultiplier = c.State.MortalityMultiplier };
-                double gdpBefore = c.State.GDP, potentialBefore = c.State.PotentialGDP, yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
-                for (int year = 1; year <= Years; year++)
+                // K210 (the review's L5): read the ledger at the boundary, for this world's player only - the hook is static, read-only and removed below
+                float ledgerTrend = 0f, ledgerInfrastructure = 0f, ledgerSector = 0f, ledgerEducation = 0f;
+                System.DateTime ledgerDay = default, ledgerClockDay = default;
+                System.Reflection.MethodInfo sectorAdjustment = typeof(MacroSystem).GetMethod("GetSectorGrowthAdjustment", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                System.Reflection.PropertyInfo comingBoundary = typeof(SimulationManager).GetProperty("ComingBoundaryDate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Action<Country, string> ledger = (k, point) =>
                 {
-                    for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
-                    PolicyDecision d = PolicyDecision.None();
-                    decisions[player] = d;
-                    sim.AdvanceTurn(decisions);
-                    years[year - 1] = new Year
+                    if (!ReferenceEquals(k, c) || point != "spending") { return; }
+                    ledgerTrend = k.ProductivityTrendGrowthRate;
+                    ledgerInfrastructure = MacroSystem.ApplyInfrastructureGrowthEffect(k);
+                    ledgerSector = sectorAdjustment != null ? (float)sectorAdjustment.Invoke(null, new object[] { k }) : float.NaN;
+                    ledgerEducation = EducationFamily.ProductivityTrendTerm(k);
+                    ledgerDay = comingBoundary != null ? (System.DateTime)comingBoundary.GetValue(sim) : default;   // the date the boundary passed the ledger
+                    ledgerClockDay = sim.CurrentDate;
+                };
+                SimulationManager.BoundaryLedger += ledger;
+                try
+                {
+                    Openings[player] = new Year { LifeExpectancy = c.State.LifeExpectancy, CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate), OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0, MortalityMultiplier = c.State.MortalityMultiplier };
+                    double gdpBefore = c.State.GDP, potentialBefore = c.State.PotentialGDP, productivityBefore = c.PotentialProductivityIndex, yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
+                    for (int year = 1; year <= Years; year++)
                     {
-                        DebtToGdpRatio = c.State.DebtToGdpRatio,
-                        CrisisPhase = c.Crisis != null ? c.Crisis.Phase : CrisisPhase.None,
-                        Crises = c.Crisis != null ? c.Crisis.Crises : 0,
-                        RoadQuality = c.State.RoadQuality,
-                        TreatableMortality = c.State.TreatableMortality,
-                        TrendIndex = c.Health.TrendIndex,
-                        DeathRate = c.State.DeathRate,
-                        Population = c.State.Population,
-                        NetMigrationRate = c.State.NetMigrationRate,
-                        LifeExpectancy = c.State.LifeExpectancy,
-                        ApprovalRating = c.State.ApprovalRating,
-                        CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate),
-                        SpanMidYear = 0.5 * (yearBefore + MortalitySchedule.YearOf(sim.CurrentDate)),
-                        RealGrowth = (c.State.GDP / System.Math.Max(1e-6, gdpBefore) - 1.0) * 100.0,
-                        PotentialGrowth = (c.State.PotentialGDP / System.Math.Max(1e-6, potentialBefore) - 1.0) * 100.0,
-                        OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0,
-                        MortalityMultiplier = c.State.MortalityMultiplier,
-                        WaitCataractDays = c.State.WaitCataractDays,
-                        WaitKneeDays = c.State.WaitKneeDays,
-                        SpendPerAgeCostRatio = c.Health != null && c.Health.SpendPerAgeCostSeed > 0f ? HealthFamily.SpendPerAgeCost(c) / c.Health.SpendPerAgeCostSeed : 1f,
-                    };
-                    gdpBefore = c.State.GDP; potentialBefore = c.State.PotentialGDP; yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
+                        for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                        PolicyDecision d = PolicyDecision.None();
+                        decisions[player] = d;
+                        ledgerDay = default;
+                        sim.AdvanceTurn(decisions);
+                        years[year - 1] = new Year
+                        {
+                            DebtToGdpRatio = c.State.DebtToGdpRatio,
+                            CrisisPhase = c.Crisis != null ? c.Crisis.Phase : CrisisPhase.None,
+                            Crises = c.Crisis != null ? c.Crisis.Crises : 0,
+                            RoadQuality = c.State.RoadQuality,
+                            TreatableMortality = c.State.TreatableMortality,
+                            TrendIndex = c.Health.TrendIndex,
+                            DeathRate = c.State.DeathRate,
+                            Population = c.State.Population,
+                            NetMigrationRate = c.State.NetMigrationRate,
+                            LifeExpectancy = c.State.LifeExpectancy,
+                            ApprovalRating = c.State.ApprovalRating,
+                            CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate),
+                            SpanMidYear = 0.5 * (yearBefore + MortalitySchedule.YearOf(sim.CurrentDate)),
+                            RealGrowth = (c.State.GDP / System.Math.Max(1e-6, gdpBefore) - 1.0) * 100.0,
+                            PotentialGrowth = (c.State.PotentialGDP / System.Math.Max(1e-6, potentialBefore) - 1.0) * 100.0,
+                            ProductivityGrowth = (c.PotentialProductivityIndex / System.Math.Max(1e-12, productivityBefore) - 1.0) * 100.0,
+                            OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0,
+                            MortalityMultiplier = c.State.MortalityMultiplier,
+                            WaitCataractDays = c.State.WaitCataractDays,
+                            WaitKneeDays = c.State.WaitKneeDays,
+                            SpendPerAgeCostRatio = c.Health != null && c.Health.SpendPerAgeCostSeed > 0f ? HealthFamily.SpendPerAgeCost(c) / c.Health.SpendPerAgeCostSeed : 1f,
+                            LedgerTrend = ledgerTrend,
+                            LedgerInfrastructure = ledgerInfrastructure,
+                            LedgerSector = ledgerSector,
+                            LedgerEducation = ledgerEducation,
+                            LedgerDay = ledgerDay,
+                        LedgerClockDay = ledgerClockDay,
+                        };
+                        gdpBefore = c.State.GDP; potentialBefore = c.State.PotentialGDP; productivityBefore = c.PotentialProductivityIndex; yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
+                    }
                 }
+                finally { SimulationManager.BoundaryLedger -= ledger; }
 
                 return years;
             }

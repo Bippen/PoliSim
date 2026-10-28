@@ -41974,3 +41974,21 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nreg (5 failures in the new diagnostic - the count tolerance and Sweden's missing offsets, fixed 7ed9628b); nreg3 (the poll's charge read at the close, fixed c3e5f2c0); nreg4 11/11 (RegionalCampaignDiagnostic PASS, Gate18 PASS with a refit reported); dump reg5a4 byte-identical to mf28; drysreg4 Sweden + USA + Germany 1280 and realreg4 Sweden 1280 clean; simreg4 87/87; cheapreg4 clean but the ledger row (added).
 
 **Commit:** this one.
+
+## 937. K210 (K211 ENDS; K245): THE PRODUCTIVITY TREND PULLED TOWARD THE AGEING REPORT'S AND CBO'S PATHS BEYOND THE WEO'S HORIZON - TWELVE OF q29's FOURTEEN REGISTERED MISSES CLOSED - THE FAMILY `mf210` (2026-10-28)
+
+**What was owed:** K210 (q29's measurement): q29's (d2) misses - Germany, France and Italy's potential growth far below the Ageing Report's, Poland's far above - and Italy's (d1), printed as REGISTERED MISS lines under K211 until K210 landed under a prereg of its own (6c4522b8, committed alone before any run).
+
+**Built** (an implementer on `wave/k210`: 9a3f2522; review NOT READY (H1: the labour exemption let a productivity miss of any size pass; M1: the preview read today's date, not the coming boundary's); the rework 64e0fcf4 - the prereg AMENDED after the first run, marked, tightening only; review 2 READY; 0dd0149c after the integrator's bar found LineIndexationDiagnostic had lost the negative-potential case it exercised):
+- `ProductivityPull.Anchor`: the productivity ledger's anchor is the seed's 2010-2025 trend through 2031 (bit-identical) and after it the source's per-worker path (Ageing Report 2024 II.1.21; CBO's potential labour force productivity) plus the seed's distance at 2031 closing at 0.5 a year ([AUTHORED-DRAFT]); read at the coming boundary's date in the turn and the preview alike; the adjustments add on top unchanged; no state, no save step. `Tools/q29_longrun_prep.pl` generates the two parts with each source's potential held to their compound (worst 0.0018 pp).
+- `LongRunAnchorsDiagnostic`: (d2) fails unless its labour part alone misses by more than 0.5 pp AND the rest is within 0.5 pp (then REGISTERED, the labour input); (d1) REGISTERED under K245 (inside the WEO's horizon); (e1)-(e6) the pull's construction, preview = boundary, the live loop reading the anchor at every boundary. `LineIndexationDiagnostic` plants its own negative potential.
+
+**Measured** (`Reviews/2026-10-28_k210_integrator.md`): 2 REGISTERED MISS lines left of q29's 14 - Italy (d1) 2024-31 and Italy 2052-61 on its labour part (potential 0.83 against 1.35, labour -0.59 against -0.08); every other (d2) window inside 0.5 pp of the Ageing Report or CBO. D-13 (b) unmoved (+2 %: 0.584 / 0.842 / 0.764 cumulative). The family `mf210` against `mf28`: every country first differs at turn 6 (the first boundary after mid-2031) in PotentialGrowthRate alone; GDP at turn 100 Italy +213 %, France +95 %, Germany +35 %, Sweden +24 %, Poland -74 %, the USA -24 %. Sentinel 777 23b7a8f9..., 424242 56e95972...; France's household FT-10 ceiling lowered 19.5 -> 18.5 by the check's slack rule.
+
+**Evidence:** `Reviews/2026-10-28_k210_prereg.md` (with its amendment), `_review.md`, `_review2.md`, `_integrator.md`; ledger rows s937 (`MacroSystem.cs`, `SimulationManager.cs`, both baseline digests).
+
+**Declared:** the pull rate; the per-worker path against the per-hour seed (within 0.03 pp a year beyond 2031); the perimeters (the USA's BLS nonfarm per hour seed against CBO per labour-force member; employment 15+ against the Ageing Report's 15-74); the path's last value held; K245. Owed as its own item: the labour input against the Ageing Report's II.1.15 and CBO's potential labour force (participation by cohort and statutory pension ages).
+
+**Bars:** nk (LongRunAnchors PASS, 2 REGISTERED as predicted) and nk3 after the rework (the same); harnk D-13 (b) unmoved; cheapk4 clean but the ledger (rows added); simk4 86/87 - the sentinel's FT-10 France household cell slack (17.972 against 19.5), lowered to 18.5 by its rule; sentk TrajectorySentinelCheck + ReviewLedgerCheck clean; dump mf210 (reworked) pinned; play saves re-staged, the US cards regenerated.
+
+**Commit:** this one.
