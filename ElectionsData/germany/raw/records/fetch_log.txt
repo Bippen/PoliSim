@@ -81,3 +81,5 @@ DISCARDED	bwl_2021_vglhauptwahl.html	2026-09-24T16:26:32Z	fetched, read, not use
 DISCARDED	bwl_2021_vglhauptwahl_bund-99.html	2026-09-24T16:26:43Z	HTTP 404; file deleted
 https://www.die-linke.de/partei/parteidemokratie/parteivorstand/parteivorstand-2022-2024/mitglieder-des-parteivorstandes/schirdewan-martin-parteivorsitzender/	linke_pv-2022-2024_schirdewan-martin.html	2026-09-24T16:27:35Z	200
 https://www.die-linke.de/partei/parteidemokratie/parteivorstand/parteivorstand-2024-2026/mitglieder-des-parteivorstandes/ines-schwerdtner/	linke_pv-2024-2026_schwerdtner-ines.html	2026-09-24T16:27:36Z	200
+https://www.gesetze-im-internet.de/bgb/__187.html	bgb_187.html	2026-10-28T16:35:19Z	200
+https://www.gesetze-im-internet.de/bgb/__188.html	bgb_188.html	2026-10-28T16:35:19Z	200

@@ -19,13 +19,13 @@ namespace PoliSim.EditorTools
     /// own previous count, its states printed beside the record's 2024 map".
     /// <list type="bullet">
     /// <item>(a) inertness: a world on each of the four starts holds no count of its own, and its history, its prediction and (Sweden, Germany, the USA) its staged
-    /// campaign handed the played country are bit for bit what they are without it - the reason the dump cannot move (it holds no election; the integrator's
-    /// dump diff proves it);</item>
+    /// campaign handed the played country are bit for bit what they are without it - the reason this reader alone moves no dump (since PS-8 every world holds
+    /// its countries' elections as AI countries - the dump moves by those counts, its family `ps8`, not by this reader);</item>
     /// <item>(b) Sweden, Germany and Poland, each on its own start: the game's first count (the prediction on its polling day counted by the country's own
     /// procedure, as the controller counts it with no campaign) is not read on its own day, and is read after it - the second election's prior the count at the
     /// record's roster total, its loyalty pair the count against the record's last election; a second count makes the third election read the game's own two;
-    /// the prediction moves; Sweden's and Germany's staged campaigns stage the same prior. Germany's calendar holds no election after its snap (WorldClock), so its
-    /// second election is read on a probe date four years on - the reader, not a polling day;</item>
+    /// the prediction moves; Sweden's and Germany's staged campaigns stage the same prior. Germany's second election falls on K159's day, the first Sunday of Art. 39 GG's
+    /// window (28 Jan 2029, `WorldClock.TryNextPollingDay`), and is read there when the calendar gives it, else on a probe date four years on - the reader, not a polling day;</item>
     /// <item>(c) the USA: the eve world (epoch 4 Nov 2024, seed 777, the USA the player's country, REP) stepped through 5 Nov 2024 holds its own count; on 3 Nov
     /// 2026 (2 U.S.C. §7's day - the midterm itself is US-27's) the poll reads the game's own 2024 House against the record's last, and moves off the epoch's;</item>
     /// <item>(d) R-US24 (b): the game's 2028 count (the day loop's own hold, then removed) swings its states from the game's own 2024 states - each state's prior
@@ -295,7 +295,7 @@ namespace PoliSim.EditorTools
             return world.GetCountry(id);
         }
 
-        /// <summary>The country's next polling day on or after <paramref name="from"/>, or <paramref name="probe"/> where its calendar holds none (Germany after its snap).</summary>
+        /// <summary>The country's next polling day on or after <paramref name="from"/>, or <paramref name="probe"/> where its calendar holds none (no modelled country now: since PS-8 Germany votes after its snap on K159's day, 28 Jan 2029).</summary>
         private static DateTime NextAfter(CountryId id, DateTime from, DateTime probe) => WorldClock.TryNextPollingDay(id, from, out DateTime day) ? day : probe;
 
         /// <summary>One day in the controller's order as it stood before FORK-2 (§890) moved the player's election into the manager; part (b) copies the count by hand,

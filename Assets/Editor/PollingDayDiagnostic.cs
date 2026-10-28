@@ -13,7 +13,7 @@ namespace PoliSim.EditorTools
     /// PS-2 / CL-4 (2026-09-25, §619): POLLING DAY ON THE CALENDAR'S DATE, ASSERTED. Sweden's ordinary election falls on the statute's day
     /// (every fourth year, the second Sunday of September - regeringsformen 3 kap. 3 §, vallagen 1 kap. 3 §; `ElectionsData/sweden/election_calendar.md`):
     /// the rule reproduces the record's own polling days (2018-09-09, 2022-09-11, 2026-09-13) and gives 2030-09-08 next; the next polling day from
-    /// any date is the right one; Germany's snap (§697) is on record with nothing after it, Poland's 2023 day then each term's by Art. 98 ust. 2's
+    /// any date is the right one; Germany's snap (§697) is on record and after it, since PS-8, the first Sunday of Art. 39 GG's window (Elias's ruling K159), Poland's 2023 day then each term's by Art. 98 ust. 2's
     /// window (§767, Elias's ruling D3 - the rule held against the record's 2015, 2019 and 2023 from the Sejm's own term dates), the USA's presidential day
     /// of 3 U.S.C. §21(1) every fourth year from 5 November 2024 (PS-6 US-8 - the assertion inverted as §697's was for Germany; the US count's own path is
     /// `UsPresidentialElectionDiagnostic`'s) and, since PS-6 US-27, the midterm days of 2 U.S.C. §7 between them - every even year (the midterm's own path is
@@ -54,11 +54,21 @@ namespace PoliSim.EditorTools
                 Next(CountryId.Sweden, new DateTime(2026, 9, 14), new DateTime(2030, 9, 8), "the day after");
                 Next(CountryId.Sweden, SimulationManager.DefaultEpoch, new DateTime(2030, 9, 8), "the default epoch");
                 Next(CountryId.Sweden, new DateTime(2022, 7, 21), new DateTime(2022, 9, 11), "an earlier date reads the same cycle");
-                // §697 (PS-4): Germany's one polling day on record - the snap's, 23 Feb 2025 - and nothing after it (the next regular day's rule is not on disk)
+                // §697 (PS-4): Germany's polling day on record - the snap's, 23 Feb 2025 - and PS-8 (Elias's ruling K159) after it the first Sunday of Art. 39 GG's window:
+                // forty-six months from the 21st Bundestag's first sitting of record (25 Mar 2025) run to Thursday 25 Jan 2029 (BGB § 187 Abs. 1, § 188 Abs. 2), the
+                // window opening on the 26th, so Sunday 28 Jan 2029; the term that election gives first sits on the 30th day (27 Feb 2029), its period running to
+                // Monday 27 Dec 2032, so Sunday 2 Jan 2033
                 Next(CountryId.Germany, new DateTime(2024, 11, 6), new DateTime(2025, 2, 23), "Germany's snap start");
                 Next(CountryId.Germany, new DateTime(2025, 2, 23), new DateTime(2025, 2, 23), "Germany's polling day itself");
-                Check(!WorldClock.TryNextPollingDay(CountryId.Germany, new DateTime(2025, 2, 24), out _) && WorldClock.PollingDayBasis(CountryId.Germany) != null && WorldClock.PollingDayBasis(CountryId.Germany).Contains("[BWL-WT25]"),
-                    "Germany after its snap: no polling day on record; the basis cites the snap's notice [BWL-WT25]");
+                Next(CountryId.Germany, new DateTime(2025, 2, 24), new DateTime(2029, 1, 28), "the day after - the first Sunday of the 21st Bundestag's Art. 39 window (K159)");
+                Next(CountryId.Germany, new DateTime(2029, 1, 28), new DateTime(2029, 1, 28), "the K159 day itself");
+                Next(CountryId.Germany, new DateTime(2029, 1, 29), new DateTime(2033, 1, 2), "a term the game elects - its first sitting the 30th day after 28 Jan 2029");
+                Check(WorldClock.FirstSundayOfBundestagWindow(new DateTime(2025, 3, 25)) == new DateTime(2029, 1, 28) && WorldClock.FirstSundayOfBundestagWindow(new DateTime(2029, 1, 28)) == new DateTime(2032, 12, 5)
+                      && WorldClock.FirstSundayOfBundestagWindow(new DateTime(2029, 4, 30)) == new DateTime(2033, 3, 6),
+                    "K159's rule read by the BGB (L2): 46 months from a first sitting end on the day of its number (a period ending on Sunday 28 Nov 2032 opens the window on Monday the 29th, so Sunday 5 Dec 2032), "
+                    + "a missing day the month's last (from 30 Apr 2029 to 28 Feb 2033, BGB § 188 Abs. 3), the window opening the day after (Tuesday 1 Mar 2033, so Sunday 6 Mar 2033)");
+                Check(WorldClock.PollingDayBasis(CountryId.Germany) != null && WorldClock.PollingDayBasis(CountryId.Germany).Contains("[BWL-WT25]") && WorldClock.PollingDayBasis(CountryId.Germany).Contains("[GG-39]") && WorldClock.PollingDayBasis(CountryId.Germany).Contains("K159"),
+                    "Germany's basis cites the snap's notice [BWL-WT25], Art. 39 GG [GG-39] and the ruling K159");
                 // §762, §767 (PS-5; Elias's ruling D3): Poland's start's own day, 15 Oct 2023, then each term's - the first Sunday of Art. 98 ust. 2's window
                 // before the fourth anniversary of the term's first sitting; the rule held first against the record, from the Sejm's own term dates
                 Next(CountryId.Poland, new DateTime(2023, 2, 19), new DateTime(2023, 10, 15), "Poland's start");

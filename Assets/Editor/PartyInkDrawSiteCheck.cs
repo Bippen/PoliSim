@@ -104,6 +104,10 @@ namespace PoliSim.EditorTools
              + "are the parties' own marks in their own inks, and the compass places the nominee, in its party's mark, inside the party's range "
              + "framed in that ink among the real parties' marks - so party identity is the whole subject, the creation flow's own argument. The "
              + "file draws NO area accent (clause 2 by construction)."),
+            ("GameController.ForeignResultCard.cs",
+             "PS-8 (K163, 2026-10-28): the results card of an election abroad draws each list as a bar in its party's laddered ink by the seats it won - who "
+             + "won the chamber is party identity as the whole subject, the chamber's own argument. The card is its own file of the partial class and draws "
+             + "NO area accent (clause 2 by construction): the Docket item that opens it, with the Global area's stripe, is GameController.WorldCalendar.cs."),
         };
 
         public static void Run()

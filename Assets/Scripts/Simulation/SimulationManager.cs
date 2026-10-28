@@ -582,6 +582,8 @@ namespace PoliSim.Simulation
             HoldPresidentialRound();
             // PS-6 US-8: the US presidential count on its polling day, and the House's choice on the count's day where no one has a majority - the verdict at once
             HoldUsPresidentialCount();
+            // PS-8 (K159-K163): every other country's elections on its own calendar, as an AI country - counted, seated and formed in this world (SimulationManager.WorldCalendar.cs)
+            HoldWorldCalendar();
             // AF-7 (q7, q10): a central bank's head whose statutory term ended today is replaced - by the AI at once, or by the player's pick (the hold)
             AppointCentralBankHeadsWhoseTermsEnded();
 
@@ -4413,6 +4415,12 @@ namespace PoliSim.Simulation
 
         private void ScheduleExtraElection(Country country, string why, System.DateTime? dissolvedOn = null)
         {
+            // PS-8 (L-N2 of the s938 review): the extra-election date here is the PLAYER'S country's alone - an AI country's comes from its own state (WorldCalendar.TryExtraElection)
+            if (country == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id)
+            {
+                Debug.LogError($"CONFIDENCE: an extra election was ordered for {country?.Id.ToString() ?? "no country"}, not the player's country - refused: the player's extra-election date is not an AI country's to write ({why})");
+                return;
+            }
             _extraElectionOrderedOn = CurrentDate;
             _extraElectionDate = Elections.ConfidenceProcedure.RulesOf(country.Id) == Elections.ConfidenceProcedure.Rules.Parlamento
                 ? Elections.ConfidenceProcedure.ItalianElectionDay(dissolvedOn ?? CurrentDate)   // PS-7 (K155): art. 61's seventy days from the dissolution, the last Sunday in them (K206: a dissolution the semestre bianco defers is dated the day it lifts)
@@ -4753,6 +4761,14 @@ namespace PoliSim.Simulation
         /// <summary>§705: whether a country's round is the Bundestag's chancellor election (Art. 63 GG) rather than the Riksdag's Speaker's round.</summary>
         private static bool IsBundestag(CountryId countryId) => Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Bundestag;
 
+        /// <summary>PS-8 (L-N1 of the s938 review): a round's SPEAKER: line - an AI country's round (an AI Bundestag past its first ballot, `ContinueChancellorElection`)
+        /// is silent in a counterfactual world, as the AI's other calendar lines are; the player's round logs as it always has.</summary>
+        private void SpeakerLog(Country country, string line)
+        {
+            if (IsCounterfactual && !RoundsApply(country.Id)) { return; }
+            Debug.Log(line);
+        }
+
         /// <summary>
         /// Premise 6: THE SPEAKER'S ORDER on a chamber and a vintage's declarations - the formation's prime-minister party (a declared candidacy in its
         /// cabinet, else its largest party), then every other party with a declared candidate, largest first; where neither exists, the largest party.
@@ -4948,18 +4964,25 @@ namespace PoliSim.Simulation
                     round.Stage = Elections.RoundStage.Consulting;
                     round.AskedOn = CurrentDate;
                     round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {how}; the fourteen days run to {round.SecondPhaseUntil:yyyy-MM-dd} with no candidate before the Bundestag");
-                    Debug.Log($"SPEAKER: {country.Id} - the chancellor's election, phase 2: {how}");
+                    SpeakerLog(country, $"SPEAKER: {country.Id} - the chancellor's election, phase 2: {how}");
                     return;
                 }
             }
-            if (round.Asked == null) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: no party to ask"); BreakOff(country, country.Government, round); return; }   // no party to ask: the procedure breaks off (unreachable where the order falls back to the largest party)
+            if (round.Asked == null)
+            {
+                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: no party to ask");
+                // PS-8 (L-N2 of the s938 review): an AI country's round ends here with the outgoing government serving on - BreakOff orders the PLAYER'S extra election
+                if (!RoundsApply(country.Id)) { round.Stage = Elections.RoundStage.Concluded; round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the round ends; the outgoing government serves on"); return; }
+                BreakOff(country, country.Government, round);
+                return;
+            }   // no party to ask: the procedure breaks off (unreachable where the order falls back to the largest party)
             round.AskedOn = CurrentDate;
             round.Proposal = null;
             round.Stage = round.Asked == country.PlayerPartyAbbrev ? Elections.RoundStage.PlayerAsked : Elections.RoundStage.Consulting;
             round.Log.Add(IsBundestagRound(round)
                 ? $"{CurrentDate:yyyy-MM-dd}: {(round.Phase <= 1 ? "the Bundespräsident will propose " + CandidateOf(country, round, round.Asked) + " (Art. 63 Abs. 1)" : "the Bundestag weighs " + CandidateOf(country, round, round.Asked) + " (Art. 63 Abs. 3)")}; {round.Asked} forms the government it would lead{(round.Stage == Elections.RoundStage.PlayerAsked ? " - the player's party" : string.Empty)}"
                 : $"{CurrentDate:yyyy-MM-dd}: the Speaker asks {round.Asked} to form a government{(round.Stage == Elections.RoundStage.PlayerAsked ? " - the player's party" : string.Empty)}");
-            Debug.Log($"SPEAKER: {country.Id} - {(IsBundestagRound(round) ? "the chancellor's election, phase " + round.Phase + ": " : "the Speaker asks ")}{round.Asked} ({round.Stage})");
+            SpeakerLog(country, $"SPEAKER: {country.Id} - {(IsBundestagRound(round) ? "the chancellor's election, phase " + round.Phase + ": " : "the Speaker asks ")}{round.Asked} ({round.Stage})");
         }
 
         private void Table(Elections.SpeakerRound round, Elections.FormationProposal proposal)
@@ -5042,7 +5065,7 @@ namespace PoliSim.Simulation
             var refusals = new List<string>();
             foreach (Elections.PartyAnswer answer in verdict.Answers) { if (!answer.Accepts) { refusals.Add(answer.Party + " " + answer.Reason); } }
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag rejects {PoliSim.Wording.EnglishText.Possessive(round.Proposal.Formateur, false, true)} proposal ({verdict.Reason}{(refusals.Count > 0 ? ": " + string.Join("; ", refusals) : string.Empty)}); {round.Rejections} of {Elections.SpeakerRound.ProposalLimit} rejected (RF 6 kap. 5 §)");
-            Debug.Log($"SPEAKER: {country.Id} - {title}; {round.Rejections} rejected{(refusals.Count > 0 ? " - " + string.Join("; ", refusals) : string.Empty)}");
+            SpeakerLog(country, $"SPEAKER: {country.Id} - {title}; {round.Rejections} rejected{(refusals.Count > 0 ? " - " + string.Join("; ", refusals) : string.Empty)}");
             if (round.Rejections >= Elections.SpeakerRound.ProposalLimit) { BreakOff(country, g, round); return; }
             AskNext(country, round);
         }
@@ -5122,7 +5145,7 @@ namespace PoliSim.Simulation
                 ? $"{CurrentDate:yyyy-MM-dd}: the Bundestag votes on {CandidateOf(country, round, leader)}, the Bundespräsident's candidate (Art. 63 Abs. 2 GG): {votes[leader]} for - " + (elected ? $"elected, {majority} a majority of the members" : $"not elected, {majority} needed, a majority of the members")
                 : $"{CurrentDate:yyyy-MM-dd}: a ballot in the fourteen days (Art. 63 Abs. 3 GG) on the nominations standing ({how}): {string.Join(", ", tally)} - "
                     + (elected ? $"{CandidateOf(country, round, leader)} is elected with a majority of the members, {majority}" : $"none reaches a majority of the members, {majority}"));
-            Debug.Log($"SPEAKER: {country.Id} - {title}");
+            SpeakerLog(country, $"SPEAKER: {country.Id} - {title}");
             if (!firstPhase) { foreach (string c in candidates) { if (!round.StoodInPhase2.Contains(c)) { round.StoodInPhase2.Add(c); } } }   // §706: each stood once in the fourteen days
             if (elected)
             {
@@ -5326,7 +5349,7 @@ namespace PoliSim.Simulation
             foreach (string c in candidates) { tally.Add(c + " " + votes[c]); }
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the fourteen days pass; in the ballot the most votes win ({string.Join(", ", tally)}), {candidate} is elected with {votes[winner]} ({majority} a majority of the members)"
                 + (absolute ? " - the Bundespräsident must appoint the candidate within seven days (Art. 63 Abs. 4 Satz 2 GG) and does so at once" : " - short of a majority, the Bundespräsident has seven days to appoint the candidate or dissolve the Bundestag (Art. 63 Abs. 4 Satz 3 GG); the premise for his choice, stated: he appoints, at once - no Bundespräsident has faced the choice, and a dissolution's new election (Art. 39 Abs. 1 Satz 4 GG) is not modelled for Germany"));
-            Debug.Log($"SPEAKER: {country.Id} - {title}; the tally {string.Join(", ", tally)}");
+            SpeakerLog(country, $"SPEAKER: {country.Id} - {title}; the tally {string.Join(", ", tally)}");
             Install(country, g, round, verdict, absolute
                 ? $"the chancellor's election {round.Occasion}: {candidate} elected with the most votes, {votes[winner]}, a majority of the members (Art. 63 Abs. 4 Satz 2 GG)"
                 : $"the chancellor's election {round.Occasion}: {candidate} elected with the most votes, {votes[winner]}, short of a majority, and appointed within the seven days rather than the Bundestag dissolved - the premise for the Bundespräsident's choice, stated (Art. 63 Abs. 4 Satz 3 GG)");
@@ -5661,7 +5684,7 @@ namespace PoliSim.Simulation
             CabinetSystem.SeatOnEntry(country, chairsBefore);   // K59: the round's government seats the chairs it hands the player
             ResetArrivalBudgetWindow(country.Id);
             CloseBudgetWindowIfNotGoverning(country);   // §698 (the review's defect 2, the same gap here)
-            Debug.Log($"SPEAKER: {country.Id} - installed {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)}");
+            SpeakerLog(country, $"SPEAKER: {country.Id} - installed {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)}");
         }
 
         /// <summary>R7: four proposals rejected - the procedure breaks off until an election; an extra election within three months unless the ordinary one falls in them (RF 6 kap. 5 §, §640).</summary>
@@ -5993,7 +6016,7 @@ namespace PoliSim.Simulation
         /// over its term shifting it (§752), on the history rolled forward (US-26), the day's counted poll (<see cref="Elections.UsPresidentialElection.CountedPoll"/>).
         /// The player's country alone, as every US count; the forks reach it through the same day loop. A day it cannot be made holds nothing and says so.
         /// </summary>
-        private void HoldUsMidtermCount(Country country)
+        private void HoldUsMidtermCount(Country country, bool quiet = false)   // PS-8 (L7 of the s938 review): an AI USA in a counterfactual world counts its midterm silently
         {
             if (!Elections.UsCongressElection.IsPollingDay(country, CurrentDate)) { return; }
             // the second review's M1 (measurement only; before the count's own prediction, so the regional readout left is the count's): the record's components in V
@@ -6001,17 +6024,17 @@ namespace PoliSim.Simulation
             string recordWords = IsCounterfactual ? null : Elections.UsCongressElection.RecordInVWords(country, CurrentDate, Elections.UsCongressElection.MidtermPresidentsParty(country, CurrentDate), Elections.UsCongressElection.MidtermTermPoints);   // PS-6 K13: the party the count's term is applied to
             if (!Elections.NationalElection.TryPredictShares(country.Id, out Dictionary<string, double> poll, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate, played: country))
             {
-                Debug.LogWarning(Elections.UsCongressElection.TryInOffice(country, CurrentDate, out Elections.UsCongressElection.Contest standing)
+                if (!quiet) Debug.LogWarning(Elections.UsCongressElection.TryInOffice(country, CurrentDate, out Elections.UsCongressElection.Contest standing)
                     ? $"CONGRESS: {country.Id} - no prediction could be made on the midterm {CurrentDate:yyyy-MM-dd}; nothing is counted, and the House the game elected on {standing.PollingDay:yyyy-MM-dd} sits on"
                     : $"CONGRESS: {country.Id} - no prediction could be made on the midterm {CurrentDate:yyyy-MM-dd}; nothing is counted, and the record's House and Senate stay seated by date");
                 return;
             }
             Elections.UsCongressElection.Contest midterm = Elections.UsCongressElection.HoldMidterm(country, CurrentDate, Elections.UsPresidentialElection.CountedPoll(country, CurrentDate, poll),
                 Elections.UsPresidentialElection.TieSeedOf(SimulationRandom.MasterSeed, CurrentDate.Year), out string why);
-            if (midterm != null) { Debug.Log($"CONGRESS: {country.Id} - {midterm.Line}" + (recordWords != null ? "; " + recordWords : string.Empty)); }
+            if (midterm != null) { if (!quiet) { Debug.Log($"CONGRESS: {country.Id} - {midterm.Line}" + (recordWords != null ? "; " + recordWords : string.Empty)); } }
             else
             {
-                Debug.LogWarning(Elections.UsCongressElection.TryInOffice(country, CurrentDate, out Elections.UsCongressElection.Contest sitting)
+                if (!quiet) Debug.LogWarning(Elections.UsCongressElection.TryInOffice(country, CurrentDate, out Elections.UsCongressElection.Contest sitting)
                     ? $"CONGRESS: {country.Id} - no midterm count on {CurrentDate:yyyy-MM-dd}: {why}; the House the game elected on {sitting.PollingDay:yyyy-MM-dd} sits on, and the Senate as seated"
                     : $"CONGRESS: {country.Id} - no midterm count on {CurrentDate:yyyy-MM-dd}: {why}; the record's House and Senate stay seated by date");
             }

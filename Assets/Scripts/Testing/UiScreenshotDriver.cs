@@ -620,6 +620,7 @@ namespace PoliSim.Testing
             else if (Interrupts) { Debug.Log("SHOT: -shotinterrupts - no warm-up: the film plays the country's game from its start to its first polling day (PS-2, §619)."); }
             // PS-6 US-36: the US journey plays its game from the start too - the run-up, the campaign and the 2024 count are what it films
             else if (UsJourney) { Debug.Log("SHOT: -shotusjourney - no warm-up: the film plays the US game from its start through the 2024 count to the 2026 midterm (US-36)."); }
+            else if (Abroad) { Debug.Log("SHOT: -shotabroad - no warm-up: the film plays the game from its start to the day after the AI USA's first count (PS-8, K163)."); }
             else
             {
                 AdvanceDays(controller, _countryId);
@@ -669,6 +670,13 @@ namespace PoliSim.Testing
             if (ElectionNightBoard)
             {
                 yield return CaptureElectionNight(controller);
+                yield break;
+            }
+
+            // PS-8 (K163): the election abroad on the Docket instead of the sweep - the run ends here.
+            if (Abroad)
+            {
+                yield return CaptureAbroad(controller);
                 yield break;
             }
 
@@ -3454,6 +3462,110 @@ namespace PoliSim.Testing
             }
         }
 
+        /// <summary>
+        /// PS-8 (K163; M4 and N1 of the s938 reviews): THE ELECTION ABROAD ON THE DOCKET, filmed from a game played as play reaches it - never staged. The game is driven
+        /// day by day from its start through the controller-shaped path (the day, the player's day tick, the boundary with no decision), every wait on the player
+        /// answered first by the AI's rule for the player's party (K49, `AnswerWaitsAsTheAi`), a budget window answered by the player's own verb with the page's current draft (`IntroduceBudgetBill`; left open where it refuses), and the
+        /// player's own election held on its polling day as the warm-up holds it (`HoldElectionWithoutTheNight`) - so from Sweden's start the 2026 Riksdag sits
+        /// and its round has formed a government (or is still running on the day, said in the log) - every country other than the player's holding its own elections on the way, to the day after the AI USA's
+        /// first count (3 Nov 2026 from Sweden's start, a midterm). A player's election not held, or no government formed after it, fails the film. Then the Docket: `abroad01_docket` with the USA's item listed (the Information stamp, the
+        /// headline under it), `abroad02_docket_results` with its results card open (the field the item's own action writes). A missing item is a FAILURE here.
+        /// </summary>
+        private IEnumerator CaptureAbroad(GameController controller)
+        {
+            SimulationManager sim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+            DateTime usDay = DateTime.MinValue;
+            if (sim == null || _countryId == CountryId.USA || !string.IsNullOrEmpty(LoadSave) || !WorldClock.TryNextPollingDay(CountryId.USA, sim.CurrentDate.AddDays(1), out usDay))
+            {
+                Debug.LogError($"SHOT: -shotabroad plays a game whose player is not the USA from its start (this run plays {_countryId}, load '{LoadSave}', manager {(sim != null ? "found" : "NOT found")}); NOTHING filmed.");
+                _failed++;
+                EndSweep();
+                yield break;
+            }
+            Expect("abroad01_docket", "abroad02_docket_results");
+            var noDecisions = new Dictionary<CountryId, PolicyDecision>();
+            int walked = 0, answered = 0, budgets = 0;
+            bool budgetLeftOpen = false;
+            DateTime playerPolled = DateTime.MinValue;
+            bool playerPollingInWalk = sim.TryPlayerPollingDay(out DateTime playerPolling) && playerPolling <= usDay;
+            while (sim.CurrentDate.Date <= usDay.Date && walked < MaxStateSearchDays)
+            {
+                // N1 (the s938 review): the walk is play's own day - every wait on the player answered first by the AI's rule for the player's party (K49, as GATE-18's
+                // idle game and the forks answer it: the round's asks and offers, the meeting, the cabinet's decisions), and a budget window the player's government
+                // holds the clock on answered by the player's own verb (N3 of review 3): the page's current draft introduced through IntroduceBudgetBill, its role gate
+                // and range check the game's - where the verb refuses it the window is left open, as GATE-18's idle game leaves it - each said in the log
+                sim.IsCounterfactual = true;
+                try { if (sim.AnswerWaitsAsTheAi(_countryId)) { answered++; } }
+                finally { sim.IsCounterfactual = false; }
+                if (sim.GetPendingBudgetProcess(_countryId) && !budgetLeftOpen)
+                {
+                    BudgetBill draft = controller.GetType().GetMethod("BuildBudgetBillFromDrafts", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, null) as BudgetBill;
+                    if (draft != null && sim.IntroduceBudgetBill(_countryId, draft))
+                    {
+                        budgets++;
+                        Debug.Log($"SHOT: ABROAD - {sim.CurrentDate:yyyy-MM-dd}: the budget window answered by the player's own verb - the page's current draft introduced (IntroduceBudgetBill)");
+                    }
+                    else
+                    {
+                        budgetLeftOpen = true;   // said once; the window stays open, as GATE-18's idle game leaves it
+                        Debug.Log($"SHOT: ABROAD - {sim.CurrentDate:yyyy-MM-dd}: the budget window LEFT OPEN - {(draft == null ? "the page's draft could not be built (BuildBudgetBillFromDrafts not reached)" : "the player's verb refused the page's draft (the LEVERS: line above says why)")}, as GATE-18's idle game leaves it");
+                    }
+                }
+                if (!sim.GetPendingBudgetProcess(_countryId)) { budgetLeftOpen = false; }
+                bool boundary = sim.AdvanceDay();
+                MemTick(sim);
+                sim.AdvanceCountryDayTick(_countryId);
+                if (boundary) { sim.AdvanceTurn(noDecisions); EnergyMarket.BeginTurn(sim.World); }
+                if (sim.PollingDayToday)
+                {
+                    // as the warm-up holds it (AdvanceDays): the player's own election held on its day without the night - play cannot walk past it
+                    InvokeNoArg(controller, "HoldElectionWithoutTheNight");
+                    playerPolled = sim.CurrentDate.Date;
+                    bool over = controller.GetType().GetField("_isGameOver", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) is bool o && o;
+                    Debug.Log($"SHOT: ABROAD - {_countryId}'s own election held on {sim.CurrentDate:yyyy-MM-dd} as play holds it, without the night{(over ? " - and the run ENDED on its verdict" : string.Empty)}");
+                    if (over) { Debug.LogError("SHOT: ABROAD - the game ended on the player's election verdict; abroad01 and abroad02 are MISSING, not clean."); _failed++; EndSweep(); yield break; }
+                }
+                walked++;
+                if (walked % 30 == 0) { SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds); yield return null; }
+            }
+            Country played = sim.World.GetCountry(_countryId);
+            Debug.Log($"SHOT: ABROAD - the walk answered {answered} wait(s) by the AI's rule and {budgets} budget window(s); {_countryId} votes {(playerPollingInWalk ? playerPolling.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "after the walk")}, held {(playerPolled != DateTime.MinValue ? playerPolled.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "NOT")}; "
+                + $"its government {string.Join("+", played.Government?.Cabinet ?? new List<string>())} led by {played.Government?.PmParty ?? "-"} from {played.Government?.FormedOn:yyyy-MM-dd}{(played.Government?.Round != null && played.Government.Round.Open ? " (its round still open)" : string.Empty)}");
+            bool formedAfter = played.Government != null && played.Government.FormedOn > playerPolling.Date;
+            bool roundGoesOn = played.Government?.Round != null && played.Government.Round.Open;   // the procedure still running on the day is a state play reaches too, and the log says so
+            if (playerPollingInWalk && (playerPolled != playerPolling.Date || !(formedAfter || roundGoesOn)))
+            {
+                Debug.LogError($"SHOT: ABROAD - {_countryId}'s own {playerPolling:yyyy-MM-dd} election was not held, or no government was formed after it and no round runs, by {sim.CurrentDate:yyyy-MM-dd}; the Docket would show a state play cannot reach - abroad01 and abroad02 are MISSING, not clean.");
+                _failed++;
+                EndSweep();
+                yield break;
+            }
+            SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+            List<WorldCalendar.Result> abroad = WorldCalendar.RecentAbroad(sim.World, _countryId, sim.CurrentDate);
+            WorldCalendar.Result us = abroad.Find(r => r.Country == CountryId.USA && r.Day == usDay.Date && r.Rows.Count > 0);
+            Debug.Log($"SHOT: ABROAD - walked {walked} day(s) to {sim.CurrentDate:yyyy-MM-dd}; the elections abroad listed: " + (abroad.Count > 0 ? string.Join("; ", abroad.ConvertAll(r => r.Country + " " + r.Elected + " " + r.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " - " + r.Headline)) : "NONE"));
+            if (us == null)
+            {
+                Debug.LogError($"SHOT: ABROAD - no count of the USA on {usDay:yyyy-MM-dd} is listed on the Docket (the CALENDAR: lines above say why); abroad01 and abroad02 are MISSING, not clean.");
+                _failed++;
+                EndSweep();
+                yield break;
+            }
+            SetPrivateField(controller, "_onDesk", false);
+            SetEnumField(controller, "_consolidatedTab", "Decisions");
+            SetPrivateField(controller, "_docketOpenItem", null);
+            ResetScrolls(controller);
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture("abroad01_docket");
+            SetPrivateField(controller, "_docketOpenItem", "abroad:" + us.Key);   // the item's own action: its results card open under it
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture("abroad02_docket_results");
+            SetPrivateField(controller, "_docketOpenItem", null);
+            EndSweep();
+        }
+
         private static int ReportContainmentEscapes()
         {
 #if UNITY_EDITOR
@@ -5625,6 +5737,9 @@ namespace PoliSim.Testing
         /// <summary>PS-6 US-36 (`-shotusjourney`): a US game filmed from its start through the 2024 count, the oath, the bills, the first budget, the debt
         /// limit's episode and the 2026 midterm (`CaptureUsJourney`). The run ends there.</summary>
         public bool UsJourney;
+        /// <summary>PS-8 (K163; M4 of the s938 review; `-shotabroad`): a game played from its start, day by day, to the day after the AI USA's first count (3 Nov
+        /// 2026 from Sweden's start), the Docket filmed with the election abroad listed and then with its results card open (`CaptureAbroad`). The run ends there.</summary>
+        public bool Abroad;
         /// <summary>PS-6 US-36 (`-shotwinner=DEM|REP`, with `-shotusjourney`): the party the journey's 2024 count is staged to elect.</summary>
         public string UsJourneyWinner = "";
 

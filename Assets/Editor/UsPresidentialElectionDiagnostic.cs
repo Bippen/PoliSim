@@ -40,9 +40,10 @@ namespace PoliSim.EditorTools
     /// <item>(e) the count is pure: called twice it returns the same contest, writes no world and draws no random number; (f) a later day (2028): the field
     /// unnamed at E1's future factor, the record's 2024 states as the prior, the electors in force;</item>
     /// <item>(g) the default-USA paths (the plan's risk 13): before a pick the controller falls back to the USA while the manager holds no player country, so
-    /// its day loop never runs and no default world holds a US count; a world with no player country stepped across a US polling day holds none (the
-    /// shadow's, the dump's); the film driver's USA default plays the game from the USA's start, and its warm-up's window holds the polling days measured
-    /// here - the count held there as play holds it, by design; (h) scope: a world whose player is another country holds no US count (R-US5: PS-8's row).</item>
+    /// its day loop never runs and no default world holds a US count; since PS-8 (K243, R-US5 (a)) a world with no player country stepped across a US polling
+    /// day holds the AI USA's count, by the idle game (the prediction, no campaign), on its day, its president in office until the oath (the shadow's, the
+    /// dump's); the film driver's USA default plays the game from the USA's start, and its warm-up's window holds the polling days measured here - the count
+    /// held there as play holds it, by design; (h) scope: a world whose player is another country holds the AI USA's count on its day too (PS-8's).</item>
     /// <item>(i) US-8b (R-US25, RULED: forks hold their own counts, every fork drawing the live game's election noise): the election's noise source
     /// (<see cref="SimulationRandom.ElectionNoiseOn"/>) gives the live game and a fork's generator the same draws for one polling day whatever their counted
     /// streams hold, moves no counted stream, and differs by day, country and game; at a test σ the two worlds' counts on one poll are one contest; and a
@@ -509,12 +510,16 @@ namespace PoliSim.EditorTools
                 (SimulationManager none, World noneWorld, Country noneUsa) = Open(hosts, null, null);
                 GovernmentRecord noneGov = noneUsa.Government;
                 for (int d = 0; d < 2; d++) { Step(none, noneWorld); }
-                Check(noneUsa.UsPresidentialElections.Count == 0 && ReferenceEquals(noneUsa.Government, noneGov),
-                    F("(g) a world with no player country (the seeded shadow's, the dump's), stepped across {0}, holds no US count and keeps its president", Day(Polled)));
+                // PS-8 (K243, R-US5 (a)): the AI USA counts its own polling day in every world, by the idle game - the contest dated the day, the president of record in office until the oath
+                Check(noneUsa.UsPresidentialElections.Count == 1 && noneUsa.UsPresidentialElections[0].PollingDay.Date == Polled.Date && ReferenceEquals(noneUsa.Government, noneGov),
+                    F("(g) a world with no player country (the seeded shadow's, the dump's), stepped across {0}, holds the AI USA's count on its day by the idle game (PS-8, K243) and keeps its president until the oath - {1}",
+                        Day(Polled), noneUsa.UsPresidentialElections.Count > 0 ? noneUsa.UsPresidentialElections[0].Line : "NO COUNT"));
                 SimulationManager.SetEpoch(Polled.AddDays(-1));
                 (SimulationManager ger, World gerWorld, Country gerUsa) = Open(hosts, CountryId.Germany, "CDU");
                 for (int d = 0; d < 2; d++) { Step(ger, gerWorld); }
-                Check(gerUsa.UsPresidentialElections.Count == 0, F("(h) a world whose player is Germany (CDU), stepped across {0}, holds no US count - the AI USA's is PS-8's (R-US5 (a))", Day(Polled)));
+                Check(gerUsa.UsPresidentialElections.Count == 1 && gerUsa.UsPresidentialElections[0].PollingDay.Date == Polled.Date && ger.LastPlayerCount == null,
+                    F("(h) a world whose player is Germany (CDU), stepped across {0}, holds the AI USA's count on its day - PS-8's (R-US5 (a)) - and no count of the player's own - {1}",
+                        Day(Polled), gerUsa.UsPresidentialElections.Count > 0 ? gerUsa.UsPresidentialElections[0].Line : "NO COUNT"));
                 EnergyMarket.ResetTurnState();
                 // the film driver: its default country, and the polling days its warm-up's window holds from the USA's start
                 var driverHost = new GameObject("UsPresidentialElectionDiagnostic.Driver"); hosts.Add(driverHost);

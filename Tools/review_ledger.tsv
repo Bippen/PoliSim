@@ -380,3 +380,7 @@ file	Assets/Scripts/Simulation/MacroSystem.cs	7c54263129c5ad9a68c9fce410883bd9d6
 file	Assets/Scripts/Simulation/SimulationManager.cs	1450690956eb94c0a9561fecc17bb366b883219e11b09c335891d8c31b56c7fd	reviewed	2026-10-28	s937	Reviews/2026-10-28_k210_integrator.md	-
 baseline	777	23b7a8f920599b5929419923c338b8847cda5fd95c02a18bf3d6c6ac3a7c29e0	reviewed	2026-10-28	s937	Reviews/2026-10-28_k210_integrator.md	-
 baseline	424242	56e95972a54264e781d41104a25fb0116f6d3bc5b26026b85f845133f504b83a	reviewed	2026-10-28	s937	Reviews/2026-10-28_k210_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.WorldCalendar.cs	fc8601705499ae5c630b54eb9dc06f71f869c431df6b96b9fe619d2d4dd5b074	reviewed	2026-10-28	s938	Reviews/2026-10-28_ps8_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	dd4f51a3b92fa6de996b00e520293b28e8c3cd779b16ee2dd59d2d1b6155dcd7	reviewed	2026-10-28	s938	Reviews/2026-10-28_ps8_integrator.md	-
+baseline	777	0ce1e0560c1da1c616c9111342795f82a82c1895fcafe6a51a27f4041fa7573d	reviewed	2026-10-28	s938	Reviews/2026-10-28_ps8_integrator.md	-
+baseline	424242	f450438abc75052f0bc3e5f1edeeb727ade3c271c6723cd90f6658f9ea3cb018	reviewed	2026-10-28	s938	Reviews/2026-10-28_ps8_integrator.md	-

@@ -145,6 +145,9 @@ namespace PoliSim.UI
                 DrawDocketItem(key, "cal", UiPalette.GetAreaColor(UiPalette.SystemArea.Political), date.Name + " · " + (today ? "today" : DeskDay(date.Day)), date.Line, holdsTime: false, action: null, stampWords: "Information");
             }
 
+            // ---- PS-8 (K163): the elections abroad of the last month, each with its results card - information, never holding the clock ----
+            DrawForeignElectionItems();
+
             // ---- the budget process, the fourth thing that holds the clock ----
             if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {

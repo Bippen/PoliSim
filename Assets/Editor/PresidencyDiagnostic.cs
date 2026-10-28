@@ -43,7 +43,7 @@ namespace PoliSim.EditorTools
     /// US-16's build): a contingent contest the House cannot choose - a House the game elected, planted with no majority of the states - hands the Vice President
     /// to the Senate on the count's day, a majority of the whole Senate choosing, and that Vice President acts as President from the oath; where the Senate cannot
     /// choose either, the Speaker acts (3 U.S.C. §19); never the sitting president past noon on 20 January;</item>
-    /// <item>(g) scope: a world whose player is another country keeps the AI USA's president across the oath, a contest planted or not (PS-8 owns the AI row);</item>
+    /// <item>(g) scope: since PS-8 (K243) a world whose player is another country swears in the AI USA's own planted winner at the oath, by the calendar's seating;</item>
     /// <item>(h) a save cut on the eve of the oath, loaded INTO THE GAME (the controller's own `RestoreFromSave`, §557), keeps its government and its contest as it
     /// loads, reads PRESIDENT-ELECT on the controller's own chip, and swears the game's president on its next day; (i) a save cut after the oath keeps the
     /// game's president as it loads and on its next day - the record does not seat its own over him; the contest rides the save whole; a format-38 save is
@@ -266,8 +266,13 @@ namespace PoliSim.EditorTools
                             F("(b) each change once: the House seated {0} time(s), on {1}; the president {2} time(s), on {3}", seatChanges, Day(seatOn), govChanges, Day(govOn)));
                         Check(windowOnOath, "(b) REP, now governing, gets its own arrival window on the oath's day - the window reset as the president installs (US-2's premise, through the same transition)");
                         Check(after, F("(b) {0}: the same government, the chip \"{1}\" - seated once, then left alone", Day(StepTo), afterChip));
-                        Check(others.All(kv => ReferenceEquals(world.GetCountry(kv.Key).ParliamentSeats, kv.Value.Seats) && ReferenceEquals(world.GetCountry(kv.Key).Government, kv.Value.Gov)),
-                            "(b) every other country's chamber and government untouched from the eve to the day after the oath");
+                        // PS-8 (K162, K243): the oath moves no other country; the one change abroad in these days is France's record by date (its government of record from
+                        // its own first day, the calendar's seating) - a change on a day the record names, never the oath's
+                        Check(others.All(kv => (ReferenceEquals(world.GetCountry(kv.Key).ParliamentSeats, kv.Value.Seats) && ReferenceEquals(world.GetCountry(kv.Key).Government, kv.Value.Gov))
+                                || (WorldCalendar.SeatedByRecordAlone(kv.Key) && world.GetCountry(kv.Key).Government != null
+                                    && WorldClock.TryGovernmentAt(kv.Key, world.GetCountry(kv.Key).Government.FormedOn, out WorldClock.GovernmentOfRecord ofRecord)
+                                    && ofRecord.From == world.GetCountry(kv.Key).Government.FormedOn.Date && world.GetCountry(kv.Key).Government.FormedOn.Date != Oath.Date)),
+                            "(b) every other country's chamber and government untouched by the oath from the eve to the day after it - France's alone changes, on its record's own dates (PS-8, K162)");
                         EnergyMarket.ResetTurnState();
                     }
 
@@ -488,14 +493,15 @@ namespace PoliSim.EditorTools
                         }
                     }
 
-                    // ---- (g) scope: a world whose player is another country keeps the AI USA's president across the oath, a contest planted or not
+                    // ---- (g) scope: since PS-8 (K243) a world whose player is another country swears in the AI USA's own winner at the oath - the calendar's seating
                     {
                         (SimulationManager sim, World world, Country usa) = Open(OathEve, CountryId.Germany, "CDU");
-                        usa.UsPresidentialElections.Add(Planted("DEM", "DEM's win, on an AI USA"));
+                        UsPresidentialElection.Contest planted = Planted("DEM", "DEM's win, on an AI USA");
+                        usa.UsPresidentialElections.Add(planted);
                         GovernmentRecord eveGov = usa.Government;
                         for (int d = 0; d < 10 && sim.CurrentDate < StepTo; d++) { Step(sim, world); }
-                        Check(ReferenceEquals(usa.Government, eveGov) && eveGov.Executive == Biden,
-                            F("(g) a world whose player is Germany (CDU), a DEM win planted on the AI USA: stepped to {0}, the AI USA keeps its president, the same object - the oath is the player's country's (PS-8 owns the AI row)", Day(sim.CurrentDate)));
+                        Check(!ReferenceEquals(usa.Government, eveGov) && UsPresidentialElection.Governs(usa.Government, planted) && usa.Government.PmParty == "DEM",
+                            F("(g) a world whose player is Germany (CDU), a DEM win planted on the AI USA: stepped to {0}, the AI USA's winner takes office at the oath (PS-8, K243) - {1}", Day(sim.CurrentDate), usa.Government?.Executive));
                         EnergyMarket.ResetTurnState();
                     }
 

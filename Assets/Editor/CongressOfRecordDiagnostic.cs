@@ -37,8 +37,8 @@ namespace PoliSim.EditorTools
     /// put right on its next day by the day loop alone (`AdvanceDay`, not the player's tick); (h) the same save, loaded into the game, has both rewritten as
     /// it loads and is right before any step;</item>
     /// <item>(g) scope: the gates are the USA's alone over every country; a non-US chamber planted off its record, and every other country's chamber and
-    /// government, are untouched; a US world with no player country (the seeded shadow's, the trajectory dump's), and one whose player is another country,
-    /// keep the AI USA's eve House and president;</item>
+    /// government, are untouched by the player's hook; since PS-8 (K243) a US world with no player country (the seeded shadow's, the trajectory dump's), and one
+    /// whose player is another country, seat the AI USA's record by date (the 119th, Trump at the oath) by the calendar's own seating;</item>
     /// <item>(i) the row's surname: BIDEN to the oath, TRUMP from it - a generational suffix is not the surname;</item>
     /// <item>(j) PS-6 US-2c (Elias's ruling J3): a US game opened on a planted 2022 date seats the 117th, the chamber of record for its date, and steps into the
     /// 118th's House and Senate on its day by the day loop alone - the reading a 2022 or 2023 US start would take, none being offered.</item>
@@ -217,23 +217,22 @@ namespace PoliSim.EditorTools
                         F("(f) a world holding the 118th, Biden and the 118th's capital past their days (a save before US-2) is put right on its next day, {0}, by the day loop alone: the 119th, Trump, the capital carried - {1}", Day(sim.CurrentDate), Capital(usa)));
                     EnergyMarket.ResetTurnState();
 
-                    // (g) a US world with no player country keeps its eve's House and president - the hook is the player's country's
+                    // (g) PS-8 (K243, R-US5 (a)): a US world with no player country seats the AI USA's record by date - the 119th on 3 Jan 2025, Trump at the oath - by
+                    // the calendar's own seating (SimulationManager.WorldCalendar.cs), as the player's country is seated by the hook
                     (SimulationManager bare, World bareWorld, Country bareUsa) = Open(player: false, Eve);
                     for (int day = 0; day < 60 && bare.CurrentDate < After; day++) { Step(bare, bareWorld); }
-                    Check(Same(bareUsa.ParliamentSeats, house118) && bareUsa.Government.Executive.StartsWith("Joseph R. Biden", StringComparison.Ordinal),
-                        F("(g) a US world with no player country keeps its eve's House and president on {0} - {1}", Day(bare.CurrentDate), bareUsa.Government.Executive));
+                    Check(Same(bareUsa.ParliamentSeats, house119) && bareUsa.Government.Executive == "Donald J. Trump (REP)",
+                        F("(g) a US world with no player country seats the AI USA's record by date (PS-8, K243): the 119th and Trump on {0} - {1}", Day(bare.CurrentDate), bareUsa.Government.Executive));
                     EnergyMarket.ResetTurnState();
 
-                    // (g) a world whose player is another country keeps the AI USA's House and president objects across both days - the hook is the player's
-                    // country's, never every country's under the same gates
+                    // (g) PS-8 (K243): a world whose player is another country seats the AI USA's record by date too - the calendar's, not the player's hook
                     (SimulationManager other, World otherWorld, Country otherUsa) = Open(player: false, Eve);
                     other.PlayerCountryId = CountryId.Germany;
                     otherWorld.GetCountry(CountryId.Germany).PlayerPartyAbbrev = "CDU";
-                    object otherSeats = otherUsa.ParliamentSeats, otherGov = otherUsa.Government;
+                    object otherGov = otherUsa.Government;
                     for (int day = 0; day < 60 && other.CurrentDate < After; day++) { Step(other, otherWorld); }
-                    Check(ReferenceEquals(otherUsa.ParliamentSeats, otherSeats) && ReferenceEquals(otherUsa.Government, otherGov) && Same(otherUsa.ParliamentSeats, house118)
-                          && otherUsa.Government.Executive.StartsWith("Joseph R. Biden", StringComparison.Ordinal),
-                        F("(g) a world whose player is another country (Germany, CDU) keeps the AI USA's eve House and president, the same objects, to {0}", Day(other.CurrentDate)));
+                    Check(!ReferenceEquals(otherUsa.Government, otherGov) && Same(otherUsa.ParliamentSeats, house119) && otherUsa.Government.Executive == "Donald J. Trump (REP)",
+                        F("(g) a world whose player is another country (Germany, CDU) seats the AI USA's record by date (PS-8, K243): the 119th and Trump, a new government object, by {0} - {1}", Day(other.CurrentDate), otherUsa.Government.Executive));
                     EnergyMarket.ResetTurnState();
 
                     // (b) a REP player: the AI government's arrival budget is spent on the first day and resolved by the eve of the oath (a 21-day bill tabled the

@@ -147,7 +147,11 @@ namespace PoliSim.EditorTools
                     sim.AdvanceTurn(decisions);
                     string holder = FinancePartner.Holder(germany);
                     string who = player != null ? "the SPD player" : "no player (the AI governs, the ministry first)";
-                    bool stepped = holder != null && germany.FinanceStanceHolder == holder && Mathf.Abs(germany.FinanceStanceApplied + FinancePartner.StepPointsPerYear) < StanceTolerance && germany.FinancePartnerSteppedOn != DateTime.MinValue;
+                    // PS-8 (K243): a world with no player holds Germany's 23 Feb 2025 election as an AI country and forms its government on 25 Mar 2025, inside the turn -
+                    // so the government at the boundary is the election's, and its partner's step is read toward ITS target (the head's lrecon against the holder's),
+                    // not the start's SPD head and FDP partner's tightening; the SPD player's world holds no count of its own here (no controller), and keeps the start's
+                    float expected = holder != null && FinancePartner.Target(germany, holder, out float target) ? Mathf.Clamp(target, -FinancePartner.StepPointsPerYear, FinancePartner.StepPointsPerYear) : float.NaN;
+                    bool stepped = holder != null && germany.FinanceStanceHolder == holder && Mathf.Abs(germany.FinanceStanceApplied - expected) < StanceTolerance && germany.FinancePartnerSteppedOn != DateTime.MinValue;
                     // where the AI governs, the treaty's rule writes first; had it written every line and both rates, the partner would have nothing left to
                     // move that year - stated, not excused: the check prints which
                     bool claimedAll = player == null && germany.FinancePartnerSteppedOn == DateTime.MinValue && Mathf.Abs(germany.FinanceStanceApplied) < 1e-6f;

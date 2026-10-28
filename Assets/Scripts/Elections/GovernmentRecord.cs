@@ -450,6 +450,25 @@ namespace PoliSim.Elections
             return record;
         }
 
+        /// <summary>PS-8: the government an AI country's procedure forms after its count (`SimulationManager.WorldCalendar.cs`) - the projection's cabinet, its supporters
+        /// and its prime minister's party as the procedure named them (the Speaker's formateur, the Bundestag's elected candidate, the Sejm's step, the granted
+        /// mandate), the posts by Gamson's law and the supporters' agreements as any formed government's; the outcome read off the seats it stands on (GA-3-4's
+        /// label), so a projection's view and the seats can never disagree. The executive kind and the head of state above the cabinet carried from the government
+        /// it replaces, as the player's installs carry them (L1 of the s938 review). Built here so every write to who governs stays inside the record's methods.</summary>
+        public static GovernmentRecord FromProjection(Country country, FormationProjection projection, DateTime formedOn, string basis, World world = null)
+        {
+            GovernmentRecord outgoing = country.Government;
+            var record = new GovernmentRecord { FormedOn = formedOn, Provisional = false, Basis = basis, PmParty = projection.PmParty,
+                Kind = outgoing?.Kind ?? WorldClock.ExecutiveKind.Cabinet, Executive = outgoing?.Executive };
+            record.Cabinet.AddRange(projection.Cabinet);
+            record.Support.AddRange(projection.Support);
+            if (record.PmParty == null && record.Cabinet.Count > 0) { record.PmParty = Largest(country, record.Cabinet); }
+            record.Relabel(country);
+            record.AllocatePortfolios(country);
+            record.FormAgreements(country, formedOn, world);
+            return record;
+        }
+
         /// <summary>The government the formation formed after the game's own election (or none: a record with an empty cabinet and the reason).</summary>
         public static GovernmentRecord FromView(Country country, GovernmentFormation.View view, DateTime formedOn, bool provisional = false, string basis = null, World world = null)
         {

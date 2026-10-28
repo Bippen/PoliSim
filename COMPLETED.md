@@ -41992,3 +41992,23 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nk (LongRunAnchors PASS, 2 REGISTERED as predicted) and nk3 after the rework (the same); harnk D-13 (b) unmoved; cheapk4 clean but the ledger (rows added); simk4 86/87 - the sentinel's FT-10 France household cell slack (17.972 against 19.5), lowered to 18.5 by its rule; sentk TrajectorySentinelCheck + ReviewLedgerCheck clean; dump mf210 (reworked) pinned; play saves re-staged, the US cards regenerated.
 
 **Commit:** this one.
+
+## 938. PS-8 (K159-K163; K238-K244, K246, K247): EVERY COUNTRY'S CALENDAR - AI COUNTRIES HOLD THEIR OWN ELECTIONS ON THEIR DATES, COUNTED AS THE IDLE GAME, FORMED BY THEIR OWN PROCEDURES; THE FAMILY `ps8` (2026-10-28)
+
+**What was owed:** PS-8's row (every modelled country's elections on its own calendar as an AI country, the count a pure function of its world, the record seated by date where a model does not exist), §618's ruling 4, and K159-K163.
+
+**Built** (an implementer on `wave/ps8`: f3797956; three reviews NOT READY - an AI Bundestag stopping at its first ballot, the Riksdag's extra-election reason false; the abroad film walking an unreachable game, an H1 plant passing unexercised; the film's budget laid as an AI bill - and the fixes 7838ce15, 962ffd3e, aa9311f0, a0a75dfd; then cee08e89 and eb4a1913 after the integrator's measurements):
+- Calendars: Germany's K159 day by Art. 39 GG reckoned by BGB §§ 187-188 (28 Jan 2029, then 2 Jan 2033); Sweden, Poland's Sejm and presidential vote, Italy re-anchored on its own last count, the USA's Novembers; France seated by record to 25 Sep 2026, then held (K162).
+- `SimulationManager.WorldCalendar.cs`: every non-player country's count as GATE-18's idle game with the record's factors (no campaign, keyed noise, no counted stream drawn); the chamber seated; the government formed on the first sitting by the procedure's own code and installed through `GovernmentRecord.FromProjection` - an AI Bundestag past a failed first ballot through the player's own Art. 63 round; snap elections only by the formation (four rejections in the Riksdag; Italy's three mandates); an election of record the vote model cannot predict seats its chamber of record by date.
+- K163: a Docket item for each election abroad in the last 30 days and a minimal results card (`GameController.ForeignResultCard.cs`, a stand-in for Design's D-WORKLIST §6); the `-shotabroad` film walks the player's game as play reaches it. Save format 67.
+- `WorldCalendarDiagnostic` (simulation, registered by the integrator): hand-coded statutory days, the idle game's arithmetic, the purity check, procedure-only snap elections, the planted hung Bundestag, the RNG streams, a save with an AI round open; PollingDayDiagnostic, HistoryRolledForwardDiagnostic, UsPresidentialElectionDiagnostic, CongressOfRecordDiagnostic, PresidencyDiagnostic, FinancePartnerDiagnostic and AverageCabinetDiagnostic updated to the world where AI countries vote.
+
+**Measured** (`Reviews/2026-10-28_ps8_integrator.md`): the dump world holds every country's elections (652 CALENDAR lines - Sweden 2026 S alone, Italy 2027 FdI+Lega+FI+NM, Poland 2027 KO+TD, a DEM US president from 2029, Germany 2029 CDU+SPD+CSU+BSW+FDP, Sweden 2030 SD+M+KD+L); against `mf210` Poland first differs at turn 6 (its 2031 cabinet gives Finance to TD, the one install reaching an AI book, K247), Sweden and the USA at turn 7 through trade, Germany at 35; GDP at turn 100 within 1.1 %. The abroad film lists the AI US midterm of 3 Nov 2026 (House DEM 229, REP 206). No measurable bar time added. Sentinel 777 0ce1e056..., 424242 f450438a....
+
+**Evidence:** `Reviews/2026-10-28_ps8_review.md`, `_review2.md`, `_review3.md`, `_integrator.md`; ledger rows s938 (`SimulationManager.WorldCalendar.cs`, `SimulationManager.cs`, both baseline digests).
+
+**Declared:** K238-K244, K246, K247. Owed: Design's results-card board; COAL-1 for AI countries; a governing party's fiscal preference reaching an AI book; Gate18's record-factor refit.
+
+**Bars:** nps8 (9 WorldCalendar clauses: the purity re-prediction read the newly seated chamber; Sweden 2022 unpredictable - fixed cee08e89); nps8b 9/9; slrtps8c 12/12; drysabr / realabr Sweden 1280 clean; simps8 88/88; cheapps8 5 older checks asserting frozen AI countries - updated eb4a1913; cheapps8d clean but the ledger (rows added); dump ps8 (= ps8d) pinned; the play saves re-staged and the US cards regenerated.
+
+**Commit:** this one.

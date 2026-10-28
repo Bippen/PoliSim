@@ -647,7 +647,7 @@ namespace PoliSim.Elections
         /// <summary>The statute a country's ordinary polling day follows, with its citations, or null where no calendar is modelled.</summary>
         public static string PollingDayBasis(CountryId id) =>
             id == CountryId.Sweden ? "regeringsformen 3 kap. 3 § - every fourth year [RF-3-3]; vallagen 1 kap. 3 § - the second Sunday of September [VL-1-3] (sweden/election_calendar.md)"
-            : id == CountryId.Germany ? "the snap election's day, 23 Feb 2025, set with the dissolution of 27 Dec 2024 - BGBl. 2024 I Nr. 435 [BWL-WT25] (germany/records_by_date.md); no later polling day on record"   // §697
+            : id == CountryId.Germany ? "the snap election's day, 23 Feb 2025, set with the dissolution of 27 Dec 2024 - BGBl. 2024 I Nr. 435 [BWL-WT25] (germany/records_by_date.md); then, by Elias's ruling K159, the first Sunday of Art. 39 Abs. 1 GG's window - \"frühestens sechsundvierzig, spätestens achtundvierzig Monate nach Beginn der Wahlperiode\" [GG-39], the term from the Bundestag's first sitting (the 21st's 25 Mar 2025 [BT-K21]), the months counted by BGB § 187 Abs. 1 and § 188 Abs. 2-3 [BGB-187] [BGB-188] (so 28 Jan 2029); a term the game elects first sits on the 30th day after its polling day (Art. 39 Abs. 2: \"spätestens am dreißigsten Tage nach der Wahl\" - its last day, DECLARED as Poland's E2)"   // §697; PS-8 (K159)
             : id == CountryId.USA ? "3 U.S.C. §21(1) as the Electoral Count Reform Act of 2022 wrote it - \"election day\" means \"the Tuesday next after the first Monday in November, in every fourth year succeeding every election of a President and Vice President\" (GPO, govinfo_uscode_3_21.html; usa/president_returns.md) - 5 Nov 2024 the latest of record [EC-DATES]; and 2 U.S.C. §7 - \"The Tuesday next after the 1st Monday in November, in every even numbered year\" (GPO, govinfo_uscode_2_7_election_day.html) [USC-7] (usa/records_by_date.md): every even year elects the House and a Senate class, a presidential year the president with them, a midterm no president"   // PS-6 US-8; PS-6 US-27 the midterm days
             : id == CountryId.Italy ? "the snap election's day, 25 Sep 2022, with the first sitting on 13 Oct 2022 - DPR 97/2022 (\"I comizi ... sono convocati per il giorno di domenica 25 settembre 2022. La prima riunione delle Camere avrà luogo il giorno 13 ottobre 2022\") [DPR-97]; then Costituzione art. 60 - the chambers are elected for five years, the term running from the first sitting (DPR 361/1957 art. 7) - and Elias's ruling K156: the ordinary polling day is the last Sunday before the term's fifth anniversary (10 Oct 2027 for the term that first sat on 13 Oct 2022); a term the game elects first sits on the 20th day after its polling day (art. 61: \"La prima riunione ha luogo non oltre il ventesimo giorno dalle elezioni\" - its last day, DECLARED as Poland's E2)"   // PS-7
             : id == CountryId.Poland ? "the 10th Sejm's election day, 15 Oct 2023 - the PKW's notices (Dz.U. 2023 poz. 2234; the Senate's poz. 2235, held: \"przeprowadzonych w dniu 15 października 2023 r.\") [PKW-SEN-2023] (poland/records_by_date.md); then Konstytucja Art. 98 ust. 2 - a non-working day within the 30 days before the fourth anniversary of the term's first sitting [TK-KONST] - its first Sunday, Elias's ruling D3 (2019 and 2023 took it; 2015 the exception, on record); the 10th term first sat on 13 Nov 2023 [API-TERM], so 17 Oct 2027; a term the game elects first sits on the 30th day after its polling day (Art. 109 ust. 2's last day - ruled, E2); the principle for both of Poland's votes, ruled with it: the most recent practice"   // §762, §767, §773
@@ -668,6 +668,27 @@ namespace PoliSim.Elections
         /// a Sejm the game elects first sits on this day after its polling day - Konstytucja Art. 109 ust. 2's last day ("w ciągu 30 dni od dnia wyborów");
         /// the record's 2019 Sejm sat first on the 30th day, 2023's on the 29th.</summary>
         public const int PolandFirstSittingAfterDays = 30;
+
+        /// <summary>PS-8 (Elias's ruling K159): the Bundestag's regular polling day for a term that first sat on <paramref name="termFirstSitting"/> - the first
+        /// Sunday of Art. 39 Abs. 1 GG's window, which opens forty-six months after the Wahlperiode begins ("frühestens sechsundvierzig ... Monate nach Beginn
+        /// der Wahlperiode" [GG-39]). The forty-six months are counted by the BGB's rules for a period (L2 of the s938 review; a reading, DECLARED: the Basic Law
+        /// names no reckoning of its own): the period begins with an event, the first sitting, whose day is not counted (§ 187 Abs. 1 [BGB-187]); it ends with the
+        /// day of the last month whose number is the event's (§ 188 Abs. 2 [BGB-188]) - or, where that month has no such day, with its last day (Abs. 3, which
+        /// `DateTime.AddMonths`'s clamp gives) - so the window opens on the day after, and its first Sunday is the polling day.</summary>
+        public static DateTime FirstSundayOfBundestagWindow(DateTime termFirstSitting)
+        {
+            DateTime opens = termFirstSitting.Date.AddMonths(BundestagWindowOpensMonths).AddDays(1);
+            int toSunday = ((int)DayOfWeek.Sunday - (int)opens.DayOfWeek + 7) % 7;
+            return opens.AddDays(toSunday);
+        }
+
+        /// <summary>SOURCED - Art. 39 Abs. 1 GG [GG-39]: "frühestens sechsundvierzig ... Monate nach Beginn der Wahlperiode".</summary>
+        public const int BundestagWindowOpensMonths = 46;
+
+        /// <summary>SOURCED - Art. 39 Abs. 2 GG [GG-39]: "Der Bundestag tritt spätestens am dreißigsten Tage nach der Wahl zusammen": a Bundestag the game elects first sits
+        /// on this day after its polling day, the article's last day (as Poland's E2 took Art. 109 ust. 2's); the record's 21st sat on the 30th day (23 Feb to 25 Mar
+        /// 2025). The same limit the player's chancellor election convenes by (`SpeakerRound.BundestagConvenesWithinDays`), read from it so the two never part (L3).</summary>
+        public const int GermanyFirstSittingAfterDays = SpeakerRound.BundestagConvenesWithinDays;
 
         /// <summary>PS-7: the first sitting of the chambers elected on 25 Sep 2022 - fixed by the decree that called the election, DPR 97/2022 ("La prima riunione
         /// delle Camere avrà luogo il giorno 13 ottobre 2022") [DPR-97]; the game's own count that day elects the chambers that sit then.</summary>
@@ -727,8 +748,12 @@ namespace PoliSim.Elections
         /// The country's next ordinary polling day on or after <paramref name="onOrAfter"/>, false where the country's election calendar
         /// is not modelled (the countries before their stages: their chambers hold as of record).
         /// §697 (PS-4): <b>Germany's snap polling day</b>, 23 February 2025 (BGBl. 2024 I Nr. 435) - the day a German game opened on the snap start
-        /// votes, and the one German polling day on record here; the next regular one's rule (Art. 39 GG's term) is not quoted on disk, so after the
-        /// snap a German game offers no polling day. §762, §767 (PS-5; Elias's ruling D3): <b>Poland's</b> - the start's own polling day, 15 October
+        /// votes, and the one German polling day on record here; PS-8 (Elias's ruling K159): after it, <b>the first Sunday of Art. 39 GG's window</b> -
+        /// "Die Neuwahl findet frühestens sechsundvierzig, spätestens achtundvierzig Monate nach Beginn der Wahlperiode statt" (Art. 39 Abs. 1, held in
+        /// `germany/raw/records/gg_art_39.html` [GG-39]), the Wahlperiode running from the Bundestag's first sitting (it "endet mit dem Zusammentritt eines
+        /// neuen Bundestages") - the 21st's of record, 25 Mar 2025 [BT-K21] (28 Jan 2029), every later one from the first sitting its own election gives
+        /// (<see cref="GermanyFirstSittingAfterDays"/>; <see cref="FirstSundayOfBundestagWindow"/>). Premise, stated: every term runs to its window - a
+        /// dissolution (Art. 63 Abs. 4, Art. 68) is not modelled. §762, §767 (PS-5; Elias's ruling D3): <b>Poland's</b> - the start's own polling day, 15 October
         /// 2023 (the PKW's notices), then each term's by Konstytucja Art. 98 ust. 2 (held in `raw/records/trybunal_konstytucja.html`): the window's
         /// first Sunday before the fourth anniversary of the term's first sitting (<see cref="FirstSundayOfTermWindow"/>) - the 10th term's from its
         /// sitting of record, 13 Nov 2023 (17 Oct 2027), every later one from the first sitting its own election gives (<see cref="PolandFirstSittingAfterDays"/>).
@@ -755,9 +780,18 @@ namespace PoliSim.Elections
             }
             if (id == CountryId.Germany)
             {
-                DateTime onRecord = LatestElectionDay(id);   // the snap's own polling day, and none after it
-                if (onOrAfter.Date > onRecord) { return false; }
-                pollingDay = onRecord;
+                DateTime day = LatestElectionDay(id);   // the snap's own polling day, 23 Feb 2025
+                // PS-8 (K159): then the first Sunday of each term's Art. 39 window, the 21st Bundestag's from its first sitting of record (25 Mar 2025 [BT-K21]),
+                // a term the game elects from the 30th day after its polling day (Art. 39 Abs. 2's last day, DECLARED as Poland's E2)
+                DateTime firstSitting = DateTime.MinValue;
+                foreach (ChamberOfRecord c in Chambers(id)) { if (c.ElectionDay == day) { firstSitting = c.Convened; } }
+                if (firstSitting == DateTime.MinValue) { return false; }
+                while (day < onOrAfter.Date)
+                {
+                    day = FirstSundayOfBundestagWindow(firstSitting);
+                    firstSitting = day.AddDays(GermanyFirstSittingAfterDays);
+                }
+                pollingDay = day;
                 return true;
             }
             if (id == CountryId.Poland)
