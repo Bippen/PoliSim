@@ -41782,3 +41782,19 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** n926b 8 of 10 then n926c (ApprovalVoteDiagnostic's planted stock) and the integrator's fixes; slrt926 12 of 12; dump926 (family mf13) explained above, the sentinel re-pinned; drys926 (Sweden 1280) 0 failed and real926 (Sweden 1280: the Policy Web's 06 series among 155 frames) 0 failed, no canvas clip; usread926 (the US-8 model card regenerated); cheap926b 142 of 142 and sim926b 78 of 78 on the final tree, no ATTRIB line (ApprovalReversionDiagnostic (f) closing Germany's 2027-10-01 boundary clean)
 
 **Commit:** this one.
+
+## 927. PS-7 SOURCING (K150-K158): ITALY BY COLLEGE - 2022 AND 2018 BY COMUNE, 2018 ON THE 2020 COLLEGES, THE STATUTES IN FORCE ON 25-9-2022, DRAGHI'S CONFIDENCE VOTES (2026-10-28)
+
+**What was owed:** the sources K150-K158 rest on before PS-7 is built.
+
+**Built** (a sourcing implementer on `wave/itsrc` eb34a6ac, squash-merged; every raw folder's SHA256SUMS re-checked on main, and `perl Tools/it_collegi_prep.pl --check` IDENTICAL on all eight derived files): the Ministry of the Interior's open data (DAIT) for the 2022 Camera and Senato by comune and by split-comune piece, each with the 2020 college it voted in, and 2018's by comune; the Ministry's 2020 comune-to-college tables and ISTAT's successions since 1991 (ISTAT's 2020 geography, 90 MB, out of tree in `PoliSim-captures/sources/italy_ps7/` - its `UT_Collegi2020` the cross-check); DPR 361/1957, D.Lgs. 533/1993, L. 165/2017, D.Lgs. 177/2020 and the Costituzione, each "Vigente al: 25-9-2022" from Normattiva; the Camera's 18 Feb 2021 confidence vote per deputy (535 / 56 / 5) and AGI's Senato totals for 17 Feb 2021 (262 / 40 / 2); the senators for life already on disk. `Tools/it_collegi_prep.pl` writes `ElectionsData/italy/collegi2020/`: per chamber the 2022 lists and candidates per 2020 college (with each list's cifra di collegio, art. 77 c. 1 lett. c) and K150's table - 2018's comune returns re-aggregated onto the 2020 colleges. `ElectionsData/italy/ps7_sources.md` registers it all.
+
+**Measured:** all 7,958 comuni of 2018 join onto 2022's in both chambers, every national total kept exactly; ISTAT's table agrees with the 2022 returns on every comune-college pair (seven differ only in a hyphenated name's spelling); the 2022 Camera's electorate 46,021,956 and voters 29,413,657 equal Eligendo's; the colleges' winners equal Eligendo's uninominal column (Camera 121/12/10/2/1 plus Valle d'Aosta; Senato 74). The derived cifre summed nationally are within 0.02 % of the published for the coalitions and 0.3 % for standalone lists, up to 2.6 % inside coalitions (the open-data counts differ from the verified cifre).
+
+**BILLED:** Eligendo's published per-circoscrizione cifre (an Akamai 403 on index.php - not circumvented), so K151's lett. h/i stage runs on the derived cifre unverified; the Senato's own roll call of 17 Feb 2021 (senato.it behind an AWS WAF challenge, dati.senato.it without that sitting, the Wayback Machine offline).
+
+**Declared:** the comune-to-college assignment is the 2022 returns' own (the tables cross-check it); split comuni's 2018 returns divided among their pieces by each piece's 2022 electorate; lost accents as wildcards and ISTAT's successions from 2017; partial territory transfers and art. 77 lett. c's minority-list exclusion not modelled; the seats abroad's files fetched, not yet derived.
+
+**Bars:** doc927 23 of 23; cheap927 142 of 142; sim927 78 of 78 (data, tooling and documents; no baseline can move)
+
+**Commit:** this one.

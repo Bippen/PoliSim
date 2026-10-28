@@ -1,0 +1,12 @@
+2026-10-28T00:54:56Z	200	569309	elenco-collegi-comuni-camera.csv	https://dait.interno.gov.it/documenti/opendata/catalogoagid/elenco-collegi-comuni-camera.csv
+2026-10-28T00:54:58Z	200	8676	elenco-collegi-camera.csv	https://dait.interno.gov.it/documenti/opendata/catalogoagid/elenco-collegi-camera.csv
+2026-10-28T00:54:59Z	200	4155	elenco-collegi-senato.csv	https://dait.interno.gov.it/documenti/opendata/catalogoagid/elenco-collegi-senato.csv
+2026-10-28T00:55:01Z	200	532634	elenco-collegi-comuni-senato.csv	https://dait.interno.gov.it/documenti/opendata/catalogoagid/elenco-collegi-comuni-senato.csv
+2026-10-28T00:55:02Z	200	532634	NOT KEPT (byte-identical to elenco-collegi-comuni-senato.csv above, SHA-256 05f2ea69...ddd4e - the catalogue lists the file under both names)	https://dait.interno.gov.it/documenti/opendata/catalogoagid/elenco_collegi-comuni-senato.csv
+2026-10-28T00:57:17Z	200	90010211	Collegi_Elettorali_BasiGeografiche.zip (OUT OF TREE: PoliSim-captures/sources/italy_ps7/)	https://www.istat.it/storage/Basi%20Geografiche%202022/Collegi_Elettorali_BasiGeografiche.zip
+2026-10-28T00:57:18Z	200	10712	METADATI_CollegiElettoraliVigenti_28.07.2022.xlsx	https://www.istat.it/wp-content/uploads/2022/07/METADATI_CollegiElettoraliVigenti_28.07.2022.xlsx
+2026-10-28T00:57:20Z	200	109589	istat_basi-geografiche-nuovi-collegi-elettorali.html	https://www.istat.it/notizia/le-basi-geografiche-dei-nuovi-collegi-elettorali-2/
+2026-10-28T00:58:44Z	200	51273	NOT KEPT (ISTAT aggregate tables - counts of variations per region and year, not per comune; superseded by the per-comune file below)	https://www.istat.it/wp-content/uploads/2024/09/Variazioni-amministrative-e-territoriali-dei-comuni-Anni-1991-2025.xlsx
+2026-10-28T00:59:24Z	200	198126	Elenco-comuni-soppressi.zip	https://www.istat.it/storage/codici-unita-amministrative/Elenco-comuni-soppressi.zip
+2026-10-28T00:59:26Z	200	227622	Variazioni-amministrative-e-territoriali-dal-1991.zip	https://www.istat.it/storage/codici-unita-amministrative/Variazioni-amministrative-e-territoriali-dal-1991.zip
+2026-10-28T00:58:30Z	200	125424	NOT KEPT (ISTAT's comune-codes page, read for the links to the per-comune files)	https://www.istat.it/classificazione/codici-dei-comuni-delle-province-e-delle-regioni/

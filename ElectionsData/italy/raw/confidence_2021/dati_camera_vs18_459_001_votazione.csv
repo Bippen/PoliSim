@@ -1,0 +1,26 @@
+"p","o"
+"http://dati.camera.it/ocd/approvato",1
+"http://dati.camera.it/ocd/astenuti",5
+"http://dati.camera.it/ocd/contrari",56
+"http://dati.camera.it/ocd/favorevoli",535
+"http://dati.camera.it/ocd/maggioranza",296
+"http://dati.camera.it/ocd/presenti",596
+"http://dati.camera.it/ocd/presiedutaDa","http://dati.camera.it/ocd/deputato.rdf/d305970_18"
+"http://dati.camera.it/ocd/richiestaFiducia",1
+"http://dati.camera.it/ocd/rif_aic","http://dati.camera.it/ocd/aic.rdf/aic1_00422_18"
+"http://dati.camera.it/ocd/rif_assemblea","http://dati.camera.it/ocd/assemblea.rdf/a18"
+"http://dati.camera.it/ocd/rif_leg","http://dati.camera.it/ocd/legislatura.rdf/repubblica_18"
+"http://dati.camera.it/ocd/rif_seduta","http://dati.camera.it/ocd/seduta.rdf/s18_459"
+"http://dati.camera.it/ocd/votanti",591
+"http://dati.camera.it/ocd/votazioneFinale",0
+"http://dati.camera.it/ocd/votazioneSegreta",0
+"http://lod.xdams.org/ontologies/ods/modified",2021-03-07 14:03:41
+"http://purl.org/dc/elements/1.1/date","20210218"
+"http://purl.org/dc/elements/1.1/description","Mozione di fiducia n. 1-00422 CRIPPA DAVIDE (M5S), MOLINARI RICCARDO (LEGA), DELRIO GRAZIANO (PD), OCCHIUTO ROBERTO (FI), BOSCHI MARIA ELENA (IV), FORNARO FEDERICO (LEU) e SCHULLIAN MANFRED (MISTO)"
+"http://purl.org/dc/elements/1.1/identifier","459001"
+"http://purl.org/dc/elements/1.1/relation","http://documenti.camera.it/apps/votazioni/votazionitutte/schedavotazione.asp?Legislatura=XVIII&RifVotazione=459_1&tipo=dettaglio"
+"http://purl.org/dc/elements/1.1/title","Votazione Mozione 1_00422"
+"http://purl.org/dc/elements/1.1/type","Mozione"
+"http://www.w3.org/1999/02/22-rdf-syntax-ns#type","http://dati.camera.it/ocd/votazione"
+"http://www.w3.org/1999/02/22-rdf-syntax-ns#type","http://dati.camera.it/ocd/votazione"
+"http://www.w3.org/2000/01/rdf-schema#label","Votazione Mozione 1_00422"

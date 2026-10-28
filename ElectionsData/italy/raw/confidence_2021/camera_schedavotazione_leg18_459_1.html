@@ -1,0 +1,1013 @@
+<!-- INIZIALIZZAZIONE ARRAY NOMI CAMPO -->
+
+
+<!-- RIEPILOGO FUNZIONI IMPLEMENTATE -->
+
+
+
+<!-- SEZIONE DICHIARAZIONI DI VARIABILI -->
+
+<!-- SEZIONE FILE TXT -->
+
+
+
+<!-- SEZIONE UTILITY -->
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+	<!--<meta charset="utf-8">-->
+	<meta charset="ISO-8859-1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Scheda votazione elettronica</title>
+	<link rel="stylesheet" type="text/css" href="css/defaultV3.css" title="style grafico">
+	<link rel="stylesheet" type="Text/css" href="css/datiV3.css">
+	<meta name="Format" content="text/html">
+    <meta name="Language" content="it">
+    <meta name="Keywords" content="votazione, progetto di legge, deputato, XVIII legislatura">
+    <meta name="Author" content="Camera dei Deputati">
+    <meta name="Description" content="XVIII legislatura - Ricerca delle votazioni elettroniche">
+	<!-- Librerie HighCharts per generazione grafici -->
+	<script src="js/jquery-3.2.1.slim.min.js"></script>
+	<script src="js/popper.min.js"></script>
+	<script src="js/highcharts.js"></script>
+	<script src="js/exporting.js"></script>
+	<script src="js/export-data.js"></script>
+	<!-- BootStrap	-->
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<script src="js/bootstrap.min.js"></script>
+	<!-- DataTable	-->
+	<link rel="stylesheet" type="Text/css" href="css/jquery.dataTables.min.css">
+	<script src="js/jquery.dataTables.min.js"></script>
+	<script src="js/jquery.sticky.js"></script>
+	<script src="js/application.js"></script>
+	<!-- Custom Style Sitointernet -->
+	<link rel="stylesheet" type="Text/css" href="css/sito-style.css">
+	<link rel="stylesheet" type="Text/css" href="css/votazioni-media-queries.css">
+</head>
+
+<body>
+
+<header>
+	<h1 class="sr-only">Camera dei deputati - Votazioni elettroniche XVIII Legislatura</h1>
+	<div class="header-top">
+    <div class="container">
+			<div class="row">
+				<div class="col-md-6">
+					<ul class="nav nav-pills">
+						<li><a><img alt="Unione Europea" src="/apps/votazioni/votazionitutte/img/logo-ue.png"></a></li>
+						<li><a class="logo-parlamento-italiano" href="https://www.parlamento.it/" target="_blank" title="Vai al sito web del Parlamento Italiano"><img alt="Vai al sito web del Parlamento Italiano" src="/apps/votazioni/votazionitutte/img/logo-parlamento.png"></a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+    <div id="wrapper-sticky-block">
+    	<div class="header-center">
+    		<div class="container">
+    			<div class="row">
+    				<div class="col-xs-6 switch-3">
+    					<a href="/apps/votazioni/votazionitutte/formVotazioni.asp?Legislatura=18" title="Vai alla pagina iniziale di Votazioni elettroniche">
+    						<div class="wrap-logo">
+    							<div class="text-logo">
+    								<span class="text-camera">Camera dei deputati</span>
+									
+    								<div>Votazioni elettroniche XVIII Legislatura</div>
+									
+    							</div>
+    						</div>
+    					</a>
+    				</div>
+    				<div class="col-xs-6 switch-9">
+    					<div class="wrap-section-name">
+    						
+                                <span class="section-name">
+                                    <a href="/apps/votazioni/votazionitutte/formVotazioni.asp?Legislatura=18" title="vai alla pagina iniziale">Votazioni elettroniche</a>
+                                </span>
+                                <span class="section-subtitle">Cerca per seduta, data, tipo o nominativo</span>
+                            
+    					</div>
+    				</div>
+    			</div>
+	    	</div>
+    	</div>
+    	<div class="header-bottom">
+    		<div class="container">
+    			<div class="row">
+    				<div class="col-xs-6">
+
+    				</div>
+    				<div class="col-xs-6">
+    					<a class="link-camera" href="https://www.camera.it" title="Vai al sito web della Camera dei deputati">vai a camera.it</a>
+    				</div>
+    			</div>
+	    	</div>
+    	</div>
+    </div>
+</header>
+
+
+<div class="container">
+
+	 <!-- normale lettura della scheda -->
+
+		<div class="row">
+			<div class="col-12">
+				<!-- INTESTAZIONE --><br><div class="row intestazione"><div class="col-xl-12 center-block text-center"><h1>Votazione per appello nominale n.1</h1></div><div class="w-100"></div><div class="col-12 center-block text-center"><h2>del <strong>18/2/2021</strong> seduta n. <strong>459</strong> presieduta da <strong>SPADONI MARIA EDERA</strong></h2></div><div class="w-100"></div></div>
+<br>
+<!-- TITOLO DEL PROVVEDIMENTO -->
+<div class="row provvedimento">
+<div class="col-1"></div>
+<div class="col-10 center-block text-center">
+<h4>
+Mozione di fiducia n. 1-00422 CRIPPA DAVIDE (M5S), MOLINARI RICCARDO (LEGA), DELRIO GRAZIANO (PD), OCCHIUTO ROBERTO (FI), BOSCHI MARIA ELENA (IV), FORNARO FEDERICO (LEU) e SCHULLIAN MANFRED (MISTO)
+</h4><div class="col-1"></div></div>
+</div>
+<!-- CARICAMENTO DATI SU JSON -->
+<script>
+var jsonPVA = [ { name: 'Percentuale', colorByPoint: true, data: [ { name: 'votanti', y: 99.16, color: '#CC00CC' }, { name: 'astenuti', y: 0.84, color: '#00CCCC' } ] } ];var jsonMFC = [ { name: 'maggioranza', data: [296], color: '#c0c0c0' }, { name: 'favorevoli', data: [535], color: '#5cb85c' }, { name: 'contrari', data: [56], color: '#d9534f' } ];</script>
+<!-- RIEPILOGO DELLA VOTAZIONE -->
+
+		<div class="row">
+			<div class="col-12 center-block text-center bg-secondary text-white"><h2 class="bg_center_blu">Riepilogo della votazione</h2></div>
+		</div>
+		<br>
+	<div id="tabellaVotazioneFinale" class="row"><div id="containerPVA" class="col-12 col-lg-4" style="min-height: 400px"></div><div class="col-12 col-lg-4 dati-tabellare"><div class="row"><div class="col-1"></div><div class="col-10 captionTable center-block text-center"><h3>Dati in formato tabellare</h3></div><div class="col-1"></div><div class="w-100"></div><div class="col-2"></div><div class="col-5 rowTable"><p class="label">PRESENTI </p></div><div class="col-3 rowTable right-block text-right"><p class="label">596</p></div><div class="col-2"></div><div class="w-100"></div>
+<div class="col-2"></div><div class="col-5 rowTable"><p class="label">VOTANTI </p></div><div class="col-3 rowTable right-block text-right"><p class="label">591</p></div><div class="col-2"></div><div class="w-100"></div>
+<div class="col-2"></div><div class="col-5 rowTable"><p class="label">ASTENUTI </p></div><div class="col-3 rowTable right-block text-right"><p class="label">5</p></div><div class="col-2"></div><div class="w-100"></div>
+<div class="col-2"></div><div class="col-5 rowTable"><p class="label">MAGGIORANZA </p></div><div class="col-3 rowTable right-block text-right"><p class="label">296</p></div><div class="col-2"></div><div class="w-100"></div>
+<div class="col-2"></div><div class="col-5 rowTable"><p class="label">FAVOREVOLI </p></div><div class="col-3 rowTable right-block text-right"><p class="label">535</p></div><div class="col-2"></div><div class="w-100"></div>
+<div class="col-2"></div><div class="col-5 rowTable"><p class="label">CONTRARI </p></div><div class="col-3 rowTable right-block text-right"><p class="label">56</p></div><div class="col-2"></div><div class="w-100"></div>
+<div class="col-12 rowTableEsito right-center text-center verde"><strong>La Camera APPROVA</strong></div></div></div><div id="containerMFC" class="col-12 col-lg-4" style="min-height: 400px"></div></div>
+
+
+		<br><br>
+		<div class="row">
+			<div class="col-12 center-block text-center bg-secondary text-white"><h2 class="bg_center_blu">Riepilogo dei voti espressi dai deputati</h2></div>
+		</div>
+		<br>
+		
+
+		<div class="row align-items-start">
+			<div class="col-md-6 no-padding-767">
+				<div class="table-responsive">
+					<table id="tabellaPartecipazioneVoto" class="display">
+						<thead>
+							<tr>
+								<th>Nominativo</th>
+								<th>Gruppo</th>
+								<th>Voto</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr><td>ACUNZO NICOLA</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ADELIZZI COSIMO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>AIELLO DAVIDE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>AIELLO PIERA</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ALAIMO ROBERTA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ALBANO LUCIA</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>ALEMANNO MARIA SOAVE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>AMITRANO ALESSANDRO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ANDREUZZA GIORGIA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ANGELUCCI ANTONIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ANGIOLA NUNZIO</td><td>M-AERI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ANNIBALI LUCIA</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ANZALDI MICHELE</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>APREA VALENTINA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>APRILE NADIA</td><td>M-ALT</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ARESTA GIOVANNI LUCA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ASCANI ANNA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ASCARI STEFANIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>AZZOLINA LUCIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BADOLE MIRCO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BAGNASCO ROBERTO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BALDELLI SIMONE</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BALDINI MARIA TERESA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BALDINO VITTORIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BARATTO RAFFAELE</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BARBUTO ELISABETTA MARIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BARELLI PAOLO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BARONI ANNALISA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BARONI MASSIMO ENRICO</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>BARTOLOZZI GIUSI</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BARZOTTI VALENTINA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BASINI GIUSEPPE</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BATTELLI SERGIO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BATTILOCCHIO ALESSANDRO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BAZOLI ALFREDO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BAZZARO ALEX</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BELLA MARCO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BELLACHIOMA GIUSEPPE ERCOLE</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BELLUCCI MARIA TERESA</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>BELOTTI DANIELE</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BENAMATI GIANLUCA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BENDINELLI DAVIDE</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BENEDETTI SILVIA</td><td>M-ALT</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>BENIGNI STEFANO</td><td>M-CPP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BENVENUTO ALESSANDRO MANUEL</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BERARDINI FABIO</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BERGAMINI DEBORAH</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BERLINGHIERI MARINA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BERSANI PIER LUIGI</td><td>LEU</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BERTI FRANCESCO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BIANCHI MATTEO LUIGI</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BIANCOFIORE MICHAELA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BIGNAMI GALEAZZO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>BILLI SIMONE</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BILOTTI ANNA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BINELLI DIEGO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BISA INGRID</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BITONCI MASSIMO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BOCCIA FRANCESCO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BOLDI ROSSANA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BOLDRINI LAURA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BOLOGNA FABIOLA</td><td>M-CPP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BONAFEDE ALFONSO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BOND DARIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BONIARDI FABIO MASSIMO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BONOMO FRANCESCA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BORDO MICHELE</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BORDONALI SIMONA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BORGHESE MARIO</td><td>M-EUMP</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>BORGHI CLAUDIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BORGHI ENRICO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BOSCHI MARIA ELENA</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BRAGA CHIARA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BRAMBILLA MICHELA VITTORIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BRESCIA GIUSEPPE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BRUNETTA RENATO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BRUNO BOSSIO VINCENZA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BRUNO RAFFAELE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BUBISUTTI AURELIA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BUCALO CARMELA</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>BUFFAGNI STEFANO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BUOMPANE GIUSEPPE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BURATTI UMBERTO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BUSINAROLO FRANCESCA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>BUTTI ALESSIO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>CABRAS PINO</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>CADEDDU LUCIANO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CAFFARATTO GUALTIERO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CAIATA SALVATORE</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>CALABRIA ANNAGRAZIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CAMPANA MICAELA</td><td>PD</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>CANCELLERI AZZURRA PIA MARIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CANNATELLI PASQUALE</td><td>FI</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>CANNIZZARO FRANCESCO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CANTALAMESSA GIANLUCA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CANTINI LAURA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CANTONE CARLA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CANTONE LUCIANO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CAON ROBERTO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CAPARVI VIRGINIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CAPITANIO MASSIMILIANO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CAPPELLACCI UGO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CAPPELLANI SANTI</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CARABETTA LUCA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CARBONARO ALESSANDRA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CARDINALE DANIELA</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CARE' NICOLA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CARELLI EMILIO</td><td>M-ALT</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CARETTA MARIA CRISTINA</td><td>FDI</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>CARFAGNA MARIA ROSARIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CARINELLI PAOLA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CARNEVALI ELENA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CARRARA MAURIZIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CASA VITTORIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CASCIELLO LUIGI</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CASINO MICHELE</td><td>FI</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>CASO ANDREA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CASSESE GIANPAOLO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CASSINELLI ROBERTO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CASTELLI LAURA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CASTIELLO GIUSEPPINA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CATALDI ROBERTO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CATTANEO ALESSANDRO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CATTOI MAURIZIO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CATTOI VANESSA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CAVANDOLI LAURA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CECCANTI STEFANO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CECCHETTI FABRIZIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CECCONI ANDREA</td><td>M-EUMP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CENNI SUSANNA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CENTEMERO GIULIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CESTARI EMANUELE</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CHIAZZESE GIUSEPPE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CIABURRO MONICA</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>CIAMPI LUCIA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CILLIS LUCIANO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CIMINO ROSALBA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CIPRINI TIZIANA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CIRIELLI EDMONDO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>COIN DIMITRI</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>COLANINNO MATTEO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>COLLA JARI</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>COLLETTI ANDREA</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>COLMELLERE ANGELA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>COLUCCI ALESSANDRO</td><td>M-NCI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>COMAROLI SILVANA ANDREINA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>COMENCINI VITO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>COMINARDI CLAUDIO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CONTE FEDERICO</td><td>LEU</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CORDA EMANUELA</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>CORNELI VALENTINA</td><td>M5S</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>CORTELAZZO PIERGIORGIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>COSTA ENRICO</td><td>M-AERI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>COSTANZO JESSICA</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>COVOLO SILVIA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CRIPPA ANDREA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CRIPPA DAVIDE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CRISTINA MIRELLA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CRITELLI FRANCESCO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CUBEDDU SEBASTIANO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>CUNIAL SARA</td><td>M-ALT</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>CURRO' GIOVANNI</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DADONE FABIANA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DAGA FEDERICA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DAL MORO GIAN PIETRO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>D'ALESSANDRO CAMILLO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DALL'OSSO MATTEO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>D'AMBROSIO GIUSEPPE</td><td>M-ALT</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>DARA ANDREA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>D'ARRANDO CELESTE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>D'ATTIS MAURO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE ANGELIS SARA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE CARLO SABRINA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE FILIPPO VITO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE GIORGI ROSALBA</td><td>M-ALT</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE GIROLAMO CARLO UGO</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE LORENZIS DIEGO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE LORENZO RINA</td><td>LEU</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE LUCA PIERO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE MARIA ANDREA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE MARTINI GUIDO</td><td>LEGA</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>DE MENECH ROGER</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE MICHELI PAOLA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DE TOMA MASSIMILIANO</td><td>M-ALT</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>DEIANA PAOLA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DEIDDA SALVATORE</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>DEL BARBA MAURO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DEL BASSO DE CARO UMBERTO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DEL GROSSO DANIELE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DEL MONACO ANTONIO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DEL RE EMANUELA CLAUDIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DEL SESTO MARGHERITA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DELLA FRERA GUIDO</td><td>M-CPP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DELMASTRO DELLE VEDOVE ANDREA</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>DELRIO GRAZIANO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>D'ERAMO LUIGI</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>D'ETTORE FELICE MAURIZIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DI GIORGI ROSA MARIA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DI LAURO CARMEN</td><td>M5S</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>DI MAIO LUIGI</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DI MAIO MARCO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DI MURO FLAVIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DI SAN MARTINO LORENZATO LUIS ROBERTO</td><td>LEGA</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>DI SARNO GIANFRANCO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DI STASIO IOLANDA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DI STEFANO MANLIO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DIENI FEDERICA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>D'INCA' FEDERICO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>D'IPPOLITO GIUSEPPE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DONINA GIUSEPPE CESARE</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DONNO LEONARDO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DONZELLI GIOVANNI</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>DORI DEVIS</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>D'ORSO VALENTINA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>DURIGON CLAUDIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>D'UVA FRANCESCO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>EHM YANA CHIARA</td><td>M5S</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>EMILIOZZI MIRELLA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>EPIFANI ETTORE GUGLIELMO</td><td>LEU</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ERMELLINO ALESSANDRA</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FANTINATI MATTIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FANTUZ MARICA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FARO MARIALUISA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FASANO VINCENZO</td><td>FI</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>FASCINA MARTA ANTONIA</td><td>FI</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>FASSINA STEFANO</td><td>LEU</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FASSINO PIERO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FATUZZO CARLO</td><td>FI</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>FEDERICO ANTONIO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FERRAIOLI MARZIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FERRARESI VITTORIO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FERRARI ROBERTO PAOLO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FERRI COSIMO MARIA</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FERRO WANDA</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>FIANO EMANUELE</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FICARA PAOLO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FIORAMONTI LORENZO</td><td>M-ALT</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FIORINI BENEDETTA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FITZGERALD NISSOLI FUCSIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FLATI FRANCESCA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FOGLIANI KETTY</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FONTANA GREGORIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FONTANA ILARIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FONTANA LORENZO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FORCINITI FRANCESCO</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>FORMENTINI PAOLO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FORNARO FEDERICO</td><td>LEU</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FOSCOLO SARA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FOTI TOMMASO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>FRACCARO RICCARDO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FRAGOMELI GIAN MARIO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FRAILIS ANDREA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FRANCESCHINI DARIO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FRASSINETTI PAOLA</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>FRASSINI REBECCA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FRATE FLORA</td><td>M-AERI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FRATOIANNI NICOLA</td><td>LEU</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>FREGOLENT SILVIA</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FRUSONE LUCA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FURGIUELE DOMENICO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>FUSACCHIA ALESSANDRO</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GADDA MARIA CHIARA</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GAGLIARDI MANUELA</td><td>M-CPP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GAGNARLI CHIARA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GALANTINO DAVIDE</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>GALIZIA FRANCESCA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GALLI DARIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GALLINELLA FILIPPO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GALLO LUIGI</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GARAVAGLIA MASSIMO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GARIGLIO DAVIDE</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GASTALDI FLAVIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GAVA VANNIA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GEBHARD RENATE</td><td>M-MIN</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GELMINI MARIASTELLA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GEMMATO MARCELLO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>GERARDI FRANCESCA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GERMANA' ANTONINO</td><td>M-NCI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIACCONE ANDREA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIACHETTI ROBERTO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIACOMETTI ANTONIETTA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIACOMETTO CARLO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIACOMONI SESTINO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIANNONE VERONICA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIARRIZZO ANDREA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIGLIO VIGNA ALESSANDRO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIORDANO CONNY</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIORGETTI GIANCARLO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIORGIS ANDREA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIULIANO CARLA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GIULIODORI PAOLO</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>GOBBATO CLAUDIA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GOLINELLI GUGLIELMO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GRANDE MARTA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GRIBAUDO CHIARA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GRILLO GIULIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GRIMALDI NICOLA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GRIMOLDI PAOLO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GRIPPA CARMELA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GUALTIERI ROBERTO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GUBITOSA MICHELE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GUERINI LORENZO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>GUSMEROLI ALBERTO LUIGI</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>IANARO ANGELA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>IEZZI IGOR GIANCARLO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>INCERTI ANTONELLA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>INVERNIZZI CRISTIAN</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>INVIDIA NICCOLO'</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>IORIO MARIANNA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>IOVINO LUIGI</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LA MARCA FRANCESCA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>L'ABBATE GIUSEPPE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LABRIOLA VINCENZA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LACARRA MARCO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LAPIA MARA</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LATTANZIO PAOLO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LAZZARINI ARIANNA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LEGNAIOLI DONATELLA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LEPRI STEFANO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LIBRANDI GIANFRANCO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LICATINI CATERINA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LIUNI MARZIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LIUZZI MIRELLA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LO MONTE CARMELO</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LOLINI MARIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LOLLOBRIGIDA FRANCESCO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>LOMBARDO ANTONIO</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LONGO FAUSTO</td><td>M-EUMP</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>LOREFICE MARIALUCIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LORENZIN BEATRICE</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LORENZONI EVA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LORENZONI GABRIELE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LOSACCO ALBERTO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LOSS MARTINA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LOTTI LUCA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LOVECCHIO GIORGIO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LUCASELLI YLENJA</td><td>FDI</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>LUCCHINI ELENA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LUCENTINI MAURO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>LUPI MAURIZIO</td><td>M-NCI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MACCANTI ELENA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MACINA ANNA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MADIA MARIA ANNA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MAGGIONI MARCO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MAGI RICCARDO</td><td>M-AERI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MAGLIONE PASQUALE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MAMMI' STEFANIA</td><td>M5S</td><td><span class="giallo">In missione</span></td></tr>
+<tr><td>MANCA ALBERTO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MANCA GAVINO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MANCINI CLAUDIO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MANDELLI ANDREA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MANIERO ALVISE</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>MANTOVANI LUCREZIA MARIA BENEDETTA</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>MANZATO FRANCO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MANZO TERESA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MARAIA GENEROSO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MARATTIN LUIGI</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MARCHETTI RICCARDO AUGUSTO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MARIANI FELICE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MARIN MARCO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MARINO BERNARDO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MARROCCO PATRIZIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MARTINCIGLIO VITA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MARTINO ANTONIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MARZANA MARIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MASCHIO CIRO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>MASI ANGELA</td><td>M5S</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>MATURI FILIPPO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MAURI MATTEO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MAZZETTI ERICA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MELICCHIO ALESSANDRO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MELILLI FABIO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MELONI GIORGIA</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>MENGA ROSA</td><td>M5S</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>MICELI CARMELO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MICHELI MATTEO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MICILLO SALVATORE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MIGLIORE GENNARO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MIGLIORINO LUCA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MILANATO LORENA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MINARDO ANTONINO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MINNITI MARCO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MISITI CARMELO MASSIMO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MOLINARI RICCARDO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MOLLICONE FEDERICO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>MOLTENI NICOLA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MONTARULI AUGUSTA</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>MOR MATTIA</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MORANI ALESSIA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MORASSUT ROBERTO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MORELLI ALESSANDRO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MORETTO SARA</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MORGONI MARIO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MORRONE JACOPO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MOSCHIONI DANIELE</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MUGNAI STEFANO</td><td>FI</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>MULE' GIORGIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MURA ROMINA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MURELLI ELENA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MURONI ROSSELLA</td><td>LEU</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>MUSELLA GRAZIANO</td><td>FI</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>NAPOLI OSVALDO</td><td>M-CPP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>NAPPI SILVANA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>NARDI MARTINA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>NAVARRA PIETRO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>NESCI DALILA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>NEVI RAFFAELE</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>NITTI MICHELE</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>NOBILI LUCIANO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>NOJA LISA</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>NOVELLI ROBERTO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>OCCHIONERO GIUSEPPINA</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>OCCHIUTO ROBERTO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>OLGIATI RICCARDO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ORFINI MATTEO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ORLANDO ANDREA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ORRICO ANNA LAURA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ORSINI ANDREA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>OSNATO MARCO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>PAGANI ALBERTO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PAGANO ALESSANDRO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PAGANO UBALDO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PAITA RAFFAELLA</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PALAZZOTTO ERASMO</td><td>LEU</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PALLINI MARIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PALMIERI ANTONIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PALMISANO VALENTINA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PANIZZUT MASSIMILIANO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PAOLIN GIUSEPPE</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PAOLINI LUCA RODOLFO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PAPIRO ANTONELLA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PARENTELA PAOLO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PARISSE MARTINA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PAROLO UGO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PASTORINO LUCA</td><td>LEU</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PATASSINI TULLIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PATELLI CRISTINA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PATERNOSTER PAOLO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PAXIA MARIA LAURA</td><td>M5S</td><td><span class="bianco">Astensione</span></td></tr>
+<tr><td>PEDRAZZINI CLAUDIO</td><td>M-CPP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PELLA ROBERTO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PELLICANI NICOLA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PENNA LEONARDO SALVATORE</td><td>M5S</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>PENTANGELO ANTONIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PERANTONI MARIO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PERCONTI FILIPPO GIUSEPPE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PEREGO DI CREMNAGO MATTEO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PETTARIN GUIDO GERMANO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PETTAZZI LINO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PEZZOPANE STEFANIA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PIASTRA CARLO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PICCHI GUGLIELMO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PICCOLI NARDELLI FLAVIA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PICCOLO TIZIANA</td><td>LEGA</td><td><span class="giallo">In missione</span></td></tr>
+<tr><td>PIGNATONE DEDALO COSIMO GAETANO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PINI GIUDITTA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PITTALIS PIETRO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PIZZETTI LUCIANO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PLANGGER ALBRECHT</td><td>M-MIN</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>POLIDORI CATIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>POLLASTRINI BARBARA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>POLVERINI RENATA</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PORCHIETTO CLAUDIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PORTAS GIACOMO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>POTENTI MANFREDI</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PRESTIGIACOMO STEFANIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PRESTIPINO PATRIZIA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PRETTO ERIK UMBERTO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>PRISCO EMANUELE</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>PROVENZA NICOLA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>QUARTAPELLE PROCOPIO LIA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RACCHELLA GERMANO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RACITI FAUSTO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RADUZZI RAPHAEL</td><td>M5S</td><td><span class="bianco">Astensione</span></td></tr>
+<tr><td>RAFFA ANGELA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RAFFAELLI ELENA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RAMPELLI FABIO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>RAVETTO LAURA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RIBOLLA ALBERTO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RICCIARDI RICCARDO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RIPANI ELISABETTA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RIXI EDOARDO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RIZZETTO WALTER</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>RIZZO GIANLUCA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RIZZO NERVO LUCA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RIZZONE MARCO</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ROMANIELLO CRISTIAN</td><td>M5S</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>ROMANO ANDREA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ROMANO PAOLO NICOLO'</td><td>M-ALT</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>ROSATO ETTORE</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ROSPI GIANLUCA</td><td>M-CPP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ROSSELLO CRISTINA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ROSSI ANDREA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ROSSINI EMANUELA</td><td>M-MIN</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ROSSINI ROBERTO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ROSSO ROBERTO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ROSTAN MICHELA</td><td>M-ALT</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ROTELLI MAURO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>ROTONDI GIANFRANCO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ROTTA ALESSIA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RUFFINO DANIELA</td><td>M-CPP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RUGGIERI ANDREA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RUGGIERO FRANCESCA ANNA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RUOCCO CARLA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>RUSSO GIOVANNI</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>RUSSO PAOLO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SACCANI JOTTI GLORIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SAITTA EUGENIO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SALAFIA ANGELA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SALTAMARTINI BARBARA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SANGA GIOVANNI</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SANGREGORIO EUGENIO</td><td>M-NCI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SANI LUCA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SAPIA FRANCESCO</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>SARLI DORIANA</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>SARRO CARLO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SARTI GIULIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SASSO ROSSANO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SAVINO ELVIRA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SAVINO SANDRA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SCAGLIUSI EMANUELE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SCALFAROTTO IVAN</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SCANU LUCIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SCERRA FILIPPO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SCHIRO' ANGELA</td><td>PD</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>SCHULLIAN MANFRED</td><td>M-MIN</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SCOMA FRANCESCO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SCUTELLA' ELISA</td><td>M5S</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>SEGNERI ENRICA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SENSI FILIPPO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SERRACCHIANI DEBORA</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SERRITELLA DAVIDE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SGARBI VITTORIO</td><td>M-NCI</td><td><span class="bianco">Astensione</span></td></tr>
+<tr><td>SIANI PAOLO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SIBILIA CARLO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SIBILIA COSIMO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SILLI GIORGIO</td><td>M-CPP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SILVESTRI FRANCESCO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SILVESTRI RACHELE</td><td>M-ALT</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>SILVESTRONI MARCO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>SIRACUSANO MATILDE</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SIRAGUSA ELISA</td><td>M-CDIE</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>SISTO FRANCESCO PAOLO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SNIDER SILVANA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SODANO MICHELE</td><td>M5S</td><td><span class="bianco">Astensione</span></td></tr>
+<tr><td>SORTE ALESSANDRO</td><td>M-CPP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SOVERINI SERSE</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SOZZANI DIEGO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SPADAFORA VINCENZO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SPADONI MARIA EDERA</td><td>M5S</td><td><span class="rosa">Presidente di turno</span></td></tr>
+<tr><td>SPENA MARIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SPERANZA ROBERTO</td><td>LEU</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SPESSOTTO ARIANNA</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>SPORTIELLO GILDA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SQUERI LUCA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>STEFANI ALBERTO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>STUMPO NICOLA</td><td>LEU</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SURIANO SIMONA</td><td>M5S</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>SUT LUCA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>SUTTO MAURO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TABACCI BRUNO</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TARANTINO LEONARDO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TARTAGLIONE ANNAELSA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TASSO ANTONIO</td><td>M-EUMP</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TATEO ANNA RITA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TERMINI GUIA</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>TERZONI PATRIZIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TESTAMENTO ROSA ALBA</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>TIRAMANI PAOLO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TOCCAFONDI GABRIELE</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TOCCALINI LUCA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TOFALO ANGELO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TOMASI MAURA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TOMBOLATO GIOVANNI BATTISTA</td><td>LEGA</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>TONDO RENZO</td><td>M-NCI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TONELLI GIANNI</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TOPO RAFFAELE</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TORROMINO SERGIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TORTO DANIELA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TRANCASSINI PAOLO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>TRANO RAFFAELE</td><td>M-ALT</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>TRAVERSI ROBERTO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TRIPIEDI DAVIDE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TRIPODI ELISA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TRIPODI MARIA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TRIZZINO GIORGIO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TROIANO FRANCESCA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TUCCI RICCARDO</td><td>M5S</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>TURRI ROBERTO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>TUZI MANUEL</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>UNGARO MASSIMO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VACCA GIANLUCA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VALBUSA VANIA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VALENTE SIMONE</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VALENTINI VALENTINO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VALLASCAS ANDREA</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>VALLOTTO SERGIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VARCHI MARIA CAROLINA</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>VARRICA ADRIANO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VAZIO FRANCO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VERINI WALTER</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VERSACE GIUSEPPINA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VIANELLO GIOVANNI</td><td>M5S</td><td><span class="giallo">In missione</span></td></tr>
+<tr><td>VIETINA SIMONA</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VIGNAROLI STEFANO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VILLANI VIRGINIA</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VILLAROSA ALESSIO</td><td>M5S</td><td><span class="bianco">Astensione</span></td></tr>
+<tr><td>VINCI GIANLUCA</td><td>LEGA</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>VISCOMI ANTONIO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VITIELLO CATELLO</td><td>IV</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VITO ELIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VIVIANI LORENZO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VIZZINI GLORIA</td><td>M-CDIE</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>VOLPI LEDA</td><td>M5S</td><td><span class="rosso">Contrario</span></td></tr>
+<tr><td>VOLPI RAFFAELE</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZAN ALESSANDRO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZANELLA FEDERICA</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZANETTIN PIERANTONIO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZANGRILLO PAOLO</td><td>FI</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZANICHELLI DAVIDE</td><td>M5S</td><td><span class="nero">Non ha partecipato</span></td></tr>
+<tr><td>ZARDINI DIEGO</td><td>PD</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZENNARO ANTONIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZICCHIERI FRANCESCO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZIELLO EDOARDO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZOFFILI EUGENIO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZOLEZZI ALBERTO</td><td>M5S</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZORDAN ADOLFO</td><td>LEGA</td><td><span class="verde">Favorevole</span></td></tr>
+<tr><td>ZUCCONI RICCARDO</td><td>FDI</td><td><span class="rosso">Contrario</span></td></tr>
+
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div id="containerPIE" class="col-md-6 no-padding-767" style="min-height: 600px"></div>
+			<div class="w-100"></div>
+			
+	<br>
+	<div class="col-12 legenda" style="min-height: 250px;">
+		<div class="row">
+			<div class="col-12 center-block text-center bg-secondary text-white">
+				<h2>Legenda</h2>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-2">
+				<span style="font-weight: bold;">In Missione</span>
+			</div>
+			<div class="col-sm-10">
+				I deputati che sono impegnati per incarico avuto dalla Camera, fuori della sua sede o, se membri del Governo, per ragioni del loro ufficio, sono computati come presenti per fissare il numero legale.
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-2 bg-light">
+				<span style="font-weight: bold;">Presenti</span>
+			</div>
+			<div class="col-sm-10 bg-light">
+				I deputati che hanno partecipato alle operazioni di voto (<span style="font-weight: bold;">Votanti</span> + <span style="font-weight: bold;">Astenuti</span>).
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-2">
+				<span style="font-weight: bold;">Non hanno partecipato</span>
+			</div>
+			<div class="col-sm-10">
+				I deputati che non hanno preso parte alle operazioni di voto.
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-12">&nbsp;</div>
+		</div>
+		<div class="row">
+			<div class="col-12 bg-light">
+				Nota: il Presidente della Camera e i Vice Presidenti, questi ultimi se al momento della votazione presiedono la seduta, sono esclusi dai conteggi poich&egrave; non prendono parte alle votazioni.
+			</div>
+		</div>
+	</div>
+
+		</div>
+		<!-- CARICAMENTO DATI SU JSON -->
+<script>
+var jsonVotazioneDeputati = [ { name: 'Percentuale', colorByPoint: true, data: [ { name: 'Favorevole', y: 535, color: '#5cb85c' }, { name: 'Contrario', y: 56, color: '#d9534f' }, { name: 'Non ha partecipato', y: 28, color: '#000000' }, { name: 'In missione', y: 3, color: '#5bc0de' }, { name: 'Astensione', y: 5, color: '#428bca' } ] } ];</script>
+
+
+<script>
+$(document).ready(function() {
+    $('#tabellaPartecipazioneVoto').DataTable({
+		'language': {
+			"sEmptyTable": "Nessun partecipante al voto nella tabella",
+			"sInfo": "Vista da _START_ a _END_ di _TOTAL_ partecipanti al voto",
+			"sInfoEmpty": "Vista da 0 a 0 di 0 partecipanti al voto",
+			"sInfoFiltered": "(filtrati da _MAX_ partecipanti al voto totali)",
+			"sInfoPostFix": "",
+			"sInfoThousands": ",",
+			"sLengthMenu": "Visualizza _MENU_ partecipanti al voto",
+			"sLoadingRecords": "Caricamento dei partecipanti al voto...",
+			"sProcessing": "Elaborazione dei partecipanti al voto...",
+			"sSearch": "Filtra:",
+			"sZeroRecords": "La ricerca non ha portato alcun risultato.",
+			"oPaginate": {
+				"sFirst": "Inizio",
+				"sPrevious": "Precedente",
+				"sNext": "Successivo",
+				"sLast": "Fine"
+			},
+			"oAria": {
+				"sSortAscending": ": attiva per ordinare la colonna in ordine crescente",
+				"sSortDescending": ": attiva per ordinare la colonna in ordine decrescente"
+			}
+		},
+		autoWidth: false,
+		scrollCollapse: true,
+		paging: true,
+		lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, "Tutti"]],
+		pageLength: 25
+	});
+	var optionsPVA = {
+        chart: {
+            plotBackgroundColor: null,
+			plotBorderWidth: null,
+			plotShadow: false,
+            type: 'pie'
+        },
+		title: {
+			text: '<div class="captionTable" style="margin-bottom: 10px;"><h3>Dati in formato grafico</h3></class>',
+			useHTML: true
+		},
+		tooltip: {
+			pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>',
+			shared: true,
+			useHTML: true
+		},
+		plotOptions: {
+			pie: {
+				allowPointSelect: true,
+				cursor: 'pointer',
+				dataLabels: {
+					enabled: true,
+					format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+				}
+			}
+		},
+		series: []
+    };
+	optionsPVA.series = jsonPVA;
+	var optionsMFC = {
+        chart: {
+            type: 'column'
+        },
+		title: {
+			text: '<div class="captionTable" style="margin-bottom: 10px;"><h3>Dati in formato grafico</h3></class>',
+			useHTML: true
+		},
+		// subtitle: {
+		//	text: '<h5>riferiti a </h5>',
+		//	useHTML: true
+		//},
+		tooltip: {
+			headerFormat: '<span style="font-size:14pt">{point.key}</span><table>',
+			pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' + '<td style="padding:0"><b>{point.y}</b></td></tr>',
+			footerFormat: '</table>',
+			shared: true,
+			useHTML: true
+		},
+		xAxis: {
+			categories: [
+				''
+			],
+			crosshair: true
+		},
+		yAxis: {
+			min: 0,
+			title: {
+				text: 'Numero'
+			}
+		},
+		plotOptions: {
+			column: {
+				pointPadding: 0.2,
+				borderWidth: 0
+			}
+		},
+		series: []
+    };
+	optionsMFC.series = jsonMFC;
+	var chart = new Highcharts.Chart('containerPVA', optionsPVA, function(chart) {
+		var arr = chart.options.exporting.buttons.contextButton.menuItems;
+		var index = arr.indexOf("viewData");
+		if (index !== -1) arr.splice(index, 1);
+	});
+	var chart = new Highcharts.Chart('containerMFC', optionsMFC, function(chart) {
+		var arr = chart.options.exporting.buttons.contextButton.menuItems;
+		var index = arr.indexOf("viewData");
+		if (index !== -1) arr.splice(index, 1);
+	});
+
+	var optionsPIE = {
+        chart: {
+            plotBackgroundColor: null,
+			plotBorderWidth: null,
+			plotShadow: false,
+			type: 'pie'
+        },
+		title: {
+			text: '<div class="captionTable" style="margin-bottom: 10px;"><h3>Partecipazione al voto</h3></div>',
+			useHTML: true
+		},
+		// subtitle: {
+		// 	text: '<h5>riferiti a </h5>',
+		// 	useHTML: true
+		// },
+		tooltip: {
+			pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>',
+			useHTML: true
+		},
+		plotOptions: {
+			pie: {
+				allowPointSelect: true,
+				cursor: 'pointer',
+				dataLabels: {
+					enabled: true,
+					format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+				}
+			}
+		},
+		series: []
+    };
+	optionsPIE.series = jsonVotazioneDeputati;
+	var chart = new Highcharts.Chart('containerPIE', optionsPIE, function(chart) {
+		var arr = chart.options.exporting.buttons.contextButton.menuItems;
+		var index = arr.indexOf("viewData");
+		if (index !== -1) arr.splice(index, 1);
+	});
+
+});
+</script>
+
+			</div>
+		</div>
+
+	<script>
+	$(".nuova").click(function() {
+		location.href = "formVotazioni.asp?legislatura=18";
+	});
+	$(".affina").click(function() {
+		location.href = "formVotazioni.asp?Legislatura=18";
+	});
+</script>
+
+</div>
+</body>
+</html>

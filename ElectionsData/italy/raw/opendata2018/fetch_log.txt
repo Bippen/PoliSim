@@ -1,0 +1,3 @@
+2026-10-28T00:54:52Z	200	1502314	camera-20180304.zip	https://dait.interno.gov.it/documenti/opendata/camera/camera-20180304.zip
+2026-10-28T00:54:53Z	200	1314885	senato-20180304.zip	https://dait.interno.gov.it/documenti/opendata/senato/senato-20180304.zip
+2026-10-28T00:54:00Z	200	62562	NOT KEPT (Eligendo's open-data catalogue page - its dataSet array names every file; the download host redirects 301 to dait.interno.gov.it/documenti/opendata/, where the files above were fetched)	https://elezionistorico.interno.gov.it/eligendo/opendata.php
