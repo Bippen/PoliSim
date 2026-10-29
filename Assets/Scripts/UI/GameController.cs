@@ -8895,23 +8895,8 @@ namespace PoliSim.UI
         }
 
         /// <summary>Display name per CabinetPortfolio - kept separate from the enum's own C# identifier since "FinanceTreasury"/"InteriorJustice"/"HealthSocialAffairs" read awkwardly as UI text, the same "enum identifier vs. display string" separation PolicyWebRenderer.GetPolicyName/GetStatName already established.</summary>
-        private static string GetPortfolioName(CabinetPortfolio portfolio)
-        {
-            switch (portfolio)
-            {
-                case CabinetPortfolio.FinanceTreasury: return "Finance & Treasury";
-                case CabinetPortfolio.InteriorJustice: return "Interior & Justice";
-                case CabinetPortfolio.HealthSocialAffairs: return "Health & Social Affairs";
-                // R4-4. This switch IS the scoped name lookup the pre-report's hazard note requires:
-                // portfolio display names come from here and only here - never DisplayName.Of/Spaced,
-                // which is how "Education" avoids becoming reference-class-trap instance #4 against
-                // SpendingCategory.Education/PolicyNodeId.Education.
-                case CabinetPortfolio.Defense: return "Defense";
-                case CabinetPortfolio.ForeignAffairs: return "Foreign Affairs";
-                case CabinetPortfolio.Education: return "Education";
-                default: return portfolio.ToString();
-            }
-        }
+        // R4-4's scoped lookup now lives in the Data layer (Effectiveness.DisplayName) so the simulation's alert texts share it.
+        private static string GetPortfolioName(CabinetPortfolio portfolio) => Effectiveness.DisplayName(portfolio);
 
         /// <summary>
         /// Master Sequence step 5e, Phase C batch 2: <paramref name="drawOwnFrame"/> defaults to true so

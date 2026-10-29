@@ -679,14 +679,14 @@ namespace PoliSim.Simulation
                 if (resigns)
                 {
                     country.CabinetMinisters.Remove(appointment.Key);
-                    record.Text = $"{appointment.Value.Name} has resigned from {appointment.Key} under pressure; the portfolio is vacant.";
+                    record.Text = $"{appointment.Value.Name} has resigned from {Effectiveness.DisplayName(appointment.Key)} under pressure; the portfolio is vacant.";
                 }
                 else
                 {
                     float before = country.State.ApprovalRating;
                     TaxTerm.Shock(country, -ReshuffleApprovalCost);   // A-LOOP q37 (review 879b M-1): the shock through TaxTerm.Shock - the same write, and the run without the tax term takes it through its own clamp
                     record.ApprovalDelta = country.State.ApprovalRating - before;
-                    record.Text = $"A leak from {appointment.Key} ({appointment.Value.Name}) has cost the government {ReshuffleApprovalCost:0.#} points of approval.";
+                    record.Text = $"A leak from {Effectiveness.DisplayName(appointment.Key)} ({appointment.Value.Name}) has cost the government {ReshuffleApprovalCost:0.#} points of approval.";
                 }
                 fired.Add(record);
                 country.CabinetEvents.Add(record);

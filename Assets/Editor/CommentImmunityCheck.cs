@@ -73,6 +73,8 @@ namespace PoliSim.EditorTools
             "UsCampaignGeographyCheck",
             // AF-11 (q11, 2026-10-18): the lever guard scans the UI for a write to a lever's model field - a write surviving in a comment is not one.
             "UiLeverVerbCheck",
+            // §946 (2026-10-29): the portfolio-name guard scans the runtime for a portfolio interpolated raw into a string - a write surviving in a comment is not one.
+            "PortfolioDisplayNameCheck",
         };
 
         /// <summary>

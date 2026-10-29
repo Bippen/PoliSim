@@ -79,6 +79,24 @@ namespace PoliSim.Data
             }
         }
 
+        /// <summary>The portfolio's display name - R4-4's one scoped lookup: never DisplayName.Of/Spaced, which is how "Education" avoids
+        /// reference-class-trap instance #4 against SpendingCategory.Education/PolicyNodeId.Education. The simulation's player-visible texts (a
+        /// minister alert, a ledger line) read it here, as the UI does, so no raw identifier ("InteriorJustice") reaches the player.</summary>
+        public static string DisplayName(CabinetPortfolio portfolio)
+        {
+            switch (portfolio)
+            {
+                case CabinetPortfolio.FinanceTreasury: return "Finance & Treasury";
+                case CabinetPortfolio.InteriorJustice: return "Interior & Justice";
+                case CabinetPortfolio.HealthSocialAffairs: return "Health & Social Affairs";
+                case CabinetPortfolio.Defense: return "Defense";
+                case CabinetPortfolio.ForeignAffairs: return "Foreign Affairs";
+                case CabinetPortfolio.Education: return "Education";
+                case CabinetPortfolio.Economy: return "Economy";
+                default: return portfolio.ToString();
+            }
+        }
+
         /// <summary>The short word the Budget row's caption prints for a portfolio (9d: PORTFOLIO · EFF ×r).</summary>
         public static string ShortName(CabinetPortfolio portfolio)
         {

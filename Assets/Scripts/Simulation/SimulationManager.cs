@@ -7136,7 +7136,7 @@ namespace PoliSim.Simulation
             foreach (CabinetEventRecord cabinetEvent in CabinetSystem.TryRollCabinetEvents(country, CurrentDate))
             {
                 UnityEngine.Debug.Log($"CABINET: {cabinetEvent.Text}");
-                if (cabinetEvent.Kind == CabinetEventKind.Leak) { ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"Cabinet leak ({cabinetEvent.Portfolio})", cabinetEvent.ApprovalDelta); }
+                if (cabinetEvent.Kind == CabinetEventKind.Leak) { ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"Cabinet leak ({Effectiveness.DisplayName(cabinetEvent.Portfolio)})", cabinetEvent.ApprovalDelta); }
             }
         }
 

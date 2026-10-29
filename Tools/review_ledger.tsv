@@ -396,3 +396,5 @@ file	Assets/Scripts/Simulation/AiFinanceMinistry.cs	d30f898f6c7602debf8cf9796ff5
 file	Assets/Scripts/Simulation/SimulationManager.cs	34ab11d0fe3d97c4d4664df75c6ae137639743f122659f129d50b57da2d8c297	reviewed	2026-10-29	s944	Reviews/2026-10-29_k251_integrator.md	-
 baseline	777	c6970e28836ee1b405ad03db58c36462265068884333b719ebb935d0e33f5e37	reviewed	2026-10-29	s944	Reviews/2026-10-29_k251_integrator.md	-
 baseline	424242	c177a4355b8364e57d2369a0e682c9a70829183c51904929f308286561b7d12f	reviewed	2026-10-29	s944	Reviews/2026-10-29_k251_integrator.md	-
+file	Assets/Scripts/Data/PortfolioEffectiveness.cs	d739face1266e4c9118a2c869689444af8c669764c8900bbcade62f544fede09	reviewed	2026-10-29	s946	Reviews/2026-10-29_portfolioname_integrator.md	the portfolio's display name moved to the Data layer; the leak ledger line reads it (text only)
+file	Assets/Scripts/Simulation/SimulationManager.cs	fc8d5f5ccd7bafde640db5ee09088c61b6ff0cfcaf15325b55cc0f51a939cedf	reviewed	2026-10-29	s946	Reviews/2026-10-29_portfolioname_integrator.md	the portfolio's display name moved to the Data layer; the leak ledger line reads it (text only)

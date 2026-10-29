@@ -507,7 +507,7 @@ namespace PoliSim.UI
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 if (!mayAct) { DrawCabinetLock(anchor + ":lock", lockedBecause); }
-                else if (DrawCabinetAction("Reshuffle") && _simulationManager.ReshuffleMinister(c.Id, portfolio, $"Cabinet reshuffle ({DisplayName.Of(portfolio.ToString())})", out _))   // AF-11: the manager's verb (P2-5.2's cost rides it)
+                else if (DrawCabinetAction("Reshuffle") && _simulationManager.ReshuffleMinister(c.Id, portfolio, $"Cabinet reshuffle ({name})", out _))   // AF-11: the manager's verb (P2-5.2's cost rides it)
                 {
                     _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio);
                 }

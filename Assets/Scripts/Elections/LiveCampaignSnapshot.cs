@@ -151,8 +151,13 @@ namespace PoliSim.Elections
             }
 
             // CL-2: the debate announced from the calendar, and where the next local act goes.
+            // §946 (the PL-C film's Low): only a debate before polling day is announced or listed - a campaign shorter than the default schedule
+            // (Poland's 14-day run-off, which K258 gives no debate) never reaches days 20 and 41, so neither is shown as coming or as held.
+            int pollingDayIndex = (calendar.ElectionDate.Date - calendar.CampaignStart.Date).Days;
+            var debateDays = new List<int>();
+            foreach (int d in setup.DebateDays) { if (d < pollingDayIndex) { debateDays.Add(d); } }
             int nextDebate = -1;
-            foreach (int d in setup.DebateDays) { if (d >= shownDay && (nextDebate < 0 || d < nextDebate)) { nextDebate = d; } }
+            foreach (int d in debateDays) { if (d >= shownDay && (nextDebate < 0 || d < nextDebate)) { nextDebate = d; } }
             string localActs = null;
             if (playerRun)
             {
@@ -167,7 +172,7 @@ namespace PoliSim.Elections
             return new CampaignSnapshot(setup.Parties[p].Name, markKey, country.Name, phase, today, calendar,
                 s.Pools[p], setup.Parties[p].StartingMoney, poll, names, p, (double[])s.MomentumPp.Clone(),
                 queue.ToArray(), staff.ToArray(), offices.ToArray(), perceivedEconomyIndex, notes.ToArray(),
-                (int[])setup.DebateDays.Clone(), nextDebate, pending, localActs);
+                debateDays.ToArray(), nextDebate, pending, localActs);
         }
 
         /// <summary>

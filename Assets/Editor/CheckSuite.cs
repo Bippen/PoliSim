@@ -398,6 +398,7 @@ namespace PoliSim.EditorTools
             ("EventPoolCheck", EventPoolCheck.Run),   // P4-D2 (2026-09-04): every event named, lined, tagged, cited and banded; the pool at least doubled; EventPool[0] pinned for the Desk film
             ("PolicyImpactLedgerCheck", PolicyImpactLedgerCheck.Run),   // P5-B5 (2026-09-05): every PolicyDecision field in a ledger family - the ledger throws at PLAY time otherwise, which the bars never reached (B2 shipped two fields outside one; the film found it)
             ("UiLeverVerbCheck", UiLeverVerbCheck.Run),   // AF-11 (q11, 2026-10-18): no UI file writes a lever's model field - each lever rides its SimulationManager verb, which the impact ledger reads
+            ("PortfolioDisplayNameCheck", PortfolioDisplayNameCheck.Run),   // §946 (2026-10-29, the pldesk film's Low): no player-visible text prints a portfolio's raw identifier ("A leak from InteriorJustice")
             ("CardTradeOffCheck", CardTradeOffCheck.Run),   // AF-31 (q31, 2026-10-18): every card's options trade off on a lasting count - no option on a cabinet or meeting card wins on every count
 
             // The coherence audit's EIGHTH sweep (2026-09-01): a ratchet whose ceiling has stopped

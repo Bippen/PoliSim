@@ -155,7 +155,12 @@ namespace PoliSim.UI
                 _mastheadSlipBook.Anchors[standing.Id] = SlipOf(standing);
                 right -= w + gap;
             }
-            TopStrip.Chip polling = _simulationManager.TryPlayerPollingDay(out System.DateTime pollingDay) ? TopStrip.PollingChip(pollingDay, today) : null;
+            bool hasPolling = _simulationManager.TryPlayerPollingDay(out System.DateTime pollingDay);
+            // §946 (the PL-C film's Low): a campaign under way votes on its own day - Poland's run-off (or a presidential first round) comes before the next
+            // Sejm date the calendar answers, and the chip read the Sejm's
+            System.DateTime? campaignDay = _simulationManager.PlayerCampaign?.Setup.Calendar.ElectionDate;
+            if (campaignDay.HasValue && campaignDay.Value.Date >= today.Date && (!hasPolling || campaignDay.Value.Date < pollingDay.Date)) { pollingDay = campaignDay.Value; hasPolling = true; }
+            TopStrip.Chip polling = hasPolling ? TopStrip.PollingChip(pollingDay, today) : null;
             if (polling != null)
             {
                 float w = StripChipWidth(polling.Words, true, false);

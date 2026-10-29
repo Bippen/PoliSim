@@ -42129,3 +42129,23 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** GATE OK; the build step is exercised on the next `Tools/build_player.ps1` run (its log line and the net watch are the proof).
 
 **Commit:** this one.
+
+## 946. THREE FILED LOWS CLOSED: NO PORTFOLIO PRINTS ITS RAW IDENTIFIER; THE RUN-OFF'S STRIP CHIP READS THE RUN-OFF; NO DEBATE ANNOUNCED AFTER POLLING DAY (2026-10-29)
+
+**What was owed:** three Lows filed from films - the pldesk film's minister alert "A leak from InteriorJustice" (the enum's identifier), and the PL-C film's run-off HQ, whose strip chip read the next Sejm date (17 Oct 2027) and whose footer announced a debate on 7 Jun, after the run-off's polling day (K258 gives the run-off none).
+
+**Built** (on main; one review - NOT READY: H1 the new check unenrolled in CommentImmunityCheck, M2 the reshuffle label, M3 the pattern's reach, all fixed; M4 FILED):
+- `Effectiveness.DisplayName` (Data) is R4-4's one scoped portfolio-name lookup, moved from the UI's private helper; the cabinet's resignation and leak texts, the approval ledger's leak line and the reshuffle's label read it.
+- `PortfolioDisplayNameCheck` (cheap; MustStrip): every portfolio displays as words, no interpolated runtime string writes a portfolio raw, the teeth planted every run; its limits printed.
+- The strip's polling chip: a campaign under way votes on its own day - where the player's running campaign's election comes before the calendar's next polling day, the chip reads the campaign's.
+- The HQ snapshot announces and lists only debate days before polling day (the setup untouched: the simulation reads the same array).
+
+**Measured** (`Reviews/2026-10-29_portfolioname_integrator.md`): realpdn (Poland 1280, `-shotinterrupts`) exit 0, 22 captured - the run-off frame's chip reads "in 12 days" where realplci3's read "17 Oct 2027", and the debate line is gone. The review's run of the pattern over HEAD's files finds the three raw writes, so the check fails while the defect stands. No baseline moves (text and reads only).
+
+**Evidence:** `Reviews/2026-10-29_portfolioname_review.md`, `_integrator.md`; ledger rows s946 (`PortfolioEffectiveness.cs`, `SimulationManager.cs`).
+
+**Filed:** the review's M4 - other enums raw in player text (`TaxType` keys in the budget bill's description, `{bill.Type}` on the desk list and ledger labels, `({result.Outcome})` in formation texts).
+
+**Bars:** cheappdn2 145 of 146 (the ledger's evidence named no file; fixed), npdn 4 of 4 clean (ReviewLedgerCheck, PortfolioDisplayNameCheck, CommentImmunityCheck, MetaTextCheck); realpdn Poland 1280 exit 0, 22 captured; docpdn document group clean
+
+**Commit:** this one.
