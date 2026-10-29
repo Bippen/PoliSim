@@ -33,7 +33,7 @@ namespace PoliSim.EditorTools
 
         private static float BandWeighted(Country c)
         {
-            float[] rates = ParticipationRateTable.For(c.Id);
+            float[] rates = ParticipationRateTable.RatesAt(c.Id, c.CalendarYear);   // K276 review 1 (L5): the year's projected rates, the model's anchor
             if (rates == null || c.Cohorts?.Counts == null) { return float.NaN; }
             float sum = 0f;
             for (int k = 3; k < PopulationCohorts.CohortCount && k < c.Cohorts.Counts.Length; k++) { sum += c.Cohorts.Counts[k] * rates[k]; }
@@ -59,7 +59,7 @@ namespace PoliSim.EditorTools
             r.Pop2064 = SpendingDrivers.Level(SpendingDriver.WorkingAge20To64, c);
             r.Pop15 = c.Cohorts != null ? c.Cohorts.InAgeRange(15, 999) : c.State.Population;
             r.P = Mathf.Clamp(c.State.LaborForceParticipationRate, 0f, 100f);
-            r.Structural = c.Cohorts != null ? ParticipationRateTable.StructuralRate(c.Id, c.Cohorts.Counts) : float.NaN;
+            r.Structural = c.Cohorts != null ? ParticipationRateTable.StructuralRate(c.Id, c.Cohorts.Counts, c.CalendarYear) : float.NaN;   // K276 review 1 (L5): at the year's projected rates - the model's anchor since K276, not the seed's
             r.U = Mathf.Clamp(100f - c.State.Unemployment, 0f, 100f) / 100f;
             float band = BandWeighted(c);
             r.Win = r.Pop2064 * r.P / 100f * r.U;
@@ -67,7 +67,7 @@ namespace PoliSim.EditorTools
             r.Plus = r.Pop15 * r.P / 100f * r.U;
             r.Input = PotentialOutput.LabourInput(c);
             // the 65+ bands' share of the band-weighted labour force - the workers the window never counted
-            float[] rates = ParticipationRateTable.For(c.Id); float older = 0f;
+            float[] rates = ParticipationRateTable.RatesAt(c.Id, c.CalendarYear); float older = 0f;   // K276 review 1 (L5)
             if (rates != null && c.Cohorts?.Counts != null) { for (int k = 13; k < PopulationCohorts.CohortCount; k++) { older += c.Cohorts.Counts[k] * rates[k]; } }
             r.Older65Share = band > 0f ? older / band : 0f;
             return r;

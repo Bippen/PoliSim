@@ -403,3 +403,7 @@ file	Assets/Scripts/Simulation/AiFinanceMinistry.cs	3fe49ae87e34981d25e3fd62dbd1
 file	Assets/Scripts/Simulation/SimulationManager.cs	b4cbf872413ae4dbb225b117033c69cec2247f16265b113c707d5d012611374b	reviewed	2026-10-29	s948	Reviews/2026-10-29_k274_integrator.md	K274: the bill reads the last closed boundary year
 baseline	777	972a73fa9ac4e2db8f6548f31cbdc2f335f67a9db113d623dabeb67c13c131c7	reviewed	2026-10-29	s948	Reviews/2026-10-29_k274_integrator.md	-
 baseline	424242	006d526584d8cbf34972a9abb605dcc9d495365101948273d1f58eb3c8d10cea	reviewed	2026-10-29	s948	Reviews/2026-10-29_k274_integrator.md	-
+file	Assets/Scripts/Data/PensionParticipationResponse.cs	5ebbf74ace1e8a783b2cf6725e7ce981fdd276a91f7f460064dfd8f26abfe0e9	reviewed	2026-10-29	s950	Reviews/2026-10-29_k276_integrator.md	K276: the pension response from the age the projection was made under
+file	Assets/Scripts/Simulation/MacroSystem.cs	7a8ca3914bdc41a27385bb2c78c523906a9bd8231602a4a799462448b3a38975	reviewed	2026-10-29	s950	Reviews/2026-10-29_k276_integrator.md	K276: participation by cohort
+baseline	777	a5912bfb8b89a83b2e373eca1debb8edd5193eb7ca7f75cdfa515636199e1c5d	reviewed	2026-10-29	s950	Reviews/2026-10-29_k276_integrator.md	-
+baseline	424242	16294d15398dbfbcd07ea0be6338166ee8e3f0c6f15fe0c36d513510478ac2de	reviewed	2026-10-29	s950	Reviews/2026-10-29_k276_integrator.md	-

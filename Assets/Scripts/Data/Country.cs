@@ -311,9 +311,9 @@ namespace PoliSim.Data
             DebtRatioSeed = State.DebtToGdpRatio;   // the AI finance ministry (§388)
             ParticipationAtLastBoundary = State.LaborForceParticipationRate;   // FT-7 (§391)
             // FT-8 (§398): the two references the natural rate reads the labour force through - the structural participation and the composition rate on the seed's pyramid
-            float structuralAtSeed = ParticipationRateTable.StructuralRate(this);   // §596
+            float structuralAtSeed = ParticipationRateTable.StructuralRate(this, Simulation.SimulationManager.EpochDate.Year);   // §596; K276: the epoch's year, as the opening rate
             StructuralParticipationAtLastBoundary = float.IsNaN(structuralAtSeed) ? 0f : structuralAtSeed;
-            float compositionAtSeed = Cohorts != null ? UnemploymentRateByAgeTable.CompositionRate(Id, Cohorts.Counts) : float.NaN;
+            float compositionAtSeed = Cohorts != null ? UnemploymentRateByAgeTable.CompositionRate(Id, Cohorts.Counts, Simulation.SimulationManager.EpochDate.Year) : float.NaN;   // K276 review 1 (L1): weighted by the epoch year's projected participation, as the boundary reads it
             CompositionNaturalRateAtSeed = float.IsNaN(compositionAtSeed) ? 0f : compositionAtSeed;
             State.NaturalRateDemographicShift = 0f;
             RevenueBaseSeeds = new float[TaxBases.DriverCount];

@@ -46,12 +46,21 @@ namespace PoliSim.Data
         /// <summary>
         /// The unemployment rate (percent) the pyramid's labour force would show with every band at its sourced rate: Σ(band × participation × rate) ÷
         /// Σ(band × participation) over ages 15 and over, the participation weights from ParticipationRateTable. NaN when the country has no table, no
-        /// participation table or no pyramid, so a caller cannot mistake "unknown" for zero.
+        /// participation table or no pyramid, so a caller cannot mistake "unknown" for zero. This form weights by the seed's participation table; the model
+        /// reads the year form below.
         /// </summary>
-        public static float CompositionRate(CountryId id, float[] counts)
+        public static float CompositionRate(CountryId id, float[] counts) => CompositionRate(id, counts, ParticipationRateTable.For(id));
+
+        /// <summary>K276 review 1 (L1): the same, the participation weights at the rates by age the country's source projects for <paramref name="year"/>
+        /// (ParticipationRateTable.RatesAt). FT-8 books the structural participation's change as trend and lets the natural rate read it as composition;
+        /// since K276 that trend carries the projected rates by age, so the composition must weight by them too - else the rate path's change in the mix
+        /// (more people at 55-74, whose unemployment rates are lower) reached neither unemployment nor the natural rate. The unemployment rates by age stay
+        /// at their source year (the CBO's construction); the pension age's response is not weighted (it is a few tenths of a point of the 15+ rate).</summary>
+        public static float CompositionRate(CountryId id, float[] counts, int year) => CompositionRate(id, counts, ParticipationRateTable.RatesAt(id, year));
+
+        private static float CompositionRate(CountryId id, float[] counts, float[] participation)
         {
             float[] rates = For(id);
-            float[] participation = ParticipationRateTable.For(id);
             if (rates == null || participation == null || counts == null) { return float.NaN; }
             float weighted = 0f, labourForce = 0f;
             for (int k = 3; k < PopulationCohorts.CohortCount && k < counts.Length; k++)   // band 3 = 15–19

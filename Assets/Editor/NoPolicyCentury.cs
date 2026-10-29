@@ -98,6 +98,24 @@ namespace PoliSim.EditorTools
             /// <summary>K275: the AI books of the same world after the year's turn - how many of them the creep's cap bound, and the largest creep among them.</summary>
             public int AiCreepBinds;
             public double AiCreepMax;
+            /// <summary>K276: the labour force after the year's turn (PotentialOutput.LabourForce - the 15+ population at the state's rate, the pyramid's
+            /// units), the labour force aged 20-64 at the year's projected rates by age (Σ band × ParticipationRateTable.RatesAt over 20-64, no lever),
+            /// and the state's participation rate - read by `ParticipationCohortDiagnostic`'s labour-force hold.</summary>
+            public double LabourForce;
+            public double LabourForce2064;
+            public float Participation;
+            /// <summary>K276 review 1 (M2): the model's own labour force aged 20-74 on the law the source projects - the state's labour force scaled to the
+            /// 20-74 perimeter: (the state's rate / the structural rate with the pension age's response) × Σ band × the year's projected rate over 20-24 to
+            /// 70-74 (<see cref="LabourForce2074At"/>). Read by `ParticipationCohortDiagnostic`'s (c) for the EU five.</summary>
+            public double LabourForce2074;
+            /// <summary>K276 review 1: the structural rate (ParticipationRateTable.StructuralRate, with the pension age's response) and the 15+ population, the
+            /// pyramid's units - the attribution beside `ParticipationCohortDiagnostic`'s (c): the labour force is the population × the state's rate, and the
+            /// state's rate is the anchor × (the state's rate / the anchor).</summary>
+            public float Structural;
+            public double Population15;
+            /// <summary>K276 review 1: what holds the state's rate off its anchor, points of the 15+ rate - the unemployment rate less the effective natural rate
+            /// (the discouraged-worker term reads it), the labour tax's, the health's and the education's participation terms - the attribution beside (c).</summary>
+            public float UnemploymentGap, LabourTaxTerm, HealthTerm, EducationTerm;
         }
 
         /// <summary>K275: the years the player's own moves are probed at - the first (the creep inside its bound everywhere) and the two the diagnostic holds.</summary>
@@ -196,6 +214,31 @@ namespace PoliSim.EditorTools
             return run;
         }
 
+        /// <summary>K276: the labour force aged 20-64 at the country's year's projected rates by age - Σ band × rate over the bands 20-24 to 60-64, the
+        /// pyramid's units; NaN without a pyramid or a table. Read only.</summary>
+        public static double LabourForce2064At(Country c)
+        {
+            float[] rates = ParticipationRateTable.RatesAt(c.Id, c.CalendarYear);
+            if (rates == null || c.Cohorts == null) { return double.NaN; }
+            double sum = 0;
+            for (int b = 4; b <= 12; b++) { sum += (double)c.Cohorts.Counts[b] * rates[b]; }
+            return sum;
+        }
+
+        /// <summary>K276 review 1 (M2): the model's own labour force aged 20-74, the pyramid's units, on the law the source projects - the state's rate over the
+        /// structural rate (with the pension age's response: the levers', the cycle's and the reversion's departure from the anchor) times the anchor's own
+        /// active people aged 20-74 at the year's projected rates (without the response: the projection's law - past an indexed statute's horizon the
+        /// response is the carried statute's shortfall against the age the projection assumed). NaN without a pyramid, a table or a structural rate. Read only.</summary>
+        public static double LabourForce2074At(Country c)
+        {
+            float[] rates = ParticipationRateTable.RatesAt(c.Id, c.CalendarYear);
+            float structural = ParticipationRateTable.StructuralRate(c);
+            if (rates == null || c.Cohorts == null || float.IsNaN(structural) || structural <= 0f) { return double.NaN; }
+            double sum = 0;
+            for (int b = 4; b <= 14; b++) { sum += (double)c.Cohorts.Counts[b] * rates[b]; }
+            return sum * c.State.LaborForceParticipationRate / structural;
+        }
+
         /// <summary>The loop the two diagnostics ran for an untouched country, recording every year - the shared century, the player's own book for <see cref="Years"/>.</summary>
         private static Year[] Advance(CountryId player) => Advance(player, Years, noPolicyChange: false);
 
@@ -279,6 +322,16 @@ namespace PoliSim.EditorTools
                             PrimaryBalancePercent = report != null ? (float)(100.0 * ((double)report.BudgetBalance + report.InterestOnDebt) / nominal) : float.NaN,
                             InterestPercent = report != null ? (float)(100.0 * report.InterestOnDebt / nominal) : float.NaN,
                             NominalGrowth = (nominal / System.Math.Max(1e-6, nominalBefore) - 1.0) * 100.0,
+                            LabourForce = PotentialOutput.LabourForce(c),
+                            LabourForce2064 = LabourForce2064At(c),
+                            LabourForce2074 = LabourForce2074At(c),
+                            Structural = ParticipationRateTable.StructuralRate(c),
+                            Population15 = PotentialOutput.Population15Plus(c),
+                            UnemploymentGap = c.State.Unemployment - c.EffectiveNaturalUnemploymentRate,
+                            LabourTaxTerm = MacroSystem.LaborTaxParticipationTerm(c),
+                            HealthTerm = HealthFamily.ParticipationTerm(c),
+                            EducationTerm = EducationFamily.ParticipationTerm(c),
+                            Participation = c.State.LaborForceParticipationRate,
                         };
                         RecordIncomeTax(world, c, year, years[year - 1]);   // K275
                         nominalBefore = nominal;

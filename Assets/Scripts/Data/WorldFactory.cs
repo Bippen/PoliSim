@@ -1095,7 +1095,7 @@ namespace PoliSim.Data
                 // F2 step 5: participation opens at the rate the walked pyramid implies at the sourced rates
                 // by age - the anchor it will revert toward - so the labour market opens at its own zero gap.
                 // The constructor's typed "ages 15+" figure is the retired seed, kept as the record of it.
-                float structuralParticipation = ParticipationRateTable.StructuralRate(country);   // §596: zero response at the seed year
+                float structuralParticipation = ParticipationRateTable.StructuralRate(country, Simulation.SimulationManager.EpochDate.Year);   // §596; K276: at the epoch's year - the projected rates of the year the world opens in (the clock commits it at SetWorld)
                 if (!float.IsNaN(structuralParticipation)) { country.State.LaborForceParticipationRate = structuralParticipation; }
 
                 // C-D4 (§38): each party's long-term capital, opened at the seeded election's mandate.

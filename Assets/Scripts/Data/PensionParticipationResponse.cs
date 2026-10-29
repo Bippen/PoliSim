@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using PoliSim.Data.Generated;
 using UnityEngine;
 
 namespace PoliSim.Data
@@ -17,12 +18,21 @@ namespace PoliSim.Data
     /// 2019 (GER, ERA 60→63) +13.5, 62 %, 0.19; the paper's own (NLD) +4.5, 15 %, 0.50 and +20.3, 29 %, 0.70.</para>
     ///
     /// <para><b>The model.</b> The participation the pyramid implies (`ParticipationRateTable.StructuralRate`, the anchor the state's rate reverts to and
-    /// so, since PN-3, the labour force potential reads) gains, in the ages between the age in force at the seed and the age in force now, a STEP:
+    /// so, since PN-3, the labour force potential reads) gains, in the ages between the statute's age for the year (K276; the seed's before it) and the age in force now, a STEP:
     /// since §599 the effect a study MEASURED in the country where one exists (France, Germany), else the country's own sourced rate for the year before
     /// the lower of the two ages × the table's median hazard (Sweden, Italy, Poland, the USA) - `Step`. Raised, those ages keep that much more of their
     /// pre-age participation; lowered, they lose it (the paper's Table B.1 carries one lowering, Vestad 2013, NOR 64→62, −33.2 pp, the same mechanism read
-    /// backwards; a measured country's lowering reuses its raise's measurement - §599's review, stated). A band's rate never leaves 0-100 %. The response is ZERO at the seed year's age - the tables are the seed's structure,
-    /// as every seed table is - so the no-policy run moves only where a statute steps after the seed, and a bill's age moves it from there.</para>
+    /// backwards; a measured country's lowering reuses its raise's measurement - §599's review, stated). A band's rate never leaves 0-100 %.</para>
+    ///
+    /// <para><b>K276 (2026-10-29): the reference is the STATUTE'S age for the year, no longer its age at the seed.</b> Since K276 the rates by age follow
+    /// the Ageing Report's (the EU five) and CBO's (the USA) projections (`ParticipationCohortPath`), and both project under the pension law as legislated -
+    /// the statute's own steps are inside the projected path. The response is therefore ZERO wherever the country's age in force is its statute's for the
+    /// year and the statute's path is the one the projection holds, and moves participation only where a passed bill's age departs from it: the player's
+    /// statute is the input, and the statute's own path is not counted twice. Review 1 (M1): past an indexed statute's horizon (Sweden after 2032, Italy
+    /// after 2028) the Ageing Report keeps indexing while the game carries the last published figure, so the reference there is the age the Ageing Report
+    /// assumed (<see cref="ReferenceAge"/>) and the no-policy run carries a NEGATIVE response - participation under the carried law the pension line reads.
+    /// Before K276 the reference was the seed year's age and the statute's later steps (Germany to 67, France
+    /// to 64, Italy's 2027-2028 adjustments, the USA's 67) added the response in the no-policy run as well. The step reads the year's projected rates.</para>
     ///
     /// <para><b>What it is not.</b> The paper's figure is EMPLOYMENT; it enters here as participation, and the participation the model adds meets the
     /// country's unemployment like any other - the substitution into unemployment the studies also find (Staubli &amp; Zweimüller's +12.5 pp on men) is
@@ -64,19 +74,49 @@ namespace PoliSim.Data
         /// restored in its `finally`. The game never sets it.</summary>
         public static bool ProbeSuspended;
 
-        /// <summary>The age the tables were read under: the statute's age at the seed year.</summary>
-        public static float ReferenceAge(CountryId id) => PensionAgeStatute.AgeInForce(id, PensionAgeStatute.SeedYear);
+        /// <summary>K276: the age the projected rates were made under in a year. Review 1 (M1): the Ageing Report projects Sweden's and Italy's
+        /// participation under the pension age linked to life expectancy for its whole horizon, while the game's indexed statute publishes only to its
+        /// horizon (Sweden 2032, Italy 2028) and then carries its last figure (board 15c-r2). So: inside the horizon, and for a scheduled or fixed statute
+        /// (Germany, France, Poland; the USA, whose CBO projection is made under the legislated 67), the statute's own age for the year; past an indexed
+        /// statute's horizon, the age the Ageing Report assumed (<see cref="ProjectedAge"/>), never below the statute's carried figure. In the no-policy run
+        /// the response is then NEGATIVE there - the labour force is the projection's less the participation of the indexation the carried statute does
+        /// not enact, the law the pension line's headcount also reads - and a bill is measured from the age the projection already holds, never twice.</summary>
+        public static float ReferenceAge(CountryId id, int year)
+        {
+            float statute = PensionAgeStatute.AgeInForce(id, year);
+            if (PensionAgeStatute.IsDated(id, year)) { return statute; }
+            float projected = ProjectedAge(id, year);
+            return float.IsNaN(projected) ? statute : Mathf.Max(statute, projected);
+        }
+
+        /// <summary>Review 1 (M1): the pension age the Ageing Report 2024 projects an indexed statute's country under in a year - the 2024 country fiche's
+        /// Table 1 (`ParticipationPath.ProjectedPensionAge`, generated by Tools/k276_participation_prep.pl; Sweden the earliest age for a guaranteed pension,
+        /// the age the riktålder sets; Italy the statutory retirement age), linear between the fiche's years [AUTHORED - the fiche prints a figure a
+        /// decade], held before its first and after its last; NaN for a country the fiches are not read for.</summary>
+        public static float ProjectedAge(CountryId id, int year)
+        {
+            if (!ParticipationPath.ProjectedPensionAgeYears.TryGetValue(id, out int[] years)) { return float.NaN; }
+            float[] ages = ParticipationPath.ProjectedPensionAge[id];
+            if (year <= years[0]) { return ages[0]; }
+            for (int k = 1; k < years.Length; k++)
+            {
+                if (year <= years[k]) { return ages[k - 1] + (ages[k] - ages[k - 1]) * (year - years[k - 1]) / (float)(years[k] - years[k - 1]); }
+            }
+            return ages[ages.Length - 1];
+        }
 
         /// <summary>The extra active people - in the pyramid's units, negative for a lowered age - the moved age keeps in (or puts out of) the labour
         /// force: Σ over the bands between the two ages of the band's count × the share of the band in that span × the step (`Step`: measured, or the
-        /// sourced rate for the year before the lower age × the median hazard), capped so no band leaves 0-100 %. Zero without a statute, a table or a pyramid.</summary>
-        public static float ExtraActive(Country country, float[] counts)
+        /// sourced rate for the year before the lower age × the median hazard), capped so no band leaves 0-100 %. Zero without a statute, a table or a pyramid.
+        /// K276: between the reference for <paramref name="year"/> (<see cref="ReferenceAge"/> - the statute's age, or past an indexed statute's horizon the
+        /// age the Ageing Report assumed) and the country's age in force that year, at that year's projected rates.</summary>
+        public static float ExtraActive(Country country, float[] counts, int year)
         {
             if (ProbeSuspended || country == null || counts == null || !PensionAgeStatute.Has(country.Id)) { return 0f; }
-            float[] rates = ParticipationRateTable.For(country.Id);
+            float[] rates = ParticipationRateTable.RatesAt(country.Id, year);
             if (rates == null) { return 0f; }
-            float reference = ReferenceAge(country.Id);
-            float now = PensionAgeStatute.AgeInForce(country, country.CalendarYear);
+            float reference = ReferenceAge(country.Id, year);
+            float now = PensionAgeStatute.AgeInForce(country, year);
             if (Mathf.Abs(now - reference) < 1e-4f) { return 0f; }
             float lower = Mathf.Min(reference, now), upper = Mathf.Max(reference, now);
             float step = Step(country.Id, rates, lower);

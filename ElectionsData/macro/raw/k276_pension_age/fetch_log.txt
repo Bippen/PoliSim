@@ -1,0 +1,13 @@
+# K276 review 1, M1 (2026-10-29): the pension age the 2024 Ageing Report's projection was made under for the two indexed statutes (Sweden, Italy).
+# curl -sS -L -A "Mozilla/5.0" -D <file>.headers.txt, byte-exact; the links are the publication page's own
+# (https://economy-finance.ec.europa.eu/publications/2024-ageing-report-economic-and-budgetary-projections-eu-member-states-2022-2070_en, fetched 2026-10-29T12:06Z, not kept).
+# url	file	time (UTC)	status	bytes
+https://economy-finance.ec.europa.eu/document/download/971dd209-41c2-425d-94f8-e3c3c3459af9_en?filename=ip279_en.pdf	ec_2024_Ageing_Report_ip279_en.pdf	2026-10-29T12:06:56Z	200	3944551
+https://economy-finance.ec.europa.eu/document/download/1a05f725-4231-411e-bcde-7d567ddd7689_en?filename=2024-ageing-report-country-fiche-Sweden.pdf	ec_2024_Ageing_Report_country_fiche_Sweden.pdf	2026-10-29T12:06:56Z	200	1061977
+https://economy-finance.ec.europa.eu/document/download/82b762d7-21ce-4992-aa97-888fd2c66205_en?filename=2024-ageing-report-country-fiche-Italy.pdf	ec_2024_Ageing_Report_country_fiche_Italy.pdf	2026-10-29T12:06:57Z	200	917743
+# What is read (Tools/k276_participation_prep.pl, through pdftotext -raw, Git Bash's mingw64 build):
+#   the Sweden fiche, page 7, TABLE 1 - QUALIFYING CONDITIONS FOR RETIREMENT, row "Earliest age for a guaranteed pension - men and women" (2023-2070);
+#   the Italy fiche, page 8, the same table, the two "Statutory retirement age" rows (men, women; identical), 2022-2070;
+#   the report (Institutional Paper 279), page 33, Table I.1.3 "Statutory retirement ages, early retirement ages and incentives to postpone
+#   retirement", rows SE* and IT* (2022, 2030, 2050, 2070, male and female) - the cross-check, within 0.05 years.
+# Nothing refused.

@@ -607,7 +607,7 @@ namespace PoliSim.Simulation
         /// from before seeds its base on first sight. Read by Okun's reversion, the Phillips curve and the Taylor rule through Country.EffectiveNaturalUnemploymentRate.</summary>
         public static void ApplyNaturalRateFromLabourForce(Country country)
         {
-            float composition = country.Cohorts != null ? UnemploymentRateByAgeTable.CompositionRate(country.Id, country.Cohorts.Counts) : float.NaN;
+            float composition = country.Cohorts != null ? UnemploymentRateByAgeTable.CompositionRate(country.Id, country.Cohorts.Counts, country.CalendarYear) : float.NaN;
             if (float.IsNaN(composition)) { country.State.NaturalRateDemographicShift = 0f; return; }
             if (country.CompositionNaturalRateAtSeed <= 0f) { country.CompositionNaturalRateAtSeed = composition; }
             country.State.NaturalRateDemographicShift = composition - country.CompositionNaturalRateAtSeed;

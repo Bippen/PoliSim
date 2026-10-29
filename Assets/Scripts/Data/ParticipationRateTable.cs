@@ -53,14 +53,46 @@ namespace PoliSim.Data
 
         public static float[] For(CountryId id) => Rates.TryGetValue(id, out float[] r) ? r : null;
 
+        /// <summary>K276: the rates by age IN A YEAR - the seed's sourced rate per band plus the change its source projects for the band's group since the
+        /// source's base year (`ParticipationCohortPath`: the Ageing Report 2024 for the EU five, CBO for the USA), each band held to 0-100 %. The seed's
+        /// own table (<see cref="For"/>) where the country has no projected path; null without a table. The array is shared: read it, never write it.</summary>
+        public static float[] RatesAt(CountryId id, int year)
+        {
+            float[] seed = For(id);
+            if (seed == null) { return null; }
+            float[] delta = ParticipationCohortPath.DeltaPoints(id, year);
+            if (delta == null) { return seed; }
+            long key = ((long)id << 32) | (uint)year;
+            lock (YearRatesLock)
+            {
+                if (YearRates.TryGetValue(key, out float[] hit)) { return hit; }
+                var r = new float[seed.Length];
+                for (int k = 0; k < seed.Length; k++)
+                {
+                    float v = seed[k] + (k < delta.Length ? delta[k] : 0f) / 100f;
+                    r[k] = v < 0f ? 0f : v > 1f ? 1f : v;
+                }
+                YearRates[key] = r;
+                return r;
+            }
+        }
+
+        /// <summary>K276: <see cref="RatesAt"/>'s arrays, a pure function of the country and the year (no world state), computed once.</summary>
+        private static readonly Dictionary<long, float[]> YearRates = new Dictionary<long, float[]>();
+        private static readonly object YearRatesLock = new object();
+
         /// <summary>
         /// The participation rate (percent) the pyramid implies at the country's sourced rates by age:
         /// Σ(band × rate) / population aged 15 and over. NaN when the country has no table or no pyramid,
         /// so a caller cannot mistake "unknown" for zero.
         /// </summary>
-        public static float StructuralRate(CountryId id, float[] counts)
+        public static float StructuralRate(CountryId id, float[] counts) => StructuralRate(For(id), counts);
+
+        /// <summary>K276: the same at the rates by age the country's source projects for <paramref name="year"/> (<see cref="RatesAt"/>).</summary>
+        public static float StructuralRate(CountryId id, float[] counts, int year) => StructuralRate(RatesAt(id, year), counts);
+
+        private static float StructuralRate(float[] rates, float[] counts)
         {
-            float[] rates = For(id);
             if (rates == null || counts == null) { return float.NaN; }
             float active = 0f, base15Plus = 0f;
             for (int k = 3; k < PopulationCohorts.CohortCount && k < counts.Length; k++)   // band 3 = 15–19
@@ -72,26 +104,33 @@ namespace PoliSim.Data
         }
 
         /// <summary>
-        /// PN-1's other half (§596): the structural rate of a COUNTRY - the pyramid's at the sourced rates, plus the participation the pension age keeps
-        /// in (or puts out of) the bands it has moved across since the seed (`PensionParticipationResponse.ExtraActive`), over the same 15+ base. Every
-        /// model reader of the anchor reads this one; the id-and-counts form stays the pyramid's alone, for the diagnostics that measure it as such.
-        /// Identical to it while the age in force is the seed's.
+        /// PN-1's other half (§596): the structural rate of a COUNTRY - the pyramid's at the sourced rates (since K276, the year's projected rates), plus
+        /// the participation the pension age keeps in (or puts out of) the bands between the statute's age for the year and the country's age in force
+        /// (`PensionParticipationResponse.ExtraActive`), over the same 15+ base. Every model reader of the anchor reads this one; the id-and-counts form
+        /// stays the pyramid's alone, for the diagnostics that measure it as such. Identical to the pyramid's at the year's rates while no bill moves the age.
         /// </summary>
-        public static float StructuralRate(Country country)
+        public static float StructuralRate(Country country) => country == null ? float.NaN : StructuralRate(country, country.CalendarYear);
+
+        /// <summary>K276: the structural rate of a country in a stated year - the pyramid's at that year's projected rates by age, plus the pension
+        /// age's response for that year. The world's creation reads it at the epoch's year, before the clock has committed one.</summary>
+        public static float StructuralRate(Country country, int year)
         {
             if (country?.Cohorts == null) { return float.NaN; }
-            float pyramid = StructuralRate(country.Id, country.Cohorts.Counts);
+            float pyramid = StructuralRate(country.Id, country.Cohorts.Counts, year);
             if (float.IsNaN(pyramid)) { return pyramid; }
-            float points = PensionResponsePoints(country);
+            float points = PensionResponsePoints(country, year);
             return points == 0f ? pyramid : pyramid + points;
         }
 
-        /// <summary>§596: the pension age's response in points of the 15+ rate - the extra active people over the 15+ base; zero while the age is the seed's.</summary>
-        public static float PensionResponsePoints(Country country)
+        /// <summary>§596: the pension age's response in points of the 15+ rate - the extra active people over the 15+ base; zero while the age in force is the statute's (K276).</summary>
+        public static float PensionResponsePoints(Country country) => country == null ? 0f : PensionResponsePoints(country, country.CalendarYear);
+
+        /// <summary>K276: the same in a stated year.</summary>
+        public static float PensionResponsePoints(Country country, int year)
         {
             if (country?.Cohorts == null) { return 0f; }
             float[] counts = country.Cohorts.Counts;
-            float extra = PensionParticipationResponse.ExtraActive(country, counts);
+            float extra = PensionParticipationResponse.ExtraActive(country, counts, year);
             if (extra == 0f) { return 0f; }
             float base15Plus = 0f;
             for (int k = 3; k < PopulationCohorts.CohortCount && k < counts.Length; k++) { base15Plus += counts[k]; }

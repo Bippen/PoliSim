@@ -41,3 +41,5 @@ ElectionsData/macro/raw/k252_debt_rate/** -text
 Assets/Scripts/Data/Generated/DebtRateSeeds.cs -text
 # K274 (2026-10-29, review 1's L6): Bohn (1998) and CBO's 2026 long-term data with their response headers, byte-exact as fetched (digests in the folder's SHA256SUMS.txt)
 ElectionsData/usa/raw/k274_fiscal_reaction/** -text
+# K276 review 1 (M1, 2026-10-29): the pension age the Ageing Report 2024 projects Sweden's and Italy's participation under, past the dates their statutes publish (byte-exact as fetched; digests in the folder's SHA256SUMS.txt)
+ElectionsData/macro/raw/k276_pension_age/** -text

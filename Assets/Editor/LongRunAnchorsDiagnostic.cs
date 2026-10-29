@@ -43,7 +43,8 @@ namespace PoliSim.EditorTools
     /// window outside the band FAILS unless the window's labour part alone - the model's potential growth net of its productivity index's growth,
     /// against the source's labour part - misses by more than the band AND the rest of the window's miss (its potential miss less its labour miss) is
     /// inside the band; that window is a named REGISTERED MISS (the labour input, not K210's to close) and does not fail. The productivity part is
-    /// printed beside it. (d1) lies inside the WEO's horizon, where K210 does not act: its miss stays a named REGISTERED MISS (K245). (d)'s
+    /// printed beside it. (d1) lies inside the WEO's horizon, where K210 does not act: its miss was a named REGISTERED MISS (K245) until K276 (the rates
+    /// by age along the Ageing Report's and CBO's paths, Reviews/2026-10-29_k276_prereg.md) - since K276 a (d1) country outside the band FAILS. (d)'s
     /// zero-iteration guards, (c4), (d3) and (e) fail. (e5) a preview drawn before the horizon's boundary previews the anchor that boundary applies;
     /// (e6) every boundary of every no-policy century wrote the anchor for its own day plus the adjustments it read.
     /// Prints `LONG-RUN ANCHORS: PASS` and exits 0 when every check holds; each failure is a `LONG-RUN ANCHORS: FAIL` error naming its check.
@@ -101,9 +102,8 @@ namespace PoliSim.EditorTools
         /// all-sources ceiling at the seed.</summary>
         private const float PlantedAdjustment = 0.1f;
 
-        /// <summary>The REGISTERED MISS tags under K210's prereg.</summary>
+        /// <summary>The REGISTERED MISS tag under K210's prereg. K276 ended K245's tag on (d1): a (d1) miss fails.</summary>
         private const string LabourTag = "REGISTERED MISS (K210 prereg; the labour input - not K210's to close)";
-        private const string HorizonTag = "REGISTERED MISS (K245; inside the WEO's horizon, where K210 does not act)";
 
         private static readonly CountryId[] Six = { CountryId.Sweden, CountryId.Germany, CountryId.France, CountryId.Italy, CountryId.Poland, CountryId.USA };
 
@@ -128,9 +128,9 @@ namespace PoliSim.EditorTools
             }
             catch (Exception e) { Check(false, "the run threw " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace); }
             Debug.Log(_sb.ToString());
-            Debug.Log(F("LONG-RUN ANCHORS: {0} REGISTERED MISS line(s) under K210's prereg ((d1) inside the WEO's horizon; (d2) windows whose labour part alone misses the band)", _registered));
+            Debug.Log(F("LONG-RUN ANCHORS: {0} REGISTERED MISS line(s) under K210's prereg ((d2) windows whose labour part alone misses the band; K276 ended (d1)'s)", _registered));
             Debug.Log(_failures == 0
-                ? "LONG-RUN ANCHORS: PASS - life expectancy equals its derivation from the sourced schedules every day, the multipliers' directions hold, the gap keeps the HLW persistence a turn in both forms with kappa on D-13 (b)'s basis, the no-policy gap inside its bound at years 10, 30 and 100, every country's life-expectancy gain inside its band, every (d2) window inside the Ageing Report / CBO band or missing it on its labour part alone, and the productivity pull built as K210 rules it (K210's prereg)"
+                ? "LONG-RUN ANCHORS: PASS - life expectancy equals its derivation from the sourced schedules every day, the multipliers' directions hold, the gap keeps the HLW persistence a turn in both forms with kappa on D-13 (b)'s basis, the no-policy gap inside its bound at years 10, 30 and 100, every country's life-expectancy gain inside its band, every country's (d1) WEO window inside its band (K276), every (d2) window inside the Ageing Report / CBO band or missing it on its labour part alone, and the productivity pull built as K210 rules it (K210's prereg)"
                 : F("LONG-RUN ANCHORS: FAIL - {0} check(s) failed.", _failures));
             CheckExit.Finish(_failures == 0 ? 0 : 1);
         }
@@ -365,7 +365,7 @@ namespace PoliSim.EditorTools
                             id, m, pm / m, ps / m, wm / m, ws / m, lm / m, ls / m, run.Count > 0 ? run[0].OutputGap : double.NaN, run.Count > 9 ? run[9].OutputGap : double.NaN));
                     }
                 }
-                Registered(n > 0 && Math.Abs(sumModel / n - sumWeo / n) <= WeoBandPp, HorizonTag,
+                Check(n > 0 && Math.Abs(sumModel / n - sumWeo / n) <= WeoBandPp,   // K276: K245's REGISTERED MISS ended - the labour input now follows the sources' rates by age
                     F("(d1) {0,-8} real GDP growth {1}-{2}: the no-policy run's mean {3:F2} % a year against the WEO's {4:F2} %", id, firstY, LongRunAnchors.WeoLastYear, n > 0 ? sumModel / n : double.NaN, n > 0 ? sumWeo / n : double.NaN));
 
                 // beyond the WEO's horizon: the Ageing Report (EU five) or CBO (the USA, K139); K210's prereg - a miss fails unless the labour part alone
@@ -724,7 +724,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>K210's prereg (K211 ended): a miss the prereg registers prints its figures under its named tag and does not fail the run (the
-        /// K113/K114 pattern) - (d1) inside the WEO's horizon, a (d2) window whose labour part alone misses the band; every other departure fails.</summary>
+        /// K113/K114 pattern) - a (d2) window whose labour part alone misses the band (K276 ended (d1)'s, K245); every other departure fails.</summary>
         private static void Registered(bool ok, string tag, string what)
         {
             if (ok) { _sb.Append("        ok   ").Append(what).Append('\n'); return; }

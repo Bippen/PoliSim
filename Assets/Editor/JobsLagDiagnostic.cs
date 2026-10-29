@@ -54,7 +54,7 @@ namespace PoliSim.EditorTools
             // exactly, half a point - reads no excess and moves unemployment by nothing; the same half point arriving as a cyclical change reads the §391 impact.
             {
                 var country = seedWorld.GetCountry(CountryId.Sweden);
-                float structural = ParticipationRateTable.StructuralRate(country.Id, country.Cohorts.Counts);
+                float structural = ParticipationRateTable.StructuralRate(country);   // K276: the reader's own form - the country's year, its projected rates
                 country.State.Unemployment = 6f; country.State.SupplyUnemploymentExcess = 0f;
                 country.StructuralParticipationAtLastBoundary = structural - 0.5f; country.ParticipationAtLastBoundary = 64f; country.State.LaborForceParticipationRate = 64.5f;
                 MacroSystem.ApplySupplyShockToUnemployment(country);

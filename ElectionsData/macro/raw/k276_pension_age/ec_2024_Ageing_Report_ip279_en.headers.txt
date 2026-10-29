@@ -1,0 +1,20 @@
+HTTP/1.1 200 OK
+Content-Type: application/pdf
+Content-Length: 3944551
+Connection: keep-alive
+Date: Thu, 29 Oct 2026 12:06:56 GMT
+X-Age: 15374
+Content-Disposition: inline; filename="ip279_en.pdf"
+Content-Language: en
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Expires: Sun, 19 Nov 1978 05:00:00 GMT
+Accept-Ranges: bytes
+X-FPFIS: 2093907 5752871
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;
+Cache-Control: public, max-age=300, s-maxage=300
+X-Cache: Miss from cloudfront
+Via: 1.1 4e104227156e0b71bda83402e67ab4e0.cloudfront.net (CloudFront)
+X-Amz-Cf-Pop: ARN56-P3
+X-Amz-Cf-Id: rvkNP7AmtkdF33oHapqmHhfaR2Hg0zRpdZklRH4Up89wHXgk3L8qNA==
+

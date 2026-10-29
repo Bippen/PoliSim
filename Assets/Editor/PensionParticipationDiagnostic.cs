@@ -8,9 +8,12 @@ namespace PoliSim.EditorTools
 {
     /// <summary>
     /// PN-1's other half (2026-09-23, §596): THE PARTICIPATION RESPONSE, EXPLAINED PER COUNTRY AND ASSERTED. On a fresh world, for each of the six:
-    /// (1) the response is ZERO at the seed year's age - the tables are the seed's structure; (2) the statute's own path after the seed - the
-    /// no-policy run's move - year by year: the age, the ages crossed, the step (§599: the country's measured effect where one exists, else the sourced
-    /// rate before the lower age × the median hazard, named with its source), and the structural rate with the response against the pyramid's alone, the pyramid held at the seed so the response is read alone;
+    /// (1) the response is ZERO at the seed year's age - the tables are the seed's structure; (2) K276 (2026-10-29): the statute's own path after the seed -
+    /// the no-policy run's move - every year to 2040: the response stays ZERO wherever the statute's age is the one the projection was made under (the
+    /// projected rates by age, `ParticipationCohortPath`, are made under the law as legislated, so the statute's own steps are inside them and are not counted
+    /// twice) and the structural rate equals the pyramid's at that year's projected rates, bit for bit, the pyramid held at the seed - before K276 each step
+    /// added the response; past an indexed statute's horizon (Sweden after 2032, Italy once the Ageing Report's age passes the carried 67 y 3 m) the
+    /// reference is the Ageing Report's age and the carried figure's shortfall is a NEGATIVE response, the structural rate the pyramid's plus it (review 1, M1);
     /// (3) the dial: an age set by a bill two years above and two below the seed's, the structural rate's move and the labour force's in percent,
     /// signed (a raised age adds participation, a lowered one removes it); (4) THE PENSION LINE'S SAVING UNCHANGED: the line's driver
     /// (SpendingDrivers.StatutoryPensionAge) is the headcount at or above the age in force, bit for bit, with the response in place;
@@ -36,14 +39,14 @@ namespace PoliSim.EditorTools
             {
                 if (!PensionAgeStatute.Has(c.Id) || c.Cohorts == null || ParticipationRateTable.For(c.Id) == null) { sb.Append(F("    {0}: no statute, pyramid or table - no response\n", c.Id)); continue; }
                 float[] rates = ParticipationRateTable.For(c.Id);
-                float seedAge = PensionParticipationResponse.ReferenceAge(c.Id);
+                float seedAge = PensionParticipationResponse.ReferenceAge(c.Id, PensionAgeStatute.SeedYear);
                 bool measured = PensionParticipationResponse.TryMeasured(c.Id, out float measuredEffect);
                 string stepSource = measured
                     ? (c.Id == CountryId.France ? F("MEASURED in France: Rabate & Rochut 2019, NRA 60->61, +{0:0.0} pp", 100f * measuredEffect) : F("MEASURED in Germany: Geyer & Welteke 2019, women's ERA 60->63, +{0:0.0} pp", 100f * measuredEffect))
                     : F("no study measured it: the sourced rate before the age x the table's median hazard {0:0.###}", PensionParticipationResponse.MedianHazard);
                 int keptYear = c.CalendarYear;
                 float keptOverride = c.PensionAgeOverride;
-                float pyramidSeed = ParticipationRateTable.StructuralRate(c.Id, c.Cohorts.Counts);
+                float pyramidSeed = ParticipationRateTable.StructuralRate(c.Id, c.Cohorts.Counts, PensionAgeStatute.SeedYear);   // K276: the pyramid at the seed year's projected rates
                 sb.Append(F("  {0}: the age at the seed {1}; the step - {2}\n", c.Id, PensionAgeStatute.Format(seedAge), stepSource));
 
                 // (1) zero at the seed
@@ -51,23 +54,30 @@ namespace PoliSim.EditorTools
                 float atSeed = ParticipationRateTable.StructuralRate(c);
                 Assert(atSeed == pyramidSeed, F("{0}: the response is zero at the seed year ({1:0.0000} == the pyramid's {2:0.0000})", c.Id, atSeed, pyramidSeed));
 
-                // (2) the statute's own path after the seed, the pyramid held
-                float lastAge = seedAge;
+                // (2) K276: the statute's own path after the seed, the pyramid held, every year to 2040. Where the statute's age is the one the projection was
+                // made under (inside an indexed statute's horizon; a scheduled or fixed statute) the response is ZERO - the projected rates carry the step;
+                // past an indexed statute's horizon (review 1, M1) the reference is the Ageing Report's age and the carried statute's shortfall is NEGATIVE.
+                float lastAge = seedAge; bool lastPast = false; int zeroYears = 0, shortYears = 0; string bad = null;
                 for (int year = PensionAgeStatute.SeedYear + 1; year <= 2040; year++)
                 {
                     c.CalendarYear = year;
                     float age = PensionAgeStatute.AgeInForce(c, year);
-                    if (Mathf.Abs(age - lastAge) < 1e-4f) { continue; }
-                    lastAge = age;
+                    float reference = PensionParticipationResponse.ReferenceAge(c.Id, year);
+                    bool past = !PensionAgeStatute.IsDated(c.Id, year);
                     float with = ParticipationRateTable.StructuralRate(c);
-                    float lower = Mathf.Min(seedAge, age);
-                    float step = PensionParticipationResponse.Step(c.Id, rates, lower);
-                    string stepWhy = measured ? "measured" : F("{0:0.0} % before {1} x {2:0.###}", 100f * PensionParticipationResponse.RateAtAge(rates, lower - 1f), PensionAgeStatute.Format(lower), PensionParticipationResponse.MedianHazard);
-                    sb.Append(F("      {0}: the statute steps to {1} - the ages {2} to {1} crossed, step {3:0.0} pp ({4}); structural {5:0.000} % against the pyramid's {6:0.000} ({7:+0.000;-0.000} pts)\n",
-                        year, PensionAgeStatute.Format(age), PensionAgeStatute.Format(lower), 100f * step, stepWhy, with, pyramidSeed, with - pyramidSeed));
-                    Assert(age > seedAge ? with > pyramidSeed : with < pyramidSeed, F("{0} {1}: the statute's step moves the structural rate the age's way", c.Id, year));
+                    float pyramidYear = ParticipationRateTable.StructuralRate(c.Id, c.Cohorts.Counts, year);
+                    float response = ParticipationRateTable.PensionResponsePoints(c);
+                    bool agree = Mathf.Abs(age - reference) < 1e-4f;
+                    if (Mathf.Abs(age - lastAge) >= 1e-4f || past != lastPast || (past && year == 2040))
+                    {
+                        sb.Append(F("      {0}: the statute's {1}{2}; the reference {3:0.000}; structural {4:0.000} % - the pyramid's at {0}'s projected rates {5:0.000} (the seed year's {6:0.000}, the path {7:+0.000;-0.000} pts); the response {8:+0.0000;-0.0000;0} pts\n",
+                            year, PensionAgeStatute.Format(age), past ? " CARRIED past the horizon" : string.Empty, reference, with, pyramidYear, pyramidSeed, pyramidYear - pyramidSeed, response));
+                    }
+                    lastAge = age; lastPast = past;
+                    bool ok = agree ? response == 0f && with == pyramidYear : past && reference > age && response < 0f && Mathf.Abs(with - (pyramidYear + response)) < 1e-4f;
+                    if (ok) { if (agree) { zeroYears++; } else { shortYears++; } } else if (bad == null) { bad = F("{0}: the statute's {1}, the reference {2:0.000}, the response {3:+0.0000;-0.0000;0}, structural {4:0.000} against the pyramid's {5:0.000}", year, PensionAgeStatute.Format(age), reference, response, with, pyramidYear); }
                 }
-                if (Mathf.Abs(lastAge - seedAge) < 1e-4f) { sb.Append("      the statute holds the seed's age to 2040 - the no-policy run does not move here\n"); }
+                Assert(bad == null, F("{0} 2027-2040: the statute's own path adds no response in {1} year(s) - the projected rates carry it (K276) - and past its horizon the carried figure's shortfall against the Ageing Report's age is a negative response in {2} year(s) (review 1, M1){3}", c.Id, zeroYears, shortYears, bad == null ? string.Empty : " - FIRST DEPARTURE " + bad));
 
                 // (3) the dial, two years each way, at the seed year
                 c.CalendarYear = PensionAgeStatute.SeedYear;
@@ -118,7 +128,7 @@ namespace PoliSim.EditorTools
 
             // (5) §599: where a country's effect was measured, the measurement IS the step; the formula's overshoot on France is printed beside it
             float[] fr = ParticipationRateTable.For(CountryId.France);
-            float frSeed = PensionParticipationResponse.ReferenceAge(CountryId.France);
+            float frSeed = PensionParticipationResponse.ReferenceAge(CountryId.France, PensionAgeStatute.SeedYear);
             float frStep = 100f * PensionParticipationResponse.Step(CountryId.France, fr, frSeed);
             float frFormulaOwn = 100f * PensionParticipationResponse.RateAtAge(fr, frSeed - 1f) * 0.50f;   // the study's own hazard, Table B.1
             float frFormulaMedian = 100f * PensionParticipationResponse.RateAtAge(fr, frSeed - 1f) * PensionParticipationResponse.MedianHazard;

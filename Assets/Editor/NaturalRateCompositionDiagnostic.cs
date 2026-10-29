@@ -9,7 +9,7 @@ namespace PoliSim.EditorTools
     /// <summary>
     /// FT-8 (2026-09-08, §398): the natural rate reads the labour force. (1) At the seed the demographic shift is zero for six and the effective natural rate
     /// is the seeded one; the composition base is the hand computation Σ(band × participation × rate) ÷ Σ(band × participation) over the two sourced tables,
-    /// to 1e-4. (2) After one turn with no player the shift equals composition-now minus the base to 1e-5 for six, and is small (a composition effect is
+    /// to 1e-4 - since K276 (review 1, L1) the participation at the epoch year's projected rates by age, as the model weights it. (2) After one turn with no player the shift equals composition-now minus the base to 1e-5 for six, and is small (a composition effect is
     /// basis points a year, not points). (3) The three readers read the shift: with a shift of 0.5 set by hand on Sweden the Taylor gap rises by exactly 0.5,
     /// the Phillips curve's print RISES by slope × 0.5 (a higher natural rate is a tighter market at the same unemployment), and Okun's reversion moves unemployment linearly in the shift (twice the move for a shift of 1.0).
     /// (4) The direction: moving a million 20–24-year-olds into 60–64 on Sweden's pyramid lowers the composition rate, by the hand computation to 1e-5 - the
@@ -28,7 +28,7 @@ namespace PoliSim.EditorTools
             {
                 if (Mathf.Abs(c.State.NaturalRateDemographicShift) > 1e-6f) { Debug.LogError($"NATURAL RATE: {c.Id} carries a demographic shift at the seed ({c.State.NaturalRateDemographicShift:R})."); ok = false; }
                 if (Mathf.Abs(c.EffectiveNaturalUnemploymentRate - c.NaturalUnemploymentRate) > 1e-6f) { Debug.LogError($"NATURAL RATE: {c.Id}'s effective natural rate is not the seeded one at the seed."); ok = false; }
-                float hand = Hand(c.Id, c.Cohorts.Counts);
+                float hand = Hand(c.Id, c.Cohorts.Counts, SimulationManager.EpochDate.Year);   // K276 review 1 (L1): the base is weighted by the epoch year's projected participation
                 if (float.IsNaN(hand) || Mathf.Abs(c.CompositionNaturalRateAtSeed - hand) > 1e-4f) { Debug.LogError($"NATURAL RATE: {c.Id}'s composition base {c.CompositionNaturalRateAtSeed:F5} is not the hand computation {hand:F5}."); ok = false; }
                 report.Add($"{c.Id} NAIRU {c.NaturalUnemploymentRate:F2}, composition rate at the seed {c.CompositionNaturalRateAtSeed:F3} (the 2024 structure at the 2024 cycle; only its change is read)");
             }
@@ -43,7 +43,7 @@ namespace PoliSim.EditorTools
                 sim.AdvanceTurn(decisions);
                 foreach (Country c in world.Countries)
                 {
-                    float expected = UnemploymentRateByAgeTable.CompositionRate(c.Id, c.Cohorts.Counts) - c.CompositionNaturalRateAtSeed;
+                    float expected = UnemploymentRateByAgeTable.CompositionRate(c.Id, c.Cohorts.Counts, c.CalendarYear) - c.CompositionNaturalRateAtSeed;   // K276 review 1 (L1): the reader's own form, the year's projected participation
                     if (Mathf.Abs(c.State.NaturalRateDemographicShift - expected) > 1e-5f) { Debug.LogError($"NATURAL RATE: {c.Id}'s shift after one turn {c.State.NaturalRateDemographicShift:R} is not composition-now minus the base {expected:R}."); ok = false; }
                     if (Mathf.Abs(c.State.NaturalRateDemographicShift) > 0.1f) { Debug.LogError($"NATURAL RATE: {c.Id}'s shift after ONE year is {c.State.NaturalRateDemographicShift:F4} points - a composition effect is basis points a year."); ok = false; }
                     report.Add($"{c.Id} shift after one year {c.State.NaturalRateDemographicShift:+0.0000} points");
@@ -85,9 +85,9 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>Σ(band × participation × rate) ÷ Σ(band × participation) over bands 15–19 and up, computed here from the two tables independently of the class under test.</summary>
-        private static float Hand(CountryId id, float[] counts)
+        private static float Hand(CountryId id, float[] counts, int? year = null)
         {
-            float[] p = ParticipationRateTable.For(id); float[] u = UnemploymentRateByAgeTable.For(id);
+            float[] p = year.HasValue ? ParticipationRateTable.RatesAt(id, year.Value) : ParticipationRateTable.For(id); float[] u = UnemploymentRateByAgeTable.For(id);   // K276 review 1 (L1): the year's projected participation where the model reads it
             if (p == null || u == null) { return float.NaN; }
             double w = 0, lf = 0;
             for (int k = 3; k < PopulationCohorts.CohortCount; k++) { double f = counts[k] * p[k]; w += f * u[k]; lf += f; }
