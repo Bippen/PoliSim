@@ -12,6 +12,8 @@ namespace PoliSim.EditorTools
     /// fitted as - because the original 2026-07-22 sweep fitted them in the standalone harness,
     /// which reported four-significant-figure stability for a system real Unity showed diverging.
     /// The honest expected outcome is EMPTY, and empty is the deliverable.
+    /// ⚠ <b>K251 (2026-10-29): history only.</b> The reaction is retired in the AI's book (`SimulationManager.GetFiscalReactionMultiplier`), and the
+    /// worlds this sweep opens have no player, so every country in them collects at a multiplier of 1 whatever pair is set - the sweep varies nothing.
     ///
     /// Run: `Unity.exe -batchmode -nographics -projectPath &lt;path&gt; -executeMethod
     /// PoliSim.EditorTools.FrfSweepDiagnostic.Run -logFile &lt;path&gt;`

@@ -179,6 +179,17 @@ namespace PoliSim.Data
         /// lines carry the year's real wage growth as the ratio now/then (IndexSpendingLines) - the income index of Socialförsäkringsbalken 58 kap. in the
         /// model's terms. 0 = a save from before: a factor of 1 once.</summary>
         public float RealWageIndexAtLastIndex;
+        /// <summary>K271 (2026-10-29): THE AI GOVERNMENT'S RE-INDEXATION of the income-tax thresholds - a multiplier on the statute's own threshold scale
+        /// (`TaxSchedule.ThresholdScale`), 1 at the seed. Each boundary an AI book governs (not the USA's), it carries the year's real wage growth, and for a
+        /// statute that leaves its thresholds nominal (Poland's) the year's prices too, so the thresholds follow nominal incomes - the no-policy convention of
+        /// the EC's DSM and Ageing Report (revenue roughly constant as a share of GDP), [AUTHORED-DRAFT] as an AI government's practice. A book the player
+        /// governs leaves it where it stands - the statute as written, its bracket creep included - and so does the USA's (CPI indexing; CBO's current law
+        /// documents the creep). 0 = a save from before K271: read as 1, the statute's reading of the build before. The preview's clone carries it (§506).</summary>
+        public float IncomeTaxThresholdLift;
+        /// <summary>K271 (2026-10-29): what the AI finance ministry's release restored last boundary, as a share of the lines then
+        /// (`AiFinanceMinistry.Written.ReleasedShareOfLines`) - left out of next year's net-expenditure excess (`AiFinanceMinistry.EuExpenditureExcess`), so a
+        /// release is not clawed back as overspending. 0 where nothing was released, where the player governs, and in a save from before K271.</summary>
+        public float EuReleasedShareOfLines;
         /// <summary>PN-1's driver (2026-09-16, §520): the calendar year the model is in - committed by SimulationManager from its clock (at SetWorld, at a
         /// restore and every day it advances), so a reader that has no clock reads the year the turn is in: the pension line's driver
         /// (SpendingDrivers.Level, StatutoryPensionAge) counts the cohorts at or above the age the statute has IN FORCE this year

@@ -692,10 +692,23 @@ namespace PoliSim.Simulation
         /// DebtToGdpRatio eventually settled at either exactly 0% or pinned near the 300% ceiling,
         /// never anything in between, however Discretionary/Mandatory spending growth was tuned (see
         /// "SpendingLine Amount Ceiling - Debt-to-Zero Fix" in CLAUDE.md for that investigation).
+        /// <para><b>K251 (2026-10-29): RETIRED IN THE AI'S BOOK.</b> Wherever the AI's book runs a country under its rule - the AI finance ministry, the
+        /// treaty's for the five Member States (<see cref="AiFinanceMinistry"/>), the debt limit for the USA (`UsDebtLimit`) - the multiplier is 1: the rule
+        /// is the government's reaction, sourced in statute, and the debt crisis at CCC (`SovereignCrisis`) is the market's. Measured out of the engine
+        /// before it was built (the record's K251 section): in the all-AI world the reaction fought the treaty rule - the rule takes the debt down, the
+        /// reaction cut revenue as the ratio fell below its seed until it pinned at its floor - and its slope moved revenue with no rate moved, an order of
+        /// magnitude above the empirical fiscal-reaction estimates. The treaty rule it leaves in charge was given its stop in the same item (the release above
+        /// and below 60 %, rates before lines - `AiFinanceMinistry.EuRequiredAdjustmentPercentOfGdp`). It STANDS in the book the player governs: there it
+        /// DELAYS, and does not prevent, the net-creditor runaway of the player's driver-only lines (IndexSpendingLines) - pinned at its floor it slows the
+        /// runaway, and retired there the runaway binds the guard. Its retirement there waits on that premise, filed as K269 (a). Filed with it: K269 (b) revenue's
+        /// drift at unchanged rates; K269 (c) a US fiscal reaction through the budget (the AI USA's debt-limit rule runs a recurring default cycle); K269 (d) the
+        /// three fiscal-framework laws and the debt chart's "comfortable" line, which read the anchor this method alone consumes. The role is read on the REAL
+        /// country: a preview's clone carries no government.</para>
         /// </summary>
         private float GetFiscalReactionMultiplier(Country country)
         {
             if (HoldsNoPolicyChange(country)) { return 1f; }   // K218: the no-policy-change book collects its revenue with no reaction to its debt
+            if (AiFinanceMinistryEnabled && !PlayerGoverns(_world?.GetCountry(country.Id) ?? country)) { return 1f; }   // K251: the AI's book - its rule reacts, not its revenue
             float debtGap = country.State.DebtToGdpRatio - country.ComfortableDebtToGdpPercent;
             float multiplier = 1f + FiscalReactionSensitivity * debtGap / 100f;
             return Mathf.Clamp(multiplier, MinFiscalReactionMultiplier, MaxFiscalReactionMultiplier);
@@ -6806,9 +6819,11 @@ namespace PoliSim.Simulation
                 AiFinanceMinistry.Written ministryWrote = null;
                 if (aiGovernment)
                 {
-                    if (!ministryByBill) { ministryWrote = AiFinanceMinistry.Apply(country, GetLastFiscalReport(country.Id), decision); }
+                    if (!ministryByBill) { ministryWrote = AiFinanceMinistry.Apply(country, GetOrSeedFiscalPeriod(country).AccruedBudgetBalance, decision); }   // K251 (review 2's M-N1): the year this boundary closes, not the stored report (the year before it)
+                    country.EuReleasedShareOfLines = ministryWrote != null ? ministryWrote.ReleasedShareOfLines : 0f;   // K271: the release kept for next year's excess (the bill path keeps none - declared)
                     AiFinanceMinistry.Observe(country);
                 }
+                else { AiFinanceMinistry.Forget(country); }   // K251 (review 2's L-N1): a player spell leaves no stale memory for the AI's first turn
                 // §755 (Elias's ruling A2): a partner holding Finance moves the FISCAL STANCE toward the one it asks, whoever leads and whoever holds it -
                 // after the ministry, whose treaty rule has first claim on a line or rate it wrote; withdrawn after the turn as the ministry's is.
                 FinancePartner.Written partnerWrote = PartnerStepsAtBoundary(country) ? FinancePartner.Apply(country, decision, ComingBoundaryDate) : null;
@@ -7848,6 +7863,8 @@ namespace PoliSim.Simulation
                 PensionParticipationApplied = country.PensionParticipationApplied,   // §596 review D1: the response the state's rate already carries
                 DebtRatioSeed = country.DebtRatioSeed,
                 DebtRatioLastReport = country.DebtRatioLastReport,
+                IncomeTaxThresholdLift = country.IncomeTaxThresholdLift,   // K271: the AI government's re-indexation the preview's income tax reads
+                EuReleasedShareOfLines = country.EuReleasedShareOfLines,   // K271: the release the ministry's excess leaves out
                 DebtRatioReportBefore = country.DebtRatioReportBefore,
                 BaselineYouthUnemploymentRate = country.BaselineYouthUnemploymentRate,
                 BaselineLifeExpectancy = country.BaselineLifeExpectancy,
@@ -8454,6 +8471,7 @@ namespace PoliSim.Simulation
             // pre-RF-2 form grew every line with potential growth, a policy nobody took (§367). This form is the law's: a caseload, at the going wage.
             float wages = aiBudget && country.RealWageIndexAtLastIndex > 0f ? country.State.RealWageIndex / country.RealWageIndexAtLastIndex : 1f;
             country.RealWageIndexAtLastIndex = country.State.RealWageIndex;
+            TaxSchedule.LiftThresholds(country, aiBudget, prices, wages);   // K271: an AI government re-indexes its income-tax thresholds to nominal incomes (not the USA's; the player keeps the statute)
             foreach (SpendingLine line in country.SpendingLines)
             {
                 SpendingDriver driver = SpendingDrivers.Of(line.Category);

@@ -49,6 +49,15 @@ namespace PoliSim.Data
     /// and stand nominal where it does not (Poland's 120 000 zł, unchanged since 2022) - so what the ratio carries beyond the lever is
     /// BRACKET CREEP, real for the four and nominal for Poland, and nothing else: the base's own growth stays the base's.</para>
     ///
+    /// <para><b>K271 (2026-10-29): who keeps the creep.</b> That is the statute as written, and the book the PLAYER governs keeps it. An AI government
+    /// re-indexes its thresholds to nominal incomes each year (<see cref="LiftThresholds"/>, the DSM's and the Ageing Report's no-policy convention,
+    /// [AUTHORED-DRAFT]) so its yield holds; the USA keeps its CPI indexing in every book (CBO's current law documents the creep). Sweden's earned income
+    /// credit reads its price base amount on the same threshold scale - it stood nominal, which was the residual creep K251 measured. K271's cap on the
+    /// yield ratio is NOT built: a cap at the top marginal rate deleted the tax when a player set the top band to 0 (review 3, H1), and a cap at the
+    /// statute's own yield binds at the seed for every responding statute, because the lever seeds at the average rate on TAXED income (F4-5), above
+    /// the statute's average effective rate - the anchor would lose a quarter to a half of its revenue on day one. The player's creep stays the ratio
+    /// form's (seed rate over the seed yield times the yield now), filed with K271's measurement.</para>
+    ///
     /// <para><b>F4-4 / board 15b (2026-09-13): the sub-rows and their own rates.</b> Each statute is a list of SUB-ROWS - the exempt band, the
     /// bands, Germany's ramps (the marginal rate rising from the zone's start to its END rate; the ends are DERIVED from § 32a's
     /// coefficients: 23.97 % at 17 799 €, 42 % at 69 878 €), Sweden's flat municipal layer, Poland's solidarity levy - and a line may carry
@@ -340,6 +349,8 @@ namespace PoliSim.Data
             return tax;
         }
 
+        // ⚠ (K271's review 3, L6, filed outside K271): the levy reads the statute's LevyRate and never the line's own sub-row rate - its row is not
+        // Adjustable (SubRows), so a levy dial, where a screen offers one, appears inert here.
         private static double LevyTax(Statute s, double income, double thresholdScale)
         {
             if (s.LevyRate <= 0) { return 0; }
@@ -433,7 +444,8 @@ namespace PoliSim.Data
             Statute s = Of(country.Id);
             double shift = rate - RateSeedOf(line);
             double municipal = RowRate(s, SubRows(s)[0], line.BracketRates, 0) + shift;
-            double tax = Tax(s, income, shift, ThresholdScale(country), line.BracketRates) - EarnedIncomeCredit.Credit(income, municipal, turned66: false);
+            double scale = ThresholdScale(country);
+            double tax = Tax(s, income, shift, scale, line.BracketRates) - EarnedIncomeCredit.Credit(income, municipal, turned66: false, priceBaseScale: scale);   // K271: the credit's PBB on the thresholds' scale
             return 100.0 * tax / income;
         }
 
@@ -460,7 +472,7 @@ namespace PoliSim.Data
                     double p = (i + 0.5) / QuadraturePoints;
                     double income = median * Math.Exp(sigma * InverseNormal(p));
                     double tax = Tax(s, income, shiftPoints, thresholdScale, overrides);
-                    if (withCredit) { tax -= EarnedIncomeCredit.Credit(income, municipalRate, turned66); }
+                    if (withCredit) { tax -= EarnedIncomeCredit.Credit(income, municipalRate, turned66, priceBaseScale: thresholdScale); }   // K271: the PBB moves with the thresholds (it stood nominal - Sweden's residual creep)
                     t += tax;
                     y += income;
                 }
@@ -512,8 +524,29 @@ namespace PoliSim.Data
         /// nominal, B6 - read at the last index, as the statutes and the incomes are annual; a day inside the year reads the year's figure.</summary>
         public static double IncomeScale(Country country) => Math.Max(0.01, BoundaryWage(country) / 100.0) * Math.Max(0.01, BoundaryLevel(country));
 
-        /// <summary>The threshold scale at this boundary: the price level where the statute indexes its thresholds, one where it leaves them nominal.</summary>
-        public static double ThresholdScale(Country country) => Of(country.Id).ThresholdsIndexed ? Math.Max(0.01, BoundaryLevel(country)) : 1.0;
+        /// <summary>The threshold scale at this boundary: the statute's own - the price level where it indexes its thresholds, one where it leaves them nominal -
+        /// times the AI government's re-indexation (`Country.IncomeTaxThresholdLift`, K271), which is exactly one in a book no AI government has run.</summary>
+        public static double ThresholdScale(Country country) => StatuteThresholdScale(country) * ThresholdLift(country);
+
+        /// <summary>K271: the statute's own threshold scale - the price level where it indexes, one where its thresholds stand nominal.</summary>
+        public static double StatuteThresholdScale(Country country) => Of(country.Id).ThresholdsIndexed ? Math.Max(0.01, BoundaryLevel(country)) : 1.0;
+
+        /// <summary>K271: the AI government's re-indexation on top of the statute's scale - one where none has run (a save from before K271 reads one).</summary>
+        public static double ThresholdLift(Country country) => country.IncomeTaxThresholdLift > 0f ? country.IncomeTaxThresholdLift : 1.0;
+
+        /// <summary>
+        /// K271 (2026-10-29): THE AI GOVERNMENT RE-INDEXES ITS THRESHOLDS TO NOMINAL INCOMES, once a boundary, from where they stand: in an AI book (not the
+        /// USA's) the lift carries the year's real wage growth, and the year's prices too where the statute leaves its thresholds nominal - so thresholds and
+        /// incomes move together and the statute's yield holds, the no-policy convention of the EC's DSM and Ageing Report ([AUTHORED-DRAFT] as practice). A
+        /// book the player governs, and the USA's (CPI indexing, CBO's documented creep), keep the statute as written. Called by the spending lines' yearly
+        /// index (`SimulationManager.IndexSpendingLines`) with the ratios it reads, BEFORE their references move to this boundary.
+        /// </summary>
+        public static void LiftThresholds(Country country, bool aiBook, float pricesRatio, float realWageRatio)
+        {
+            if (!aiBook || country.Id == CountryId.USA || !Responds(country.Id)) { return; }
+            double lift = ThresholdLift(country) * realWageRatio * (Of(country.Id).ThresholdsIndexed ? 1.0 : pricesRatio);
+            country.IncomeTaxThresholdLift = (float)lift;
+        }
 
         private static float BoundaryLevel(Country country) => country.PriceLevelAtLastIndex > 0f ? country.PriceLevelAtLastIndex : country.State.PriceLevel;
         private static float BoundaryWage(Country country) => country.RealWageIndexAtLastIndex > 0f ? country.RealWageIndexAtLastIndex : country.State.RealWageIndex;
@@ -532,12 +565,12 @@ namespace PoliSim.Data
         /// passed. And two rates that rounded to the same hundredth shared one entry.</summary>
         public sealed class Memo
         {
-            public float Level = float.NaN, Wage = float.NaN;
+            public float Level = float.NaN, Wage = float.NaN, Lift = float.NaN;   // K271 (review 3's L4): the threshold lift keys the memo too
             public string Overrides = "";
             public float[] Pyramid;
             public readonly Dictionary<float, double> ByRate = new Dictionary<float, double>();
-            public bool Holds(float level, float wage, string overrides, float[] pyramid) => Level == level && Wage == wage && Overrides == overrides && SamePyramid(pyramid);
-            public void Reset(float level, float wage, string overrides, float[] pyramid) { Level = level; Wage = wage; Overrides = overrides; Pyramid = (float[])pyramid?.Clone(); ByRate.Clear(); }
+            public bool Holds(float level, float wage, float lift, string overrides, float[] pyramid) => Level == level && Wage == wage && Lift == lift && Overrides == overrides && SamePyramid(pyramid);
+            public void Reset(float level, float wage, float lift, string overrides, float[] pyramid) { Level = level; Wage = wage; Lift = lift; Overrides = overrides; Pyramid = (float[])pyramid?.Clone(); ByRate.Clear(); }
 
             private bool SamePyramid(float[] pyramid)
             {
@@ -597,7 +630,8 @@ namespace PoliSim.Data
             }
             float level = BoundaryLevel(country), wage = BoundaryWage(country);
             float[] pyramid = country.Cohorts?.Counts;
-            if (!memo.Holds(level, wage, overridesKey, pyramid)) { memo.Reset(level, wage, overridesKey, pyramid); }
+            float lift = country.IncomeTaxThresholdLift;
+            if (!memo.Holds(level, wage, lift, overridesKey, pyramid)) { memo.Reset(level, wage, lift, overridesKey, pyramid); }
             float key = rate == 0f ? 0f : rate;   // the rate in full, minus zero folded onto zero
             if (memo.ByRate.TryGetValue(key, out double cached)) { return cached; }
             double shift = rate - RateSeedOf(line);

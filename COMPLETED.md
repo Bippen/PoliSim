@@ -42098,3 +42098,22 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** npd 8/8; dumppd byte-identical to k252; drypd / realpd Poland 1280 clean, pl1-pl4 filmed; cheappd clean but the ledger (rows added); simpd clean.
 
 **Commit:** this one.
+
+## 944. K251 + K271 (K269, K272): THE FISCAL REACTION RETIRED IN THE AI'S BOOK; THE EU RULE GIVEN THE PACT'S STOP; AN AI GOVERNMENT RE-INDEXES ITS INCOME-TAX THRESHOLDS - THE FAMILY `k251` (2026-10-29)
+
+**What was owed:** K251 - retire or re-source the fiscal reaction function in play (moving revenue about 0.6-0.7 pp of GDP per point of debt above the seed, at no rate moved). Retiring it exposed two defects it had masked from opposite sides: the AI ministry's EU rule drove debt to zero, and revenue drifted up at unchanged rates (bracket creep, K271).
+
+**Built** (an implementer on `wave/k251`; four reviews - NOT READY (the rule driving debt to zero, an asymmetric ratchet), READY (the release oscillating, damped), NOT READY (K271's top-marginal yield cap deleting the income tax at a zeroed top band, withdrawn), READY (PreviewParity's coverage told truly)):
+- The FRF returns 1 where the AI finance ministry governs; it stands in the player-governed book, where it delays the driver-only lines' runaway.
+- The EU rule (`AiFinanceMinistry`): above 60 % the debt safeguard's pace (Regulation (EU) 2024/1263 Art. 7, fetched byte-exact) or the resilience adjustment (Art. 8), a faster fall released at half the gap a year, capped at 1 % of GDP ([AUTHORED-DRAFT], calibrated), on the balance of the year the boundary closes; below 60 % the TSCG's 1 % structural deficit the resting point (BILLED, DECLARED); a release lowers the household rates the rule raised before it gives back lines; rates rise only while consolidating; the debt-ratio memory clears while the player governs; the ministry's own release left out of the net-expenditure claw-back.
+- K271: an AI government re-indexes its income-tax thresholds to nominal incomes each year (`Country.IncomeTaxThresholdLift`, additive, cloned); the player's book keeps the statute; the USA keeps its CPI indexing (CBO's documented creep); Sweden's earned income credit price base amount follows the threshold scale (it stood nominal).
+
+**Measured** (`Reviews/2026-10-29_k251_integrator.md`): out of the engine over a century in the all-AI world, the EU five's revenue flat within about 3 points of GDP (Poland 36.7 -> 36.7 %, 71 % before K271) and debt settling at 7-36 % with no EU crisis (breach years 27 / 27 against the base's 40 / 20); the AI USA defaults at years 46 and 77 under its debt-limit rule. The family `k251` against `k252`: GDP at turn 100 France +5.5 %, Germany +8.4 %. DebtPathHold's verdicts unchanged. Sentinel 777 c6970e28..., 424242 c177a435...; France's household and industry FT-10 ceilings lowered 18.5 -> 7.0 and 5.5 -> 2.5 by the check's slack rule.
+
+**Evidence:** `Reviews/2026-10-29_k251_review.md`, `_review2.md`, `_review3.md`, `_review4.md`, `_integrator.md`; ledger rows s944 (`TaxSchedule.cs`, `AiFinanceMinistry.cs`, `SimulationManager.cs`, both baseline digests).
+
+**Declared:** K269 (filed: (a) the player-governed book's driver-only lines; (c) the AI USA's default cycle and a US fiscal reaction, Elias's scope; (d) the fiscal-framework laws and the debt chart's anchor), K271, K272 (the yield cap struck; a creep-only cap filed).
+
+**Bars:** nk251b 8/8, nk251c 5/5 (EnergyPassThrough, PreviewParity's true counts, the sentinel at k251); slrtk251 12/12; cheapk251 clean but the ledger (rows added); simk251 87/89 - the FT-10 slack cells (lowered) and EnergyPassThrough's no-policy baseline (the ministry held off) - re-run clean; the play saves re-staged, the US cards regenerated.
+
+**Commit:** this one.

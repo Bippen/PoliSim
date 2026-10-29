@@ -1087,6 +1087,8 @@ ever-widening primary surplus that pays the debt down to nothing.
   negative feedback at all, for any of the six countries, independent of `SpendingLines`/`SeedAmount`.
 
 ## Fiscal Reaction Function
+> ⚠ **K251 (2026-10-29): retired in the AI's book.** Where the AI governs a country under its rule (the AI finance ministry: the treaty for the five Member States, the debt limit for the USA) the multiplier is 1 - the rule is the reaction, and the debt crisis is the market's; the function below stands in the book the player governs, until that book's own premise is ruled. Where it applies is `SimulationManager.GetFiscalReactionMultiplier`; the measurement is the record's K251 section.
+
 Closes the bimodal debt-to-GDP finding from "SpendingLine Amount Ceiling - Debt-to-Zero Fix" above by
 adding the missing piece that investigation's own "separate lead" flagged but didn't chase down: every
 country's `DebtToGdpRatio` - not just USA's - was found to settle at either exactly 0% or pinned near

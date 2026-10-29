@@ -170,6 +170,20 @@ namespace PoliSim.EditorTools
                 Debug.Log("PARITY: fiscal ledger - 0 of 5 terms asserted or printed BY DESIGN (every term is daily-accrued on a moving stock; " +
                           "turn-vs-daily agreement is the equivalence bar's question); the real accruing ledger asserted UNTOUCHED across the preview for all 6 countries.");
 
+                // K251 (review 2's M-N1): the AI finance ministry decides at this boundary on the year it closes - before, it read the stored report, which is
+                // null until the first boundary has closed, so this one-boundary harness never saw it write. The preview applies no ministry decision (it
+                // previews the caller's), so where the ministry writes lines here SpendingEffect is expected-different, as the Finance partner's step is
+                // below; the lines it would write are read now, from the same pure rule on the same closing balance, before the boundary moves anything
+                var ministryLines = new Dictionary<CountryId, int>();
+                int spendingWaived = 0;   // review 4's N1: how many countries' SpendingEffect the realistic pass waives - the summary prints the true count
+                MethodInfo periodOf = typeof(SimulationManager).GetMethod("GetOrSeedFiscalPeriod", BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach (Country c in world.Countries)
+                {
+                    if (!sim.AiFinanceMinistryEnabled || sim.PlayerGoverns(c) || (sim.PlayerCountryId.HasValue && sim.PlayerCountryId.Value == c.Id) || periodOf == null) { continue; }   // review 4's N2: the player's country with a party seated sends the ministry's budget to the chamber as a bill
+                    var closing = (SimulationManager.FiscalPeriod)periodOf.Invoke(sim, new object[] { c });
+                    ministryLines[c.Id] = AiFinanceMinistry.Apply(c, closing.AccruedBudgetBalance, new PolicyDecision()).Lines.Count;
+                }
+
                 sim.AdvanceTurn(decisions);
 
                 foreach (Country c in world.Countries)
@@ -199,7 +213,10 @@ namespace PoliSim.EditorTools
                     // §755 (ruling A2): a Finance partner's stance step writes LINES into the no-op decision, so SpendingEffect is no longer 0 there - and the
                     // term divides by GDP and damps by the debt ratio, which the preview advances (the coming period's, by design): expected-different where
                     // the partner has stepped (the harness runs one boundary, so it stepped at this one), asserted everywhere else
+                    if (c.FinanceStanceHolder != null && c.FinancePartnerSteppedOn != System.DateTime.MinValue) { spendingWaived++; }
+                    else if (ministryLines.TryGetValue(c.Id, out int waivedLines) && waivedLines > 0) { spendingWaived++; }
                     if (c.FinanceStanceHolder != null && c.FinancePartnerSteppedOn != System.DateTime.MinValue) { Debug.Log($"PARITY: {c.Id} SpendingEffect expected-different - the Finance partner's stance step ({c.FinanceStanceHolder}, {c.FinanceStanceApplied:+0.000;-0.000} pp) wrote lines into the no-op decision, and the term reads GDP and the debt ratio, which the preview advances: {real.SpendingEffect:F4}/{prev.SpendingEffect:F4}"); }
+                    else if (ministryLines.TryGetValue(c.Id, out int wroteLines) && wroteLines > 0) { Debug.Log($"PARITY: {c.Id} SpendingEffect expected-different - the AI finance ministry wrote {wroteLines} line(s) into the boundary's decision (K251: it decides on the year this boundary closes); the preview applies no ministry decision: real {real.SpendingEffect:F5}, preview {prev.SpendingEffect:F5}."); }
                     else { failures += AssertTerm(c.Id, "SpendingEffect", real.SpendingEffect, prev.SpendingEffect); }
                     Debug.Log($"PARITY: {c.Id} expected-different (the preview models the coming period; the daily terms are the closed period's sums against the coming year's projection, MF-13): " +
                               $"Reversion {real.Reversion:F4}/{prev.Reversion:F4} · " +
@@ -213,9 +230,11 @@ namespace PoliSim.EditorTools
                 // §506 (2026-09-15): the clone audit, then the identity's G previewed against the boundary on a world of its own
                 failures += CloneAudit(world);
                 failures += IdentityGovernmentParity();
+                failures += SpendingEffectWithoutMinistry(out int spendingAssertedOff);
+                int countries = world.Countries.Count;
 
                 Debug.Log(failures == 0
-                    ? "PARITY: 6 of 6 asserted terms match for all 6 countries (the boundary's two one-off terms, and a year of the four daily terms whose inputs the clone's year never moves) - no clone escape in the covered set; the clone audit clean; the preview's identity G the boundary's."
+                    ? $"PARITY: every asserted term matches (review 4's N1, the true counts): TaxHikePenalty and the four daily terms for all {countries} countries; SpendingEffect for {countries - spendingWaived} of {countries} in the realistic pass ({spendingWaived} waived - the AI ministry's or a Finance partner's lines at the boundary, which the preview does not apply) and for {spendingAssertedOff} of {countries} with the ministry held off - no clone escape in the covered set; the clone audit clean; the preview's identity G the boundary's."
                     : $"PARITY: {failures} mismatches - each names the escaped input above.");
                 CheckExit.Finish(failures == 0 ? 0 : 1);
             }
@@ -450,6 +469,44 @@ namespace PoliSim.EditorTools
             float sum = 0f;
             for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { sum += perDay; }
             return sum;
+        }
+
+        /// <summary>
+        /// K251 (review 4's N1): SPENDINGEFFECT FOR ALL SIX, with the AI finance ministry held off - the realistic pass above waives the term wherever the
+        /// ministry writes lines at the harness's boundary (the preview applies no ministry decision), which in year one is every EU country; here the same
+        /// seed, the same year of days and the same no-op decision with <c>AiFinanceMinistryEnabled = false</c>, so the boundary's one-off spending term is
+        /// asserted against the preview's for every country but one a Finance partner stepped in (counted and printed). Returns the failures; the count
+        /// asserted comes back in <paramref name="asserted"/>.
+        /// </summary>
+        private static int SpendingEffectWithoutMinistry(out int asserted)
+        {
+            asserted = 0;
+            SimulationRandom.Seed(777);
+            World world = WorldFactory.CreateDefault();
+            var go = new GameObject("PARITY_NO_MINISTRY");
+            int failures = 0;
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(world);
+                sim.AiFinanceMinistryEnabled = false;
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country c in world.Countries) { decisions[c.Id] = PolicyDecision.None(); }
+                for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { sim.AdvanceDay(); }
+                var previews = new Dictionary<CountryId, ApprovalAttribution>();
+                foreach (Country c in world.Countries) { previews[c.Id] = sim.PreviewTurn(c.Id, PolicyDecision.None()).ApprovalTerms; }
+                sim.AdvanceTurn(decisions);
+                foreach (Country c in world.Countries)
+                {
+                    ApprovalAttribution real = c.ApprovalLedgerLastPeriod, prev = previews[c.Id];
+                    if (real == null || prev == null) { Debug.LogError($"PARITY: {c.Id} ledger missing in the ministry-off pass."); failures++; continue; }
+                    if (c.FinanceStanceHolder != null && c.FinancePartnerSteppedOn != System.DateTime.MinValue) { Debug.Log($"PARITY: {c.Id} SpendingEffect expected-different in the ministry-off pass too - the Finance partner's stance step."); continue; }
+                    failures += AssertTerm(c.Id, "SpendingEffect (the ministry held off)", real.SpendingEffect, prev.SpendingEffect);
+                    asserted++;
+                }
+            }
+            finally { Object.DestroyImmediate(go); }
+            return failures;
         }
 
         private static int AssertTerm(CountryId id, string name, float real, float preview)

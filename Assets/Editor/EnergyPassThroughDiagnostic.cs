@@ -60,9 +60,14 @@ namespace PoliSim.EditorTools
             // (2) nothing at no PLAYER policy - the first year, before the AI ministry's own budget moves reach the levy
             sb.Append(F("\n    2. NOTHING PASSES AT NO PLAYER POLICY: the first year's planned term for six (bound {0:F3} pp - the ceiling's erosion is all that moves a relative price when nothing else does); the ten-year largest term printed with the levy scale that made it\n", NoPolicyBoundPp));
             Outcome untouched = RunWorld(CountryId.Poland, Years, null, 0f);
+            // K251 (2026-10-29): the first year at NO POLICY is read with the AI finance ministry held off. Since review 2's M-N1 the ministry decides at the first
+            // boundary on the year it closes (before, it read a stored report that is null until a boundary has closed, and wrote nothing then) - so its first
+            // budget, a policy, now moves the first year's demand and prices, and the planned term with them (France 0.0095 pp). The ten-year terms, the identity
+            // and the raised runs keep the realistic world, the ministry acting.
+            Outcome firstYear = RunWorld(CountryId.Poland, 1, null, 0f, ministry: false);
             foreach (CountryId id in untouched.Countries)
             {
-                float first = untouched.Term[id][1];
+                float first = firstYear.Term[id][1];
                 if (Math.Abs(first) > NoPolicyBoundPp) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: {id} plans {first:F4} pp in its first year with no policy at all - the stack is not indexing with the level it is measured against."); }
                 float worst = 0f; int worstYear = 0;
                 for (int y = 1; y <= Years; y++) { float t = untouched.Term[id][y]; if (Math.Abs(t) > Math.Abs(worst)) { worst = t; worstYear = y; } }
@@ -174,7 +179,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>A world advanced <paramref name="years"/> turns with, where <paramref name="stepped"/> is set, that country's fleet's ETS price stepped by <paramref name="etsStepPerT"/> (the market's currency) from the top of year 1 and held - the probe EN-4d left the diagnostics, the national carbon tax no longer reaching the fleet; per country and year: the planned term, the real change, the real price, the print, the expectations, the policy rate.</summary>
-        private static Outcome RunWorld(CountryId player, int years, CountryId? stepped, float etsStepPerT)
+        private static Outcome RunWorld(CountryId player, int years, CountryId? stepped, float etsStepPerT, bool ministry = true)
         {
             SimulationRandom.Seed(777);
             EnergyMarket.ResetCalibration();
@@ -186,6 +191,7 @@ namespace PoliSim.EditorTools
                 SimulationManager sim = go.AddComponent<SimulationManager>();
                 sim.SetWorld(world);
                 sim.PlayerCountryId = player;
+                sim.AiFinanceMinistryEnabled = ministry;   // K251: the no-policy first year holds the AI ministry off - it acts at the first boundary since K251 (review 2's M-N1)
                 var run = new Outcome();
                 foreach (Country c in world.Countries) { if (EnergyLayer.Has(c.Id)) { run.Countries.Add(c.Id); foreach (var d in new[] { run.Term, run.RealChange, run.RealPrice, run.Inflation, run.Expectations, run.PolicyRate, run.LevyScale }) { d[c.Id] = new float[years + 1]; } } }
                 var decisions = new Dictionary<CountryId, PolicyDecision>();

@@ -125,15 +125,47 @@ namespace PoliSim.EditorTools
             }
 
             // (6) the drag: a decade at no policy
-            sb.Append(F("\n    6. THE DRAG - the yield ratio after {0} years at no policy: bracket creep, real where the statute indexes its thresholds (SE · DE · FR · US), nominal where it does not (PL); Italy one\n", Years));
-            Dictionary<CountryId, (double Ratio, float Effective, double IncomeScale, double ThresholdScale, float Lever, float Seed)> drag = RunNoPolicy(Years);
+            sb.Append(F("\n    6. THE DRAG - the yield ratio after {0} years at no policy: the player's Sweden keeps the statute's creep and so does the USA (CPI indexing, CBO's current law); an AI government re-indexes its thresholds to incomes (K271), so DE · FR · PL read near one; Italy one\n", Years));
+            Dictionary<CountryId, (double Ratio, float Effective, double IncomeScale, double ThresholdScale, float Lever, float Seed, double Statute)> drag = RunNoPolicy(Years);
             foreach (CountryId id in order)
             {
-                (double ratio, float effective, double incomeScale, double thresholdScale, float lever, float seed) = drag[id];
+                (double ratio, float effective, double incomeScale, double thresholdScale, float lever, float seed, double statuteScale) = drag[id];
                 // the player's country (Sweden) is at no policy; an AI country's finance ministry may have moved its lever - the lever and its seed are printed so the ratio is read against them
                 sb.Append(F("    {0,-8} incomes ×{1:F4} · thresholds ×{2:F4} · lever {3:F2} (seed {4:F2}) · ratio {5:F4} ({6}) · effective {7:F2} %\n", id, incomeScale, thresholdScale, lever, seed, ratio,
                     Math.Abs(lever - seed) > 1e-4f ? "THE AI MOVED THE LEVER" : ratio > 1.0005 ? "CREEP - the statute takes more of a grown income" : ratio < 0.9995 ? "RELIEF - the thresholds outran the incomes" : "FLAT", effective));
                 if (id == CountryId.Italy && Math.Abs(ratio - 1.0) > 1e-9) { ok = false; Debug.LogError($"TAX SCHEDULE: Italy's ratio moved to {ratio} - a billed shape must stay one."); }
+                // K271 (2026-10-29): who keeps the statute's thresholds. The player's Sweden keeps them as written (the price level: its creep is the player's);
+                // an AI government re-indexes its thresholds to nominal incomes each year (thresholds × = incomes ×), except the USA's, which keeps its CPI indexing
+                if (id != CountryId.Italy)
+                {
+                    double statute = statuteScale;   // the statute's own scale in the no-policy run
+                    bool aiReindexes = id != CountryId.Sweden && id != CountryId.USA;
+                    double want = aiReindexes ? incomeScale : statute;
+                    if (Math.Abs(thresholdScale / want - 1.0) > 1e-3) { ok = false; Debug.LogError($"TAX SCHEDULE: {id}'s thresholds stand ×{thresholdScale:F4} where K271 puts them at ×{want:F4} ({(aiReindexes ? "an AI government re-indexes to incomes" : id == CountryId.USA ? "the USA keeps its CPI indexing" : "the player keeps the statute")})."); }
+                }
+            }
+
+            // (6b) K271 (review 3's H1): THE TOP BAND AT ZERO leaves the income tax at the statute's own yield - the anchored rate times the yield ratio, which the
+            // statute computes with the band at 0 - and positive: the first build's cap at the top marginal rate deleted the tax there (the USA 2697 bn to 0)
+            sb.Append("\n    6b. THE TOP BAND AT ZERO (K271) - the revenue is the ratio form's on the statute with that band at 0, and positive\n");
+            foreach (CountryId id in order)
+            {
+                if (!TaxSchedule.Responds(id)) { continue; }
+                Country tc = world.GetCountry(id);
+                TaxLine income = null; foreach (TaxLine t in tc.TaxLines) { if (t.Type == TaxType.IncomeTax && t.IsImplemented) { income = t; } }
+                if (income == null) { continue; }
+                List<TaxSchedule.SubRow> topRows = TaxSchedule.SubRows(TaxSchedule.Of(id));
+                int top = -1; for (int i = 0; i < topRows.Count; i++) { if (topRows[i].Adjustable && (topRows[i].Kind == TaxSubRowKind.Band || topRows[i].Kind == TaxSubRowKind.Ramp)) { top = i; } }
+                if (top < 0) { continue; }
+                float[] savedRates = income.BracketRates;
+                var zeroTop = new float[topRows.Count]; for (int i = 0; i < zeroTop.Length; i++) { zeroTop[i] = -1f; } zeroTop[top] = 0f;
+                income.BracketRates = zeroTop;
+                float revenue = TaxBases.Revenue(tc, income);
+                float statute = TaxSchedule.RateSeedOf(income) / 100f * TaxBases.Base(tc, TaxType.IncomeTax) * (float)TaxSchedule.YieldRatio(tc, income, income.Rate);
+                income.BracketRates = savedRates;
+                float seedRevenue = TaxBases.Revenue(tc, income);
+                sb.Append(F("    {0,-8} the top band at 0: {1:F2} bn (the statute's yield {2:F2}; at the statute {3:F2})\n", id, revenue, statute, seedRevenue));
+                if (!(revenue > 0f) || revenue != statute) { ok = false; Debug.LogError($"TAX SCHEDULE: {id}'s income tax with its top band at 0 reads {revenue:F3} bn where the statute's own yield is {statute:F3} - a cap or a gate is deleting it (K271, review 3's H1)."); }
             }
 
             // (7) F4-4: Germany's ramps against § 32a's own arithmetic at every zone end, and one sub-row moved on its own dial
@@ -248,7 +280,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>One world at no policy for a number of years; per country the yield ratio, the effective rate and the two scales at the end.</summary>
-        private static Dictionary<CountryId, (double Ratio, float Effective, double IncomeScale, double ThresholdScale, float Lever, float Seed)> RunNoPolicy(int years)
+        private static Dictionary<CountryId, (double Ratio, float Effective, double IncomeScale, double ThresholdScale, float Lever, float Seed, double Statute)> RunNoPolicy(int years)
         {
             SimulationRandom.Seed(777);
             EnergyMarket.ResetCalibration();
@@ -266,11 +298,11 @@ namespace PoliSim.EditorTools
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                     sim.AdvanceTurn(decisions);
                 }
-                var result = new Dictionary<CountryId, (double, float, double, double, float, float)>();
+                var result = new Dictionary<CountryId, (double, float, double, double, float, float, double)>();
                 foreach (Country c in world.Countries)
                 {
                     TaxLine line = Find(c);
-                    result[c.Id] = (line != null ? TaxSchedule.YieldRatio(c, line, line.Rate) : 1.0, line != null ? TaxBases.EffectiveRate(c, line) : 0f, TaxSchedule.IncomeScale(c), TaxSchedule.ThresholdScale(c), line != null ? line.Rate : 0f, line != null ? line.RateSeed : 0f);
+                    result[c.Id] = (line != null ? TaxSchedule.YieldRatio(c, line, line.Rate) : 1.0, line != null ? TaxBases.EffectiveRate(c, line) : 0f, TaxSchedule.IncomeScale(c), TaxSchedule.ThresholdScale(c), line != null ? line.Rate : 0f, line != null ? line.RateSeed : 0f, TaxSchedule.StatuteThresholdScale(c));
                 }
                 return result;
             }

@@ -75,7 +75,7 @@ namespace PoliSim.EditorTools
             { "Germany (h2)", "the primary balance (the caseload lines' cycle after 2029), then the interest on the stock (K252's seed at the national accounts' rate, converging on the issuance rate) - a calibration item" },
             { "France (h2)", "the interest on the stock - K252 seeds it at the national accounts' rate, and over the stock's maturity it converges on the issuance rate and the convex spread at the higher debt, above the DSM's implied path - and the primary balance (the opening years' stagnation) - a calibration item" },
             { "Italy (h2)", "the interest on the stock (K252's seed, converging on the issuance rate and the convex spread at the higher debt) and the real growth effect (K245) - a programme follows" },
-            { "Poland (h2)", "the DSM's stock-flow adjustments to 2026 (not modelled), then the interest and the primary balance - each smaller than the DSM's; the inflation effect offsets part" },
+            { "Poland (h2)", "the primary balance - larger than the DSM's since K271: the no-policy book re-indexes its thresholds, and the bracket creep that offset the caseload lines' growth is gone (a calibration item); the DSM's stock-flow adjustments to 2026 are not modelled, and the inflation effect is smaller than the DSM's, so it adds to the miss" },
         };
 
         public static void Run()

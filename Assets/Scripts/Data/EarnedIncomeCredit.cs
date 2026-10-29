@@ -57,10 +57,10 @@ namespace PoliSim.Data
         // The allowance may not exceed the income, and is rounded UP to a whole hundred kronor.
 
         /// <summary>The basic allowance for an income, kronor, per the statute's schedule and rounding.</summary>
-        public static double BasicAllowance(double income)
+        public static double BasicAllowance(double income, double priceBaseScale = 1.0)
         {
             if (income <= 0) { return 0; }
-            double pbb = PriceBaseAmount;
+            double pbb = PriceBaseAmount * priceBaseScale;   // K271: the PBB moves with the statute's threshold scale (Skatteverket fixes it each year by the price index; an AI book re-indexes it with the thresholds)
             double x = income / pbb;
             double ga;
             if (x <= 0.99) { ga = 0.423 * pbb; }
@@ -87,16 +87,16 @@ namespace PoliSim.Data
         /// <summary>The credit for an earned income at a municipal rate, kronor, per the statute - for a person under 66 unless <paramref name="turned66"/>.
         /// <paramref name="scalePercent"/> is the lever (100 = the statute). For an employee the earned income IS the assessed income the allowance is
         /// computed on; the four-argument form takes the two apart where the statute does (a seafarer's sea-income deduction, the document's own third example).</summary>
-        public static double Credit(double earnedIncome, double municipalRatePercent, bool turned66, double scalePercent = StatuteScalePercent)
-            => Credit(earnedIncome, earnedIncome, municipalRatePercent, turned66, scalePercent);
+        public static double Credit(double earnedIncome, double municipalRatePercent, bool turned66, double scalePercent = StatuteScalePercent, double priceBaseScale = 1.0)
+            => Credit(earnedIncome, earnedIncome, municipalRatePercent, turned66, scalePercent, priceBaseScale);
 
         /// <summary>The credit where the earned income the schedule phases on and the assessed income the allowance is computed on differ (a deduction
         /// taken from the one and not the other). ⚠ The document's third example is exactly this case, and the first form of this class - the allowance
         /// on the earned income - reproduced its first two examples and missed the third by the allowance's difference (§534).</summary>
-        public static double Credit(double earnedIncome, double assessedIncome, double municipalRatePercent, bool turned66, double scalePercent = StatuteScalePercent)
+        public static double Credit(double earnedIncome, double assessedIncome, double municipalRatePercent, bool turned66, double scalePercent = StatuteScalePercent, double priceBaseScale = 1.0)
         {
             if (earnedIncome <= 0 || municipalRatePercent <= 0 || scalePercent <= 0) { return 0; }
-            double pbb = PriceBaseAmount;
+            double pbb = PriceBaseAmount * priceBaseScale;   // K271: see BasicAllowance
             double ai = Math.Floor(earnedIncome / 100.0) * 100.0;
             double ki = municipalRatePercent / 100.0;
             double credit;
@@ -109,7 +109,7 @@ namespace PoliSim.Data
             }
             else
             {
-                double ga = BasicAllowance(Math.Max(assessedIncome, ai));
+                double ga = BasicAllowance(Math.Max(assessedIncome, ai), priceBaseScale);
                 double x = ai / pbb;
                 double baseAmount;
                 if (x <= 0.91) { baseAmount = ai; }

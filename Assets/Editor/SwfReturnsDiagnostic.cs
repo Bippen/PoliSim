@@ -26,6 +26,8 @@ namespace PoliSim.EditorTools
     /// **Reads only public API.** The multiplier is RECONSTRUCTED from `DebtToGdpRatio` and
     /// `ComfortableDebtToGdpPercent` using the same formula and clamps as `GetFiscalReactionMultiplier`;
     /// the constants are mirrored below and must be kept in step with it.
+    /// ⚠ <b>K251 (2026-10-29): history only.</b> The reaction is retired in the AI's book (`SimulationManager.GetFiscalReactionMultiplier`), and this
+    /// world has no player, so the multiplier it reconstructs is not the one the run collects at (1 for every country).
     /// </summary>
     public static class SwfReturnsDiagnostic
     {
