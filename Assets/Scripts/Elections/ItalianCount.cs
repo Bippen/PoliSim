@@ -55,6 +55,13 @@ namespace PoliSim.Elections
             public int[][] ByCircoscrizione;
             /// <summary>Estero seats won by a list the roster does not carry - held by no key, and missing from <see cref="Seats"/>' sum.</summary>
             public int EsteroUnkeyed;
+            /// <summary>K283: the list seats the count left unseated - its pool (every circoscrizione's or region's seats less its colleges) less the list seats it
+            /// placed. Zero on every count the statutes fill; the count records it here and in <see cref="Trace"/> (it is pure and logs nothing), and its readers
+            /// hold it (the night logs an error, `ItalianCountDiagnostic` and `ItalianNightDiagnostic` fail on it).</summary>
+            public int ListSeatsShort;
+            /// <summary>D-IT: the Estero seats per ripartizione (rows <see cref="ItalianCount2022.EsteroRipartizioni"/>) by key; a seat won by a list no key
+            /// carries is in none of them (the night draws it in the Neutral) - the night's abroad cells. Null where no Estero was counted.</summary>
+            public Dictionary<string, int>[] EsteroByRipartizione;
             public string Trace;
         }
 
@@ -265,8 +272,21 @@ namespace PoliSim.Elections
         /// </summary>
         public static Dictionary<string, int> SenatorsForLifeOn(DateTime firstSitting)
         {
-            int day = firstSitting.Year * 10000 + firstSitting.Month * 100 + firstSitting.Day;
             var seats = new Dictionary<string, int>();
+            foreach ((string _, string _, string key) in SenatorsForLifeSeatedOn(firstSitting))
+            {
+                seats.TryGetValue(key, out int n);
+                seats[key] = n + 1;
+            }
+            return seats;
+        }
+
+        /// <summary>D-IT: <see cref="SenatorsForLifeOn"/> senator by senator, in the record's order - each one's name, the group the record seats it in that day
+        /// (the record's code) and that group's key (<see cref="SenatorForLifeKey"/>): the night's cells for life and their slip.</summary>
+        public static List<(string Name, string Group, string Key)> SenatorsForLifeSeatedOn(DateTime firstSitting)
+        {
+            int day = firstSitting.Year * 10000 + firstSitting.Month * 100 + firstSitting.Day;
+            var seated = new List<(string Name, string Group, string Key)>();
             foreach ((string name, int _, int until) in ItalianCount2022.SenatorsForLife)
             {
                 if (until != 0 && until <= day) { continue; }
@@ -277,11 +297,9 @@ namespace PoliSim.Elections
                     if (gFrom < firstFrom) { first = g; firstFrom = gFrom; }
                     if (gFrom <= day && (gUntil == 0 || gUntil > day) && (group == null || gFrom > groupFrom)) { group = g; groupFrom = gFrom; }
                 }
-                string key = SenatorForLifeKey(group ?? first);
-                seats.TryGetValue(key, out int n);
-                seats[key] = n + 1;
+                seated.Add((name, group ?? first, SenatorForLifeKey(group ?? first)));
             }
-            return seats;
+            return seated;
         }
 
         /// <summary>K153, K154: the Senato the count seats - the elected senators (<see cref="Senato"/>) and the senators for life beside them
@@ -336,8 +354,13 @@ namespace PoliSim.Elections
             int[] minorityWins = MinorityWinsByCirc(chamber, r.CollegeWinner);   // lett. e n.2 and art. 16-bis: the minority list's college wins, its second route
             r.ByCircoscrizione = chamber == Chamber.Camera ? CameraProportional(keys, cifra, other, propSeats, minorityWins, log) : SenatoProportional(keys, cifra, other, propSeats, minorityWins, log);
             foreach (int[] row in r.ByCircoscrizione) { for (int k = 0; k < nk; k++) { r.ProportionalSeats[keys[k]] += row[k]; } }
+            int listPool = 0, listPlaced = 0;
+            foreach (int p in propSeats) { listPool += Math.Max(0, p); }
+            foreach (int[] row in r.ByCircoscrizione) { foreach (int v in row) { listPlaced += v; } }
+            r.ListSeatsShort = listPool - listPlaced;
+            if (r.ListSeatsShort != 0) { log.Append("K283: ").Append(r.ListSeatsShort).Append(" list seat(s) of ").Append(listPool).Append(" left unseated - the count does not conserve its pool\n"); }
 
-            if (estero != null) { r.EsteroUnkeyed = Estero(chamber, estero, nationalShares, r.EsteroSeats, log); }
+            if (estero != null) { r.EsteroUnkeyed = Estero(chamber, estero, nationalShares, r.EsteroSeats, log, out r.EsteroByRipartizione); }
             foreach (string key in keys) { r.Seats[key] = r.CollegeSeats[key] + r.ProportionalSeats[key] + r.EsteroSeats[key]; }
             r.Trace = log.ToString();
             return r;
@@ -434,7 +457,15 @@ namespace PoliSim.Elections
                     targets[j] = listSeats[seated[j]];
                     nat[j] = national[seated[j]];
                 }
-                int[][] listByCirc = Distribute(lf, entityByCirc[e], targets, nat, log, "lett. i");
+                // K283: each seated list's remainder at lett. g (its national votes over the coalition's floored quotient) - the order a seat no circoscrizione's
+                // quotient can place goes in (`Distribute`)
+                long natSum = 0; int natSeats = 0;
+                for (int j = 0; j < seated.Count; j++) { natSum += nat[j]; natSeats += targets[j]; }
+                long qG = natSeats > 0 ? natSum / natSeats : 0;
+                var remainder = new double[seated.Count];
+                for (int j = 0; j < seated.Count; j++) { if (qG > 0) { double a = (double)nat[j] / qG; remainder[j] = a - Math.Floor(a); } }
+                int[][] listByCirc = Distribute(lf, entityByCirc[e], targets, nat, log, "lett. i", remainder);
+
                 for (int j = 0; j < seated.Count; j++) { for (int i = 0; i < circs; i++) { result[i][seated[j]] = listByCirc[j][i]; } }
             }
             return result;
@@ -456,7 +487,7 @@ namespace PoliSim.Elections
         /// the larger national figure); where no circoscrizione allows it, the excess unit gives up the seat of its smallest decimal and the short unit with the
         /// largest unused decimal anywhere takes one there (the statute's last resort, read as one seat at a time - DECLARED). Returns per unit per circoscrizione.
         /// </summary>
-        public static int[][] Distribute(long[][] figure, int[] seatsIn, int[] target, long[] nationalFigure, System.Text.StringBuilder log, string stage)
+        public static int[][] Distribute(long[][] figure, int[] seatsIn, int[] target, long[] nationalFigure, System.Text.StringBuilder log, string stage, double[] priority = null)
         {
             int units = figure.Length, circs = seatsIn.Length;
             var seats = new int[units][];
@@ -506,6 +537,35 @@ namespace PoliSim.Elections
                     seats[best][i]++; byDecimal[best][i] = true; taken[best] = true; given++;
                 }
             }
+
+            // K283: a circoscrizione its quotient leaves unfilled. Lett. i divides "il totale delle cifre elettorali circoscrizionali delle liste ammesse alla
+            // ripartizione ai sensi della lettera g), primo periodo, per il numero dei seggi assegnati alla coalizione nella circoscrizione ai sensi della lettera h)"
+            // - and where those lists have no votes there (the swing floors a coalition's only seated list to zero where lett. h seated the coalition on its 1-3 %
+            // lists), the quotient is zero and the statute names no operation: it is silent. DECLARED, the narrowest rule that conserves the seats: each seat goes to
+            // the unit still short of its national seats with the largest national remainder (`priority`: lett. g's, at lett. i; the national figure where none is
+            // given), and where none is short, to the one with the largest. A seat so placed is no decimal seat. Never reached on a count the quotient fills.
+            int unfilled = 0;
+            for (int i = 0; i < circs; i++)
+            {
+                if (seatsIn[i] <= 0) { continue; }
+                int given = 0;
+                for (int u = 0; u < units; u++) { given += seats[u][i]; }
+                while (given < seatsIn[i] && units > 0)
+                {
+                    int pick = -1;
+                    for (int pass = 0; pass < 2 && pick < 0; pass++)
+                    {
+                        for (int u = 0; u < units; u++)
+                        {
+                            if (pass == 0 && Total(u) >= target[u]) { continue; }
+                            double pu = priority != null ? priority[u] : nationalFigure[u], pb = pick < 0 ? 0.0 : priority != null ? priority[pick] : nationalFigure[pick];
+                            if (pick < 0 || pu > pb || (pu == pb && nationalFigure[u] > nationalFigure[pick])) { pick = u; }
+                        }
+                    }
+                    seats[pick][i]++; byDecimal[pick][i] = false; given++; unfilled++;
+                }
+            }
+            if (unfilled > 0) { log.Append("  ").Append(stage).Append(": ").Append(unfilled).Append(" seat(s) no quotient could place, seated by K283's rule\n"); }
 
             int Total(int u) { int t = 0; for (int i = 0; i < circs; i++) { t += seats[u][i]; } return t; }
             int moves = 0;
@@ -616,6 +676,7 @@ namespace PoliSim.Elections
                     unitKeys.Add(new[] { k }); unitFig.Add(cifra[i][k]);
                 }
                 int[] unitSeats = Rosatellum.FlooredHare(unitFig.ToArray(), propSeats[i], out long _);
+                Conserve(unitSeats, propSeats[i], unitFig.ToArray(), log, "art. 17 lett. a");
                 // lett. b: inside each coalition among its lists of 3 % nationally, 20 % in the region or the minority's
                 for (int u = 0; u < unitKeys.Count; u++)
                 {
@@ -623,7 +684,17 @@ namespace PoliSim.Elections
                     if (members.Length == 1 && !IsCoalitionMember(keys, coalitions, members[0])) { result[i][members[0]] += unitSeats[u]; continue; }
                     var admitted = new List<int>(); var mv = new List<long>();
                     foreach (int k in members) { if (ThreeNational(k) || TwentyIn(k, i) || Minority(k)) { admitted.Add(k); mv.Add(cifra[i][k]); } }
+                    if (admitted.Count == 0)
+                    {
+                        // K283: no list of the coalition is admitted here by lett. b (none at 3 % nationally, none at 20 % in this region) - its seats go to its own
+                        // lists. Reachable only on crafted cifre: a coalition admitted nationally solely on a member's 20 % in another region
+                        foreach (int k in members) { admitted.Add(k); mv.Add(cifra[i][k]); }
+                        log.Append("  art. 17 lett. b: no list of the coalition admitted in region ").Append(i).Append(" - its ").Append(unitSeats[u]).Append(" seat(s) seated among its own lists by K283's rule\n");
+                    }
                     int[] ms = Rosatellum.FlooredHare(mv.ToArray(), unitSeats[u], out long _);
+                    var byNational = new long[admitted.Count];
+                    for (int j = 0; j < admitted.Count; j++) { byNational[j] = national[admitted[j]]; }
+                    Conserve(ms, unitSeats[u], byNational, log, "art. 17 lett. b");
                     for (int j = 0; j < admitted.Count; j++) { result[i][admitted[j]] += ms[j]; }
                 }
             }
@@ -631,6 +702,33 @@ namespace PoliSim.Elections
         }
 
         private static bool IsCoalitionMember(string[] keys, List<string[]> coalitions, int k) => CoalitionOf(coalitions, keys[k]) >= 0;
+
+        /// <summary>
+        /// K283: art. 17 lett. a "divide il totale delle cifre elettorali regionali delle coalizioni di liste [...] e delle singole liste [...] per il numero di
+        /// seggi da attribuire nei collegi plurinominali della regione"; lett. b "divide la somma delle cifre elettorali delle liste ammesse al riparto per il
+        /// numero di seggi individuato ai sensi della lettera a)" (D.Lgs. 533/1993, `ElectionsData/italy/raw/statutes/`). Where the sum divided is smaller
+        /// than the seats (a coalition whose admitted lists have no votes in the region: the swing floored them to zero), the floored quotient is zero and the
+        /// statute names no operation. DECLARED, the narrowest rule that conserves the seats: each seat left goes, one at a time, to the unit with the largest
+        /// <paramref name="order"/> (its regional figure at lett. a, its national figure at lett. b - the Senato has no national entitlement per list to be short of).
+        /// </summary>
+        private static void Conserve(int[] seats, int pool, long[] order, System.Text.StringBuilder log, string stage)
+        {
+            int placed = 0;
+            foreach (int v in seats) { placed += v; }
+            if (placed >= pool || seats.Length == 0) { return; }
+            var taken = new bool[seats.Length];
+            int left = pool - placed;
+            for (int round = 0; left > 0; round++)
+            {
+                int pick = -1;
+                for (int j = 0; j < seats.Length; j++) { if (!taken[j] && (pick < 0 || order[j] > order[pick])) { pick = j; } }
+                if (pick < 0) { Array.Clear(taken, 0, taken.Length); continue; }
+                taken[pick] = true;
+                seats[pick]++;
+                left--;
+            }
+            log.Append("  ").Append(stage).Append(": ").Append(pool - placed).Append(" seat(s) no quotient could place, seated by K283's rule\n");
+        }
 
         // ------------------------------------------------------------------------------------------------------------------------------- the Estero
 
@@ -698,13 +796,16 @@ namespace PoliSim.Elections
             return result;
         }
 
-        private static int Estero(Chamber chamber, double[][] votes, IReadOnlyDictionary<string, double> nationalShares, Dictionary<string, int> seatsOut, System.Text.StringBuilder log)
+        private static int Estero(Chamber chamber, double[][] votes, IReadOnlyDictionary<string, double> nationalShares, Dictionary<string, int> seatsOut, System.Text.StringBuilder log,
+            out Dictionary<string, int>[] byRipartizione)
         {
             string[] listKeys = ItalianCount2022.EsteroListKeys;
             int unkeyed = 0;
             int[][] byList = EsteroSeatsByList(chamber, votes);
+            byRipartizione = new Dictionary<string, int>[votes.Length];
             for (int r = 0; r < votes.Length; r++)
             {
+                byRipartizione[r] = new Dictionary<string, int>();
                 int[] won = byList[r];
                 for (int l = 0; l < won.Length; l++)
                 {
@@ -723,7 +824,11 @@ namespace PoliSim.Elections
                         }
                         given[best]++;
                     }
-                    for (int m = 0; m < members.Length; m++) { seatsOut[members[m]] += given[m]; }
+                    for (int m = 0; m < members.Length; m++)
+                    {
+                        seatsOut[members[m]] += given[m];
+                        if (given[m] > 0) { byRipartizione[r].TryGetValue(members[m], out int had); byRipartizione[r][members[m]] = had + given[m]; }
+                    }
                 }
             }
             return unkeyed;

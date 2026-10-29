@@ -83,6 +83,11 @@ namespace PoliSim.EditorTools
              + "the House and the Senate, the tiles' cells under each lens, the sitting rows' swatches and the ELECT card's rule draw party identity "
              + "as the whole subject, the argument of ElectionNightScreen.cs above; the file draws NO area accent (clause 2 by construction). The "
              + "cells are painted by UsTileView, which is handed the colours and names no accessor itself."),
+            ("ElectionNightScreen.Italy.cs",
+             "D-IT (2026-10-29, boards 34a-34d): the same screen's Italian half, its own file of the partial class - the seat cells in the seats' "
+             + "inks, the count's lanes in each list's ink draw party identity as the whole subject, the argument of ElectionNightScreen.cs above; "
+             + "the file draws NO area accent (clause 2 by construction). The cells are painted by ItalianCellView, which is handed the colours and "
+             + "names no accessor itself."),
             ("CountrySelectorScreen.cs",
              "Design's board 18a (2026-09-24, §626): the start sheet's card draws the chamber of record as a one-axis seat bar in the "
              + "parties' laddered inks - the chamber IS the card's subject (16e's rule: the bar is the form below a disc's size). The "

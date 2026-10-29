@@ -6571,6 +6571,23 @@ namespace PoliSim.UI
         }
 
 
+        /// <summary>Board 5c (D11 row 3): the standing budget act - the newest passed fiscal division carrying effects, the one the new chamber's first budget
+        /// inherits if it changes nothing; null where none carries one. Shared by every night that draws it (D-IT: Italy's one line).</summary>
+        private static DivisionRecord StandingBudgetDivision(Country country)
+        {
+            List<DivisionRecord> divisions = country?.Divisions?.Entries;
+            if (divisions == null) { return null; }
+            for (int d = divisions.Count - 1; d >= 0; d--)
+            {
+                // §768 (the review's defect 4): a statute act (§773: the tax, pension, benefits or fund act a budget carried, or the Finance partner's
+                // boundary tax act, which rides with none), or the vote on a veto, is never the standing budget
+                // PS-6 US-18: a Senate division at cloture carries its line in Required and is no vote on a veto - it may be the standing budget
+                if (divisions[d].Passed && !divisions[d].Motion && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0 && (divisions[d].Required == 0 || divisions[d].Cloture)
+                    && !SimulationManager.IsStatuteActTitle(divisions[d].Title)) { return divisions[d]; }
+            }
+            return null;
+        }
+
         /// <summary>
         /// W-G1: hold the player country's election on its own electoral system, set the chamber
         /// from the result, and keep the record.
@@ -6605,6 +6622,7 @@ namespace PoliSim.UI
             }
             if (PlayerCountryId == CountryId.Poland) { ShowPolishSejmNight(); return; }   // D-PL: the 41 okręgi, counted from the election just held (GameController.PolishNight.cs)
             if (PlayerCountryId == CountryId.USA) { ShowUsNight(); return; }   // US-34 (D-US): the 51, counted from the contests the day loop held today (GameController.UsNight.cs)
+            if (PlayerCountryId == CountryId.Italy) { ShowItalianNight(); return; }   // D-IT: the Camera and the Senato, counted college by college from the election just held (GameController.ItalianNight.cs)
 
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(PlayerCountryId);
             var keys = new List<string>();
@@ -6641,16 +6659,7 @@ namespace PoliSim.UI
                 // Board 5c (D11 row 3): the estimate that travelled with the standing budget act - the newest
                 // passed fiscal division carrying effects - is what the new chamber's first budget inherits if
                 // it changes nothing; the plate cites it, or says no enacted budget carries one.
-                DivisionRecord standingBudget = null;
-                List<DivisionRecord> divisions = _playerCountry.Divisions.Entries;
-                for (int d = divisions.Count - 1; d >= 0; d--)
-                {
-                    // §768 (the review's defect 4): a statute act (§773: the tax, pension, benefits or fund act a budget carried, or the Finance partner's
-                    // boundary tax act, which rides with none), or the vote on a veto, is never the standing budget
-                    // PS-6 US-18: a Senate division at cloture carries its line in Required and is no vote on a veto - it may be the standing budget
-                    if (divisions[d].Passed && !divisions[d].Motion && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0 && (divisions[d].Required == 0 || divisions[d].Cloture)
-                        && !SimulationManager.IsStatuteActTitle(divisions[d].Title)) { standingBudget = divisions[d]; break; }
-                }
+                DivisionRecord standingBudget = StandingBudgetDivision(_playerCountry);
                 // Election night item 3 (2026-09-10): what this night compares against. The FIRST election of a game compares
                 // against the seed - the seated election, Sweden 2026 since K-1, which the allocator reproduces seat for seat (§601's
                 // control) - per valkrets, so the swing is like for like at every instant. A later one compares against the previous

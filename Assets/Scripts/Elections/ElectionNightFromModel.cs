@@ -38,9 +38,11 @@ namespace PoliSim.Elections
         /// D-PL: Poland's count IS per okreg - its Sejm is seated district by district (`PolishSejmAllocation`) - and its night is
         /// `PolishSejmNight`'s, on the election record's own shares, never this class's regional readout (`At` returns null for it).
         /// PS-6 US-34 (D-US): the USA's count IS per state - the presidential count's states, the House by state, the Senate seat by seat - and its night is
-        /// `UsNight`'s, on the contests the day loop held (`At` returns null for it too).</summary>
+        /// `UsNight`'s, on the contests the day loop held (`At` returns null for it too).
+        /// D-IT: Italy's count IS per college - the Camera and the Senato counted on the colleges (`ItalianCount`) - and its night is `ItalianNight`'s, on the
+        /// election record's own shares (`At` returns null for it as well).</summary>
         public static bool Available(CountryId country) =>
-            country == CountryId.Poland || country == CountryId.USA
+            country == CountryId.Poland || country == CountryId.USA || country == CountryId.Italy
             || ((country == CountryId.Sweden || country == CountryId.Germany) && NationalElection.LastRegionalShares != null);   // §707 (D-DE): the sixteen Länder
 
         /// <summary>
@@ -51,7 +53,7 @@ namespace PoliSim.Elections
         public static NightState At(int minute, CountryId country, IReadOnlyList<string> partyKeys,
             int totalSeats, double threshold, DateTime? on = null)
         {
-            if (!Available(country) || country == CountryId.Poland || country == CountryId.USA) { return null; }   // D-PL: Poland's night is PolishSejmNight's, US-34: the USA's UsNight's - the readout here may be another country's
+            if (!Available(country) || country == CountryId.Poland || country == CountryId.USA || country == CountryId.Italy) { return null; }   // D-PL: Poland's night is PolishSejmNight's, US-34: the USA's UsNight's, D-IT: Italy's ItalianNight's - the readout here may be another country's
 
             double[][] shares = NationalElection.LastRegionalShares;
             string[] names = NationalElection.LastRegionalNames;

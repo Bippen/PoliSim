@@ -5859,6 +5859,13 @@ namespace PoliSim.Testing
                 yield return CapturePolishInterrupts(controller, sim, noDecisions);
                 yield break;
             }
+            if (_countryId == CountryId.Italy)
+            {
+                // D-IT: an Italian game holds no campaign (§941's note: its -shotinterrupts film reached no night), so its film walks the day path straight to
+                // the polling day, films the night the controller opens, then the night's states staged from the same count
+                yield return CaptureItalianInterrupts(controller, sim, noDecisions);
+                yield break;
+            }
 
             // CL-1 (2026-09-12): the run-up is reachable. Drive the day path to the pre-campaign's first day, open
             //    the HQ through the branch the rail's cell takes, film it, queue an office and a pollster live, step
@@ -6306,6 +6313,193 @@ namespace PoliSim.Testing
             PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
             SetPrivateField(controller, "_canvasLive", false);
             yield return Settle();
+        }
+
+        /// <summary>
+        /// D-IT (boards 34a-34d): THE ITALIAN INTERRUPTS FILM - an Italian game played from its start as play steps it (the day path, the country's day tick,
+        /// the clock paused while the harness walks) to its polling day, the night opened by the controller's own election call and held as a takeover the
+        /// clock cannot pass (e7c, the night at its close as play opens it), dismissed by its Continue; then `CaptureItalianNights`.
+        /// </summary>
+        private IEnumerator CaptureItalianInterrupts(GameController controller, SimulationManager sim, Dictionary<CountryId, PolicyDecision> noDecisions)
+        {
+            Debug.Log("SHOT: -shotinterrupts - Italy (D-IT): the film walks to the polling day, films the night, then its states staged from the same count.");
+            Expect("e7c_election_night_takeover", "e7i_italy_night_before_staged", "e7i_italy_night_counting_staged", "e7i_italy_night_counting_senato_staged",
+                "e7i_italy_night_called_staged", "e7i_italy_night_called_senato_staged", "e7i_italy_night_final_senato_staged", "e7i_italy_night_dagger_staged",
+                "e7i_italy_night_dissolution_staged");
+            SetPrivateField(controller, "_onDesk", true);
+            FieldInfo walkSpeedField = controller.GetType().GetField("_gameSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
+            object walkSpeed = walkSpeedField?.GetValue(controller);
+            SetEnumField(controller, "_gameSpeed", "Paused");
+            int days = 0;
+            while (days < MaxStateSearchDays)
+            {
+                if (sim.PollingDayToday) { break; }
+                bool boundary = sim.AdvanceDay();
+                MemTick(sim);
+                sim.AdvanceCountryDayTick(_countryId);
+                days++;
+                if (boundary) { sim.AdvanceTurn(noDecisions); }
+            }
+            if (!sim.PollingDayToday)
+            {
+                Debug.LogError($"SHOT: -shotinterrupts found no polling day within {MaxStateSearchDays} days for Italy - the night is NOT filmed.");
+                _failed++;
+            }
+            else
+            {
+                Debug.Log($"SHOT: -shotinterrupts reached Italy's polling day {sim.CurrentDate:yyyy-MM-dd} after {days} days.");
+                InvokeNoArg(controller, "CheckElection");
+                if (walkSpeed != null) { walkSpeedField.SetValue(controller, walkSpeed); }
+                FieldInfo nightField = controller.GetType().GetField("_electionNight", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (!(nightField?.GetValue(controller) is ElectionNightScreen live))
+                {
+                    Debug.LogError("SHOT: -shotinterrupts - Italy reached its election and NO election night was shown. The controller logs why (ELECTION: / CANVAS: lines above).");
+                    _failed++;
+                }
+                else
+                {
+                    yield return WaitForCanvasSettle(controller, wantActive: true);
+                    yield return Settle();
+                    Claim("electionnight");
+                    yield return Capture("e7c_election_night_takeover");
+                    RecordCanvasTextAssert("e7c_election_night_takeover", controller);
+                    LogItalianNight("e7c_election_night_takeover", live);
+                    yield return AssertClockHeld(controller, sim, "election night");
+                    InvokeNoArg(controller, "DismissElectionNight");
+                    yield return WaitForCanvasSettle(controller, wantActive: false);
+                    yield return Settle();
+                    Claim("imgui");
+                    FieldInfo overField = controller.GetType().GetField("_isGameOver", BindingFlags.Instance | BindingFlags.NonPublic);
+                    bool over = overField?.GetValue(controller) is bool o && o;
+                    yield return Capture(over ? "e7d_after_election_night_gameover" : "e7d_after_election_night");
+                    if (!over) { yield return ReportClockAfterDismissal(controller, sim, "election night"); }
+                    yield return CaptureItalianNights(controller, sim);
+                }
+            }
+            Debug.Log($"SHOT: interrupts done, {_captured} captured, {_failed} failed.");
+            Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
+            Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
+            Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
+        /// <summary>
+        /// D-IT (34a's picks, 34b's C): ITALY'S NIGHT, ITS STATES STAGED from the election the film just held - before (0 of 147), counting (61, Camera and
+        /// Senato), called (where both chambers' calls landed, Camera and Senato), final on the Senato, the † view, and the dissolution: the column read on a
+        /// planted hostile Senato (each centre-right list cut in proportion to seventy seats, the seats taken given to PD - a fixture, never a count), so the
+        /// formation's own code tries and fails three mandates. Each in a screen of its own, filmed with the Canvas guard and destroyed; STAGED on the masthead;
+        /// the game is not touched (the planted Senato is restored before the frame).
+        /// </summary>
+        private IEnumerator CaptureItalianNights(GameController controller, SimulationManager sim)
+        {
+            Country italy = sim.World?.GetCountry(CountryId.Italy);
+            ElectionRecord latest = italy != null && italy.ElectionHistory.Count > 0 ? italy.ElectionHistory[italy.ElectionHistory.Count - 1] : null;
+            if (latest == null || latest.Method != ElectionMethod.ItalyRosatellum)
+            {
+                Debug.LogError("SHOT: D-IT - no Italian count in hand, so the night's states are NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            ElectionNightScreen.ItalyNight final = GameController.ItalianNightInputs(sim, italy, latest, ItalianNight.Total);
+            int called = final?.State.CalledAt ?? 0;
+            var frames = new List<(string Frame, int Index, ItalianCount.Chamber Chamber, bool Dagger)>
+            {
+                ("e7i_italy_night_before_staged", 0, ItalianCount.Chamber.Camera, false),
+                ("e7i_italy_night_counting_staged", 61, ItalianCount.Chamber.Camera, false),
+                ("e7i_italy_night_counting_senato_staged", 61, ItalianCount.Chamber.Senato, false),
+                ("e7i_italy_night_called_staged", called, ItalianCount.Chamber.Camera, false),
+                ("e7i_italy_night_called_senato_staged", called, ItalianCount.Chamber.Senato, false),
+                ("e7i_italy_night_final_senato_staged", ItalianNight.Total, ItalianCount.Chamber.Senato, false),
+                ("e7i_italy_night_dagger_staged", ItalianNight.Total, ItalianCount.Chamber.Camera, true),
+            };
+            SetPrivateField(controller, "_canvasLive", true);
+            foreach ((string frame, int index, ItalianCount.Chamber chamber, bool dagger) in frames)
+            {
+                if (frame.Contains("_called") && (called <= 0 || called >= ItalianNight.Total))
+                {
+                    Debug.Log($"SHOT: D-IT {frame} - NOT IN THIS OUTCOME: the chambers are {(called <= 0 ? "never both called before the close" : "called only at the close")} on this count, so there is no called state to film.");
+                    _expectedFrames.Remove(frame);
+                    continue;
+                }
+                ElectionNightScreen.ItalyNight night = GameController.ItalianNightInputs(sim, italy, latest, index, chamber);
+                if (night == null) { Debug.LogError($"SHOT: D-IT {frame} - the inputs did not build; nothing filmed."); _failed++; continue; }
+                night.Staged = "STAGED";
+                yield return FilmItalianNight(controller, frame, night, dagger);
+            }
+
+            // the dissolution: the column on a planted hostile Senato, restored before the frame
+            Dictionary<string, int> saved = italy.SecondChamberSeats != null ? new Dictionary<string, int>(italy.SecondChamberSeats) : null;
+            ElectionNightScreen.ItalyNight dissolved = null;
+            try
+            {
+                if (saved != null && saved.Count > 0)
+                {
+                    string[] cdx = null;
+                    foreach (string[] co in ItalianCount.Coalitions(ItalianCount.Chamber.Senato)) { if (Array.IndexOf(co, "FdI") >= 0) { cdx = co; } }
+                    int cdxSeats = 0;
+                    foreach (string k in cdx ?? new string[0]) { cdxSeats += saved.TryGetValue(k, out int s) ? s : 0; }
+                    var planted = new Dictionary<string, int>(saved);
+                    int moved = 0;
+                    foreach (string k in cdx ?? new string[0])
+                    {
+                        if (!saved.TryGetValue(k, out int s) || cdxSeats <= 0) { continue; }
+                        int keep = (int)Math.Floor(s * 70.0 / cdxSeats);
+                        planted[k] = keep;
+                        moved += s - keep;
+                    }
+                    planted.TryGetValue("PD", out int pd);
+                    planted["PD"] = pd + moved;
+                    italy.SecondChamberSeats.Clear();
+                    foreach (KeyValuePair<string, int> kv in planted) { italy.SecondChamberSeats[kv.Key] = kv.Value; }
+                    dissolved = GameController.ItalianNightInputs(sim, italy, latest, ItalianNight.Total);
+                    Debug.Log("SHOT: D-IT - the planted Senato for the dissolution: " + string.Join(" · ", System.Linq.Enumerable.Select(System.Linq.Enumerable.Where(planted, kv => kv.Value > 0), kv => kv.Key + " " + kv.Value.ToString(CultureInfo.InvariantCulture))) + " | " + (dissolved?.Projection != null ? dissolved.Projection.Describe() + " | " + string.Join(" | ", dissolved.Projection.Steps) : "no projection"));
+                }
+            }
+            catch (Exception e) { Debug.LogError($"SHOT: D-IT - the dissolution's staging THREW ({e.GetType().Name}: {e.Message})"); _failed++; }
+            finally
+            {
+                if (saved != null) { italy.SecondChamberSeats.Clear(); foreach (KeyValuePair<string, int> kv in saved) { italy.SecondChamberSeats[kv.Key] = kv.Value; } }
+            }
+            if (dissolved == null || dissolved.Projection?.View == null || dissolved.Projection.View.HasGovernment)
+            {
+                Debug.LogError("SHOT: D-IT e7i_italy_night_dissolution_staged - the planted Senato did not stage three failed mandates" + (dissolved?.Projection != null ? " (" + dissolved.Projection.Describe() + ")" : string.Empty) + "; the dissolution is NOT filmed.");
+                _failed++;
+            }
+            else
+            {
+                dissolved.Staged = "STAGED";
+                yield return FilmItalianNight(controller, "e7i_italy_night_dissolution_staged", dissolved, false);
+            }
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
+            SetPrivateField(controller, "_canvasLive", false);
+            yield return Settle();
+        }
+
+        /// <summary>D-IT: one staged state of the Italian night, built, filmed with the Canvas guard, logged and destroyed.</summary>
+        private IEnumerator FilmItalianNight(GameController controller, string frame, ElectionNightScreen.ItalyNight night, bool dagger)
+        {
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+            ElectionNightScreen screen = ElectionNightScreen.BuildItaly(night, null);
+            if (screen == null) { Debug.LogError($"SHOT: D-IT {frame} - the board did not build; nothing filmed."); _failed++; yield break; }
+            if (dagger) { screen.SetDense(true); }
+            yield return Settle();
+            Claim("electionnight");
+            yield return Capture(frame);
+            RecordCanvasTextAssert(frame, controller);
+            if (dagger && !screen.DenseShown) { Debug.LogError($"SHOT: {frame} - the † view did not open."); _failed++; }
+            LogItalianNight(frame, screen);
+            if (screen.Root != null) { UnityEngine.Object.Destroy(screen.Root); }
+            yield return Settle();
+        }
+
+        /// <summary>D-IT: the film's log line for an Italian night frame - the chamber shown, the cells by state on both maps, the smallest map label in canvas units.</summary>
+        private static void LogItalianNight(string frame, ElectionNightScreen screen)
+        {
+            ItalianCellView cam = screen.ItalyCameraMap, sen = screen.ItalySenatoMap;
+            int smallest = int.MaxValue;
+            foreach (UnityEngine.UI.Text t in screen.ItalyTexts) { if (t != null) { smallest = Math.Min(smallest, t.fontSize); } }
+            Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: D-IT {0} - showing the {1}; Camera cells {2} inked / {3} to come, Senato {4} / {5}; smallest sheet text {6} units, smallest label on the map shown {7} units (14 px at 1280 is 21; the hidden map lays itself when shown){8}",
+                frame, screen.ItalyChamber, cam?.LastInked ?? -1, cam?.LastToCome ?? -1, sen?.LastInked ?? -1, sen?.LastToCome ?? -1, smallest == int.MaxValue ? 0 : smallest,
+                (screen.ItalyChamber == ItalianCount.Chamber.Camera ? cam : sen)?.LastSmallestLabel ?? 0f, screen.DenseShown ? "; the † view open" : string.Empty));
         }
 
         /// <summary>

@@ -64,6 +64,7 @@ namespace PoliSim.UI
                 LayoutRebuilder.ForceRebuildLayoutImmediate(content);
                 LayoutRebuilder.ForceRebuildLayoutImmediate(content);
             }
+            ApplyItalyViews();   // D-IT: Italy's † cell swaps the count and the map for their full wording too (ElectionNightScreen.Italy.cs); none on any other night
         }
 
         /// <summary>Everything the column reads, handed in by the night - none of it from the board.</summary>

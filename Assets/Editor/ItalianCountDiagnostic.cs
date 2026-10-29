@@ -32,6 +32,8 @@ namespace PoliSim.EditorTools
     /// <item><description>(h) K157: Draghi's cabinet and support at the start are the parties the Camera's vote of 18 Feb 2021 gives, re-derived from every deputy's vote.</description></item>
     /// <item><description>(i) K155: art. 94's vote in each chamber (the government and its support for, every other member against), the mandates on the chambers the 2022 vote
     /// seats and on a hostile Senato (three at most; a granted one holds both), and art. 61's day after a dissolution - the record's 25 Sep 2022 from 21 Jul.</description></item>
+    /// <item><description>(j) K283: the count seats every list seat of its pool - on the vote review 3 built (a coalition's one seated list floored to zero where
+    /// lett. h seats the coalition) and on a seeded sweep aimed at that family, in both chambers.</description></item>
     /// </list>
     /// </summary>
     public static class ItalianCountDiagnostic
@@ -132,6 +134,39 @@ namespace PoliSim.EditorTools
                     ItalianCount.Result withNew = camera ? ItalianCount.Camera(created) : ItalianCount.Senato(created);
                     Check(withNew.Seats.TryGetValue("NEW", out int newSeats) && newSeats > 0 && withNew.Seats.Values.Sum() == (camera ? 400 : 200),
                         F("(f) {0}: a created party at 15 % (no lineage, no link) is counted - {1} seat(s), the chamber {2}", chamber, newSeats, withNew.Seats.Values.Sum()));
+                    // (j) K283: the count conserves its list seats. The review's vote (2026-10-29, review 3's M1): the swing floors the centre-right's one seated list
+                    // (Lega) to zero in circoscrizioni where lett. h seats the coalition on its 1-3 % lists - the quotient there is zero; before K283 those seats went
+                    // to no one (the Camera seated 238 of its 245 list seats, the Senato 120 of 122)
+                    int listPool = (camera ? ItalianCount2022.CameraCircoscrizioneSeats : ItalianCount2022.SenatoCircoscrizioneSeats).Sum() - (camera ? ItalianCount2022.CameraColleges : ItalianCount2022.SenatoColleges).Length;
+                    var review = new Dictionary<string, double>
+                    {
+                        { "Lega", 0.1156 }, { "FdI", 0.0269 }, { "FI", 0.0296 }, { "NM", 0.0172 }, { "PD", 0.0475 }, { "AVS", 0.0215 }, { "PlusE", 0.0241 }, { "IC", 0.0280 },
+                        { "M5S", 0.1829 }, { "AzIV", 0.1673 }, { "ScN", 0.1673 }, { "NEW", 0.1720 },
+                    };
+                    ItalianCount.Result reviewed = camera ? ItalianCount.Camera(review) : ItalianCount.Senato(review);
+                    Check(reviewed.ProportionalSeats.Values.Sum() == listPool && reviewed.ListSeatsShort == 0 && reviewed.Seats.Values.Sum() + reviewed.EsteroUnkeyed == (camera ? 400 : 200),
+                        F("(j) {0}: the review's vote (Lega 11.56 % with FdI and FI under 3 %, four lists near 17 %) seats every list seat - {1} of {2}, the chamber {3}", chamber, reviewed.ProportionalSeats.Values.Sum(), listPool, reviewed.Seats.Values.Sum() + reviewed.EsteroUnkeyed));
+                    // the failure family, aimed (review 4's N2): the centre-right's only list over 3 % (Lega, 8 to 16 %, under its 2018 share) with FdI, FI and NM at
+                    // 1-3 %, the rest scaled - the swing floors Lega to zero where lett. h seats the coalition on its small lists. A vote on which K283's rule fires is
+                    // a vote the count before K283 left a seat unseated on (the rule fires exactly where no quotient could place a seat): 255 Camera and 165 Senato
+                    // votes of these 300 lost seats on f22bf02f's count, measured outside the engine on 2026-10-29
+                    var aimed = new System.Random(283);
+                    int aimedShort = 0, aimedVotes = 300, aimedFired = 0;
+                    string firstShort = null;
+                    double rest = shares.Where(kv => kv.Key != "Lega" && kv.Key != "FdI" && kv.Key != "FI" && kv.Key != "NM").Sum(kv => kv.Value);
+                    for (int t = 0; t < aimedVotes; t++)
+                    {
+                        double lega = 0.08 + 0.08 * aimed.NextDouble(), fdi = 0.01 + 0.0199 * aimed.NextDouble(), fi = 0.01 + 0.0199 * aimed.NextDouble(), nm = 0.01 + 0.0199 * aimed.NextDouble();
+                        double fixedSum = lega + fdi + fi + nm;
+                        var m = new Dictionary<string, double>();
+                        foreach (KeyValuePair<string, double> kv in shares) { m[kv.Key] = kv.Value * (1.0 - fixedSum) / rest; }
+                        m["Lega"] = lega; m["FdI"] = fdi; m["FI"] = fi; m["NM"] = nm;
+                        ItalianCount.Result w = camera ? ItalianCount.Camera(m) : ItalianCount.Senato(m);
+                        if (w.Trace.Contains("K283's rule")) { aimedFired++; }
+                        if (w.ProportionalSeats.Values.Sum() != listPool || w.ListSeatsShort != 0) { aimedShort++; firstShort = firstShort ?? F("{0} of {1} at vote {2}", w.ProportionalSeats.Values.Sum(), listPool, t); }
+                    }
+                    Check(aimedShort == 0 && aimedFired > 0, F("(j) {0}: a seeded sweep of {1} votes aimed at the failure family (Lega 8-16 %, FdI, FI and NM at 1-3 %): every one seats its {2} list seats; K283's rule seated what no quotient could on {3} of them - each a vote the count before K283 lost seats on{4}",
+                        chamber, aimedVotes, listPool, aimedFired, firstShort != null ? " - short: " + firstShort : string.Empty));
                     // (e) M2: the live path - the game's own Estero swing on the 2022 shares over the roster (summing to one) changes no list's share, so every
                     // ripartizione elects what the statute elects on the record's own votes: the Camera's 8, the Senato's 4
                     var rosterShares = new Dictionary<string, double>();

@@ -286,6 +286,22 @@ namespace PoliSim.UI
             // neither needed it - so its hexes are taken as drawn, as Poland's were. The independents (who sit with DEM) are given none: the Neutral.
             { "USA/REP",       Hex(0x75383B) },
             { "USA/DEM",       Hex(0x383875) },
+            // D-IT (board 34d's legend, a PROPOSAL, adopted under K277; Elias may strike it) - [AUTHORED-REFERENCE]: Italy had no inks. The board seats each list's
+            // conventional hue at the desk's S 0.52 · V 0.46 and ladders where hues meet (FI lighter; AVS, NM, SVP and +E darker), every pair at least 0.075
+            // apart in oklab, so its hexes are taken as drawn, as Poland's were - for every Italian surface that draws a party ink, not the night alone. IC, ScN,
+            // MAIE and UV have no colour on disk and are given none: they draw in the Neutral, as the board does. PD's #75383B is the USA's REP's hex: kept (K277),
+            // because party inks are fenced within one country and no screen draws two countries' party inks side by side (a foreign result card is one country's,
+            // the start card one start's).
+            { "Italy/FdI",     Hex(0x385575) },
+            { "Italy/PD",      Hex(0x75383B) },
+            { "Italy/Lega",    Hex(0x38753D) },
+            { "Italy/M5S",     Hex(0x756B38) },
+            { "Italy/FI",      Hex(0x538499) },
+            { "Italy/AzIV",    Hex(0x6E3F75) },
+            { "Italy/AVS",     Hex(0x2D5E4E) },
+            { "Italy/NM",      Hex(0x2A3054) },
+            { "Italy/SVP",     Hex(0x54302A) },
+            { "Italy/PlusE",   Hex(0x57482B) },
         };
 
         /// <summary>
