@@ -363,8 +363,8 @@ namespace PoliSim.Data
             return tax;
         }
 
-        // ⚠ (K271's review 3, L6, filed outside K271): the levy reads the statute's LevyRate and never the line's own sub-row rate - its row is not
-        // Adjustable (SubRows), so a levy dial, where a screen offers one, appears inert here.
+        // K286 (closing K271's review 3, L6): the levy reads the statute's LevyRate and never the line's own sub-row rate - by design: art. 30h is
+        // another act, its row is not Adjustable (SubRows), and the schedule row draws it fixed ("ANOTHER ACT · NOT A BRACKET"); no screen offers its dial.
         private static double LevyTax(Statute s, double income, double thresholdScale)
         {
             if (s.LevyRate <= 0) { return 0; }
