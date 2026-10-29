@@ -175,7 +175,7 @@ namespace PoliSim.EditorTools
                 // [AUTHORED-DRAFT] the members who would vote for a candidate sign it) and vote for him: 85 + 120 + 64 = 269 against the Union's 208
                 bool sincere = last != null && last.Sides.Exists(s => (s.Reason ?? string.Empty).Contains("the game's premise: sincere votes"));
                 Check(pluralityOn == new DateTime(2025, 5, 21) && !r3.Open && appointed != outgoing3 && last != null
-                      && last.Title.StartsWith("Chancellor's election (Art. 63 Abs. 4 GG): Robert Habeck (Grune) - elected with the most votes, 269", StringComparison.Ordinal)
+                      && last.Title.StartsWith("Chancellor's election (Art. 63 Abs. 4 GG): Robert Habeck (GRÜNE) - elected with the most votes, 269", StringComparison.Ordinal)
                       && last.Title.Contains("appointed within seven days, not dissolved (Satz 3") && last.Sides.TrueForAll(s => !string.IsNullOrEmpty(s.Reason))
                       && appointed.PmParty == "Grune" && appointed.Cabinet.Contains("Grune") && (appointed.Basis ?? string.Empty).Contains("Art. 63 Abs. 4 Satz 3"),
                     F("(e) {0:yyyy-MM-dd}, the day after: '{1}'; {2} takes office led by {3} - every side carries its reason ({4})", pluralityOn ?? DateTime.MinValue, last?.Title ?? "no ballot",
@@ -186,7 +186,7 @@ namespace PoliSim.EditorTools
                 // ballot a vote on the person): the two stand in ONE ballot - the signers vote for their nominee (the Greens' 269), the Union for its
                 // own (208) - and neither has a majority of the members
                 DivisionRecord persons = inPhase2.Count == 1 ? inPhase2[0] : null;
-                Check(persons != null && persons.Title.Contains("Friedrich Merz (CDU) 208") && persons.Title.Contains("Robert Habeck (Grune) 269") && persons.Title.Contains("no candidate elected")
+                Check(persons != null && persons.Title.Contains("Friedrich Merz (CDU) 208") && persons.Title.Contains("Robert Habeck (GRÜNE) 269") && persons.Title.Contains("no candidate elected")
                       && persons.Sides.Exists(s => s.Abbrev == "SPD" && (s.Reason ?? string.Empty).Contains("votes for Robert Habeck"))
                       && !ballots.Exists(e => e.Title.Contains("Alice Weidel")) && r3.Log.Exists(l => l.Contains("GO-BT § 4 Abs. 2") && l.Contains("with no candidate before the Bundestag")),
                     F("(e) GO-BT § 4 Abs. 2 and §712: the fourteen days hold one ballot on the persons nominated - the Union's candidate (a Fraktion of a quarter) and the Greens' (signed by the members who vote for him), each once; the AfD's 152 stand in none; then no candidate is before the Bundestag ({0})",

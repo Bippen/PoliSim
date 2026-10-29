@@ -175,6 +175,10 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class StanceModel
     {
+        /// <summary>The author's reason after its party's short name ("Az-IV tabled the bill: …") - one string for the writer and for
+        /// <see cref="ReasonShort"/>, which knows the line by this tail, since a created party's short name may read like any term's head.</summary>
+        public const string AuthorTail = " tabled the bill: its author votes for it";
+
         /// <summary>[AUTHORED-DRAFT] §246 D-P3-A1c: a party within half a point of the axis midpoint is UNDECIDED, a state and not a zero-sign artefact.</summary>
         public const float UndecidedBand = 0.1f;
         /// <summary>[AUTHORED-DRAFT] §246 term 2: how far a cabinet party is pulled toward its government's bill, scaled by its nearness to the bill.</summary>
@@ -347,7 +351,7 @@ namespace PoliSim.Simulation
                 {
                     // PS-3i-2b (ruled 2026-09-29, §654): an item's author votes for it - the party that tabled the bill is for it, as a tabler already votes
                     // its own budget alternative (§633).
-                    reasons.Add(party.Abbrev + " tabled the bill: its author votes for it");
+                    reasons.Add(party.ShortName + AuthorTail);   // the review's L1 (s575): a side's reason is read on the signing screen
                     result.Add(new PartyStance(party, seats, 1f, 1, true, reasons));
                     continue;
                 }
@@ -368,7 +372,7 @@ namespace PoliSim.Simulation
                     alignment += loaded[i].Weight * a;
                     measuredWeight += loaded[i].Weight;
                     reasons.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1:0.0} on the {2} axis, the bill toward its {3} end: {4:+0.00;-0.00}",
-                        party.Abbrev, p, AxisName(loaded[i].Axis), loaded[i].End, a));
+                        party.ShortName, p, AxisName(loaded[i].Axis), loaded[i].End, a));   // s575: read on the vote's slip and the signing screen; ReasonShort keeps the axis and the position, never the name
                     if (spatial)
                     {
                         (float standingAt, float billAt) = SpatialBudgetVote.MeanPlaces(concern.Spatial);
@@ -466,8 +470,8 @@ namespace PoliSim.Simulation
                         if (cutShare <= 0f) { continue; }
                         (int From, int To, IssueId Issue) band;
                         string line;
-                        if (category.HasValue && LineBands.TryGetValue(category.Value, out band)) { line = category.Value.ToString(); }
-                        else if (program.HasValue && ProgramBands.TryGetValue(program.Value, out band)) { line = program.Value.ToString(); }
+                        if (category.HasValue && LineBands.TryGetValue(category.Value, out band)) { line = EnumNames.Of(category.Value); }   // M4: the line's name, never its identifier
+                        else if (program.HasValue && ProgramBands.TryGetValue(program.Value, out band)) { line = EnumNames.Of(program.Value); }
                         else { continue; }
                         float salience = EventSalience.Of(country, band.Issue, out bool salienceMeasured, out bool salienceMoved);   // A-LOOP q5 (§6 (2)): the seed plus what events still hold of it
                         float dependence = voters == null ? 1f : BandShare(voters, band.From, band.To);
@@ -535,7 +539,7 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// P3-A3: the reasons as a SHORT line for a plate - each term's contribution with a two-word name
-        /// ("spendvtax 2.5 → +0.50 · opposition line −0.15 · cuts SocialSecurity −0.00") - the full line is
+        /// ("spendvtax 2.5 → +0.50 · opposition line −0.15 · cuts Social Security −0.00") - the full line is
         /// <see cref="ReasonLine"/>. Built from the same reasons, so the two cannot disagree.
         /// </summary>
         public static string ReasonShort(in PartyStance stance)
@@ -546,17 +550,21 @@ namespace PoliSim.Simulation
             {
                 int arrow = reason.LastIndexOf('→');
                 string tail = arrow >= 0 ? reason.Substring(arrow + 1).Trim() : null;
-                if (reason.StartsWith("voter profile:", StringComparison.Ordinal)) { continue; }
-                if (reason.Contains(" on the ") && reason.Contains(" axis, the bill toward its "))
+                // the names review's M3 (round 2): two reasons OPEN with a party's short name, which a created party types ("cuts", "undecided",
+                // "bloc party", "opinion cost") - so neither is read by its head. The author's line is known by its fixed tail and is the full line's
+                // alone; the position's line is read from its end (the last " on the "), before any prefix below can mistake a name for a term.
+                if (reason.EndsWith(AuthorTail, StringComparison.Ordinal)) { continue; }
+                int on = reason.LastIndexOf(" on the ", StringComparison.Ordinal);
+                int axisEnd = on >= 0 ? reason.IndexOf(" axis, the bill toward its ", on, StringComparison.Ordinal) : -1;
+                if (axisEnd > on + 8)
                 {
                     // "S 2.5 on the spendvtax axis, the bill toward its 0 end: +0.50" → "spendvtax 2.5 → +0.50"
-                    int on = reason.IndexOf(" on the ", StringComparison.Ordinal);
-                    int axisEnd = reason.IndexOf(" axis", on, StringComparison.Ordinal);
                     int colon = reason.LastIndexOf(':');
                     string position = reason.Substring(0, on).Trim();
                     position = position.Substring(position.LastIndexOf(' ') + 1);
-                    parts.Add(reason.Substring(on + 8, axisEnd - on - 8) + " " + position + " → " + (colon >= 0 ? reason.Substring(colon + 1).Trim() : string.Empty));
+                    parts.Add(reason.Substring(on + 8, axisEnd - on - 8) + " " + position + " → " + (colon > axisEnd ? reason.Substring(colon + 1).Trim() : string.Empty));
                 }
+                else if (reason.StartsWith("voter profile:", StringComparison.Ordinal)) { continue; }
                 else if (reason.StartsWith("cabinet party", StringComparison.Ordinal) || reason.StartsWith("support party", StringComparison.Ordinal)) { parts.Add((reason.StartsWith("cabinet", StringComparison.Ordinal) ? "cohesion " : "support pull ") + tail); }
                 else if (reason.StartsWith("opposition line", StringComparison.Ordinal)) { parts.Add("opposition line " + tail); }
                 else if (reason.StartsWith("bloc party", StringComparison.Ordinal)) { parts.Add("bloc line " + tail); }   // P4-A3
@@ -564,7 +572,7 @@ namespace PoliSim.Simulation
                 else if (reason.StartsWith("no published people_v_elite", StringComparison.Ordinal)) { continue; }   // P4-A3: an absence the full line keeps and the plate does not
                 else if (reason.StartsWith("opposition, but", StringComparison.Ordinal)) { parts.Add("nearer than the government: own position"); }
                 else if (reason.StartsWith("far from its own position", StringComparison.Ordinal)) { parts.Add("far - may refuse"); }
-                else if (reason.StartsWith("cuts ", StringComparison.Ordinal)) { parts.Add(reason.Substring(0, reason.IndexOf(" by ", StringComparison.Ordinal)) + " " + tail); }
+                else if (reason.StartsWith("cuts ", StringComparison.Ordinal) && reason.IndexOf(" by ", StringComparison.Ordinal) > 0) { parts.Add(reason.Substring(0, reason.IndexOf(" by ", StringComparison.Ordinal)) + " " + tail); }
                 else if (reason.StartsWith("opinion cost", StringComparison.Ordinal)) { parts.Add("opinion cost below 0.01"); }
                 else if (reason.StartsWith("undecided", StringComparison.Ordinal)) { parts.Add("undecided: inside the band"); }
                 else if (reason.StartsWith("no published", StringComparison.Ordinal)) { parts.Add(reason); }

@@ -18,7 +18,9 @@ namespace PoliSim.UI
     /// <see cref="PolicyWebRenderer"/>'s node metadata - "Means-Tested Welfare", "Capital Gains Tax",
     /// "Veterans Benefits (Mand.)" - hand-written, correctly hyphenated, abbreviated where a column
     /// needed it. No formatter produces those. The defect was never a missing formatter; it was a
-    /// ledger not asking a table that was already there.</para>
+    /// ledger not asking a table that was already there. Since the review's M4 the tax, welfare and
+    /// spending names live in the model's <see cref="PoliSim.Data.EnumNames"/>, and the node table
+    /// reads them there, so this lookup and the simulation's texts return the same words.</para>
     ///
     /// ⚠ **AND IT DOES NOT COPY THEM.** Restating those strings here would be the "two tables that
     /// agree until one is edited" failure this codebase has already written up twice. There is one set
@@ -103,27 +105,8 @@ namespace PoliSim.UI
         /// </summary>
         private static string Split(string identifier)
         {
-            var builder = new StringBuilder(identifier.Length + 8);
-            builder.Append(identifier[0]);
-
-            for (int i = 1; i < identifier.Length; i++)
-            {
-                char current = identifier[i];
-                if (char.IsUpper(current))
-                {
-                    bool followsLower = char.IsLower(identifier[i - 1]);
-                    bool endsAcronym = char.IsUpper(identifier[i - 1]) &&
-                                       i + 1 < identifier.Length && char.IsLower(identifier[i + 1]);
-                    if (followsLower || endsAcronym)
-                    {
-                        builder.Append(' ');
-                    }
-                }
-
-                builder.Append(current);
-            }
-
-            return builder.ToString();
+            // the review's M4: the spacer moved to the model's wording (EnglishText.Spaced), so the model's names (EnumNames) space an identifier as the screens do
+            return PoliSim.Wording.EnglishText.Spaced(identifier);
         }
     }
 }

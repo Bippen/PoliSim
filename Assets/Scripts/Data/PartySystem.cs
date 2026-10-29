@@ -60,13 +60,16 @@ namespace PoliSim.Data
 
     public readonly struct PoliticalParty
     {
-        /// <summary>The abbreviation the country's own authority uses, FOLDED TO ASCII where the published one is not. THE PERSISTED KEY: ten save fields, every
+        /// <summary>The abbreviation the country's own authority uses, made an ASCII identifier where the published one is not one (diacritics folded, Grune for
+        /// GRÜNE; a sign spelled out, AzIV for Az-IV and PlusE for +E). THE PERSISTED KEY: save fields, every
         /// harness fixture, the parliament seat tables, the ink and mark tables and every asset stem hold it (§566, and the hour `Grüne` arrived and took D18's
         /// inventory red with it). It is never what a player reads - <see cref="ShortName"/> is.</summary>
         public readonly string Abbrev;
         /// <summary>§575 (ruled 2026-09-22, §571 item 5): THE DISPLAY SHORT NAME - the election authority's own abbreviation as it publishes it, diacritics and all
         /// (the Bundeswahlleiter's GRÜNE for Bündnis 90/Die Grünen). Every place a player READS an abbreviation takes this; every key, stem and lookup keeps
-        /// <see cref="Abbrev"/>. Defaults to the key, which is right for the fifty-two units whose authority publishes an ASCII abbreviation.</summary>
+        /// <see cref="Abbrev"/>. Defaults to the key, which is right wherever the published abbreviation is itself an ASCII identifier; a unit whose
+        /// abbreviation carries a diacritic or a sign declares its own (K285: Italy's Az-IV and +E). A list of them is joined through
+        /// <see cref="PartySystems.JoinShortNames"/> (K312: "+", unless a name holds one).</summary>
         public readonly string ShortName;
         /// <summary>The name as published.</summary>
         public readonly string Name;
@@ -320,6 +323,15 @@ namespace PoliSim.Data
             return abbrev;
         }
 
+        /// <summary>K312 (2026-10-29): short names joined into one list as a player reads it - with <paramref name="join"/> ("+": M+KD+L), except where a
+        /// name itself holds a '+' (Italy's +E), when the list is joined with " · " instead (PD · AVS · +E · IC), so no sign is doubled.</summary>
+        public static string JoinShortNames(IEnumerable<string> shortNames, string join = "+")
+        {
+            var names = new List<string>(shortNames);
+            foreach (string name in names) { if (name != null && name.IndexOf('+') >= 0) { return string.Join(" · ", names); } }
+            return string.Join(join, names);
+        }
+
         /// <summary>SOURCED chamber sizes: Riksdag 349, Bundestag 630 (2025), Assemblée nationale 577 (Art. LO119), Camera 400, Sejm 460, House 435. Each is stated in that country's returns file on disk.</summary>
         public static int ChamberSeats(CountryId id)
         {
@@ -527,11 +539,11 @@ namespace PoliSim.Data
             new PoliticalParty("Lega",  "Lega per Salvini Premier",        6.80f, 8.87f,  66, "mark_party_it_lega", euPosition: 1.60f, lrGen: 8.67f, environment: 8.25f, regions: 2.92f, spendVsTax: 7.25f, immigratePolicy: 9.87f, deregulation: 5.90f, redistribution: 7.71f, peopleVsElite: 6.38f, antiEliteSalience: 7.67f, civLibLawOrder: 8.67f, nationalism: 9.12f),
             new PoliticalParty("M5S",   "Movimento 5 Stelle",              2.87f, 3.27f,  52, "mark_party_it_m5s", euPosition: 4.07f, lrGen: 3.33f, environment: 1.50f, regions: 6.45f, spendVsTax: 2.00f, immigratePolicy: 4.87f, deregulation: 3.40f, redistribution: 1.64f, peopleVsElite: 7.12f, antiEliteSalience: 7.50f, civLibLawOrder: 4.33f, nationalism: 4.38f),
             new PoliticalParty("FI",    "Forza Italia",                    7.40f, 6.07f,  45, "mark_party_it_fi", euPosition: 5.33f, lrGen: 6.73f, environment: 7.00f, regions: 5.08f, spendVsTax: 8.50f, immigratePolicy: 6.47f, deregulation: 7.80f, redistribution: 8.21f, peopleVsElite: 4.75f, antiEliteSalience: 3.00f, civLibLawOrder: 6.33f, nationalism: 6.62f),
-            new PoliticalParty("AzIV",  "Azione - Italia Viva",            5.21f, 3.46f,  21, "mark_party_it_aziv", euPosition: 6.79f, lrGen: 4.43f, environment: 4.14f, regions: 4.50f, spendVsTax: 4.33f, immigratePolicy: 3.77f, deregulation: 5.90f, redistribution: 4.77f, peopleVsElite: 2.43f, antiEliteSalience: 1.60f, civLibLawOrder: 2.83f, nationalism: 2.50f),
+            new PoliticalParty("AzIV",  "Azione - Italia Viva",            5.21f, 3.46f,  21, "mark_party_it_aziv", euPosition: 6.79f, lrGen: 4.43f, environment: 4.14f, regions: 4.50f, spendVsTax: 4.33f, immigratePolicy: 3.77f, deregulation: 5.90f, redistribution: 4.77f, peopleVsElite: 2.43f, antiEliteSalience: 1.60f, civLibLawOrder: 2.83f, nationalism: 2.50f, shortName: "Az-IV"),   // K285: the printed short name; the key stays AzIV
             EqualWeightList("AVS",     "Alleanza Verdi e Sinistra",       12, "mark_party_it_avs", ItalyAvsMembers),   // SEAT-1 (J2, E-48): SI's and EV's equal-weight mean, DECLARED
             new PoliticalParty("NM",    "Noi Moderati",                    float.NaN, float.NaN,  7, "mark_party_it_nm"),
             new PoliticalParty("SVP",   "Südtiroler Volkspartei - PATT",   float.NaN, float.NaN,  3, "mark_party_it_svp"),
-            new PoliticalParty("PlusE", "Più Europa",                      float.NaN, float.NaN,  2, "mark_party_it_pluse"),
+            new PoliticalParty("PlusE", "Più Europa",                      float.NaN, float.NaN,  2, "mark_party_it_pluse", shortName: "+E"),   // K285: the printed short name; the key stays PlusE
             new PoliticalParty("IC",    "Impegno Civico",                  float.NaN, float.NaN,  1, "mark_party_it_ic"),
             new PoliticalParty("ScN",   "Sud chiama Nord",                 float.NaN, float.NaN,  1, "mark_party_it_scn"),
             // The last two seats are OUTSIDE the Area Italia basis every row above uses, and the

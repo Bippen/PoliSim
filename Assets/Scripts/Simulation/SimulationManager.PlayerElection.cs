@@ -58,7 +58,7 @@ namespace PoliSim.Simulation
             {
                 if (CurrentDate < round.AskedOn.AddDays(SpeakerRound.ConsultationDays)) { return answered; }   // the consultation an asked party takes
                 FormationProposal proposal = DraftProposal(country, round, round.Asked);
-                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} proposes as the formation drafts it (no player answers in this world)");
+                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {Short(country, round.Asked)} proposes as the formation drafts it (no player answers in this world)");
                 TableAndVote(country, round, proposal);
                 return true;
             }

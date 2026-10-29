@@ -886,7 +886,7 @@ namespace PoliSim.Simulation
                 float slack = YearlyRangeSlack * Mathf.Max(Mathf.Abs(min), Mathf.Abs(max));
                 if (kv.Value < min - slack || kv.Value > max + slack)
                 {
-                    return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} SET AT {1:0.###} · THIS YEAR'S ALLOWED RANGE {2:0.###} - {3:0.###}", kv.Key, kv.Value, min, max);
+                    return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} SET AT {1:0.###} · THIS YEAR'S ALLOWED RANGE {2:0.###} - {3:0.###}", EnumNames.Of(kv.Key).ToUpperInvariant(), kv.Value, min, max);
                 }
             }
             return null;
@@ -2031,7 +2031,7 @@ namespace PoliSim.Simulation
             if (cut > 0) { parts.Add($"{cut} line(s) cut"); }
             if (raised > 0) { parts.Add($"{raised} line(s) raised"); }
             if (bill.SpendingNominalTargets.Count > 0) { parts.Add($"{bill.SpendingNominalTargets.Count} line(s) re-targeted"); }
-            foreach (KeyValuePair<TaxType, float> kv in bill.TaxLines) { parts.Add($"{kv.Key} at {kv.Value:0.0} %"); }
+            foreach (KeyValuePair<TaxType, float> kv in bill.TaxLines) { parts.Add($"{EnumNames.Of(kv.Key)} at {kv.Value:0.0} %"); }
             return parts.Count > 0 ? string.Join(", ", parts) : "the standing figures, unchanged";
         }
 
@@ -2559,7 +2559,7 @@ namespace PoliSim.Simulation
                 bool passed = true;
                 if (bill.Docket == null)
                 {
-                    vetoable = ParliamentSystem.Divide(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, CurrentDate, out passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
+                    vetoable = ParliamentSystem.Divide(country, EnumNames.ProgrammeBillKey(bill.Type, bill.IsAdd), concern, CurrentDate, out passed);   // PS-6 US-18: through both chambers where the country has two (Congress); M4: the title is the draws' key and stays the identifier - a screen prints it through EnumNames.ShownTitle
                     passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
                 }
                 bool? decided = UsVetoGate(country, vetoable, concern, passed, ref bill.Docket);   // PS-6 US-21: a US bill both chambers sent goes to the president of the day - rule (a), or a player-president's answer - then the override
@@ -2569,7 +2569,7 @@ namespace PoliSim.Simulation
                 bool bears = Congress.GovernmentBears(country, concern);
                 TaxLevyMove levyMove = ParliamentSystem.ApplyTaxProgramBillResult(country, bill, passed, bears);   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
                 TaxTerm.ChargeLevyMove(country, levyMove, bears);   // A-LOOP q37 (§1 (2), §2 (2)): a levy is a rise from 0 against the year's opening, a removal a cut at the mirror, where the government bears the bill (review 878's L-1) - recorded with the bill on the next line
-                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeTaxBill);
+                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{EnumNames.ProgrammeBillWords(bill.Type, bill.IsAdd)} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeTaxBill);
                 resolved.Add(bill.Type);
             }
 
@@ -2633,7 +2633,7 @@ namespace PoliSim.Simulation
                 bool passed = true;
                 if (bill.Docket == null)
                 {
-                    vetoable = ParliamentSystem.Divide(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, CurrentDate, out passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
+                    vetoable = ParliamentSystem.Divide(country, EnumNames.ProgrammeBillKey(bill.Type, bill.IsAdd), concern, CurrentDate, out passed);   // PS-6 US-18: through both chambers where the country has two (Congress); M4: the title is the draws' key and stays the identifier - a screen prints it through EnumNames.ShownTitle
                     passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
                 }
                 bool? decided = UsVetoGate(country, vetoable, concern, passed, ref bill.Docket);   // PS-6 US-21: a US bill both chambers sent goes to the president of the day - rule (a), or a player-president's answer - then the override
@@ -2641,7 +2641,7 @@ namespace PoliSim.Simulation
                 passed = decided.Value;
                 float approvalBeforeWelfareBill = country.State.ApprovalRating;
                 ParliamentSystem.ApplyWelfareProgramBillResult(country, bill, passed, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
-                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeWelfareBill);
+                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{EnumNames.ProgrammeBillWords(bill.Type, bill.IsAdd)} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeWelfareBill);
                 resolved.Add(bill.Type);
             }
 
@@ -4899,8 +4899,8 @@ namespace PoliSim.Simulation
             round.Order = SpeakerOrder(country, RoundReading(country, round), RoundLines(country, round));
             g.Round = round;
             round.Log.Add(bundestag
-                ? $"{CurrentDate:yyyy-MM-dd}: the chancellor's election opens {occasion} (Art. 63 GG) - {(electionDay.HasValue ? "the new Bundestag convenes by " + round.Convenes.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) + " (Art. 39 Abs. 2)" : "the Bundestag sits")}; the Bundespräsident's order is {string.Join(", ", round.Order)}"
-                : $"{CurrentDate:yyyy-MM-dd}: the Speaker's round opens {occasion}; the order is {string.Join(", ", round.Order)}");
+                ? $"{CurrentDate:yyyy-MM-dd}: the chancellor's election opens {occasion} (Art. 63 GG) - {(electionDay.HasValue ? "the new Bundestag convenes by " + round.Convenes.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) + " (Art. 39 Abs. 2)" : "the Bundestag sits")}; the Bundespräsident's order is {string.Join(", ", Shorts(country, round.Order))}"
+                : $"{CurrentDate:yyyy-MM-dd}: the Speaker's round opens {occasion}; the order is {string.Join(", ", Shorts(country, round.Order))}");
             // §714 (Elias's ruling of 2026-10-01, item 5): after an election the formation takes the country's time on record, polling day to installation;
             // no proposal comes to its vote before it runs out, and the outgoing government governs meanwhile as a caretaker
             if (electionDay.HasValue && Elections.WorldClock.FormationDays(country.Id, out List<string> formations) is int formationDays)
@@ -4929,11 +4929,23 @@ namespace PoliSim.Simulation
         /// <summary>§705: whether a round is the Bundestag's chancellor election - it carries the day the new Bundestag convenes.</summary>
         private static bool IsBundestagRound(Elections.SpeakerRound round) => round.Bundestag;
 
+        /// <summary>The review's M4 follow-up (§575's rule): a party as a player reads it - its short name. The round's log is read on the Parliament page's
+        /// slip, and the candidate's words reach a division's title and its sides; the round itself, its order and every lookup keep the key.</summary>
+        private static string Short(Country country, string party) => PartySystems.ShortName(country.Id, party);
+
+        /// <summary>The parties of a list as a player reads them, in the list's order (<see cref="Short"/>).</summary>
+        private static List<string> Shorts(Country country, IEnumerable<string> parties)
+        {
+            var names = new List<string>();
+            foreach (string party in parties) { names.Add(PartySystems.ShortName(country.Id, party)); }
+            return names;
+        }
+
         /// <summary>§705: the formateur's chancellor candidate by name, where its candidacy is declared; else "the formateur's candidate".</summary>
         private string CandidateOf(Country country, Elections.SpeakerRound round, string party)
         {
-            foreach ((string abbrev, string candidate, string _) in RoundReading(country, round).Candidacies(country.Id)) { if (abbrev == party) { return candidate + " (" + party + ")"; } }
-            return PoliSim.Wording.EnglishText.Possessive(party, false, true) + " candidate";
+            foreach ((string abbrev, string candidate, string _) in RoundReading(country, round).Candidacies(country.Id)) { if (abbrev == party) { return candidate + " (" + Short(country, party) + ")"; } }
+            return PoliSim.Wording.EnglishText.Possessive(Short(country, party), false, true) + " candidate";
         }
 
         private void AskNext(Country country, Elections.SpeakerRound round)
@@ -4979,12 +4991,12 @@ namespace PoliSim.Simulation
             round.Proposal = null;
             round.Stage = round.Asked == country.PlayerPartyAbbrev ? Elections.RoundStage.PlayerAsked : Elections.RoundStage.Consulting;
             round.Log.Add(IsBundestagRound(round)
-                ? $"{CurrentDate:yyyy-MM-dd}: {(round.Phase <= 1 ? "the Bundespräsident will propose " + CandidateOf(country, round, round.Asked) + " (Art. 63 Abs. 1)" : "the Bundestag weighs " + CandidateOf(country, round, round.Asked) + " (Art. 63 Abs. 3)")}; {round.Asked} forms the government it would lead{(round.Stage == Elections.RoundStage.PlayerAsked ? " - the player's party" : string.Empty)}"
-                : $"{CurrentDate:yyyy-MM-dd}: the Speaker asks {round.Asked} to form a government{(round.Stage == Elections.RoundStage.PlayerAsked ? " - the player's party" : string.Empty)}");
+                ? $"{CurrentDate:yyyy-MM-dd}: {(round.Phase <= 1 ? "the Bundespräsident will propose " + CandidateOf(country, round, round.Asked) + " (Art. 63 Abs. 1)" : "the Bundestag weighs " + CandidateOf(country, round, round.Asked) + " (Art. 63 Abs. 3)")}; {Short(country, round.Asked)} forms the government it would lead{(round.Stage == Elections.RoundStage.PlayerAsked ? " - the player's party" : string.Empty)}"
+                : $"{CurrentDate:yyyy-MM-dd}: the Speaker asks {Short(country, round.Asked)} to form a government{(round.Stage == Elections.RoundStage.PlayerAsked ? " - the player's party" : string.Empty)}");
             SpeakerLog(country, $"SPEAKER: {country.Id} - {(IsBundestagRound(round) ? "the chancellor's election, phase " + round.Phase + ": " : "the Speaker asks ")}{round.Asked} ({round.Stage})");
         }
 
-        private void Table(Elections.SpeakerRound round, Elections.FormationProposal proposal)
+        private void Table(Country country, Elections.SpeakerRound round, Elections.FormationProposal proposal)
         {
             round.Proposal = proposal;
             round.Stage = Elections.RoundStage.VotePending;
@@ -4993,18 +5005,18 @@ namespace PoliSim.Simulation
                 // §705: the Bundestag elects "ohne Aussprache" (Art. 63 Abs. 1) and sets no delay - the ballot the day the candidate stands, but never
                 // before the new Bundestag convenes: the chancellor is the new chamber's to elect
                 round.VoteOn = round.VoteDayIfTabled(CurrentDate);   // §714: not before it convenes nor before the formation's day (SpeakerRound.VoteDayIfTabled, the one rule)
-                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {proposal.Formateur} forms {string.Join("+", proposal.CabinetParties)}{(proposal.Supporters.Count > 0 ? " with " + string.Join("+", proposal.Supporters) : string.Empty)}; the Bundestag elects the chancellor on {round.VoteOn:yyyy-MM-dd} (Art. 63 GG)");
+                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {Short(country, proposal.Formateur)} forms {PartySystems.JoinShortNames(Shorts(country, proposal.CabinetParties))}{(proposal.Supporters.Count > 0 ? " with " + PartySystems.JoinShortNames(Shorts(country, proposal.Supporters)) : string.Empty)}; the Bundestag elects the chancellor on {round.VoteOn:yyyy-MM-dd} (Art. 63 GG)");
                 return;
             }
             round.VoteOn = round.VoteDayIfTabled(CurrentDate);   // §714: the fourth day after the Speaker submits it (RF 6 kap. 4 §), not before the formation's day
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {proposal.Formateur} tables {string.Join("+", proposal.CabinetParties)}{(proposal.Supporters.Count > 0 ? " with " + string.Join("+", proposal.Supporters) : string.Empty)}; {(round.VoteOn > CurrentDate.AddDays(Elections.SpeakerRound.VoteDays) ? "the Speaker submits it on " + round.VoteOn.AddDays(-Elections.SpeakerRound.VoteDays).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) + ", once the formation's time on record has run, and " : string.Empty)}the Riksdag votes on {round.VoteOn:yyyy-MM-dd} (RF 6 kap. 4 §)");
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {Short(country, proposal.Formateur)} tables {PartySystems.JoinShortNames(Shorts(country, proposal.CabinetParties))}{(proposal.Supporters.Count > 0 ? " with " + PartySystems.JoinShortNames(Shorts(country, proposal.Supporters)) : string.Empty)}; {(round.VoteOn > CurrentDate.AddDays(Elections.SpeakerRound.VoteDays) ? "the Speaker submits it on " + round.VoteOn.AddDays(-Elections.SpeakerRound.VoteDays).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) + ", once the formation's time on record has run, and " : string.Empty)}the Riksdag votes on {round.VoteOn:yyyy-MM-dd} (RF 6 kap. 4 §)");
         }
 
         /// <summary>§705 (the review's defect 4): tabled, a proposal comes to its vote - in a convened Bundestag the same day ("ohne Aussprache",
         /// Art. 63 Abs. 1): a vote left to the next day tick fell outside the fourteen days when tabled on their last, and the desk says THE SAME DAY.</summary>
         private void TableAndVote(Country country, Elections.SpeakerRound round, Elections.FormationProposal proposal)
         {
-            Table(round, proposal);
+            Table(country, round, proposal);
             if (IsBundestagRound(round) && CurrentDate >= round.VoteOn && country.Government?.Round == round) { Investiture(country, country.Government, round); }
         }
 
@@ -5037,7 +5049,7 @@ namespace PoliSim.Simulation
                     {
                         round.Proposal = proposal;
                         round.Stage = Elections.RoundStage.OfferToPlayer;
-                        round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} offers {country.PlayerPartyAbbrev} {(proposal.CabinetParties.Contains(country.PlayerPartyAbbrev) ? proposal.PostsOf(country.PlayerPartyAbbrev) + " post(s) in " + string.Join("+", proposal.CabinetParties) : "a support agreement with " + string.Join("+", proposal.CabinetParties))}");
+                        round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {Short(country, round.Asked)} offers {Short(country, country.PlayerPartyAbbrev)} {(proposal.CabinetParties.Contains(country.PlayerPartyAbbrev) ? proposal.PostsOf(country.PlayerPartyAbbrev) + " post(s) in " + PartySystems.JoinShortNames(Shorts(country, proposal.CabinetParties)) : "a support agreement with " + PartySystems.JoinShortNames(Shorts(country, proposal.CabinetParties)))}");
                         return;
                     }
                     TableAndVote(country, round, proposal);
@@ -5057,13 +5069,13 @@ namespace PoliSim.Simulation
         {
             if (IsBundestagRound(round)) { PersonBallot(country, g, round); return; }   // §712-§713: the Bundestag votes on persons, in every phase
             Elections.ProposalVerdict verdict = Elections.Formateur.Answer(country, round.Proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
-            string title = $"Investiture: {PoliSim.Wording.EnglishText.Possessive(round.Proposal.Formateur, false, true)} proposal, {string.Join("+", round.Proposal.CabinetParties)} - {(verdict.Passes ? "approved" : "rejected")}";
+            string title = $"Investiture: {PoliSim.Wording.EnglishText.Possessive(Short(country, round.Proposal.Formateur), false, true)} proposal, {PartySystems.JoinShortNames(Shorts(country, round.Proposal.CabinetParties))} - {(verdict.Passes ? "approved" : "rejected")}";
             RecordInvestiture(country, verdict, title, verdict.Passes);
             if (verdict.Passes) { Install(country, g, round, verdict); return; }
             round.Rejections++;
             var refusals = new List<string>();
-            foreach (Elections.PartyAnswer answer in verdict.Answers) { if (!answer.Accepts) { refusals.Add(answer.Party + " " + answer.Reason); } }
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag rejects {PoliSim.Wording.EnglishText.Possessive(round.Proposal.Formateur, false, true)} proposal ({verdict.Reason}{(refusals.Count > 0 ? ": " + string.Join("; ", refusals) : string.Empty)}); {round.Rejections} of {Elections.SpeakerRound.ProposalLimit} rejected (RF 6 kap. 5 §)");
+            foreach (Elections.PartyAnswer answer in verdict.Answers) { if (!answer.Accepts) { refusals.Add(Short(country, answer.Party) + " " + answer.Reason); } }
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag rejects {PoliSim.Wording.EnglishText.Possessive(Short(country, round.Proposal.Formateur), false, true)} proposal ({verdict.Reason}{(refusals.Count > 0 ? ": " + string.Join("; ", refusals) : string.Empty)}); {round.Rejections} of {Elections.SpeakerRound.ProposalLimit} rejected (RF 6 kap. 5 §)");
             SpeakerLog(country, $"SPEAKER: {country.Id} - {title}; {round.Rejections} rejected{(refusals.Count > 0 ? " - " + string.Join("; ", refusals) : string.Empty)}");
             if (round.Rejections >= Elections.SpeakerRound.ProposalLimit) { BreakOff(country, g, round); return; }
             AskNext(country, round);
@@ -5263,7 +5275,7 @@ namespace PoliSim.Simulation
             if (SeatedGroupPartner(country, winner) is string winnerPartner)
             {
                 government.CabinetParties.Add(winnerPartner);
-                if (winnerPartner == player) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {player}, the player's party, sits in {PoliSim.Wording.EnglishText.Possessive(CandidateOf(country, round, winner), false)} cabinet as its parliamentary group's partner - a group governs as one (the game's premise)"); seatedByGroup = true; }
+                if (winnerPartner == player) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {Short(country, player)}, the player's party, sits in {PoliSim.Wording.EnglishText.Possessive(CandidateOf(country, round, winner), false)} cabinet as its parliamentary group's partner - a group governs as one (the game's premise)"); seatedByGroup = true; }
             }
             foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Elections.GovernmentRecord.GamsonPosts(country, government.CabinetParties, winner, CurrentDate)) { government.Posts[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
             government.FreezeTabled(country, CurrentDate, _world);
@@ -5309,7 +5321,7 @@ namespace PoliSim.Simulation
                 round.Stage = Elections.RoundStage.Concluded;
                 return;
             }
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the nominations for the ballot the most votes win: {string.Join(", ", candidates)} - {nominatedHow}");
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the nominations for the ballot the most votes win: {string.Join(", ", Shorts(country, candidates))} - {nominatedHow}");
             Dictionary<string, int> votes = Tally(country, round, chamber, parties, candidates, out List<(string Party, string For, string Reason)> cast);
             string winner = candidates[0];
             foreach (string c in candidates) { if (votes[c] > votes[winner]) { winner = c; } }
@@ -5345,7 +5357,7 @@ namespace PoliSim.Simulation
             }
             round.Proposal = government;
             var tally = new List<string>();
-            foreach (string c in candidates) { tally.Add(c + " " + votes[c]); }
+            foreach (string c in candidates) { tally.Add(Short(country, c) + " " + votes[c]); }
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the fourteen days pass; in the ballot the most votes win ({string.Join(", ", tally)}), {candidate} is elected with {votes[winner]} ({majority} a majority of the members)"
                 + (absolute ? " - the Bundespräsident must appoint the candidate within seven days (Art. 63 Abs. 4 Satz 2 GG) and does so at once" : " - short of a majority, the Bundespräsident has seven days to appoint the candidate or dissolve the Bundestag (Art. 63 Abs. 4 Satz 3 GG); the premise for his choice, stated: he appoints, at once - no Bundespräsident has faced the choice, and a dissolution's new election (Art. 39 Abs. 1 Satz 4 GG) is not modelled for Germany"));
             SpeakerLog(country, $"SPEAKER: {country.Id} - {title}; the tally {string.Join(", ", tally)}");
@@ -5676,8 +5688,8 @@ namespace PoliSim.Simulation
                 basis, g.Kind, g.Executive, round.Refusals, _world);
             round.Stage = Elections.RoundStage.Concluded;
             round.Log.Add(bundestag
-                ? $"{CurrentDate:yyyy-MM-dd}: the Bundestag elects {CandidateOf(country, round, proposal.Formateur)}; the Bundespräsident appoints, and {string.Join("+", formed.Cabinet)} takes office"
-                : $"{CurrentDate:yyyy-MM-dd}: the Riksdag approves {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} proposal; {string.Join("+", formed.Cabinet)} takes office");
+                ? $"{CurrentDate:yyyy-MM-dd}: the Bundestag elects {CandidateOf(country, round, proposal.Formateur)}; the Bundespräsident appoints, and {PartySystems.JoinShortNames(Shorts(country, formed.Cabinet))} takes office"
+                : $"{CurrentDate:yyyy-MM-dd}: the Riksdag approves {PoliSim.Wording.EnglishText.Possessive(Short(country, proposal.Formateur), false, true)} proposal; {PartySystems.JoinShortNames(Shorts(country, formed.Cabinet))} takes office");
             HashSet<CabinetPortfolio> chairsBefore = CabinetSystem.PlayersChairs(country);   // K59
             country.Government = formed;
             CabinetSystem.SeatOnEntry(country, chairsBefore);   // K59: the round's government seats the chairs it hands the player
@@ -5797,7 +5809,7 @@ namespace PoliSim.Simulation
             Elections.SpeakerRound round = RoundOf(countryId);
             if (country == null || round == null || round.Stage != Elections.RoundStage.PlayerAsked) { refusedBecause = IsBundestag(countryId) ? "THE BUNDESPRÄSIDENT HAS NOT ASKED YOUR PARTY" : "THE SPEAKER HAS NOT ASKED YOUR PARTY"; return false; }
             refusedBecause = null;
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} does not form a government");
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {Short(country, country.PlayerPartyAbbrev)} does not form a government");
             round.PlayerPassed = true;   // §715 (the review's decision): a pass keeps the player's party off the ballot the most votes win; never asked, it stands like any party
             if (IsBundestagRound(round) && round.Phase >= 2 && !round.StoodInPhase2.Contains(country.PlayerPartyAbbrev)) { round.StoodInPhase2.Add(country.PlayerPartyAbbrev); }   // §706: a pass in the fourteen days nominates no one
             AskNext(country, round);
@@ -5825,19 +5837,19 @@ namespace PoliSim.Simulation
             refusedBecause = null;
             if (accept)
             {
-                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} accepts {PoliSim.Wording.EnglishText.Possessive(round.Asked, false, true)} offer");
+                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {Short(country, country.PlayerPartyAbbrev)} accepts {PoliSim.Wording.EnglishText.Possessive(Short(country, round.Asked), false, true)} offer");
                 TableAndVote(country, round, round.Proposal);
                 return true;
             }
             round.Declines.Add(country.PlayerPartyAbbrev + ">" + round.Asked);
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} declines {PoliSim.Wording.EnglishText.Possessive(round.Asked, false, true)} offer and stays in opposition");
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {Short(country, country.PlayerPartyAbbrev)} declines {PoliSim.Wording.EnglishText.Possessive(Short(country, round.Asked), false, true)} offer and stays in opposition");
             Elections.FormationProposal without = DraftProposal(country, round, round.Asked);
             Elections.ProposalVerdict verdict = Involves(without, country.PlayerPartyAbbrev) ? null : Elections.Formateur.Answer(country, without, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
             // §712 (the review's defect 2): in the fourteen days the ballot decides, not the investiture - the government without the player is tabled
             // where every invited party accepts it and it splits no group, and its candidate meets the nominations standing
             bool personBallot = IsBundestagRound(round);   // §713: every phase
             if (verdict != null && (personBallot ? verdict.AllAccept && verdict.Investiture != null && !verdict.Investiture.SplitsJointGroup : verdict.Passes)) { TableAndVote(country, round, without); return true; }
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} cannot form without {PoliSim.Wording.EnglishText.Possessive(country.PlayerPartyAbbrev, false, true)} seats - {(IsBundestagRound(round) ? (round.Phase <= 1 ? "the Bundespräsident proposes the next party's candidate" : "the next nomination standing is asked") : "the Speaker moves on")}");
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {Short(country, round.Asked)} cannot form without {PoliSim.Wording.EnglishText.Possessive(Short(country, country.PlayerPartyAbbrev), false, true)} seats - {(IsBundestagRound(round) ? (round.Phase <= 1 ? "the Bundespräsident proposes the next party's candidate" : "the next nomination standing is asked") : "the Speaker moves on")}");
             if (IsBundestagRound(round) && round.Phase >= 2 && !round.StoodInPhase2.Contains(round.Asked)) { round.StoodInPhase2.Add(round.Asked); }   // §706: its nomination has had its turn
             AskNext(country, round);
             return true;

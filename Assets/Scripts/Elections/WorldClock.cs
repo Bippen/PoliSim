@@ -955,7 +955,7 @@ namespace PoliSim.Elections
                 {
                     r.CabinetOfRecord = after.Value.Cabinet;
                     r.GovernmentLine = after.Value.From.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + " · " + after.Value.Head.ToUpperInvariant()
-                        + " · IN CABINET " + string.Join("+", after.Value.Cabinet) + (after.Value.Support != null && after.Value.Support.Length > 0 ? " · SUPPORT " + string.Join("+", after.Value.Support) : string.Empty);
+                        + " · IN CABINET " + FormationProjection.Join(id, after.Value.Cabinet) + (after.Value.Support != null && after.Value.Support.Length > 0 ? " · SUPPORT " + FormationProjection.Join(id, after.Value.Support) : string.Empty);   // the M4 follow-up (§575): the parties as a player reads them
                 }
                 else
                 {

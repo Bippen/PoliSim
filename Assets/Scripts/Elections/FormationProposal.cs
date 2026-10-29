@@ -118,13 +118,13 @@ namespace PoliSim.Elections
             // A well-formed proposal: a known formateur in its own cabinet; known parties, none twice; each portfolio held once, by a cabinet party.
             if (Index(proposal.Formateur) < 0 || !proposal.CabinetParties.Contains(proposal.Formateur)) { verdict.Reason = "the formateur's own party is not in the proposed cabinet"; return verdict; }
             var seen = new HashSet<string>();
-            foreach (string key in proposal.CabinetParties) { if (Index(key) < 0 || !seen.Add(key)) { verdict.Reason = "the cabinet names an unknown party or one twice: " + key; return verdict; } }
-            foreach (string key in proposal.Supporters) { if (Index(key) < 0 || !seen.Add(key)) { verdict.Reason = "the supporters name an unknown party, one twice, or a cabinet party: " + key; return verdict; } }
+            foreach (string key in proposal.CabinetParties) { if (Index(key) < 0 || !seen.Add(key)) { verdict.Reason = "the cabinet names an unknown party or one twice: " + PartySystems.ShortName(country.Id, key); return verdict; } }
+            foreach (string key in proposal.Supporters) { if (Index(key) < 0 || !seen.Add(key)) { verdict.Reason = "the supporters name an unknown party, one twice, or a cabinet party: " + PartySystems.ShortName(country.Id, key); return verdict; } }
             var postsSeen = new HashSet<CabinetPortfolio>();
             foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in proposal.Posts)
             {
-                if (!proposal.CabinetParties.Contains(kv.Key)) { verdict.Reason = "a post is offered to a party outside the cabinet: " + kv.Key; return verdict; }
-                foreach (CabinetPortfolio post in kv.Value) { if (!postsSeen.Add(post)) { verdict.Reason = "a portfolio is offered twice: " + post; return verdict; } }
+                if (!proposal.CabinetParties.Contains(kv.Key)) { verdict.Reason = "a post is offered to a party outside the cabinet: " + PartySystems.ShortName(country.Id, kv.Key); return verdict; }
+                foreach (CabinetPortfolio post in kv.Value) { if (!postsSeen.Add(post)) { verdict.Reason = "a portfolio is offered twice: " + Effectiveness.DisplayName(post); return verdict; } }   // M4: the portfolio's name, the party's short name (K285)
             }
             int cabinet = 0;
             foreach (string key in proposal.CabinetParties) { cabinet |= 1 << Index(key); }
@@ -257,9 +257,9 @@ namespace PoliSim.Elections
 
         private static string Describe(IReadOnlyList<PoliticalParty> parties, int mask)
         {
-            var keys = new List<string>();
-            for (int p = 0; p < parties.Count; p++) { if ((mask & (1 << p)) != 0) { keys.Add(parties[p].Abbrev); } }
-            return string.Join("+", keys);
+            var names = new List<string>();
+            for (int p = 0; p < parties.Count; p++) { if ((mask & (1 << p)) != 0) { names.Add(parties[p].ShortName); } }   // the review's L1 (s575): read by a player, through a refusal's reason
+            return PartySystems.JoinShortNames(names);   // K312
         }
     }
 }

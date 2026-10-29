@@ -36,6 +36,19 @@ namespace PoliSim.UI
             Energy
         }
 
+        /// <summary>The review's M4: an area's name as a player reads it - the Policy Web's words (moved from its page, where they were private), so the
+        /// party-creation issue slip names the area it raises in words, never its identifier. A one-word area reads as itself.</summary>
+        public static string AreaName(SystemArea area)
+        {
+            switch (area)
+            {
+                case SystemArea.CrimeJustice: return "Crime & justice";
+                case SystemArea.SovereignWealth: return "Sovereign wealth";
+                case SystemArea.Labor: return "Labour";
+                default: return area.ToString();
+            }
+        }
+
         public enum ButtonKind
         {
             /// <summary>Generic action button with no positive/negative connotation (e.g. "Set Override", "Appoint").</summary>

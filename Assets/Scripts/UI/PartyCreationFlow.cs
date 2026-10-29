@@ -272,7 +272,7 @@ namespace PoliSim.UI
                     .Add(nearest == null ? "No real party's ink to measure against." : string.Format(CultureInfo.InvariantCulture, "{0:0.000} from {1} drawn ink; the fence asks {2:0.00}.", distance, UiFormat.Possessive(nearest, false, true), PoliSimTheme.NudgeTolerance))
                     .Add(clear ? "Clear of every real party's ink." : "Too close to read as a second party at dot size.");
             }
-            foreach (UiPalette.SystemArea area in Issues) { book.Anchors["issue/" + area] = new SlipContent("ISSUE").Add(area.ToString()).Add("Raised salience with the voters who care about it - not yet in the vote."); }
+            foreach (UiPalette.SystemArea area in Issues) { book.Anchors["issue/" + area] = new SlipContent("ISSUE").Add(UiPalette.AreaName(area)).Add("Raised salience with the voters who care about it - not yet in the vote."); }
             foreach (PoliticalParty p in PartySystems.RealRoster(d.Country))
             {
                 book.Anchors["party/" + p.Abbrev] = new SlipContent(p.Abbrev).Add(p.Name).Add(string.Format(CultureInfo.InvariantCulture, "Economic {0:0.0} · GAL-TAN {1:0.0}", p.LrEcon, p.Galtan));

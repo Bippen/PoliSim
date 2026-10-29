@@ -327,7 +327,7 @@ namespace PoliSim.UI
             });
 
             // The bill's own title: not in the composition, kept so the plate says what is signed (asked).
-            Text title = CanvasChrome.MakeTextRealWeight(parent, "Title", record.Title, PoliSimTheme.Body, 26, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            Text title = CanvasChrome.MakeTextRealWeight(parent, "Title", EnumNames.ShownTitle(record.Title), PoliSimTheme.Body, 26, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
             title.horizontalOverflow = HorizontalWrapMode.Wrap;
             title.gameObject.AddComponent<LayoutElement>().minHeight = 39f + TitleHeadroom;   // the minimum only: a wrapped title keeps its own preferred height
 

@@ -158,11 +158,11 @@ namespace PoliSim.Simulation
                     AddVote(projection.View, BallotOf(chamber, parties, cast, proposal.Formateur, projection.Cabinet, majority));
                     return projection;
                 }
-                projection.Reason = Pf("{0} candidate is elected at the first ballot, and no government can be drawn on its party", PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true));
+                projection.Reason = Pf("{0} candidate is elected at the first ballot, and no government can be drawn on its party", PoliSim.Wording.EnglishText.Possessive(Short(country, proposal.Formateur), false, true));
             }
             else
             {
-                projection.Reason = Pf("{0} candidate, the Bundespräsident's, takes {1} of the {2} a majority of the members needs at the first ballot - the fourteen days follow (Art. 63 Abs. 3), and the projection stops there", PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true), got, majority);
+                projection.Reason = Pf("{0} candidate, the Bundespräsident's, takes {1} of the {2} a majority of the members needs at the first ballot - the fourteen days follow (Art. 63 Abs. 3), and the projection stops there", PoliSim.Wording.EnglishText.Possessive(Short(country, proposal.Formateur), false, true), got, majority);
             }
             projection.Partial = true;
             projection.Steps.Add(projection.Reason);

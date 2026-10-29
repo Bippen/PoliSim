@@ -245,16 +245,7 @@ namespace PoliSim.UI
             }
         }
 
-        private static string PolicyWebAreaName(UiPalette.SystemArea area)
-        {
-            switch (area)
-            {
-                case UiPalette.SystemArea.CrimeJustice: return "Crime & justice";
-                case UiPalette.SystemArea.SovereignWealth: return "Sovereign wealth";
-                case UiPalette.SystemArea.Labor: return "Labour";
-                default: return area.ToString();
-            }
-        }
+        private static string PolicyWebAreaName(UiPalette.SystemArea area) => UiPalette.AreaName(area);   // M4: the area's one lookup
 
         /// <summary>A lever's v3.5 icon - by the words of its name where one of the set says what it is, else its area's.</summary>
         private static string PolicyWebLeverIcon(PolicyNodeId lever, string name)

@@ -91,11 +91,11 @@ namespace PoliSim.Elections
             {
                 if (string.Equals(parties[p].Abbrev, country.PlayerPartyAbbrev, StringComparison.Ordinal)) { playerIndex = p; }
             }
-            if (playerIndex < 0) { return Formed.None($"the player's party '{country.PlayerPartyAbbrev}' is not in this chamber"); }
+            if (playerIndex < 0) { return Formed.None($"the player's party '{PartySystems.ShortName(country.Id, country.PlayerPartyAbbrev)}' is not in this chamber"); }
             if (result.Outcome == CoalitionOutcomeKind.NewElection || result.Outcome == CoalitionOutcomeKind.Collapse)
             {
                 return new Formed(false, false, false, declarationsSourced, null,
-                    $"no government could be formed from this chamber ({result.Outcome})");
+                    EnumNames.Of(result.Outcome).ToLowerInvariant());   // M4: the outcome in words - the verdict prefixes "No government could be formed from this chamber", so the reason never repeats it
             }
 
             int bit = 1 << playerIndex;
@@ -108,7 +108,7 @@ namespace PoliSim.Elections
                 // authority names them - the key would print Grune where the Bundeswahlleiter prints GRÜNE.
                 if ((result.Government.Cabinet & (1 << p)) != 0) { cabinet.Add(parties[p].ShortName); }
             }
-            return new Formed(true, inCabinet, supports, declarationsSourced, string.Join("+", cabinet), null);
+            return new Formed(true, inCabinet, supports, declarationsSourced, PartySystems.JoinShortNames(cabinet), null);   // K312
         }
 
         /// <summary>
@@ -355,7 +355,7 @@ namespace PoliSim.Elections
             if (result.Outcome == CoalitionOutcomeKind.NewElection || result.Outcome == CoalitionOutcomeKind.Collapse)
             {
                 view.HasGovernment = false;
-                view.Reason = $"no government could be formed from this chamber ({result.Outcome})";
+                view.Reason = EnumNames.Of(result.Outcome).ToLowerInvariant();   // M4: the outcome in words
                 return view;
             }
 

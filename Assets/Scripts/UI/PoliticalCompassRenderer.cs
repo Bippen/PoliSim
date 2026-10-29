@@ -122,7 +122,7 @@ namespace PoliSim.UI
                 else
                 {
                     string tail = cabinetMean.HasValue ? string.Format(CultureInfo.InvariantCulture, "{0} · {1}", Pair(cabinetMean.Value), UiFormat.Seats(cabinetMean.Value.Seats)) : "no member publishes a pair";
-                    lines.Add(new LegendLine($"{string.Join("+", cabinet)}  {tail}", UiPalette.GetCountryColor(player.Id), true, false));
+                    lines.Add(new LegendLine($"{FormationProjection.Join(player.Id, cabinet)}  {tail}", UiPalette.GetCountryColor(player.Id), true, false));
                 }
 
                 lines.Add(new LegendLine($"{UiFormat.Possessive(player.Name.ToUpperInvariant())} ELECTORATE · COMPATIBILITY-WEIGHTED MEAN", null, false, true));

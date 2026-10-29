@@ -56,7 +56,7 @@ namespace PoliSim.Elections
         {
             var names = new List<string>(keys.Count);
             foreach (string k in keys) { names.Add(PartySystems.ShortName(country, k)); }
-            return string.Join("+", names);
+            return PartySystems.JoinShortNames(names);   // K312: "+", or " · " where a name holds a '+'
         }
 
         /// <summary>One line for the logs and the checks: the procedure, what it is expected to form and from which step.</summary>

@@ -1419,7 +1419,7 @@ namespace PoliSim.UI
                     if (stance.Seats <= 0) { continue; }
                     string word = !stance.Measured ? "UNMEASURED" : stance.Side > 0 ? "FOR" : stance.Side < 0 ? "AGAINST" : "UNDECIDED";
                     string reason = StanceModel.ReasonShort(stance);
-                    countSlip.Add(stance.Party.Abbrev + " " + stance.Seats + " · " + word + (string.IsNullOrEmpty(reason) ? string.Empty : " · " + reason.ToUpperInvariant()));
+                    countSlip.Add(stance.Party.ShortName + " " + stance.Seats + " · " + word + (string.IsNullOrEmpty(reason) ? string.Empty : " · " + reason.ToUpperInvariant()));
                 }
             }
             _budgetSlipBook.Anchors["ifpassed:count"] = countSlip;

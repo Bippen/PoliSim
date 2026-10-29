@@ -217,7 +217,7 @@ namespace PoliSim.EditorTools
                 float beforeLevy = se.State.ApprovalRating;
                 TaxLevyMove notBorne = ParliamentSystem.ApplyTaxProgramBillResult(se, new TaxProgramBill { Type = TaxType.ExciseTax, IsAdd = true }, true, false);
                 TaxTerm.ChargeLevyMove(se, notBorne, false);
-                ApprovalLedgerRecorder.RecordEvent(se, sim.CurrentDate, "Implement ExciseTax bill passed", se.State.ApprovalRating - beforeLevy);
+                ApprovalLedgerRecorder.RecordEvent(se, sim.CurrentDate, EnumNames.ProgrammeBillWords(TaxType.ExciseTax, true) + " bill passed", se.State.ApprovalRating - beforeLevy);
                 Check(notBorne.Moved && Line(se, TaxType.ExciseTax).IsImplemented && se.State.ApprovalRating == beforeLevy && se.TaxTermStock == 0f && TaxTerm.NetPoints(se, TaxType.ExciseTax) == 0f,
                     F("(2i) the excise levied by a bill the government does not bear: levied {0}, approval {1:+0.0000;-0.0000}, T {2:R}, the net {3:R}", Line(se, TaxType.ExciseTax).IsImplemented, se.State.ApprovalRating - beforeLevy, se.TaxTermStock, TaxTerm.NetPoints(se, TaxType.ExciseTax)));
             });
@@ -723,7 +723,7 @@ namespace PoliSim.EditorTools
             TaxLevyMove move = ParliamentSystem.ApplyTaxProgramBillResult(c, new TaxProgramBill { Type = type, IsAdd = add }, true);
             TaxTerm.ChargeLevyMove(c, move, true);
             delta = c.State.ApprovalRating - before;
-            ApprovalLedgerRecorder.RecordEvent(c, sim.CurrentDate, (add ? "Implement " : "Remove ") + type + " bill passed", delta);
+            ApprovalLedgerRecorder.RecordEvent(c, sim.CurrentDate, EnumNames.ProgrammeBillWords(type, add) + " bill passed", delta);   // M4: the label as the caller now writes it
             return move;
         }
 

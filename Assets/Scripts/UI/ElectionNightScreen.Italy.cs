@@ -909,8 +909,8 @@ namespace PoliSim.UI
                 Hold(ItText(screen, outcome, "Name", name, Px(16f), PoliSimTheme.TextPrimary, PoliSimTheme.Body));
                 HoldRight(ItText(screen, outcome, "Seats", seatsText, final ? Px(16f) : Px(14f), PoliSimTheme.TextPrimary, PoliSimTheme.Document));
                 if (final) { Hold(ItText(screen, outcome, "Of", ofText, Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document)); }
-                var lines = new List<string> { OutcomeName(g.Outcome) + " · " + Parties(g.Cabinet) };
-                if (g.Support.Count > 0) { lines.Add("Support from outside · " + Parties(g.Support)); }
+                var lines = new List<string> { OutcomeName(g.Outcome) + " · " + ShortParties(CountryId.Italy, g.Cabinet) };
+                if (g.Support.Count > 0) { lines.Add("Support from outside · " + ShortParties(CountryId.Italy, g.Support)); }
                 if (!string.IsNullOrEmpty(g.ProjectionStep)) { lines.Add(g.ProjectionStep); }
                 if (!final) { lines.Add(string.Format(CultureInfo.InvariantCulture, "Called when both chambers were: the Camera at {0}, the Senato at {1}", s.Camera.CalledAt, s.Senato.CalledAt)); }
                 if (!g.DeclarationsSourced) { lines.Add(DerivedNote); }

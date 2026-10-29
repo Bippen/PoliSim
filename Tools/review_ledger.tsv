@@ -407,3 +407,6 @@ file	Assets/Scripts/Data/PensionParticipationResponse.cs	5ebbf74ace1e8a783b2cf67
 file	Assets/Scripts/Simulation/MacroSystem.cs	7a8ca3914bdc41a27385bb2c78c523906a9bd8231602a4a799462448b3a38975	reviewed	2026-10-29	s950	Reviews/2026-10-29_k276_integrator.md	K276: participation by cohort
 baseline	777	a5912bfb8b89a83b2e373eca1debb8edd5193eb7ca7f75cdfa515636199e1c5d	reviewed	2026-10-29	s950	Reviews/2026-10-29_k276_integrator.md	-
 baseline	424242	16294d15398dbfbcd07ea0be6338166ee8e3f0c6f15fe0c36d513510478ac2de	reviewed	2026-10-29	s950	Reviews/2026-10-29_k276_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	b65ff65e29f1da03250ff5661de672604b8de6de126c94c27e0dd8ddd0e8a7d6	reviewed	2026-10-29	s952	Reviews/2026-10-29_names_review.md	names: player text reads display names and short names (text only)
+file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	f42de7cbb9078112872fbf076d4275baab310cd1d0fde86e38325549891b5cbb	reviewed	2026-10-29	s952	Reviews/2026-10-29_names_review.md	names: player text reads display names and short names (text only)
+file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	67d1a3f527a8824e19a50a17f8aa81ae9c7287ed68d3e2f0d0c29fb7fef1c48d	reviewed	2026-10-29	s952	Reviews/2026-10-29_names_review.md	names: player text reads display names and short names (text only)

@@ -42297,3 +42297,26 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nk311 15 of 16 (the sweep's pin only; re-pinned, its own commit); nk311l 3 of 3 (TrajectorySentinelCheck at k276, ReviewLedgerCheck, FormationSweepDiagnostic at the new pin); dump-check (iii) PASS (K302); playk311 exit 0; cheapk311 147 of 147; simk311 92 of 92; dock311 document group clean
 
 **Commit:** this one; the FormationSweep re-pin is its own commit after it.
+
+## 952. DISPLAY NAMES FOR ENUMS AND PARTY KEYS (§946's M4), K285'S ITALIAN SHORT NAMES, K312'S JOIN, AND EnumDisplayNameCheck (2026-10-29)
+
+**What was owed:** §946's filed M4. Raw enum names (`IncomeSecurity`, `Grune`) and party keys (`AzIV`, `PlusE`, `Misto`) reached player text: the formation sheet, the round's log, the night's slips and the verdicts.
+
+**Built** (wave/names; reviews: round 1 NOT READY (M1, M2), round 2 NOT READY (M3), round 3 READY at `c2e7c4ad`):
+- `EnumNames`: one display name per enum member the player reads; party keys pass through their short name.
+- K285's Italian short names: Az-IV, +E, Misto.
+- K312: `PartySystems.JoinShortNames` joins with "+", or with " · " when a name holds a '+' (Italy's centre-left reads "PD · AVS · +E · IC").
+- `StanceModel.ReasonShort` names parties by short name, behind a guard (M3).
+- `EnumDisplayNameCheck` (cheap group, after PortfolioDisplayNameCheck; in CommentImmunityCheck's MustStrip). It types 17 key members by reflection, tests K312's join 5 of 5, and has teeth: 12 of 12 planted raw keys caught, 9 of 9 clean forms passed. Its printed limits name what it does not follow.
+
+**Measured** (`Reviews/2026-10-29_names_integrator.md`):
+- The Italian night reads "+E" and "Az-IV"; the German formation sheet reads "GRÜNE".
+- The dump is byte-identical to k311 on both seeds: text only, with no save, digest or numeric effect.
+
+**Evidence:** `Reviews/2026-10-29_portfolioname_review.md` (M4), `_names_review.md` (rounds 1-3), `_names_integrator.md`.
+
+**Declared:** K312 (recorded). The review's L1-L4 were all fixed on the branch. The check's printed limits name what it still does not follow: a foreach over a list built in a local, a sink text built in a local first, and a key handed to another helper.
+
+**Bars:** nnames 16 of 16; drynames 4 sessions, 0 failed, 0 overflow; realnamesit (Italy 1280, -shotinterrupts) 19 captured, 0 failed; realnamesde (Germany 1280) 153 captured, 0 failed; dumpnames byte-identical to dumpk311 on both seeds (the sentinel stands at k276); cheapnames 148 of 148; simnames 92 of 92; docnames document group clean
+
+**Commit:** this one.

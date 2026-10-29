@@ -116,7 +116,7 @@ namespace PoliSim.UI
                 if (passage == null) { continue; }
                 any = true;
                 string key = "desk:" + passage.Number.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":" + item.PresentedOn.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture);
-                string title = "On your desk · " + passage.Title;
+                string title = "On your desk · " + EnumNames.ShownTitle(passage.Title);   // M4: a programme bill's title is the draws' key - its words here
                 if (item.Answer != 0) { continue; }   // never held past the answer (it acts at once) - nothing to draw
                 bool mayVeto = SimulationManager.MayVetoDocketEntry(item.Entry);
                 string line = (mayVeto ? "Sign or veto" : "Sign - it takes no veto") + " · " + UnansweredWords(item.Entry) + " " + DeskDay(SimulationManager.DocketLawDay(_playerCountry.Id, item.Entry));
@@ -127,7 +127,7 @@ namespace PoliSim.UI
                     line = (mayVeto ? "Sign or veto" : "Sign - it takes no veto") + " · " + UsBillPath.UnsignedWords(_playerCountry.Id, item.PresentedOn, _simulationManager.CurrentDate)
                            + " · " + UnansweredWords(item.Entry) + " " + DeskDay(SimulationManager.DocketLawDay(_playerCountry.Id, item.Entry));
                 }
-                _docketSlipBook.Anchors["docket:" + key] = new SlipContent("ON YOUR DESK").Add(passage.Title.ToUpperInvariant()).Add("PRESENTED " + DeskDay(item.PresentedOn) + " · " + UnansweredLine(item.Entry));
+                _docketSlipBook.Anchors["docket:" + key] = new SlipContent("ON YOUR DESK").Add(EnumNames.ShownTitle(passage.Title).ToUpperInvariant()).Add("PRESENTED " + DeskDay(item.PresentedOn) + " · " + UnansweredLine(item.Entry));
                 if (DrawDocketItem(key, "brief", UiPalette.GetAreaColor(UiPalette.SystemArea.Political), title, line, holdsTime: false, action: "Answer"))
                 {
                     DrawDocketBody(() =>

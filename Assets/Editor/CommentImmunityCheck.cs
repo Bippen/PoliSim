@@ -75,6 +75,8 @@ namespace PoliSim.EditorTools
             "UiLeverVerbCheck",
             // §946 (2026-10-29): the portfolio-name guard scans the runtime for a portfolio interpolated raw into a string - a write surviving in a comment is not one.
             "PortfolioDisplayNameCheck",
+            // §952 (2026-10-29): the enum-name guard scans the runtime for a tax, programme, spending line, formation outcome, area, portfolio or party key written raw into text - a write surviving in a comment is not one.
+            "EnumDisplayNameCheck",
         };
 
         /// <summary>

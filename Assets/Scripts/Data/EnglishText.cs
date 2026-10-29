@@ -24,5 +24,28 @@ namespace PoliSim.Wording
             if (!abbreviation && (last == 's' || last == 'S')) { return name + "'"; }
             return name + (upper ? "'S" : "'s");
         }
+
+        /// <summary>The review's M4: a CamelCase identifier spaced, keeping acronym runs intact - `HHSDiscretionary` reads "HHS Discretionary", not
+        /// "H H S Discretionary", and `UBI` is left alone. A boundary is an upper-case letter that follows a lower-case one (the ordinary word break) or
+        /// precedes one while following another upper-case letter (the end of an acronym run). Moved from the UI's <see cref="PoliSim.UI.DisplayName"/>,
+        /// which forwards to it, so the model's names (<see cref="PoliSim.Data.EnumNames"/>) space an identifier the way the screens always have.</summary>
+        public static string Spaced(string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier)) { return identifier; }
+            var builder = new System.Text.StringBuilder(identifier.Length + 8);
+            builder.Append(identifier[0]);
+            for (int i = 1; i < identifier.Length; i++)
+            {
+                char current = identifier[i];
+                if (char.IsUpper(current))
+                {
+                    bool followsLower = char.IsLower(identifier[i - 1]);
+                    bool endsAcronym = char.IsUpper(identifier[i - 1]) && i + 1 < identifier.Length && char.IsLower(identifier[i + 1]);
+                    if (followsLower || endsAcronym) { builder.Append(' '); }
+                }
+                builder.Append(current);
+            }
+            return builder.ToString();
+        }
     }
 }

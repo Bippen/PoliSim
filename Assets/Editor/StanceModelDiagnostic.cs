@@ -256,6 +256,38 @@ namespace PoliSim.EditorTools
                 }
             }
 
+            // The names review's M3 (round 2, 2026-10-29): two reasons OPEN with a party's short name (the author's, the position's), and a created party
+            // types its own - ReasonShort read reasons by their heads, so a party named "cuts" threw (Substring(0, -1)) wherever a vote's slip or a division's
+            // sides were drawn. Planted: the four names that are a term's head. Each must read through both forms without a throw, its author line kept for
+            // the full line alone, and its short form the same as that of an identically placed party whose name is no term's.
+            if (templateFound)
+            {
+                int named = 0;
+                foreach (string planted in new[] { "cuts", "undecided", "bloc party", "opinion cost" })
+                {
+                    PoliticalParty Synthetic(string shortName) => new PoliticalParty("SYN-NAMED", "synthetic, a created party's short name", template.LrEcon, template.Galtan, 10,
+                        spendVsTax: template.SpendVsTax, deregulation: template.Deregulation, redistribution: template.Redistribution, shortName: shortName);
+                    var seatsNamed = new Dictionary<string, int> { { "SYN-NAMED", 10 } };
+                    BillConcern authored = new BillConcern { Direction = -Magnitude, Author = "SYN-NAMED" }.Add(StanceAxis.SpendVsTax, Magnitude);
+                    BillConcern other = new BillConcern { Direction = -Magnitude }.Add(StanceAxis.SpendVsTax, Magnitude);
+                    other.Cuts.Add((SpendingCategory.SocialSecurity, null, 0.2f));
+                    try
+                    {
+                        PartyStance author = StanceModel.StancesOver(sweden, new List<PoliticalParty> { Synthetic(planted) }, seatsNamed, authored)[0];
+                        PartyStance member = StanceModel.StancesOver(sweden, new List<PoliticalParty> { Synthetic(planted) }, seatsNamed, other)[0];
+                        PartyStance plain = StanceModel.StancesOver(sweden, new List<PoliticalParty> { Synthetic("SYN") }, seatsNamed, other)[0];
+                        string authorShort = StanceModel.ReasonShort(author), authorLine = StanceModel.ReasonLine(author);
+                        string memberShort = StanceModel.ReasonShort(member), plainShort = StanceModel.ReasonShort(plain), memberLine = StanceModel.ReasonLine(member);
+                        bool right = authorShort.Length == 0 && authorLine == planted + StanceModel.AuthorTail && memberShort.Length > 0 && memberShort == plainShort
+                            && memberLine.StartsWith(planted + " ", System.StringComparison.Ordinal);
+                        if (right) { named++; }
+                        else { failures.Add($"M3: a created party named '{planted}': the author's short form '{authorShort}' and line '{authorLine}'; a member's short form '{memberShort}' against a plainly named party's '{plainShort}'"); }
+                    }
+                    catch (System.Exception e) { failures.Add($"M3: a created party named '{planted}' threw {e.GetType().Name} reading its reasons - {e.Message}"); }
+                }
+                sb.Append($"    created parties named like a term's head (cuts, undecided, bloc party, opinion cost): {named} of 4 read without a throw - the author's line in the full line alone, the short form a plainly named party's\n");
+            }
+
             sb.Append("\n    The weights are §246's five [AUTHORED-DRAFT] constants; the positions CHES 2024 / GPS 2019; the salience EB105 / Gallup;\n");
             sb.Append("    Sweden's voter profile the ecological estimate from the 2022 valkrets returns over the 2024 pyramids. Nothing here is a roll call.\n");
 

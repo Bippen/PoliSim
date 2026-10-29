@@ -361,8 +361,8 @@ namespace PoliSim.UI
             HoldRight(PlText(row, "Seats", seatsText, Px(16f), PoliSimTheme.TextPrimary, PoliSimTheme.Document));
             Hold(PlText(row, "Of", ofText, Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document));
             string kind = string.Format(CultureInfo.InvariantCulture, "{0} · {1} of {2} seats in cabinet", OutcomeName(g.Outcome), g.CabinetSeats, g.TotalSeats);
-            string cabinet = "IN CABINET  " + Parties(g.Cabinet);
-            string support = g.Support.Count > 0 ? string.Format(CultureInfo.InvariantCulture, "SUPPORT FROM OUTSIDE  {0} · {1} with support", Parties(g.Support), g.SupportedSeats) : "NO DECLARED SUPPORT FROM OUTSIDE";
+            string cabinet = "IN CABINET  " + ShortParties(n.Country, g.Cabinet);
+            string support = g.Support.Count > 0 ? string.Format(CultureInfo.InvariantCulture, "SUPPORT FROM OUTSIDE  {0} · {1} with support", ShortParties(n.Country, g.Support), g.SupportedSeats) : "NO DECLARED SUPPORT FROM OUTSIDE";
             var lines = new List<string> { kind, cabinet, support };
             if (!g.DeclarationsSourced) { lines.Add(DerivedNote); }   // the review's H1 (a): the honesty sentence is the outcome's slip and the † view's - Design budgeted no row for it
             CanvasRows.Slip(row.gameObject, n.Overlay, name, SlipWrap(lines.ToArray()));
@@ -1161,16 +1161,8 @@ namespace PoliSim.UI
             return refused ? new[] { "Four proposals refused", "An extra election within three months" } : new[] { "No party asked can table a proposal" };
         }
 
-        private static string OutcomeShort(CoalitionOutcomeKind kind)
-        {
-            switch (kind)
-            {
-                case CoalitionOutcomeKind.MajorityCoalition: return "Majority government";
-                case CoalitionOutcomeKind.ConfidenceAndSupply: return "Minority, with support";
-                case CoalitionOutcomeKind.MinorityGovernment: return "Minority government";
-                default: return Regex.Replace(kind.ToString(), "([a-z])([A-Z])", "$1 $2");
-            }
-        }
+        // M4: the outcome's words are the model's one lookup (EnumNames.Of) - the night's own words moved there, so no outcome prints its identifier
+        private static string OutcomeShort(CoalitionOutcomeKind kind) => EnumNames.Of(kind);
 
         private static string OutcomeName(CoalitionOutcomeKind kind)
         {
@@ -1179,15 +1171,8 @@ namespace PoliSim.UI
                 case CoalitionOutcomeKind.MajorityCoalition: return "A MAJORITY GOVERNMENT";
                 case CoalitionOutcomeKind.ConfidenceAndSupply: return "A MINORITY GOVERNMENT WITH SUPPORT";
                 case CoalitionOutcomeKind.MinorityGovernment: return "A MINORITY GOVERNMENT";
-                default: return kind.ToString().ToUpperInvariant();
+                default: return EnumNames.Of(kind).ToUpperInvariant();   // M4: never the identifier
             }
-        }
-
-        private static string Parties(List<(string Abbrev, int Seats)> list)
-        {
-            var parts = new List<string>(list.Count);
-            foreach ((string abbrev, int seats) in list) { parts.Add(abbrev + " " + seats.ToString(CultureInfo.InvariantCulture)); }
-            return string.Join(" · ", parts);
         }
 
         private static string ShortParties(CountryId c, List<(string Abbrev, int Seats)> list)

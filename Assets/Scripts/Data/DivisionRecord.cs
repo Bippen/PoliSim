@@ -171,8 +171,11 @@ namespace PoliSim.Data
     public class DivisionSide
     {
         public string Abbrev;
-        /// <summary>§575: what the player READS - the election authority's own abbreviation (PoliticalParty.ShortName). The side is built from the
-        /// party, never persisted, so a null here is only an older in-memory record and the drawer falls back to <see cref="Abbrev"/>.</summary>
+        /// <summary>§575: what the player READS - the election authority's own abbreviation (PoliticalParty.ShortName), set from the party when the vote
+        /// is taken. The save writes it with the division (Json.NET serialises the World's public fields whole) and a load reads it back as it was
+        /// written: TEXT, never a key - nothing reads it but the drawer, and every lookup reads <see cref="Abbrev"/>. A side saved before §575 loads
+        /// with none, and the drawer falls back to <see cref="Abbrev"/>; a side saved before a short name changed (K285's "Az-IV" and "+E") keeps the
+        /// name it was drawn with.</summary>
         public string ShortName;
         public int Seats;
         public int Side;

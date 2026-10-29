@@ -3549,11 +3549,11 @@ namespace PoliSim.UI
             AddBill(_simulationManager.GetPendingBudgetBill(PlayerCountryId)?.DaysRemaining, _simulationManager.GetPendingBudgetBill(PlayerCountryId)?.ContinuingResolution == true ? "Continuing resolution" : "Annual budget", DeskOf(_simulationManager.GetPendingBudgetBill(PlayerCountryId)));   // PS-6 US-22
             foreach (TaxProgramBill bill in _simulationManager.GetPendingTaxProgramBills(PlayerCountryId))
             {
-                AddBill(bill.DaysRemaining, $"{DisplayName.Spaced(bill.Type.ToString())} tax", bill.Docket);
+                AddBill(bill.DaysRemaining, EnumNames.ProgrammeBillWords(bill.Type, bill.IsAdd), bill.Docket);   // M4: the programme's name, as the desk's list reads it
             }
             foreach (WelfareProgramBill bill in _simulationManager.GetPendingWelfareProgramBills(PlayerCountryId))
             {
-                AddBill(bill.DaysRemaining, $"{DisplayName.Spaced(bill.Type.ToString())} welfare", bill.Docket);
+                AddBill(bill.DaysRemaining, EnumNames.ProgrammeBillWords(bill.Type, bill.IsAdd), bill.Docket);
             }
             AddBill(_simulationManager.GetPendingLaborBill(PlayerCountryId)?.DaysRemaining, "Labor Market", _simulationManager.GetPendingLaborBill(PlayerCountryId)?.Docket);
             AddBill(_simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId)?.DaysRemaining, "Crime & Justice", _simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId)?.Docket);
@@ -3589,7 +3589,7 @@ namespace PoliSim.UI
             // history rather than schedule.
             foreach (DivisionRecord record in _playerCountry.Divisions.Entries)
             {
-                Add(record.Date, $"No. {record.Number} - {record.Title}{DivisionChamberWords(record)} ({(record.Passed ? "Carried" : "Rejected")})",
+                Add(record.Date, $"No. {record.Number} - {EnumNames.ShownTitle(record.Title)}{DivisionChamberWords(record)} ({(record.Passed ? "Carried" : "Rejected")})",
                     UiPalette.SystemArea.Political);
             }
 
@@ -9089,7 +9089,7 @@ namespace PoliSim.UI
                 float rowHeight = Mathf.Max(20f, _labelStyle.fontSize * 1.2f);
 
                 GUILayout.BeginHorizontal();
-                GUILayout.Label($"No. {record.Number} · {record.Title}{DivisionChamberWords(record)}", _labelStyle, GUILayout.ExpandWidth(true));
+                GUILayout.Label($"No. {record.Number} · {EnumNames.ShownTitle(record.Title)}{DivisionChamberWords(record)}", _labelStyle, GUILayout.ExpandWidth(true));
                 GUILayout.Label(record.Date.ToString("yyyy-MM-dd"), _divisionMetaStyle, GUILayout.Width(_divisionMetaStyle.fontSize * 6.5f));
 
                 // The lean bar sits in a slot as tall as the stamp beside it and is drawn centred in
@@ -9205,13 +9205,13 @@ namespace PoliSim.UI
 
             foreach (TaxProgramBill bill in _simulationManager.GetPendingTaxProgramBills(PlayerCountryId))
             {
-                pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - {ResolvesIn(bill.DaysRemaining, bill.Docket)}.",
+                pending.Add(($"{EnumNames.ProgrammeBillWords(bill.Type, bill.IsAdd)} - {ResolvesIn(bill.DaysRemaining, bill.Docket)}.",
                     ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, bill.DaysRemaining));
             }
 
             foreach (WelfareProgramBill bill in _simulationManager.GetPendingWelfareProgramBills(PlayerCountryId))
             {
-                pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - {ResolvesIn(bill.DaysRemaining, bill.Docket)}.",
+                pending.Add(($"{EnumNames.ProgrammeBillWords(bill.Type, bill.IsAdd)} - {ResolvesIn(bill.DaysRemaining, bill.Docket)}.",
                     ParliamentSystem.GetWelfareProgramBillConcern(_playerCountry, bill), UiPalette.SystemArea.Welfare, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, bill.DaysRemaining));
             }
 
@@ -10123,23 +10123,13 @@ namespace PoliSim.UI
             _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null, reading: ReadingUnit.Percent);
             GUILayout.Space(8f);
 
-            float welfareTypeNameColumnWidth = GetWelfareProgramNameColumnWidth();
+            // the M4 follow-up: each row's name column is LedgerRow's, measured (CalcSize, word by word) on the curated name the row draws - the width this
+            // page once measured on the raw identifier ("MeansTestedWelfare") was handed to the row and never read, and is gone
             foreach (WelfareProgram welfareProgram in _playerCountry.WelfarePrograms)
             {
-                DrawWelfareProgramRow(welfareProgram, welfareTypeNameColumnWidth);
+                DrawWelfareProgramRow(welfareProgram);
                 GUILayout.Space(10f);
             }
-        }
-
-        /// <summary>Widest WelfareProgramType name as rendered in _labelStyle, plus a small right-side pad - recomputed each call, the reasoning the retired sector and partner name columns took (and the retired tax rows' own). The original fixed "_labelStyle.fontSize * 10f" heuristic here undersized the column for the longest name ("MeansTestedWelfare").</summary>
-        private float GetWelfareProgramNameColumnWidth()
-        {
-            float widest = 0f;
-            foreach (WelfareProgramType type in System.Enum.GetValues(typeof(WelfareProgramType)))
-            {
-                widest = Mathf.Max(widest, _labelStyle.CalcSize(new GUIContent(type.ToString())).x);
-            }
-            return widest + 12f;
         }
 
         /// <summary>
@@ -10147,7 +10137,7 @@ namespace PoliSim.UI
         /// introduced immediately on click, resolving independently of the annual budget cycle -
         /// mirrors DrawBudgetTaxTile's own doc comment exactly (GenerosityLevel in place of Rate).
         /// </summary>
-        private void DrawWelfareProgramRow(WelfareProgram welfareProgram, float labelWidth)
+        private void DrawWelfareProgramRow(WelfareProgram welfareProgram)
         {
             WelfareProgramBill pendingBill = FindPendingWelfareProgramBill(welfareProgram.Type);
 

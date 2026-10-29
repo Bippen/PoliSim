@@ -297,8 +297,8 @@ namespace PoliSim.UI
                     DateStamp(round.VoteOn);
                     SlipAnchor(row, "round/stage");
                     book.Anchors["round/stage"] = new SlipContent(UiFormat.Possessive(Name(round.Proposal.Formateur), true, true) + " PROPOSAL")
-                        .Add("THE CABINET " + string.Join("+", round.Proposal.CabinetParties.ConvertAll(Name)))
-                        .Add(round.Proposal.Supporters.Count > 0 ? "SUPPORTED BY " + string.Join("+", round.Proposal.Supporters.ConvertAll(Name)) : "NO SUPPORT FROM OUTSIDE")
+                        .Add("THE CABINET " + PartySystems.JoinShortNames(round.Proposal.CabinetParties.ConvertAll(Name)))
+                        .Add(round.Proposal.Supporters.Count > 0 ? "SUPPORTED BY " + PartySystems.JoinShortNames(round.Proposal.Supporters.ConvertAll(Name)) : "NO SUPPORT FROM OUTSIDE")
                         .Add("THE CHAMBER VOTES ON " + DeskDay(round.VoteOn));
                     break;
                 case RoundStage.OfferToPlayer:
@@ -316,7 +316,7 @@ namespace PoliSim.UI
                     }
                     SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "round/stage");
                     book.Anchors["round/stage"] = new SlipContent(Name(round.Asked) + (cabinet ? " OFFERS A PLACE IN THE CABINET" : " ASKS FOR SUPPORT FROM OUTSIDE"))
-                        .Add("THE CABINET " + string.Join("+", round.Proposal.CabinetParties.ConvertAll(Name)))
+                        .Add("THE CABINET " + PartySystems.JoinShortNames(round.Proposal.CabinetParties.ConvertAll(Name)))
                         .Add(cabinet ? "YOUR PARTY'S POSTS: " + Posts(round.Proposal.PostsOf(you)) : "ON AN AGREEMENT")
                         .Add("DECLINING LEAVES YOUR PARTY IN OPPOSITION");
                     Rect decline = RowChipRectEndingAt(row.xMax, row, "DECLINE", 26f, 12f);
@@ -343,7 +343,7 @@ namespace PoliSim.UI
                     SlipAnchor(new Rect(row.x, row.y, yours.xMax - row.x, row.height), "round/stage");
                     book.Anchors["round/stage"] = new SlipContent(RoundAsker(round) + " ASKS YOUR PARTY")
                         .Add("TO FORM A GOVERNMENT")
-                        .Add("THE SHEET OPENS ON " + string.Join("+", current.CabinetParties.ConvertAll(Name)) + (current.Supporters.Count > 0 ? " WITH " + string.Join("+", current.Supporters.ConvertAll(Name)) + " SUPPORTING" : string.Empty))
+                        .Add("THE SHEET OPENS ON " + PartySystems.JoinShortNames(current.CabinetParties.ConvertAll(Name)) + (current.Supporters.Count > 0 ? " WITH " + PartySystems.JoinShortNames(current.Supporters.ConvertAll(Name)) + " SUPPORTING" : string.Empty))
                         .Add("THE FORMATION'S OWN PROPOSAL WITH YOUR PARTY LEADING");
                     Rect open = RowChipRectEndingAt(row.xMax, row, "OPEN THE SHEET", 26f, 12f);
                     Rect pass = RowChipRectEndingAt(open.x - StatsUnit(8f), row, "PASS", 26f, 12f);
@@ -1121,7 +1121,7 @@ namespace PoliSim.UI
             if (projected == null) { return; }
             bool sejm = ConfidenceProcedure.RulesOf(PlayerCountryId) == ConfidenceProcedure.Rules.Sejm;
             bool mayMove = _simulationManager.CanMoveNoConfidence(PlayerCountryId, out string moveRefused);
-            string Names(List<string> keys) { var names = new List<string>(); foreach (string k in keys) { names.Add(PartySystems.ShortName(PlayerCountryId, k)); } return string.Join("+", names); }
+            string Names(List<string> keys) { var names = new List<string>(); foreach (string k in keys) { names.Add(PartySystems.ShortName(PlayerCountryId, k)); } return PartySystems.JoinShortNames(names); }   // K312
             Rect row = ReserveRow(34f);
             float x = row.x;
             string motion = sejm ? "ART. 158 · A CONSTRUCTIVE VOTE" : "A CONSTRUCTIVE VOTE OF NO CONFIDENCE";
