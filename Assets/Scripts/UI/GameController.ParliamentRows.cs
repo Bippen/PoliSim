@@ -1104,6 +1104,9 @@ namespace PoliSim.UI
         /// §698 (Art. 67 GG): the opposition's row in Germany - A CONSTRUCTIVE VOTE OF NO CONFIDENCE with the successor's projected election (for ⁄ needed,
         /// a majority of the members) and ELECT A SUCCESSOR; the slip names the government the player's candidate would lead, and a partner that refuses it.
         /// There is no tenth to take a motion up, no week and no answers: the vote is the election, and carried it installs the successor at once.
+        /// K197: Poland's Art. 158 in the same row, in the Sejm's words - 46 deputies move it (Art. 158 ust. 1), it needs a majority of the statutory 460,
+        /// it is voted on the motion's day (K195), and MOVE ART. 158 is drawn disabled with the verb's own reason where the verb would refuse it
+        /// (`SimulationManager.CanMoveNoConfidence`: the seatless mover, the Sejm's formation; K270: no quiet days).
         /// </summary>
         private void DrawConstructiveVote(PeopleSlips.Book book, GUIStyle caption)
         {
@@ -1116,40 +1119,50 @@ namespace PoliSim.UI
             }
             ConfidenceProcedure.MotionVote projected = _constructiveProjection;
             if (projected == null) { return; }
+            bool sejm = ConfidenceProcedure.RulesOf(PlayerCountryId) == ConfidenceProcedure.Rules.Sejm;
+            bool mayMove = _simulationManager.CanMoveNoConfidence(PlayerCountryId, out string moveRefused);
             string Names(List<string> keys) { var names = new List<string>(); foreach (string k in keys) { names.Add(PartySystems.ShortName(PlayerCountryId, k)); } return string.Join("+", names); }
             Rect row = ReserveRow(34f);
             float x = row.x;
-            const string motion = "A CONSTRUCTIVE VOTE OF NO CONFIDENCE";
+            string motion = sejm ? "ART. 158 · A CONSTRUCTIVE VOTE" : "A CONSTRUCTIVE VOTE OF NO CONFIDENCE";
             float mw = Mathf.Ceil(caption.CalcSize(new GUIContent(motion)).x) + 2f;
             PoliSimWidgets.MeasuredLabel(new Rect(x, row.y, mw, row.height), motion, caption);
             x += mw + StatsUnit(12f);
             // AF-8 (ruling q8): GO-BT § 97 Abs. 1 [GOBT-4] - a quarter of the members sign the motion, or it is not put on the agenda; the signatories are the
             // members who would elect the candidate (`SimulationManager.MoveNoConfidence`). Short of it the row says so and the act is not offered - the
-            // Riksdag row's tenth, below, in the Bundestag's words.
-            int quarter = (projected.Members + 3) / 4;
+            // Riksdag row's tenth, below, in the Bundestag's words. K197: the Sejm's 46 movers (Art. 158 ust. 1), read the same way.
+            int quarter = sejm ? ConfidenceProcedure.SejmMovers : (projected.Members + 3) / 4;
             bool signed = projected.For >= quarter;
             x = signed
                 ? DrawFigurePair(x, row, projected.For.ToString(CultureInfo.InvariantCulture), "⁄ " + projected.Needed.ToString(CultureInfo.InvariantCulture) + " NEEDED")
-                : DrawFigurePair(x, row, projected.For.ToString(CultureInfo.InvariantCulture), "⁄ " + quarter.ToString(CultureInfo.InvariantCulture) + " TO SIGN IT");
+                : DrawFigurePair(x, row, projected.For.ToString(CultureInfo.InvariantCulture), "⁄ " + quarter.ToString(CultureInfo.InvariantCulture) + (sejm ? " TO MOVE IT" : " TO SIGN IT"));
             SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "motion");
-            string quarterLine = string.Format(CultureInfo.InvariantCulture, "A QUARTER OF THE MEMBERS, {0}, MUST SIGN IT (GO-BT § 97 ABS. 1)", quarter);
+            string quarterLine = sejm
+                ? string.Format(CultureInfo.InvariantCulture, "{0} DEPUTIES MUST MOVE IT, NAMING THE CANDIDATE (ART. 158 UST. 1)", quarter)
+                : string.Format(CultureInfo.InvariantCulture, "A QUARTER OF THE MEMBERS, {0}, MUST SIGN IT (GO-BT § 97 ABS. 1)", quarter);
+            string house = sejm ? "DEPUTIES" : "MEMBERS";
+            string elect = sejm ? "WOULD CHOOSE YOUR CANDIDATE FOR PRIME MINISTER" : "WOULD ELECT YOUR CANDIDATE";
             SlipContent slip = !signed
                 ? new SlipContent("NOT YET A MOTION").Add(quarterLine)
-                    .Add(string.Format(CultureInfo.InvariantCulture, "{0} OF {1} MEMBERS WOULD ELECT YOUR CANDIDATE", projected.For, projected.Members))
-                : new SlipContent("A CONSTRUCTIVE VOTE OF NO CONFIDENCE")
-                .Add(string.Format(CultureInfo.InvariantCulture, "{0} OF {1} MEMBERS WOULD ELECT YOUR CANDIDATE", projected.For, projected.Members))
-                .Add(string.Format(CultureInfo.InvariantCulture, "IT NEEDS {0}, A MAJORITY OF THE MEMBERS", projected.Needed))
+                    .Add(string.Format(CultureInfo.InvariantCulture, "{0} OF {1} {2} {3}", projected.For, projected.Members, house, elect))
+                : new SlipContent(sejm ? "A CONSTRUCTIVE VOTE OF NO CONFIDENCE (ART. 158)" : "A CONSTRUCTIVE VOTE OF NO CONFIDENCE")
+                .Add(string.Format(CultureInfo.InvariantCulture, "{0} OF {1} {2} {3}", projected.For, projected.Members, house, elect))
+                .Add(sejm ? string.Format(CultureInfo.InvariantCulture, "IT NEEDS {0}, A MAJORITY OF THE STATUTORY {1} DEPUTIES", projected.Needed, PresidentialVeto.StatutoryDeputies)
+                          : string.Format(CultureInfo.InvariantCulture, "IT NEEDS {0}, A MAJORITY OF THE MEMBERS", projected.Needed))
                 .Add(quarterLine)
                 .Add("YOUR GOVERNMENT: " + Names(projected.Governing.Count > 0 ? projected.Governing : projected.SuccessorCabinet).ToUpperInvariant() + (projected.PartnersAccept && projected.SuccessorSupport.Count > 0 ? " WITH " + Names(projected.SuccessorSupport).ToUpperInvariant() : string.Empty));
             // §754 (ruling A4): the vote elects the person - a refusing partner changes the government the elected successor forms, never his election
             if (signed && !projected.PartnersAccept) { slip.Add(projected.Carried ? "A PARTNER REFUSES ITS PLACE - ELECTED, YOU GOVERN WITHOUT IT" : "A PARTNER REFUSES ITS PLACE"); }
+            if (sejm) { slip.Add("THE SEJM VOTES ON THE MOTION'S DAY"); }   // K195: Art. 158 ust. 2's seven days not waited
             book.Anchors["motion"] = slip;
-            Rect move = RowChipRectEndingAt(row.xMax, row, "ELECT A SUCCESSOR", 26f, 12f);
-            if (DrawRowChip(move, "ELECT A SUCCESSOR", ChipFace.Paper, disabled: !signed))
+            string act = sejm ? "MOVE ART. 158" : "ELECT A SUCCESSOR";
+            Rect move = RowChipRectEndingAt(row.xMax, row, act, 26f, 12f);
+            if (DrawRowChip(move, act, ChipFace.Paper, disabled: !signed || !mayMove))
             {
                 if (!_simulationManager.MoveNoConfidence(PlayerCountryId, out string refused, out _)) { Debug.Log($"CONFIDENCE: the motion was refused - {refused}"); }
                 _constructiveProjection = null;
             }
+            if (!mayMove) { SlipAnchor(move, "motion/refused"); book.Anchors["motion/refused"] = SlipWrapped(act, moveRefused); }
             DrawRowRule(row);
         }
 
@@ -1162,7 +1175,10 @@ namespace PoliSim.UI
         private void DrawConfidence(PeopleSlips.Book book)
         {
             GovernmentRecord g = _playerCountry?.Government;
-            if (g == null || !ConfidenceProcedure.TakesMotions(PlayerCountryId)) { return; }   // PS-6 US-7: a presidency takes no motion - nothing to draw, as where the rules are unsourced
+            // PS-6 US-7: a presidency takes no motion - nothing to draw, as where the rules are unsourced. K197: the Sejm's Art. 158 and the junior partner's
+            // leaving are drawn too - no declaration ever waits there (the vote is taken on the motion's day, K195), so TakesMotions stays false for Poland
+            bool sejmRules = ConfidenceProcedure.RulesOf(PlayerCountryId) == ConfidenceProcedure.Rules.Sejm;
+            if (g == null || !(ConfidenceProcedure.TakesMotions(PlayerCountryId) || sejmRules)) { return; }
             GUIStyle caption = DeskCaption(9.5f, PoliSimTheme.TextPrimary);
             GUIStyle muted = DeskCaption(9.5f, PoliSimTheme.TextMuted);
             System.DateTime extra = _simulationManager.ExtraElectionDate;
@@ -1221,6 +1237,7 @@ namespace PoliSim.UI
                 {
                     if (g.Caretaker || g.NoConfidenceOn != System.DateTime.MinValue || extra != System.DateTime.MinValue) { break; }
                     if (ConfidenceProcedure.RulesOf(PlayerCountryId) == ConfidenceProcedure.Rules.Bundestag) { if (_simulationManager.RoundOf(PlayerCountryId) == null && !_simulationManager.ElectionAwaitsRound(PlayerCountryId)) { DrawConstructiveVote(book, caption); } break; }   // §698; §705: none while the chancellor's election runs (Art. 63, not Art. 67)
+                    if (sejmRules) { if (g.Sejm == null || !g.Sejm.Open) { DrawConstructiveVote(book, caption); } break; }   // K197: Art. 158; none while the Sejm's formation runs (Art. 154, not Art. 158)
                     ConfidenceProcedure.MotionVote projected = ConfidenceProcedure.Vote(_playerCountry, _playerCountry.PlayerPartyAbbrev, _simulationManager.CurrentDate);
                     bool takenUp = ConfidenceProcedure.CanBeTakenUp(_playerCountry, _playerCountry.PlayerPartyAbbrev, out int moverSeats, out int tenth);
                     Rect row = ReserveRow(34f);
@@ -1249,14 +1266,21 @@ namespace PoliSim.UI
                 case PlayerRole.JuniorPartner:
                 {
                     Rect row = ReserveRow(34f);
+                    // K197: the verb's own gate, so a refusal (a parliamentary group's smaller member) draws disabled with its reason
+                    bool mayLeave = _simulationManager.CanLeaveGovernment(PlayerCountryId, out string leaveRefused);
                     Rect leave = RowChipRectEndingAt(row.xMax, row, "LEAVE THE GOVERNMENT", 26f, 12f);
-                    if (DrawRowChip(leave, "LEAVE THE GOVERNMENT", ChipFace.Paper))
+                    if (DrawRowChip(leave, "LEAVE THE GOVERNMENT", ChipFace.Paper, disabled: !mayLeave))
                     {
                         if (!_simulationManager.LeaveGovernment(PlayerCountryId, out string refused)) { Debug.Log($"CONFIDENCE: refused - {refused}"); }
+                        _constructiveProjection = null;   // the party is in opposition now - its constructive row projects afresh
                     }
                     SlipAnchor(leave, "leave");
-                    book.Anchors["leave"] = new SlipContent("LEAVE THE GOVERNMENT").Add("YOUR MINISTERS LEAVE THE CABINET")
-                        .Add("THE GOVERNMENT STANDS UNTIL THE CHAMBER DECLARES OTHERWISE");
+                    book.Anchors["leave"] = !mayLeave ? SlipWrapped("LEAVE THE GOVERNMENT", leaveRefused)
+                        : sejmRules ? new SlipContent("LEAVE THE GOVERNMENT").Add("YOUR MINISTERS LEAVE THE COUNCIL OF MINISTERS")
+                            .Add("THE CABINET GOVERNS ON THE SEATS IT KEEPS")
+                            .Add("THE DECLARED OPPOSITION MAY MOVE ART. 158 THE SAME DAY")
+                        : new SlipContent("LEAVE THE GOVERNMENT").Add("YOUR MINISTERS LEAVE THE CABINET")
+                            .Add("THE GOVERNMENT STANDS UNTIL THE CHAMBER DECLARES OTHERWISE");
                     break;
                 }
             }

@@ -42082,3 +42082,19 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nk252 (first seeds: every figure the prereg's) -> review M1 the denominator -> nk252c 7/7, every figure the amended prereg's; dump k252 pinned; the play saves re-staged, the US cards regenerated; cheapk252d clean but the ledger (rows added); simk252d 89/89.
 
 **Commit:** this one.
+
+## 943. K197 (K195, K270): THE PLAYER'S POLISH DESK VERBS - LEAVE THE GOVERNMENT AND MOVE ART. 158 ON THE PARLIAMENT PAGE, THE OUTCOME ON THE DOCKET AND THE STRIP (2026-10-29)
+
+**What was owed:** K197 (COAL-1's ask c): the Polish player's verbs. The manager has held both since COAL-1 (§925), but the desk drew neither - the confidence block returned early where `TakesMotions` is false.
+
+**Built** (an implementer on `wave/pldesk`: c9935925, 47c1d408; review NOT READY - the diagnostic unregistered, the frames unreachable on Poland's default start (PiS alone), K196's quiet days applied to the player's motion with no ruling; the rework 83f87db8; review 2 READY): the verbs' gates as readers (`CanLeaveGovernment`, `CanMoveNoConfidence`) - the same tests in the same order the verbs made, byte-identical; the Parliament page draws Art. 158 in the Sejm's words (46 movers, 231 of the statutory 460, voted on the motion's day) with MOVE ART. 158 disabled with its reason; LEAVE THE GOVERNMENT disabled with its reason where refused (every country); the Docket lists the month's Art. 158 votes and the player's leaving as information (`PolishDeskRecord`); the strip's place 4 shows a vote on its day; `PolishDeskVerbsDiagnostic` (cheap, registered by the integrator); films pl1-pl4 staged on the KO+TD+NL cabinet, `Expect()`-declared, restored in full.
+
+**Measured** (`Reviews/2026-10-29_pldesk_integrator.md`): the four frames filmed (the Docket: 'Art. 158 · PiS's candidate not elected · today - 200 of 460 deputies for, 231 needed of the statutory 460 · KO · TD govern on 230 of 460 seats, a minority'); the no-player dump byte-identical.
+
+**Evidence:** `Reviews/2026-10-29_pldesk_review.md`, `_review2.md`, `_integrator.md`; ledger rows s943 (`SimulationManager.PolishDesk.cs`, `SimulationManager.cs`).
+
+**Declared:** K270 (the player's constructive motion not held by K196's quiet days). Filed: the minister alert printing the portfolio's raw identifier ('InteriorJustice').
+
+**Bars:** npd 8/8; dumppd byte-identical to k252; drypd / realpd Poland 1280 clean, pl1-pl4 filmed; cheappd clean but the ledger (rows added); simpd clean.
+
+**Commit:** this one.

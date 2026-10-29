@@ -52,8 +52,9 @@ namespace PoliSim.Elections
         /// Bundestag's shape, so it runs through the same vote (<see cref="ConstructiveVote"/>) and the same install. Art. 158 ust. 2's seven days between the
         /// motion and its vote are a PREMISE here, stated as Germany's forty-eight hours are: the vote is taken on the motion's day. Its three-month bar on a
         /// repeated motion (unless 115 deputies move it) is not modelled: the AI moves only a motion that carries, and a carried one installs a new cabinet.
-        /// Art. 160's vote of confidence the prime minister may ask for is quoted in the same file and not wired - no verb asks for it. The desk's motions
-        /// block stays the Riksdag's and the Bundestag's (<see cref="TakesMotions"/>): the player's Polish verbs are owed, stated. The AI moves an Art. 158 vote
+        /// Art. 160's vote of confidence the prime minister may ask for is quoted in the same file and not wired - no verb asks for it. No declaration ever
+        /// waits under it, so <see cref="TakesMotions"/> stays the Riksdag's and the Bundestag's; K197 draws the player's Polish verbs - leaving the government and
+        /// moving Art. 158 - in the desk's own constructive row (`SimulationManager.CanMoveNoConfidence`). The AI moves an Art. 158 vote
         /// only after a partner's exit (`SimulationManager.TryAiMotion`, the review's M1): the daily weighing of ruling (2) is not ruled for Poland.
         /// </summary>
         public static bool IsConstructive(CountryId id) => RulesOf(id) == Rules.Bundestag || RulesOf(id) == Rules.Sejm;

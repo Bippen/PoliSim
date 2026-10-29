@@ -255,6 +255,20 @@ namespace PoliSim.UI
             return chip;
         }
 
+        /// <summary>K197: place 4 for the Sejm's Art. 158 vote - tabled and taken the same day (K195: Art. 158 ust. 2's seven days not waited), so the motion is
+        /// "what is coming" for its one day: on the AMB ground with the chamber, the vote's outcome in its words and, on the slip, the division's own title. The
+        /// newest vote of the day where there were two; null on every other day (the Docket keeps the outcome for the month, `PolishDeskRecord`).</summary>
+        public static Chip Art158Chip(Country country, DateTime today)
+        {
+            List<DivisionRecord> votes = PolishDeskRecord.RecentArt158(country, today);
+            if (votes.Count == 0 || votes[0].Date.Date != today.Date) { return null; }
+            DivisionRecord vote = votes[0];
+            var chip = new Chip { Id = "strip:art158", Face = Face.Amber, Icon = "chamber", Words = PolishDeskRecord.Art158Words(country, vote) + " today", SlipHead = "ART. 158 · " + Day(today).ToUpperInvariant() };
+            chip.Slip.Add(vote.Title);
+            chip.Slip.Add("Moved and voted on the same day - the Sejm does not wait the seven days");
+            return chip;
+        }
+
         /// <summary>Board 33a's overflow: what binds first, then what is coming, at most <see cref="TimeChipsMax"/> shown; the rest fold into
         /// <paramref name="more"/> - a paper "+N" chip whose slip lists them (null when nothing folds).</summary>
         public static List<Chip> FoldTimeChips(IList<Chip> binds, IList<Chip> coming, out Chip more)

@@ -246,7 +246,7 @@ namespace PoliSim.EditorTools
             {
                 Check(ConfidenceProcedure.RulesOf(CountryId.Poland) == ConfidenceProcedure.Rules.Sejm && ConfidenceProcedure.IsConstructive(CountryId.Poland) && ConfidenceProcedure.SejmMovers == 46
                       && !ConfidenceProcedure.TakesMotions(CountryId.Poland),
-                    "(6) K133: Poland's rule is the Sejm's constructive vote (Art. 158 Konstytucja, ElectionsData/poland/confidence_rules.md), moved by 46 deputies; the desk's block stays owed");
+                    "(6) K133: Poland's rule is the Sejm's constructive vote (Art. 158 Konstytucja, ElectionsData/poland/confidence_rules.md), moved by 46 deputies; no declaration waits there (K197 draws its verbs in the constructive row)");
                 DateTime day = new DateTime(2024, 6, 1);
                 (SimulationManager sim, Country pl) = Open("CoalitionExitDiagnostic.pl", CountryId.Poland, day, "TD");
                 var system = new List<string>(); foreach (PoliticalParty p in PartySystems.For(CountryId.Poland)) { system.Add(p.Abbrev); }

@@ -4274,31 +4274,12 @@ namespace PoliSim.Simulation
         private bool MoveNoConfidenceNow(CountryId countryId, out string refusedBecause, out Elections.ConfidenceProcedure.MotionVote vote)
         {
             vote = null;
-            Country country = _world?.GetCountry(countryId);
-            if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
+            if (!CanMoveNoConfidence(countryId, out refusedBecause)) { return false; }   // K197: the gates, read by the desk too (SimulationManager.PolishDesk.cs)
+            Country country = _world.GetCountry(countryId);
             Elections.GovernmentRecord g = country.Government;
-            if (country.PlayerHoldsPresidency) { refusedBecause = PresidentOfficeWords; return false; }   // SP-7b (I14 (2a)): the party is the AI's while the player is President
-            if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Unsourced) { refusedBecause = "THIS COUNTRY'S CONFIDENCE RULES ARE NOT YET MODELLED"; return false; }
-            if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Parlamento) { refusedBecause = "A MOTION OF NO CONFIDENCE UNDER ART. 94 IS NOT YET MODELLED"; return false; }   // PS-7: the investiture by mandates is built, the mid-term motion is not
-            if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Presidential) { refusedBecause = "A PRESIDENCY SERVES A FIXED TERM · NO MOTION OF NO CONFIDENCE IS TAKEN UP"; return false; }   // PS-6 US-7: Art. II §1 - a fixed term, no confidence vote
-            switch (g.RoleOf(country.PlayerPartyAbbrev))
-            {
-                case Elections.PlayerRole.PrimeMinister: refusedBecause = "THE GOVERNMENT MOVES NO MOTION AGAINST ITSELF"; return false;
-                case Elections.PlayerRole.JuniorPartner: refusedBecause = "LEAVE THE GOVERNMENT FIRST"; return false;
-                case Elections.PlayerRole.Support: refusedBecause = "WITHDRAW YOUR SUPPORT FIRST"; return false;
-            }
-            if (g.Caretaker) { refusedBecause = "NO MOTION IS TAKEN UP AGAINST A CARETAKER GOVERNMENT"; return false; }
-            if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate) { refusedBecause = "NO MOTION IS TAKEN UP BETWEEN AN EXTRA ELECTION'S DECISION AND THE NEW RIKSDAG"; return false; }
-            if (g.NoConfidenceOn != System.DateTime.MinValue) { refusedBecause = "THE CHAMBER HAS ALREADY DECLARED NO CONFIDENCE - THE GOVERNMENT'S WEEK RUNS"; return false; }
             if (Elections.ConfidenceProcedure.IsConstructive(countryId))
             {
                 bool sejm = Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Sejm;   // COAL-1 (K133): Art. 158 Konstytucja, the Bundestag's shape
-                // §705 (the review's defect 5): no constructive vote while the chancellor's election runs - before the convening the old Bundestag
-                // sits, and a successor it elected would never be discharged at the convening (Art. 69 Abs. 2)
-                if (!sejm && ((g.Round != null && g.Round.Open) || ElectionAwaitsRound(country, g))) { refusedBecause = "THE CHANCELLOR'S ELECTION IS UNDER WAY - ART. 63, NOT ART. 67"; return false; }
-                if (sejm && g.Sejm != null && g.Sejm.Open) { refusedBecause = "THE SEJM'S FORMATION IS UNDER WAY - ART. 154, NOT ART. 158"; return false; }
-                // §754 (the review's note): a party with no members moves nothing - the AI's rule, the player's too
-                if (SeatsOf(country, country.PlayerPartyAbbrev) <= 0) { refusedBecause = "YOUR PARTY HOLDS NO SEAT - A CONSTRUCTIVE VOTE IS MOVED BY MEMBERS"; return false; }
                 // §698 (Art. 67 GG): the motion IS the successor's election - carried, the successor's government takes office today
                 refusedBecause = null;
                 vote = ConstructiveVoteOf(country, country.PlayerPartyAbbrev, out Elections.FormationProposal successor, out Elections.ProposalVerdict verdict);
@@ -4345,20 +4326,10 @@ namespace PoliSim.Simulation
         /// <summary>FORK-2: <see cref="LeaveGovernment"/>'s act.</summary>
         private bool LeaveGovernmentNow(CountryId countryId, out string refusedBecause)
         {
-            Country country = _world?.GetCountry(countryId);
-            if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
-            if (country.PlayerHoldsPresidency) { refusedBecause = PresidentOfficeWords; return false; }   // SP-7b (I14 (2a)): the party is the AI's while the player is President
-            if (country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.JuniorPartner) { refusedBecause = "YOUR PARTY IS NOT A JUNIOR PARTNER"; return false; }
-            // §705 (the review's latent case): the smaller member of a parliamentary group does not leave its group's cabinet alone - the CSU sits in the
-            // Union's Fraktion, and a CDU cabinet without it is one no chamber could have elected
-            if (SeatedGroupPartner(country, country.PlayerPartyAbbrev) is string groupPartner && country.Government.Cabinet.Contains(groupPartner))
-            {
-                refusedBecause = "YOUR PARTY SITS IN ONE FRAKTION WITH " + groupPartner.ToUpperInvariant() + " - IT DOES NOT LEAVE THE CABINET ALONE";
-                return false;
-            }
-            refusedBecause = null;
+            if (!CanLeaveGovernment(countryId, out refusedBecause)) { return false; }   // K197: the gates, read by the desk too (SimulationManager.PolishDesk.cs)
+            Country country = _world.GetCountry(countryId);
             country.Government.LeaveCabinet(country.PlayerPartyAbbrev, country);   // the portfolios re-apportioned among those who stay
-            country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} left the government");
+            country.Government.Breaks.Add(LeftTheGovernmentLine(CurrentDate, country.PlayerPartyAbbrev));
             Debug.Log($"CONFIDENCE: {countryId} - {country.PlayerPartyAbbrev} left the government");
             ExitOpensConfidenceProcedure(country, country.PlayerPartyAbbrev);   // COAL-1 (q21, K131; GA-4-1): the exit opens the country's confidence procedure
             return true;
@@ -4642,11 +4613,12 @@ namespace PoliSim.Simulation
             return vote;
         }
 
-        /// <summary>§698: the constructive vote the player's party would win or lose today - projected, nothing recorded (the Parliament page's row reads it).</summary>
+        /// <summary>§698: the constructive vote the player's party would win or lose today - projected, nothing recorded (the Parliament page's row reads it).
+        /// K197: the Sejm's Art. 158 vote too, the Bundestag's shape (COAL-1, K133).</summary>
         public Elections.ConfidenceProcedure.MotionVote ProjectConstructiveVote(CountryId countryId)
         {
             Country country = _world?.GetCountry(countryId);
-            if (country?.Government == null || Elections.ConfidenceProcedure.RulesOf(countryId) != Elections.ConfidenceProcedure.Rules.Bundestag) { return null; }
+            if (country?.Government == null || !Elections.ConfidenceProcedure.IsConstructive(countryId)) { return null; }
             return ConstructiveVoteOf(country, country.PlayerPartyAbbrev, out _, out _);
         }
 

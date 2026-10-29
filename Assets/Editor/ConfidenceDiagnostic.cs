@@ -400,7 +400,7 @@ namespace PoliSim.EditorTools
                 (SimulationManager sim, Country usa) = OpenUsa(go5);
                 Check(ConfidenceProcedure.RulesOf(CountryId.USA) == ConfidenceProcedure.Rules.Presidential && !ConfidenceProcedure.TakesMotions(CountryId.USA)
                       && ConfidenceProcedure.TakesMotions(CountryId.Sweden) && ConfidenceProcedure.TakesMotions(CountryId.Germany) && !ConfidenceProcedure.TakesMotions(CountryId.Poland),
-                    "(US) the USA's rules are the presidency's and take no motion; the Riksdag's and the Bundestag's take motions at the desk; Poland's none there (the Sejm's rule is sourced since COAL-1, its desk owed)");
+                    "(US) the USA's rules are the presidency's and take no motion; the Riksdag's and the Bundestag's take motions at the desk; Poland's none there (the Sejm's rule is sourced since COAL-1; its verbs drawn in the constructive row, K197)");
                 GovernmentRecord biden = usa.Government;
                 Check(biden != null && biden.Kind == WorldClock.ExecutiveKind.Presidency && biden.PmParty == "DEM", F("(US) the start's government: {0}, a presidency", biden?.Executive ?? "NONE"));
                 const string FixedTerm = "A PRESIDENCY SERVES A FIXED TERM · NO MOTION OF NO CONFIDENCE IS TAKEN UP";

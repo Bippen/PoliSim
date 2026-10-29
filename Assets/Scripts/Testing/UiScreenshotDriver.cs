@@ -1745,6 +1745,7 @@ namespace PoliSim.Testing
                 yield return CaptureStatePins(controller);
             }
             yield return CaptureDeskByRole(controller);   // §694: last, because it tables bills - no frame before it moves
+            if (_countryId == CountryId.Poland) { yield return CapturePolishDeskVerbs(controller); }   // K197: after it - the verbs change who governs
 
             EndSweep();
             }
@@ -2608,6 +2609,92 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: 93b_desk_alternative_tabled - {player.PlayerPartyAbbrev}'s alternative tabled against the government's budget");
             yield return Capture("93b_desk_alternative_tabled");
             ScrollDeskTo(controller, null);
+        }
+
+        /// <summary>
+        /// K197: THE PLAYER'S POLISH DESK VERBS, filmed on Poland's main sweep after every other frame. STAGED (the review's H2: Poland's default start is
+        /// Morawiecki's PiS cabinet alone, with no partner to stage), said in the log: the chamber planted as `PolishDeskVerbsDiagnostic` plants it (PiS 200,
+        /// KO 165, TD 65, NL 10, Konf 20 - KO+TD+NL holding 240, KO+TD 230, no opposition candidate able to reach 231) and the KO+TD+NL cabinet named through
+        /// the record's own method (`GovernmentRecord.OfNamedCabinet`); the player NL, the smallest partner, for pl1 the Parliament page's rows with LEAVE THE
+        /// GOVERNMENT and - the verb taken through the manager (`SimulationManager.LeaveGovernment`) - pl2 the Docket with the leaving and the standing KO+TD
+        /// kept; then the player PiS, in opposition, for pl3 the Parliament page's rows with MOVE ART. 158 and - the motion moved through the manager - pl4 the
+        /// Docket with the vote and the strip's place 4 on its day. The clock is held for the frames. The four frames are expected: a refusal fails the film.
+        /// The review's L3: the impact ledger does not watch the staged verbs (K51's precedent - the parties are borrowed), and the government, the seats, the
+        /// division log, the player's party and the presidency flag are put back after, so nothing staged reaches a later frame or a forked world.
+        /// </summary>
+        private IEnumerator CapturePolishDeskVerbs(GameController controller)
+        {
+            Expect("pl1_politics_leave", "pl2_docket_left", "pl3_politics_art158", "pl4_docket_art158");
+            var sim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+            Country player = sim?.World?.GetCountry(CountryId.Poland);
+            GovernmentRecord government0 = player?.Government;
+            if (sim == null || government0 == null || player.ParliamentSeats == null)
+            {
+                Debug.LogError("SHOT: K197 - the manager, Poland's government or its seats could not be reached; the pl1-pl4 frames are MISSING, not clean.");
+                _failed++;
+                yield break;
+            }
+            string own = player.PlayerPartyAbbrev;
+            bool president0 = player.PlayerHoldsPresidency;
+            Dictionary<string, int> seats0 = player.ParliamentSeats;
+            var divisions0 = new List<DivisionRecord>(player.Divisions.Entries);
+            PolicyImpactLedger ledger0 = sim.ImpactLedger;
+            void Fail(string what) { Debug.LogError("SHOT: K197 - " + what + "; the remaining pl frames are MISSING, not clean."); _failed++; }
+            try
+            {
+                var staged = new Dictionary<string, int>(seats0);
+                foreach (string k in new List<string>(staged.Keys)) { staged[k] = 0; }
+                staged["PiS"] = 200; staged["KO"] = 165; staged["TD"] = 65; staged["NL"] = 10; staged["Konf"] = 20;
+                player.ParliamentSeats = staged;
+                GovernmentRecord g = GovernmentRecord.OfNamedCabinet("KO", new[] { "KO", "TD", "NL" }, new string[0], sim.CurrentDate.AddDays(-1), "staged (UiScreenshotDriver): the KO+TD+NL cabinet for the Polish desk verbs' frames");
+                g.Kind = government0.Kind;
+                g.Executive = government0.Executive;
+                g.Outcome = CoalitionOutcomeKind.MajorityCoalition.ToString();
+                g.AllocatePortfolios(player);
+                player.Government = g;
+                player.PlayerHoldsPresidency = false;
+                player.PlayerPartyAbbrev = "NL";
+                sim.ImpactLedger = null;
+                IEnumerator Film(string stem, string tab)
+                {
+                    SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+                    SetPrivateField(controller, "_onDesk", false);
+                    SetEnumField(controller, "_consolidatedTab", tab);
+                    if (tab == "Politics") { SetEnumField(controller, "_politicsCategory", "Parliament"); }
+                    ResetScrolls(controller);
+                    if (tab == "Politics") { ScrollBy(controller, 900f); }
+                    yield return Settle();
+                    Claim("imgui");
+                    yield return Capture(stem);
+                }
+                bool mayLeave = sim.CanLeaveGovernment(CountryId.Poland, out string leaveWhy);
+                Debug.Log($"SHOT: pl1_politics_leave - STAGED: the KO+TD+NL cabinet on a planted Sejm (PiS 200, KO 165, TD 65, NL 10, Konf 20), the player NL, on {sim.CurrentDate:yyyy-MM-dd}: LEAVE THE GOVERNMENT {(mayLeave ? "offered" : "disabled - " + leaveWhy)}");
+                if (!mayLeave) { Fail("NL may not leave (" + leaveWhy + ")"); yield break; }
+                yield return Film("pl1_politics_leave", "Politics");
+                if (!sim.LeaveGovernment(CountryId.Poland, out string refused)) { Fail("NL could not leave (" + refused + ")"); yield break; }
+                Debug.Log($"SHOT: pl2_docket_left - NL left; {PolishDeskRecord.StandingWords(player)}; governing {string.Join("+", player.Government.Cabinet)} led by {player.Government.PmParty}");
+                yield return Film("pl2_docket_left", "Decisions");
+                player.PlayerPartyAbbrev = "PiS";
+                bool mayMove = sim.CanMoveNoConfidence(CountryId.Poland, out string moveWhy);
+                ConfidenceProcedure.MotionVote projected = sim.ProjectConstructiveVote(CountryId.Poland);
+                Debug.Log($"SHOT: pl3_politics_art158 - the player PiS, in opposition: {(projected != null ? projected.For + " of " + projected.Members + " for, " + projected.Needed + " needed" : "no projection")}; MOVE ART. 158 {(mayMove ? "offered" : "disabled - " + moveWhy)}");
+                if (!mayMove) { Fail("PiS may not move Art. 158 (" + moveWhy + ")"); yield break; }
+                yield return Film("pl3_politics_art158", "Politics");
+                if (!sim.MoveNoConfidence(CountryId.Poland, out string moveRefused, out ConfidenceProcedure.MotionVote vote)) { Fail("the motion was refused (" + moveRefused + ")"); yield break; }
+                Debug.Log($"SHOT: pl4_docket_art158 - {vote.Title()}; the strip's place 4: {TopStrip.Art158Chip(player, sim.CurrentDate)?.Words ?? "NONE"}");
+                yield return Film("pl4_docket_art158", "Decisions");
+            }
+            finally
+            {
+                player.Government = government0;
+                player.ParliamentSeats = seats0;
+                player.Divisions.Entries.Clear();
+                player.Divisions.Entries.AddRange(divisions0);
+                player.PlayerPartyAbbrev = own;
+                player.PlayerHoldsPresidency = president0;
+                sim.ImpactLedger = ledger0;
+                Debug.Log("SHOT: K197 - the staged government, seats, divisions, party and presidency flag restored; the impact ledger watches the player's verbs again.");
+            }
         }
 
         /// <summary>

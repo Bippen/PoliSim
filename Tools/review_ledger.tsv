@@ -389,3 +389,5 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	498ad4b1959e9f4d2b999091322c
 file	Assets/Scripts/Data/Generated/DebtRateSeeds.cs	ccb07403c0f64ad83b7a441b5c0c3ef6ee8a5c8394503dab16b510686ab4ceb4	reviewed	2026-10-29	s942	Reviews/2026-10-28_k252_integrator.md	-
 baseline	777	8bc513e4d77233cf64d7184946b8ed383f20e42cd659259ff8c686795d32617e	reviewed	2026-10-29	s942	Reviews/2026-10-28_k252_integrator.md	-
 baseline	424242	016a3dbb8ff4684a0c26a5074e56a85990bebc09a109d04e4fa188abbb8d6346	reviewed	2026-10-29	s942	Reviews/2026-10-28_k252_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.PolishDesk.cs	a2315d664cc23b3dcc02046eb6cd411f726a707285c72b2324dbee1bd55a434c	reviewed	2026-10-29	s943	Reviews/2026-10-29_pldesk_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	9a8ea3c0ec0124c73f8f35b095b51fbfe96b439db9514033f5e050645733124a	reviewed	2026-10-29	s943	Reviews/2026-10-29_pldesk_integrator.md	-

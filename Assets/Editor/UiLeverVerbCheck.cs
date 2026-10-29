@@ -116,7 +116,7 @@ namespace PoliSim.EditorTools
             ("SetWorld", "the start's setup"), ("ResetClockToEpoch", "the start's setup"), ("SeatTheSecondChamberOfRecord", "the start's setup - the seat taken before the no-policy world is forked"),
             ("ProjectFormation", "a read - the night's projection on a round of its own; FormationProjectionDiagnostic asserts it moves no state (s918)"),
             ("PreviewTurn", "the preview's clone"), ("PreviewTurnWithBudgetDraft", "the preview's clone"), ("PreviewTurnWithSectorDraft", "the preview's clone"),
-            ("CanOrderExtraElection", "a read"), ("CarbonFigureYieldsOn", "a read"), ("CentralBankHeadAwaitsPlayer", "a read"), ("DraftPassageYear", "a read"),
+            ("CanOrderExtraElection", "a read"), ("CanLeaveGovernment", "a read - the verb's gate (K197)"), ("CanMoveNoConfidence", "a read - the verb's gate (K197)"), ("CarbonFigureYieldsOn", "a read"), ("CentralBankHeadAwaitsPlayer", "a read"), ("DraftPassageYear", "a read"),
             ("DraftProposal", "a read - the formation sheet's first draft"), ("ElectionAwaitsRound", "a read"), ("EstimateBudgetBill", "a read"), ("EstimateTradeBill", "a read"),
             ("GetDocket", "a read"), ("GetLastEvent", "a read"), ("GetLastFiscalReport", "a read"), ("GetPendingBudgetAlternative", "a read"), ("GetPendingBudgetBill", "a read"),
             ("GetPendingBudgetProcess", "a read"), ("GetPendingCabinetDecisions", "a read"), ("GetPendingCrimeJusticeBill", "a read"), ("GetPendingForeignPolicyMeeting", "a read"),

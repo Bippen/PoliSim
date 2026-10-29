@@ -145,6 +145,9 @@ namespace PoliSim.UI
                 DrawDocketItem(key, "cal", UiPalette.GetAreaColor(UiPalette.SystemArea.Political), date.Name + " · " + (today ? "today" : DeskDay(date.Day)), date.Line, holdsTime: false, action: null, stampWords: "Information");
             }
 
+            // ---- K197: what the Polish desk verbs left on the record this month - an Art. 158 vote, the player's leaving - information, never holding the clock ----
+            DrawPolishDeskItems();
+
             // ---- PS-8 (K163): the elections abroad of the last month, each with its results card - information, never holding the clock ----
             DrawForeignElectionItems();
 
