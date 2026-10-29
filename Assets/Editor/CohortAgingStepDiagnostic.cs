@@ -358,7 +358,7 @@ namespace PoliSim.EditorTools
             {
                 CohortStepRates rates = CohortStepRateTable.For(country.Id);
                 float[] seeded = PopulationPyramids.Bands.TryGetValue(country.Id, out float[] s) ? s : null;
-                float[] projBase = PopulationProjections.For(country.Id, PopulationProjections.FirstYear);
+                float[] projBase = PoliSim.Simulation.CohortDemographics.Projection(country.Id, PopulationProjections.FirstYear);   // K299: the path the game reads (the USA CBO's 2025 demographics), not the catalog's row
 
                 if (rates == null || seeded == null || projBase == null)
                 {
@@ -386,8 +386,8 @@ namespace PoliSim.EditorTools
                 for (int y = 0; y < LongRunYears; y++)
                 {
                     int yearNow = PopulationProjections.FirstYear + y;
-                    float[] tNow = PopulationCohorts.RebasedTarget(seeded, projBase, PopulationProjections.For(country.Id, yearNow));
-                    float[] tNext = PopulationCohorts.RebasedTarget(seeded, projBase, PopulationProjections.For(country.Id, yearNow + 1));
+                    float[] tNow = PopulationCohorts.RebasedTarget(seeded, projBase, PoliSim.Simulation.CohortDemographics.Projection(country.Id, yearNow));
+                    float[] tNext = PopulationCohorts.RebasedTarget(seeded, projBase, PoliSim.Simulation.CohortDemographics.Projection(country.Id, yearNow + 1));
 
                     neutral.StepOneYearAnchored(rates, tNow, tNext);
                     forced.StepOneYearAnchored(rates, tNow, tNext, FertilityProbeMultiplier);
@@ -402,7 +402,7 @@ namespace PoliSim.EditorTools
 
                 float finalTarget = 0f;
                 float[] tEnd = PopulationCohorts.RebasedTarget(seeded, projBase,
-                    PopulationProjections.For(country.Id, PopulationProjections.FirstYear + LongRunYears));
+                    PoliSim.Simulation.CohortDemographics.Projection(country.Id, PopulationProjections.FirstYear + LongRunYears));
                 for (int k = 0; k < PopulationCohorts.CohortCount; k++) { finalTarget += tEnd[k]; }
 
                 float neutralRatio = finalTarget > 0f ? neutral.Total / finalTarget : 0f;
@@ -420,8 +420,8 @@ namespace PoliSim.EditorTools
                 for (int y = 0; y < LongRunYears; y++)
                 {
                     int yearNow = PopulationProjections.FirstYear + y;
-                    float[] pubNow = PopulationProjections.For(country.Id, yearNow);
-                    float[] pubNext = PopulationProjections.For(country.Id, yearNow + 1);
+                    float[] pubNow = PoliSim.Simulation.CohortDemographics.Projection(country.Id, yearNow);
+                    float[] pubNext = PoliSim.Simulation.CohortDemographics.Projection(country.Id, yearNow + 1);
 
                     var walk = new PopulationCohorts((float[])pubNow.Clone());
                     walk.StepOneYear(rates);

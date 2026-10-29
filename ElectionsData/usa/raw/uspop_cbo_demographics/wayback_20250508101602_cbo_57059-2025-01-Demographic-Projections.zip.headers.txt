@@ -1,0 +1,50 @@
+HTTP/1.1 200 OK
+Server: nginx
+Date: Thu, 29 Oct 2026 19:21:56 GMT
+Content-Type: application/zip
+Content-Length: 3328177
+Connection: keep-alive
+x-archive-orig-connection: close
+x-archive-orig-content-length: 3328177
+x-archive-orig-content-language: en
+x-archive-orig-expires: Sun, 19 Nov 1978 05:00:00 GMT
+x-archive-orig-last-modified: Fri, 02 May 2025 19:14:34 GMT
+x-archive-orig-server: nginx
+x-archive-orig-strict-transport-security: max-age=300
+x-archive-orig-x-content-type-options: nosniff
+x-archive-orig-x-frame-options: SAMEORIGIN
+x-archive-orig-x-generator: Drupal 10 (https://www.drupal.org)
+x-archive-orig-x-pantheon-styx-hostname: styx-fe4-b-79d9f55b98-z5rxr
+x-archive-orig-x-styx-req-id: 71bb2ec0-2bf5-11f0-8c1e-f288dd76e080
+x-archive-orig-cache-control: private, must-revalidate
+x-archive-orig-age: 0
+x-archive-orig-accept-ranges: bytes
+x-archive-orig-via: 1.1 varnish, 1.1 varnish, 1.1 varnish, 1.1 varnish
+x-archive-orig-date: Thu, 08 May 2025 10:16:02 GMT
+x-archive-orig-x-served-by: cache-chi-kigq8000114-CHI, cache-sjc10058-SJC, cache-sjc10045-SJC, cache-sjc10045-SJC
+x-archive-orig-x-cache: MISS, MISS, MISS, MISS
+x-archive-orig-x-cache-hits: 0, 0, 0, 0
+x-archive-orig-x-timer: S1746699362.321550,VS0,VE356
+cache-control: max-age=1800
+accept-ranges: bytes
+memento-datetime: Thu, 08 May 2025 10:16:02 GMT
+link: <https://www.cbo.gov/system/files/2025-01/57059-2025-01-Demographic-Projections.zip>; rel="original", <https://web.archive.org/web/timemap/link/https://www.cbo.gov/system/files/2025-01/57059-2025-01-Demographic-Projections.zip>; rel="timemap"; type="application/link-format", <https://web.archive.org/web/https://www.cbo.gov/system/files/2025-01/57059-2025-01-Demographic-Projections.zip>; rel="timegate"
+content-security-policy: default-src 'self' 'unsafe-eval' 'unsafe-inline' data: blob: archive.org web.archive.org web-static.archive.org wayback-api.archive.org athena.archive.org analytics.archive.org pragma.archivelab.org wwwb-events.archive.org
+x-archive-src: ARCHIVEIT-6820-2025051701-00000/ARCHIVEIT-6820-TEST-JOB2551956-SEED1072368-20250507204917471-00000-h3.warc.gz
+server-timing: captures_list;dur=0.566695, exclusion.robots;dur=0.126828, exclusion.robots.policy;dur=0.085327, esindex;dur=0.007964, cdx.remote;dur=30.828162, LoadShardBlock;dur=785.392395, PetaboxLoader3.datanode;dur=139.740599, PetaboxLoader3.resolve;dur=545.641527, load_resource;dur=640.242371
+x-app-server: wwwb-app262
+x-ts: 200
+x-tr: 1483
+server-timing: TR;dur=0,Tw;dur=999,Tc;dur=6
+set-cookie: wb-p-b-SERVER=wwwb-app262; path=/
+cache-control: private
+X-RL: 0
+X-NA: 0
+X-Page-Cache: BYPASS
+Server-Timing: BYPASS
+X-NID: Telenor Sverige AB
+Referrer-Policy: no-referrer-when-downgrade
+Permissions-Policy: interest-cohort=()
+X-sd: 1
+X-location: mp4
+

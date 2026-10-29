@@ -21,7 +21,6 @@ baseline	777	57f1e5cc73f1721c6b69290ad20702ed3dab7f8677777907812687da739fb28d	re
 baseline	424242	cd39dfbe1c8927937db2a0fe9cf58f6b35331310039b2c66d53c4f0bc7915014	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
 file	Assets/Scripts/Data/SpendingCategory.cs	19c7df9fcc6486acb7ca440902462b5567f69a6375c62f82a763bcec6c8cab8c	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingLine.cs	614f93a446de40cde1b5ab2692577ec220546507effdcd8811a807c488e38175	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Data/TaxBaseTable.cs	4b19b2dfe322a91772e6396aeb81714605a3403b4b395ae01c512aefc8e64cfe	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxType.cs	a15b9d2fbd85f753c6d423f05257c357c75f768055a6e0b545c047c05ad4cfa3	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/WelfareProgram.cs	be37cfb4a401da95c9175c0b9f2ddc9811a9fa0accabff25699bad4da8619911	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/WelfareProgramType.cs	88112313e1cebd35c116e0ad7a8d394b46a52e9c58f1d5f04d76592d8e18c2e8	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
@@ -410,3 +409,6 @@ baseline	424242	16294d15398dbfbcd07ea0be6338166ee8e3f0c6f15fe0c36d513510478ac2de
 file	Assets/Scripts/Simulation/SimulationManager.cs	b65ff65e29f1da03250ff5661de672604b8de6de126c94c27e0dd8ddd0e8a7d6	reviewed	2026-10-29	s952	Reviews/2026-10-29_names_review.md	names: player text reads display names and short names (text only)
 file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	f42de7cbb9078112872fbf076d4275baab310cd1d0fde86e38325549891b5cbb	reviewed	2026-10-29	s952	Reviews/2026-10-29_names_review.md	names: player text reads display names and short names (text only)
 file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	67d1a3f527a8824e19a50a17f8aa81ae9c7287ed68d3e2f0d0c29fb7fef1c48d	reviewed	2026-10-29	s952	Reviews/2026-10-29_names_review.md	names: player text reads display names and short names (text only)
+baseline	777	4dbae24d2d8df3052f114c71031a989cc3502d30041c52c6af51385f0294996d	reviewed	2026-10-29	s953	Reviews/2026-10-29_uspop_integrator.md	-
+baseline	424242	6f367ce364454ec78f4f3cad7798850251723e3192423a20e8550dfeed74f370	reviewed	2026-10-29	s953	Reviews/2026-10-29_uspop_integrator.md	-
+file	Assets/Scripts/Data/TaxBaseTable.cs	61dde835666a5301f38ad8d07d01c6465b7114f2f1a7296aeb02dec06522cedf	reviewed	2026-10-29	s953	Reviews/2026-10-29_uspop_taxbase_review.md	-

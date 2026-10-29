@@ -113,6 +113,11 @@ namespace PoliSim.EditorTools
             /// state's rate is the anchor × (the state's rate / the anchor).</summary>
             public float Structural;
             public double Population15;
+            /// <summary>K299 (K290's follow-up): the pyramid after the year's turn, a copy (millions by band), and the substrate year it stands at
+            /// (CohortDemographics.SubstrateYear at the turn count after the boundary: the year the boundary's commit stepped it to) - read by
+            /// `ParticipationCohortDiagnostic`'s (d), the USA's population against CBO's, by the pyramid's own year.</summary>
+            public float[] Pyramid;
+            public int SubstrateYear;
             /// <summary>K276 review 1: what holds the state's rate off its anchor, points of the 15+ rate - the unemployment rate less the effective natural rate
             /// (the discouraged-worker term reads it), the labour tax's, the health's and the education's participation terms - the attribution beside (c).</summary>
             public float UnemploymentGap, LabourTaxTerm, HealthTerm, EducationTerm;
@@ -327,6 +332,8 @@ namespace PoliSim.EditorTools
                             LabourForce2074 = LabourForce2074At(c),
                             Structural = ParticipationRateTable.StructuralRate(c),
                             Population15 = PotentialOutput.Population15Plus(c),
+                            Pyramid = c.Cohorts != null ? (float[])c.Cohorts.Counts.Clone() : null,   // K299
+                            SubstrateYear = CohortDemographics.SubstrateYear(sim.CurrentTurn),
                             UnemploymentGap = c.State.Unemployment - c.EffectiveNaturalUnemploymentRate,
                             LabourTaxTerm = MacroSystem.LaborTaxParticipationTerm(c),
                             HealthTerm = HealthFamily.ParticipationTerm(c),

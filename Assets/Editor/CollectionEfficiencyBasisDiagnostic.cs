@@ -38,7 +38,7 @@ namespace PoliSim.EditorTools
         /// nowhere the game runs and are read here solely to SIZE the perimeter mismatch below. The five
         /// countries' rows moved into `TaxBaseTable` when D-16 (a) landed (2026-09-04) and are read from there.
         /// ⚠ F4-5 (2026-09-16): the USA's INCOME row now lives in `TaxBaseTable` as well, on the FEDERAL series
-        /// (0.543803 = 9.300111 % of GDP over the lever's level, 17.1020). The general-government row below
+        /// (0.543675 = 9.300111 % of GDP over the lever's level, 17.1060 since K299 moved the opening pyramid; F4-5 set 0.543803 over 17.1020). The general-government row below
         /// (0.3077 = 11.384784 over the old top rate 37) stays, and stays local, because its job here is
         /// unchanged: to size what a general-government base would do under a federal target.
         /// </summary>

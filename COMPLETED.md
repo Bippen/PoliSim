@@ -42320,3 +42320,40 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nnames 16 of 16; drynames 4 sessions, 0 failed, 0 overflow; realnamesit (Italy 1280, -shotinterrupts) 19 captured, 0 failed; realnamesde (Germany 1280) 153 captured, 0 failed; dumpnames byte-identical to dumpk311 on both seeds (the sentinel stands at k276); cheapnames 148 of 148; simnames 92 of 92; docnames document group clean
 
 **Commit:** this one.
+
+## 953. K299 (K290'S FOLLOW-UP): THE USA'S POPULATION ON CBO'S JANUARY 2025 TABLE BY SINGLE YEAR OF AGE; K290'S REGISTRATION LIFTED (2026-10-29)
+
+**What was owed:** K290 registered K276's labour-force line (c) for USA 2040 as a miss (−3.43 %). The miss was wholly the population's: the model's Census 2023 path against CBO's 2025 demographics. K290 filed the update.
+
+**Built** (wave/uspop; the prereg and amendments r2 and r3, each committed alone before the code it governs; reviews: round 1 READY on conditions, round 2 READY at `33057a0c`):
+- The USA's path IS CBO's Social Security area population by single year of age, 2022-2098. It comes from the 57059 Demographic Projections zip, the 2 May 2025 repost, fetched byte-exact through the Internet Archive (cbo.gov refuses with a JavaScript challenge).
+  - `Tools/uspop_prep.pl` folds it into the 21 bands. It asserts each year's total and each Figure 2 group against CBO's report file, and generates `UsDemographicOutlook`.
+  - The band path is rebased onto the seeded pyramid (D-19).
+  - Past 2098 each band's factor against the Census 2023 projection holds to 2100; past 2100 the last pyramid holds.
+- K276's (c) is keyed by the pyramid's own year for all six countries (r2-2).
+- `ParticipationCohortDiagnostic` (d): (d1) the four CBO groups and the 25+ within ±1.0 %, (d2) the 16+ within ±1.5 % of CBO's civilian 16+, (d3) the 15+ and 16+ within ±1.0 % of CBO's own.
+- `GeneratedCatalogCheck` carries the two source digests; `CohortAgingStepDiagnostic` reads the game's own path.
+
+**The integrator's two fixes** (the engine bars caught them; the branch's headless runs do not run these checks):
+- `TaxBaseTable`'s `USA/IncomeTax` row is re-derived 0.543803 → 0.543675. CBO's pyramid moves the opening income distribution, so the lever's seed, the schedule's own average rate on taxed income, reads 17.1060 (was 17.1020); F4-5's rule keeps the row at the realised 9.300111 % of GDP over it. A money path, reviewed on its own (`Reviews/2026-10-29_uspop_taxbase_review.md`).
+- `ReviewLedgerCheck`: TaxBaseTable's grandfathered row is removed and `GrandfatheredCeiling` lowered 9 → 8.
+- UsMidtermCheck is RE-REGISTERED, verdict unchanged: m −0.01 → −0.03, the cause K299. The US card's US-13 block is regenerated.
+
+**Measured** (`Reviews/2026-10-29_uspop_integrator.md`):
+- USA (c): 2030 −1.24 %, 2040 −2.17 %, 2055 −2.56 % (±3 %). K290's registry is empty.
+- US debt hold 2026-2036: 9.2 of 10.
+- Every (d) line holds; the whole population is within 0.01 % of CBO's total.
+- **The movers by name:**
+  - Sweden's and Poland's (c) printouts, by the re-key and not the model: Sweden 2050 +0.31 %; Poland 2030 +1.67 %, 2040 +2.25 %, 2050 +2.47 %, 2070 −2.31 %.
+  - Sweden and Poland in the dump from turn 2, only CurrencyStrength and TradeBalance first: the Fed's rate in the partner averages. Every field is under 0.01 % at turn 100.
+  - France, Germany and Italy are identical at every turn on both seeds.
+  - The USA moves from its first record: at turn 100 on seed 777 its GDP is −3.71 % and its debt +3.66 %.
+- The family `uspop`; the sentinel is re-pinned (4dbae24d / 6f367ce3).
+
+**Evidence:** `Reviews/2026-10-29_uspop_prereg.md` (with r2 and r3), `_uspop_review.md` (rounds 1-2), `_uspop_integrator.md`, `_uspop_taxbase_review.md`; `ElectionsData/usa/raw/uspop_cbo_demographics/` (SHA256SUMS, fetch log).
+
+**Declared:** K299 (recorded); K290 LIFTED. The (d3) band is generous by design: it catches a misread table, not a drift (L-r2-4). The re-key reads the EU's 1 January stock against the Ageing Report's annual figures, half a year early for all five (L-r2-2). A later CBO vintage is its own item, not queued.
+
+**Bars:** nuspop 8 of 8; dumpuspop (first) the family uspop, France, Germany and Italy identical; nuspopl 3 of 3; cheapuspop 147 of 148 (UsMidtermCheck: m -0.01 -> -0.03, re-registered) and simuspop 91 of 92 (TaxScheduleDiagnostic: the USA's income row, re-derived); nuspop3 TaxScheduleDiagnostic and RevenueBaseDiagnostic clean; dumpuspop (second, on the re-derived row) re-pinned; writeus, nuspop4 3 of 3; cheapuspop2 147 of 148 (ReviewLedgerCheck: TaxBaseTable's stale grandfathered row, removed, the ceiling 9 -> 8); simuspop2 92 of 92; nuspop5 ReviewLedgerCheck clean; docuspop document group clean
+
+**Commit:** this one.

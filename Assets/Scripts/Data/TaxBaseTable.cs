@@ -62,7 +62,9 @@ namespace PoliSim.Data
             // jobbskatteavdraget in it, 29.1592 (TaxScheduleDiagnostic section 8), so the row is still the realised 10.389453 % of GDP over the rate it is read against.
             { "Sweden/IncomeTax", 0.356301f },  { "Sweden/CorporateTax", 0.1675f },  { "Sweden/VAT", 0.3798f },  { "Sweden/PayrollTax", 0.4488f },
             // THE USA's INCOME ROW ONLY, on the FEDERAL perimeter (F4-5): its other three keep the uniform stand-in, as F-B ruled.
-            { "USA/IncomeTax", 0.543803f },
+            // K299 (s953): re-derived for the lever's new seed. CBO's pyramid moves the opening income distribution, so the schedule's own average rate on
+            // taxed income reads 17.1060 (was 17.1020), and the row is still the realised 9.300111 % of GDP over it (was 0.543803).
+            { "USA/IncomeTax", 0.543675f },
         };
 
         /// <summary>

@@ -74,9 +74,59 @@ namespace PoliSim.Simulation
         public static float[] Target(CountryId id, int year)
         {
             float[] seeded = PopulationPyramids.Bands.TryGetValue(id, out float[] s) ? s : null;
-            float[] projBase = PopulationProjections.For(id, PopulationProjections.FirstYear);
-            float[] projYear = PopulationProjections.For(id, year);
+            float[] projBase = Projection(id, PopulationProjections.FirstYear);
+            float[] projYear = Projection(id, year);
             return PopulationCohorts.RebasedTarget(seeded, projBase, projYear);
+        }
+
+        /// <summary>
+        /// The published projection the anchor follows, for a country and a year, unrebased (millions by band) - the one place the
+        /// substrate's trajectory is read from. The EU five: Eurostat's EUROPOP2023 (<see cref="PopulationProjections"/>).
+        /// <para><b>K299 (K290's follow-up): the USA's path IS CBO's 2025 demographics, band by band</b> (its prereg's amendment r3) - the Social
+        /// Security area population by single year of age that CBO's projection of fertility, mortality and net immigration produces, from CBO's
+        /// "Demographic Projections" for its January 2025 Demographic Outlook, folded into the bands by <c>Tools/uspop_prep.pl</c>
+        /// (<see cref="UsDemographicOutlook"/>), each year asserted against the report's own Figure 2. ⚠ Past the table's last year each band's factor
+        /// against the Census Bureau's 2023 projection (<see cref="PopulationProjections"/>'s USA row, until K299 the whole path) holds at that year's,
+        /// so the Census path's band-by-band change carries CBO's last pyramid on to 2100 - DECLARED; past 2100, as every country, the last year's
+        /// pyramid holds.</para>
+        /// </summary>
+        public static float[] Projection(CountryId id, int year)
+        {
+            if (id == CountryId.USA) { return UsPath(year); }
+            return PopulationProjections.For(id, year);
+        }
+
+        /// <summary>K299: the USA's path, [year - PopulationProjections.FirstYear][band], built once from the two generated tables (see
+        /// <see cref="Projection"/>) and never written after - every world reads the same arrays, as every world reads PopulationProjections'.
+        /// A band past the table's last year is formed in double and stored once, so the figure is the same under any runtime.</summary>
+        private static float[][] _usPath;
+
+        private static float[] UsPath(int year)
+        {
+            if (_usPath == null) { _usPath = BuildUsPath(); }
+            int i = Mathf.Clamp(year - PopulationProjections.FirstYear, 0, _usPath.Length - 1);
+            return _usPath[i];
+        }
+
+        private static float[][] BuildUsPath()
+        {
+            int first = PopulationProjections.FirstYear, last = PopulationProjections.LastYear, cboLast = UsDemographicOutlook.BandsLastYear;
+            float[] cboEnd = UsDemographicOutlook.For(cboLast);
+            float[] censusAtCboEnd = PopulationProjections.For(CountryId.USA, cboLast);
+            var path = new float[last - first + 1][];
+            for (int y = first; y <= last; y++)
+            {
+                if (y <= cboLast) { path[y - first] = UsDemographicOutlook.For(y); continue; }
+                float[] census = PopulationProjections.For(CountryId.USA, y);
+                var band = new float[PopulationCohorts.CohortCount];
+                for (int b = 0; b < PopulationCohorts.CohortCount; b++)
+                {
+                    // the band's factor against the Census path, held at the table's last year (a zero Census band: CBO's band holds, RebasedTarget's own guard)
+                    band[b] = censusAtCboEnd[b] > 0f ? (float)((double)census[b] * cboEnd[b] / censusAtCboEnd[b]) : cboEnd[b];
+                }
+                path[y - first] = band;
+            }
+            return path;
         }
 
         /// <summary>One country's year, as the step computes it: the start stock, the levered end stock, and the flows the scalars are read from.</summary>
@@ -212,7 +262,7 @@ namespace PoliSim.Simulation
             CohortStepRates rates = CohortStepRateTable.For(country.Id);
             if (rates == null) { return; }
             int epochYear = SimulationManager.EpochDate.Year;
-            for (int year = PopulationProjections.FirstYear; year < epochYear; year++)
+            for (int year = PopulationProjections.FirstYear; year < epochYear; year++)   // the seed's year; K299: the USA's path opens on it too (UsDemographicOutlook.FirstYear is at or before it)
             {
                 country.Cohorts.Counts = country.Cohorts.AnchoredNext(rates, Target(country.Id, year), Target(country.Id, year + 1));
             }

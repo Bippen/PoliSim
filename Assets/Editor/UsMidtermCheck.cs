@@ -57,13 +57,15 @@ namespace PoliSim.EditorTools
         /// type and L, U and m to two decimals, as the run prints them.</summary>
         private const string RulingState = "RULED";
         private const string RulingSection = "§856";
+        // RE-REGISTERED, verdict unchanged (s953): the cause is K299 - the USA's population on CBO's 2025 table by single year of age moves the US labour
+        // force and potential output the economic vote reads (m -0.01 -> -0.03); L, U, the verdict and the government type stand. Before it:
         // RE-REGISTERED, verdict unchanged (s929): the cause is MF q29 - the output gap now closes toward potential, moving the US economy the economic
         // vote reads (m +0.12 -> -0.01); L, U, the verdict and the government type stand. Before it:
         // RE-REGISTERED, verdict unchanged (s928): the cause is MF-14 q14 - the convex Phillips slack and the unemployment floor move the US economy the
         // economic vote reads (m +0.16 -> +0.12); L, U, the verdict and the government type stand. Before it:
         // RE-REGISTERED, verdict unchanged: the cause is K73 (R-US20's block as amended, prereg 8b4a8954) - the world reads the game's own House, so the
         // government type and m are read on the House the world's own 2024 count elected; L and U, the record's, did not move
-        private const string RegisteredVerdict = "(a)", RegisteredGovernment = "divided", RegisteredL = "-8.97", RegisteredU = "+2.26", RegisteredM = "-0.01";
+        private const string RegisteredVerdict = "(a)", RegisteredGovernment = "divided", RegisteredL = "-8.97", RegisteredU = "+2.26", RegisteredM = "-0.03";
         /// <summary>RULED only: the ruling's words and the option it names - (a), (b) or (c).</summary>
         private const string RulingRuled = "I4 - (b), a FITTED midterm term on the president's party from the record since 1946, n and its interval printed (US-27 builds it); revisited against (c) once approval reaches the vote; the both-chambers amendment ruled yes", RulingOption = "(b)";
 

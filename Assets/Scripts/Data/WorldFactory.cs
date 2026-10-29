@@ -224,7 +224,7 @@ namespace PoliSim.Data
             // carry stay outside. An unimplemented line seeds at 0, not a placeholder.
             // ⚠ F4-5 (2026-09-16): THE `incomeTax` FIGURE BELOW IS THE STATUTE'S TOP RATE, and it is what the line is BUILT with, not what the game runs on.
             // For every schedule with brackets <see cref="SeedIncomeLeverLevel"/> replaces it once the cohorts and their incomes exist with the schedule's own
-            // average rate on the income it taxes (Germany 26.92, France 17.39, Poland 12.36, the USA 17.10, and since §538 Sweden 29.16 - ⚠ CORRECTED,
+            // average rate on the income it taxes (Germany 26.92, France 17.39, Poland 12.36, the USA 17.11 (17.10 before K299), and since §538 Sweden 29.16 - ⚠ CORRECTED,
             // GA-11-1's review, 2026-10-14: this said Sweden's flat layer here stands, which it has not since the earned-income credit entered the yield),
             // and Italy is billed and flat. `TaxBaseTable`'s row for each is that country's realised revenue over the rate it ends at.
             SeedTaxLines(usa, incomeTax: 37f, corporateTax: 21f, vat: 0f, vatImplemented: false,
@@ -289,6 +289,7 @@ namespace PoliSim.Data
             // F4-5 (2026-09-16): the USA's income row moves off the uniform stand-in onto the FEDERAL series (TaxBaseTable: 9.300111 % of GDP over the lever's
             // new level 17.1020 = 0.543803), so its implied revenue falls from 29.37 to 23.87 % of GDP and the bridge is re-solved on it: 18.0 / 23.8701 = 0.7541,
             // less the same 0.0010 seed tariff decrement. The federal target 18.0 is untouched, and the other three lines keep the stand-in (F-B).
+            // K299 (s953): the USA's seed now reads 17.1060 and its row 0.543675 - the product is still the sourced 9.300111, so the bridge stands as typed.
             usa.CollectionEfficiency = 0.7531f;    // 0.7541 (18.0 / 23.8701, federal-only, the income row sourced) - 0.0010; F4-3 and before: 0.6119 = 0.6129 (18.0 / 29.37, UNIFORM bases) - 0.0010
             // EN-4d (2026-09-11, §467): the carbon line's tonnes are transport's alone, so the three implemented lines' implied revenue-to-GDP falls by the
             // power share of the seed's carbon take - Sweden 0.393 % × 0.56 / 1.82 = 0.121 (implied 39.3203 → 39.1994), Germany 0.220 % × 2.13 / 3.81 = 0.123

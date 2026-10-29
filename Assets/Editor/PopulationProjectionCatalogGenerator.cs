@@ -24,6 +24,10 @@ namespace PoliSim.EditorTools
     /// gives the projected pyramid by single year of age directly, where Eurostat's has to be filtered
     /// out of a mixed dimension.</para>
     ///
+    /// <para>⚠ <b>K299: the USA's row is not the USA's path.</b> The game reads every country's path
+    /// through `CohortDemographics.Projection`, which reads CBO's 2025 demographics by age for the USA; this
+    /// row only carries CBO's last pyramid on, band by band, from CBO's last year to this catalog's.</para>
+    ///
     /// <para>⚠ <b>THE TRAP THIS GENERATOR EXISTS TO NOT FALL INTO, stated because it produces a wrong
     /// catalog SILENTLY.</b> Eurostat's <c>age</c> dimension holds <b>110 categories and mixes single
     /// years with aggregates</b>: <c>TOTAL</c>, <c>Y_LT15</c>, <c>Y15-64</c>, <c>Y15-74</c>,

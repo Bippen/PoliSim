@@ -1,0 +1,53 @@
+HTTP/1.1 200 OK
+Server: nginx
+Date: Thu, 29 Oct 2026 17:09:18 GMT
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+Content-Length: 4510541
+Connection: keep-alive
+x-archive-orig-connection: close
+x-archive-orig-content-length: 4510541
+x-archive-orig-via: 1.1 varnish, 1.1 varnish, 1.1 varnish
+x-archive-orig-x-platform-router: 2gdrwanq5fefyrhuuc2mpdvlpm
+x-archive-orig-x-frame-options: SAMEORIGIN
+x-archive-orig-traceresponse: 00-185accbcb00c87bfcd1f7d90f3d6a772-184a0be83b97d954-01
+x-archive-orig-x-debug-info: eyJyZXRyaWVzIjowfQ==
+x-archive-orig-x-timer: S1754940116.596023,VS0,VE100
+x-archive-orig-last-modified: Fri, 09 May 2025 20:21:34 GMT
+x-archive-orig-x-platform-processor: tqizgdvakdwnqv2es5ktoc5jmm
+x-archive-orig-x-content-type-options: nosniff
+x-archive-orig-x-generator: Drupal 10 (https://www.drupal.org)
+x-archive-orig-x-platform-cluster: 5jmn55jyi3w74-main-bvxea6i
+x-archive-orig-content-language: en
+x-archive-orig-accept-ranges: bytes
+x-archive-orig-age: 0
+x-archive-orig-date: Mon, 11 Aug 2025 19:21:55 GMT
+x-archive-orig-x-served-by: cache-iad-kiad7000090-IAD, cache-iad-kiad7000050-IAD, cache-sjc10028-SJC
+x-archive-orig-x-cache: MISS, MISS, MISS
+x-archive-orig-x-cache-hits: 0, 0, 0
+x-archive-orig-cache-control: public, max-age=43200, s-maxage=43200, stale-if-error=86400
+x-archive-orig-surrogate-control: max-age=43200, stale-if-error=86400
+x-archive-orig-expires: Tue, 12 Aug 2025 07:21:55 GMT
+cache-control: max-age=1800
+accept-ranges: bytes
+memento-datetime: Mon, 11 Aug 2025 19:21:55 GMT
+link: <https://www.cbo.gov/system/files/2025-01/60875-Data.xlsx>; rel="original", <https://web.archive.org/web/timemap/link/https://www.cbo.gov/system/files/2025-01/60875-Data.xlsx>; rel="timemap"; type="application/link-format", <https://web.archive.org/web/https://www.cbo.gov/system/files/2025-01/60875-Data.xlsx>; rel="timegate"
+content-security-policy: default-src 'self' 'unsafe-eval' 'unsafe-inline' data: blob: archive.org web.archive.org web-static.archive.org wayback-api.archive.org athena.archive.org analytics.archive.org pragma.archivelab.org wwwb-events.archive.org
+x-archive-src: SPNOUTLINKS-20250811181118-crawl919/SPNOUTLINKS-20250811190108-00054.warc.gz
+server-timing: captures_list;dur=0.466204, exclusion.robots;dur=0.045056, exclusion.robots.policy;dur=0.031955, esindex;dur=0.009370, cdx.remote;dur=12.190010, LoadShardBlock;dur=322.251458, PetaboxLoader3.datanode;dur=311.145809, load_resource;dur=403.277871, PetaboxLoader3.resolve;dur=138.914600
+x-app-server: wwwb-app262
+x-ts: 200
+x-tr: 757
+server-timing: TR;dur=0,Tw;dur=997,Tc;dur=1
+set-cookie: wb-p-b-SERVER=wwwb-app262; path=/
+cache-control: private
+X-location: All
+X-AS: 33885
+X-RL: 0
+X-NA: 0
+X-Page-Cache: MISS
+Server-Timing: MISS
+X-NID: Telenor Sverige AB
+Referrer-Policy: no-referrer-when-downgrade
+Permissions-Policy: interest-cohort=()
+X-sd: 1
+

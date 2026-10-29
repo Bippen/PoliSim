@@ -36,10 +36,17 @@ namespace PoliSim.EditorTools
     /// rate over the structural rate × the active people aged 20-74 at the year's projected rates - it reads the state, and it carries 65-74; review 1,
     /// M2, the prereg's r2-3) within LabourForceBand of the Ageing Report's labour force aged 20-74 (table II.1.53's employment / (1 - II.1.51's
     /// unemployment rate)) at 2030, 2040, 2050 and 2070 - the 20-64 construct against II.1.26 printed beside it as information; the USA's labour force
-    /// (15+ at the state's rate) against CBO's potential labor force (LTBO, March 2025, compounded from its growth rates) at 2030, 2040 and 2055.
+    /// (15+ at the state's rate) against CBO's potential labor force (LTBO, March 2025, compounded from its growth rates) at 2030, 2040 and 2055. Every
+    /// year is the pyramid's own (K299's amendment r2, the review's M2: NoPolicyCentury.Year.SubstrateYear, as (d) reads it).
     /// K290: a (c) line in <see cref="RegisteredLabourForce"/> prints a named REGISTERED MISS and does not fail while its attribution holds (the K218
     /// pattern); the rule and the band are unchanged, a registered line that holds says the registration can be lifted, and a miss whose attribution no
     /// longer holds FAILS.</item>
+    /// <item><b>(d) K299 (K290's follow-up): the USA's population against CBO's 2025 demographics</b> (UsDemographicOutlook, Tools/uspop_prep.pl), the
+    /// no-policy run, by the pyramid's own year, an index on 2025, at 2030, 2040 and 2055 (the path is CBO's by-age table, band by band - K299's
+    /// amendment r3): (d1) each of the four Figure 2 age groups and the sum from 25 within UsGroupBand of CBO's index, the whole population printed
+    /// against CBO's total; (d2) the 16+ within UsCivilianBand of CBO's civilian noninstitutionalized 16+ (Figure 10); (d3) the 15+ and the 16+ within
+    /// UsAdultBand of CBO's own (the table's single years). The bands are K299's prereg and its amendment r3 (Reviews/2026-10-29_uspop_prereg.md),
+    /// DECLARED before any run of the tree they govern.</item>
     /// </list>
     /// The bands and years are K276's prereg (Reviews/2026-10-29_k276_prereg.md), DECLARED before any run; its amendment r2 re-forms (b) and the EU's (c)
     /// after review 1, before any run of the amended tree. Prints `PARTICIPATION COHORTS: PASS` and exits 0
@@ -80,13 +87,11 @@ namespace PoliSim.EditorTools
         /// its 15+ population, against CBO's all-people rate) is inside the band. Review 3 (L1): the registration has a ceiling as well as a floor, so a
         /// later regression in the population - a miss growing past what was measured and attributed - FAILS instead of printing as the registered miss.
         /// A registered line whose attribution stops holding is asserted and FAILS; one that holds says so, so the registration can be lifted.
+        /// <para>K299 (K290's follow-up): EMPTY. K290's one line, USA 2040, was lifted when the US population was recalibrated on CBO's 2025
+        /// demographics and the line printed that its registration could be lifted (the record names the run); the mechanism stays for a later
+        /// registration, which a ruling names.</para>
         /// </summary>
-        private static readonly Dictionary<string, (string Reason, double MeasuredPopulationPart)> RegisteredLabourForce = new Dictionary<string, (string, double)>
-        {
-            // [MEASURED] the population part -3.34 % (headless, anchors.sh, 2026-10-29, on wave/k276 rebased onto §947 K275): the 15+ population x1.0618
-            // against the x1.0986 CBO's rate applies to; the rate part -0.09 % at the same run
-            { "USA 2040", ("K290: population - the model's 15+ population (the Census 2023 projection the pyramid converges toward) grows slower than the population CBO's 2025 demographics apply its rate to; the rate itself holds", -0.0334) },
-        };
+        private static readonly Dictionary<string, (string Reason, double MeasuredPopulationPart)> RegisteredLabourForce = new Dictionary<string, (string, double)>();
 
         /// <summary>[AUTHORED] review 3 (L1): how far a registered line's population part may lie from the part measured at its registration, a share (one
         /// point either way) - wide enough for the run-to-run and runtime rounding of the printed tenth, narrow enough that a population regression of
@@ -107,12 +112,13 @@ namespace PoliSim.EditorTools
                 Rates();
                 Response();
                 LabourForce();
+                Population();   // K299
             }
             catch (Exception e) { Check(false, "the run threw " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace); }
             Debug.Log(_sb.ToString());
             if (_registered > 0) { Debug.Log(F("PARTICIPATION COHORTS: {0} REGISTERED MISS line(s) (K290: printed, not failed, each with its attribution holding)", _registered)); }
             Debug.Log(_failures == 0
-                ? "PARTICIPATION COHORTS: PASS - every band's rate is its seed plus its source's projected change at the stated years, the response measures from the age the projection was made under (zero on the statute's own path, the carried statute's shortfall past an indexed horizon), a bill's age moves the older cohorts by the sourced response, and the labour force holds the sources' index within the band"
+                ? "PARTICIPATION COHORTS: PASS - every band's rate is its seed plus its source's projected change at the stated years, the response measures from the age the projection was made under (zero on the statute's own path, the carried statute's shortfall past an indexed horizon), a bill's age moves the older cohorts by the sourced response, the labour force holds the sources' index within the band, and the USA's population holds CBO's 2025 demographics within K299's bands"
                 : F("PARTICIPATION COHORTS: FAIL - {0} check(s) failed.", _failures));
             CheckExit.Finish(_failures == 0 ? 0 : 1);
         }
@@ -347,7 +353,10 @@ namespace PoliSim.EditorTools
                 var lf = new Dictionary<int, double>(); var lf2064 = new Dictionary<int, double>(); var lf2074 = new Dictionary<int, double>(); var part = new Dictionary<int, double>(); var structural = new Dictionary<int, double>(); var pop15 = new Dictionary<int, double>(); var terms = new Dictionary<int, NoPolicyCentury.Year>();
                 foreach (NoPolicyCentury.Year r in run)
                 {
-                    int y = (int)Math.Floor(r.SpanMidYear);
+                    // K299 (review M2, K299's prereg amendment r2): a record is keyed by the year its pyramid stands at, as (d) keys it. The floored
+                    // mid-year of its span, the key before, trails the pyramid by a year for a run that opens in the first half of its year (the USA's:
+                    // its "2040 on 2025" read the pyramid's 2041 on 2026) and equals it for a run that opens in the second half
+                    int y = r.SubstrateYear;
                     if (!lf.ContainsKey(y)) { lf[y] = r.LabourForce; lf2064[y] = r.LabourForce2064; lf2074[y] = r.LabourForce2074; part[y] = r.Participation; structural[y] = r.Structural; pop15[y] = r.Population15; terms[y] = r; }
                 }
                 bool usa = id == CountryId.USA;
@@ -391,6 +400,12 @@ namespace PoliSim.EditorTools
                         // K290: the miss split exactly - model / source = (the model's rate index / CBO's) x (the 15+ population index / CBO's implied population's)
                         ratePart = (lf[y] / pop15[y]) / (lf[baseYear] / pop15[baseYear]) / rateIx - 1.0; popPart = popIx / (source / rateIx) - 1.0;
                         cbo += F("; the miss split: the rate part {0:+0.00%;-0.00%}, the population part {1:+0.00%;-0.00%}", ratePart, popPart);
+                        // K299 (information): the same miss split against CBO's ACTUAL labour force - its civilian noninstitutionalized 16+ (Figure 10, the
+                        // LTBO's actual labour force over its actual rate) x that rate - exactly: model / source = (1 + the rate part) x (the 15+ index / the
+                        // civilian 16+'s) x (CBO's actual labour force / its potential); the last term is CBO's potential labour force converging on its actual
+                        double civIx = (double)UsCivilian16(y) / UsCivilian16(baseYear), actualIx = civIx * rateIx;
+                        cbo += F("; against CBO's actual labour force (K299): the population part against its civilian 16+ x{0:F4} {1:+0.00%;-0.00%}, its actual labour force over its potential {2:+0.00%;-0.00%}",
+                            civIx, popIx / civIx - 1.0, actualIx / source - 1.0);
                     }
                     _sb.Append(F("        info (c) {0,-8} {1}: the 15+ population x{2:F4}; the anchor (structural, with the response) x{3:F4}, {4:F2} % against {5:F2} %; the state's rate over the anchor {6:F4} against {7:F4} at {8}{9}\n",
                         id, y, popIx, anchorIx, structural[y], structural[baseYear], kNow, kBase, baseYear, cbo));
@@ -402,6 +417,90 @@ namespace PoliSim.EditorTools
                 }
                 Check(held > 0, F("(c) {0,-8} {1} stated year(s) inside the run - none is a check that did not run", id, held));
             }
+        }
+
+        // ============================================================ (d) K299: the USA's population against CBO's 2025 demographics, the no-policy run
+        /// <summary>K299 (K290's follow-up): the USA's no-policy pyramid against CBO's 2025 demographics (UsDemographicOutlook, Tools/uspop_prep.pl), by
+        /// the pyramid's own year (NoPolicyCentury.Year.SubstrateYear: the year the boundary's commit stepped it to), as an index on
+        /// <see cref="UsPopulationBase"/>, at <see cref="UsPopulationYears"/>: (d1) every Figure 2 group and the sum from 25 within <see cref="UsGroupBand"/>
+        /// of CBO's own index, the whole population printed against Figure 2's total; (d2) the 16+ within <see cref="UsCivilianBand"/> of CBO's civilian
+        /// noninstitutionalized 16+ (Figure 10, the population CBO's labour-force rate applies to); (d3) the 15+ and the 16+ within <see cref="UsAdultBand"/>
+        /// of CBO's own Social Security area 15+ and 16+ (the by-age table's single years). The bands and years are K299's prereg and its amendment r3
+        /// (Reviews/2026-10-29_uspop_prereg.md), DECLARED before any run of the tree they govern.</summary>
+        private static void Population()
+        {
+            _sb.Append(F("    d. K299: the USA's population against CBO's 2025 demographics, the no-policy run, by the pyramid's own year (an index on {0}; the groups +/-{1:P1}, the 16+ against CBO's civilian 16+ +/-{2:P1}, the 15+ and 16+ against CBO's own +/-{3:P1})\n",
+                UsPopulationBase, UsGroupBand, UsCivilianBand, UsAdultBand));
+            var byYear = new Dictionary<int, float[]>();
+            foreach (NoPolicyCentury.Year r in NoPolicyCentury.For(CountryId.USA))
+            {
+                if (r.Pyramid != null && !byYear.ContainsKey(r.SubstrateYear)) { byYear[r.SubstrateYear] = r.Pyramid; }
+            }
+            if (!Check(byYear.ContainsKey(UsPopulationBase), F("(d) USA      the run's pyramid stands at {0}, the base", UsPopulationBase))) { return; }
+            float[] p0 = byYear[UsPopulationBase];
+            int from = UsDemographicOutlook.GroupAges[1][0];   // the sum from CBO's second group (25)
+            int held = 0;
+            foreach (int y in UsPopulationYears)
+            {
+                if (!byYear.ContainsKey(y)) { continue; }
+                held++;
+                float[] p = byYear[y];
+                double modelAll = 0, cboAll = 0, modelAll0 = 0, cboAll0 = 0;
+                for (int g = 0; g < UsDemographicOutlook.GroupAges.Length; g++)
+                {
+                    int lo = UsDemographicOutlook.GroupAges[g][0], hi = UsDemographicOutlook.GroupAges[g][1];
+                    double m = Bands(p, lo, hi), m0 = Bands(p0, lo, hi), c = UsDemographicOutlook.Group(g, y), c0 = UsDemographicOutlook.Group(g, UsPopulationBase);
+                    double model = m / m0, cbo = c / c0;
+                    Check(Math.Abs(model / cbo - 1.0) <= UsGroupBand, F("(d1) USA      {0}: ages {1} at x{2:F4} of {3} against CBO's Figure 2 x{4:F4} ({5:+0.00%;-0.00%})",
+                        y, hi >= 999 ? lo + "+" : lo + "-" + hi, model, UsPopulationBase, cbo, model / cbo - 1.0));
+                    if (lo < from) { continue; }
+                    modelAll += m; modelAll0 += m0; cboAll += c; cboAll0 += c0;
+                }
+                Check(Math.Abs((modelAll / modelAll0) / (cboAll / cboAll0) - 1.0) <= UsGroupBand, F("(d1) USA      {0}: ages {1}+ at x{2:F4} of {3} against CBO's Figure 2 x{4:F4} ({5:+0.00%;-0.00%})",
+                    y, from, modelAll / modelAll0, UsPopulationBase, cboAll / cboAll0, (modelAll / modelAll0) / (cboAll / cboAll0) - 1.0));
+                // review L4 (information): the whole population against CBO's total
+                double total = Bands(p, 0, 999) / Bands(p0, 0, 999), cboTotal = (double)UsTotal(y) / UsTotal(UsPopulationBase);
+                _sb.Append(F("        info (d1) USA      {0}: the whole population at x{1:F4} of {2} against CBO's total (Figure 2) x{3:F4} ({4:+0.00%;-0.00%})\n", y, total, UsPopulationBase, cboTotal, total / cboTotal - 1.0));
+                // (d2) the 16+: the bands from 20 and four fifths of 15-19 (uniform inside the band, DECLARED), against CBO's civilian noninstitutionalized 16+
+                double m16 = (Bands(p, 20, 999) + 0.8 * p[3]) / (Bands(p0, 20, 999) + 0.8 * p0[3]);
+                double m15 = Bands(p, 15, 999) / Bands(p0, 15, 999);
+                double civ = (double)UsCivilian16(y) / UsCivilian16(UsPopulationBase);
+                Check(Math.Abs(m16 / civ - 1.0) <= UsCivilianBand, F("(d2) USA      {0}: the 16+ at x{1:F4} of {2} against CBO's civilian noninstitutionalized 16+ (Figure 10) x{3:F4} ({4:+0.00%;-0.00%}); the 15+ x{5:F4} ({6:+0.00%;-0.00%})",
+                    y, m16, UsPopulationBase, civ, m16 / civ - 1.0, m15, m15 / civ - 1.0));
+                // (d3) amendment r3: the 15+ and the 16+ against CBO's own Social Security area 15+ and 16+, from the by-age table's single years
+                double c15 = (double)UsAdult(UsDemographicOutlook.Population15Plus, y) / UsAdult(UsDemographicOutlook.Population15Plus, UsPopulationBase);
+                double c16 = (double)UsAdult(UsDemographicOutlook.Population16Plus, y) / UsAdult(UsDemographicOutlook.Population16Plus, UsPopulationBase);
+                Check(Math.Abs(m15 / c15 - 1.0) <= UsAdultBand, F("(d3) USA      {0}: the 15+ at x{1:F4} of {2} against CBO's own 15+ (the by-age table) x{3:F4} ({4:+0.00%;-0.00%})", y, m15, UsPopulationBase, c15, m15 / c15 - 1.0));
+                Check(Math.Abs(m16 / c16 - 1.0) <= UsAdultBand, F("(d3) USA      {0}: the 16+ at x{1:F4} of {2} against CBO's own 16+ (the by-age table) x{3:F4} ({4:+0.00%;-0.00%})", y, m16, UsPopulationBase, c16, m16 / c16 - 1.0));
+            }
+            Check(held == UsPopulationYears.Length, F("(d) USA      {0} of the {1} stated years inside the run - none is a check that did not run", held, UsPopulationYears.Length));
+        }
+
+        /// <summary>K299: the stated years and the base of (d) - the years (c) holds the USA at, and (c)'s base, CBO's LTBO's first year.</summary>
+        private static readonly int[] UsPopulationYears = { 2030, 2040, 2055 };
+        private const int UsPopulationBase = 2025;
+
+        /// <summary>[AUTHORED] K299's prereg: a Figure 2 group's index against CBO's, a share - DECLARED before any run of K299's tree.</summary>
+        private const double UsGroupBand = 0.01;
+
+        /// <summary>[AUTHORED] K299's prereg: the 16+ index against CBO's civilian noninstitutionalized 16+, a share - DECLARED before any run of K299's tree.</summary>
+        private const double UsCivilianBand = 0.015;
+
+        /// <summary>[AUTHORED] K299's prereg amendment r3: the 15+ and 16+ indices against CBO's own, a share - DECLARED before the code that reads it.</summary>
+        private const double UsAdultBand = 0.01;
+
+        private static float UsTotal(int year) => UsDemographicOutlook.Total[Math.Max(0, Math.Min(UsDemographicOutlook.LastYear - UsDemographicOutlook.FirstYear, year - UsDemographicOutlook.FirstYear))];
+
+        private static float UsCivilian16(int year) => UsDemographicOutlook.Civilian16Plus[Math.Max(0, Math.Min(UsDemographicOutlook.LastYear - UsDemographicOutlook.FirstYear, year - UsDemographicOutlook.FirstYear))];
+
+        private static float UsAdult(float[] series, int year) => series[Math.Max(0, Math.Min(UsDemographicOutlook.BandsLastYear - UsDemographicOutlook.BandsFirstYear, year - UsDemographicOutlook.BandsFirstYear))];
+
+        /// <summary>A pyramid's millions over the bands from <paramref name="lo"/> to <paramref name="hi"/> (999: the open band), whole bands.</summary>
+        private static double Bands(float[] p, int lo, int hi)
+        {
+            double s = 0;
+            for (int b = lo / PopulationCohorts.CohortWidth; b < PopulationCohorts.CohortCount && b * PopulationCohorts.CohortWidth <= hi; b++) { s += p[b]; }
+            return s;
         }
 
         /// <summary>The Ageing Report's labour force aged 20-74 in a year, millions: table II.1.53's employment / (1 - table II.1.51's unemployment rate / 100).</summary>
