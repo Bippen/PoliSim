@@ -1343,7 +1343,13 @@ namespace PoliSim.UI
                     // F4-2 / F4-4 (2026-09-13): the statute's shape behind the lever - what a point of the dial does is the statute's answer. GA-2-2 (2026-10-14):
                     // the yield as the revenue reads it, floored at zero (a shift below zero yields nothing, never a negative tax), and the rate by its name
                     double yielded = TaxSchedule.YieldNow(country, line, line.Rate);
-                    lines.Add($"The statute: {TaxSchedule.KindWord(TaxSchedule.Of(country.Id).Kind)} - the dial shifts every taxed band by its points; the yield is {(yielded > 0 ? yielded : 0.0):F1}% of income against {country.IncomeTaxSeedAer:F1}% at the seed, the flat-equivalent rate {TaxBases.EffectiveRate(country, line):F1}%.");
+                    // K275 (review 2's L-n3): where the creep's cap binds, the yield is printed as the revenue and the flat-equivalent rate read it (times the
+                    // factor), the statute's own beside it, so seed + yield - seed yield adds up to the printed rate
+                    double creepFactor = TaxSchedule.CreepCapFactor(country, line);
+                    string yieldText = creepFactor < 1.0
+                        ? $"{(yielded > 0 ? yielded * creepFactor : 0.0):F1}% of income (the statute's {(yielded > 0 ? yielded : 0.0):F1}%, its threshold creep capped at the top rate)"
+                        : $"{(yielded > 0 ? yielded : 0.0):F1}% of income";
+                    lines.Add($"The statute: {TaxSchedule.KindWord(TaxSchedule.Of(country.Id).Kind)} - the dial shifts every taxed band by its points; the yield is {yieldText} against {country.IncomeTaxSeedAer:F1}% at the seed, the flat-equivalent rate {TaxBases.EffectiveRate(country, line):F1}%.");
                 }
                 lines.Add($"Approval: {MacroSystem.TaxHikeApprovalSensitivity:F2} pts lost per point raised above the fiscal year's opening, {TaxTerm.MirrorFraction * MacroSystem.TaxHikeApprovalSensitivity:F2} gained per point cut below it; the effect fades by {(1f - TaxTerm.QuarterlyPersistence) * 100f:F0}% a quarter");   // A-LOOP q37
                 lines.Add($"Revenue base: ~{TaxBaseTable.BaseShareOfGdp(country.Id, line.Type) * 100f:F0}% of GDP at the seed, following {TaxBases.Name(TaxBases.Of(line.Type))} (x{TaxBases.DriverRatio(country, line.Type):F3} today) x rate (feeds Budget/DebtToGdp)");

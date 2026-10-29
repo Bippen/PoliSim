@@ -55,8 +55,22 @@ namespace PoliSim.Data
     /// credit reads its price base amount on the same threshold scale - it stood nominal, which was the residual creep K251 measured. K271's cap on the
     /// yield ratio is NOT built: a cap at the top marginal rate deleted the tax when a player set the top band to 0 (review 3, H1), and a cap at the
     /// statute's own yield binds at the seed for every responding statute, because the lever seeds at the average rate on TAXED income (F4-5), above
-    /// the statute's average effective rate - the anchor would lose a quarter to a half of its revenue on day one. The player's creep stays the ratio
-    /// form's (seed rate over the seed yield times the yield now), filed with K271's measurement.</para>
+    /// the statute's average effective rate - the anchor would lose a quarter to a half of its revenue on day one. The player's creep was left to the ratio
+    /// form (seed rate over the seed yield times the yield now) and filed; K275, below, answers it.</para>
+    ///
+    /// <para><b>K275 (Elias, 2026-10-29): only the CREEP is capped, never the player's own moves.</b> The yield now is split in two: the STATUTE'S CREEP
+    /// (<see cref="StatuteCreep"/>) - the statute as written, at no shift, at the thresholds as they stand over the same statute at thresholds that moved
+    /// with incomes (what K271's AI re-indexing would have kept) - and everything else, the player's rates and sub-rows among it. The ratio form is
+    /// multiplied by <see cref="CreepCapFactor"/>, which is the bound over the creep where the creep passes the bound and exactly one elsewhere. The factor
+    /// reads no lever and no sub-row, so a rate move keeps the proportional effect the ratio form gives it at every position (no kink: review 4's N6), and
+    /// a band set to 0 leaves the tax positive (review 3's H1). THE BOUND (<see cref="CreepBound"/>, DECLARED): the creep may carry the tax's take on its
+    /// anchored base up to the statute's own top marginal rate and no further - the bound is the statute's top rate over the lever's seeded rate (Poland's
+    /// levy included), so the binding regime is ABOUT the top rate on the anchored base at the statute's rates (exactly the top rate times the
+    /// income-indexed statute's yield over the seed's, which the pyramid moves), and the player's moves scale it. The flat-equivalent rate the behavioural
+    /// terms read takes the same factor (<see cref="EffectiveRate"/>). It cannot bind at the seed (the creep is one there) nor in a book an AI government
+    /// has run from the seed (its thresholds follow incomes, so the creep stays near one - float rounding of the lift); it keeps holding where an AI
+    /// government takes over a book the player let creep, because that creep stays in the thresholds. Not the USA's: its CPI creep is CBO's current law
+    /// in every book (K271).</para>
     ///
     /// <para><b>F4-4 / board 15b (2026-09-13): the sub-rows and their own rates.</b> Each statute is a list of SUB-ROWS - the exempt band, the
     /// bands, Germany's ramps (the marginal rate rising from the zone's start to its END rate; the ends are DERIVED from § 32a's
@@ -569,8 +583,10 @@ namespace PoliSim.Data
             public string Overrides = "";
             public float[] Pyramid;
             public readonly Dictionary<float, double> ByRate = new Dictionary<float, double>();
+            /// <summary>K275: the statute's yield at thresholds that moved with incomes (<see cref="StatuteCreep"/>'s denominator) - read on the statute's memo only, cleared with the rest.</summary>
+            public double Reference = double.NaN;
             public bool Holds(float level, float wage, float lift, string overrides, float[] pyramid) => Level == level && Wage == wage && Lift == lift && Overrides == overrides && SamePyramid(pyramid);
-            public void Reset(float level, float wage, float lift, string overrides, float[] pyramid) { Level = level; Wage = wage; Lift = lift; Overrides = overrides; Pyramid = (float[])pyramid?.Clone(); ByRate.Clear(); }
+            public void Reset(float level, float wage, float lift, string overrides, float[] pyramid) { Level = level; Wage = wage; Lift = lift; Overrides = overrides; Pyramid = (float[])pyramid?.Clone(); ByRate.Clear(); Reference = double.NaN; }
 
             private bool SamePyramid(float[] pyramid)
             {
@@ -654,14 +670,98 @@ namespace PoliSim.Data
         public static double YieldRatio(Country country, TaxLine line, float rate)
         {
             if (!Responds(country.Id)) { return 1.0; }
-            return RatioOf(country, YieldNow(country, line, rate));   // the yield first: it takes the seed yield where a save from before the capture has none
+            double ratio = RatioOf(country, YieldNow(country, line, rate));   // the yield first: it takes the seed yield where a save from before the capture has none
+            double cap = CreepCapFactor(country, line);   // K275: one wherever the creep is inside its bound - the ratio form to the bit
+            return cap < 1.0 ? ratio * cap : ratio;
         }
 
-        /// <summary>GA-2-11 (2026-10-14): <see cref="YieldRatio"/> under the statute as seeded (<see cref="YieldNowAtStatute"/>) - the household burden's seed side.</summary>
+        /// <summary>GA-2-11 (2026-10-14): <see cref="YieldRatio"/> under the statute as seeded (<see cref="YieldNowAtStatute"/>) - the household burden's seed side.
+        /// K275: the same creep factor as the live side, so a bound creep moves both sides alike and leaves the burden's gap the player's moves alone.</summary>
         public static double YieldRatioAtStatute(Country country, TaxLine line, float rate)
         {
             if (!Responds(country.Id)) { return 1.0; }
-            return RatioOf(country, YieldNowAtStatute(country, line, rate));
+            double ratio = RatioOf(country, YieldNowAtStatute(country, line, rate));
+            double cap = CreepCapFactor(country, line);
+            return cap < 1.0 ? ratio * cap : ratio;
+        }
+
+        /// <summary>K275: the ratio form WITHOUT the creep's cap - the diagnostic's comparator, never a revenue path.</summary>
+        public static double YieldRatioUncapped(Country country, TaxLine line, float rate)
+        {
+            if (!Responds(country.Id)) { return 1.0; }
+            return RatioOf(country, YieldNow(country, line, rate));
+        }
+
+        /// <summary>K275: whether a statute's creep is capped - every statute that responds but the USA's, whose CPI creep is CBO's current law in every book (K271).</summary>
+        public static bool CreepCapped(CountryId id) => Responds(id) && id != CountryId.USA;
+
+        /// <summary>
+        /// K275 (Elias, 2026-10-29): THE STATUTE'S CREEP at this boundary - the statute as written (no shift, no sub-row of the line's) at the thresholds as
+        /// they stand, over the same statute at thresholds that moved with incomes (the threshold scale equal to the income scale: what K271's AI
+        /// re-indexing keeps). Exactly one at the seed, where both read the seed's scales; near one in a book an AI government has run from the seed; above
+        /// one by the drift of a statute whose thresholds stood still against incomes. The cohort pyramid is the same on both sides, so an ageing population
+        /// is not read as creep. Reads no lever and no sub-row: the player's moves are never part of it.
+        /// </summary>
+        public static double StatuteCreep(Country country, TaxLine line)
+        {
+            if (!Responds(country.Id) || !(country.IncomeTaxSeedAer > 0f)) { return 1.0; }
+            double now = YieldNowAtStatute(country, line, RateSeedOf(line));   // moves the statute's memo to this boundary first; the shift is exactly zero
+            Memo memo = country.ScheduleMemoStatute;
+            if (memo == null) { return 1.0; }
+            if (double.IsNaN(memo.Reference))
+            {
+                double incomes = IncomeScale(country);
+                memo.Reference = (double)(float)AverageEffectiveRate(country, 0, incomes, incomes);   // rounded as the yield is, so the seed's two readings are one figure
+            }
+            return now > 0 && memo.Reference > 0 ? now / memo.Reference : 1.0;
+        }
+
+        /// <summary>
+        /// K275 (DECLARED, Code's reading): THE CREEP'S BOUND - the statute's own top marginal rate over the lever's seeded rate. At the statute's rates the
+        /// ratio form puts the tax's take on its anchored base at the seeded rate times the ratio, so the creep is let carry that take up to the statute's top
+        /// rate and no further - the point at which K271 found Poland's ratio form passing its statute. Fixed at the seed (the statute and the seeded lever),
+        /// at least one; infinite where no seed rate is on record. ⚠ (review L2) Binding, the take is the top rate times the income-indexed statute's yield
+        /// over the seed's yield, so "the take stays at or under the top rate" holds while the pyramid keeps that yield at or under the seed's - not by
+        /// construction (creep_play measured it at 0.972 for Poland and 0.977 for Germany at year 100, 2026-10-29); IncomeTaxCreepCapDiagnostic's case 3
+        /// asserts the take for Poland.
+        /// </summary>
+        public static double CreepBound(Country country, TaxLine line)
+        {
+            double seed = RateSeedOf(line);
+            return seed > 0f ? Math.Max(1.0, StatuteTopMarginalRate(country.Id) / seed) : double.PositiveInfinity;
+        }
+
+        /// <summary>K275: the factor the ratio form is multiplied by - the bound over the creep where the creep passes it, exactly one everywhere else
+        /// (at the seed, in a book whose thresholds followed incomes, for a statute that does not respond, for the USA).
+        /// ⚠ DECLARED (review L1): it can bind in an AI book by two routes - a book the player let creep and then lost or left (declared in the class text),
+        /// and a save cut under the build before K271, whose AI books crept and which loads with a lift of one (SaveGameService's K271 note). There the
+        /// AI finance ministry's point is priced through this factor: F4-5's identity holds at factor one, so a point raises the factor times the base the
+        /// ministry prices it by. Lifting such a save's AI thresholds to incomes at the load is NOT done: it would cut a loaded AI book's revenue on the
+        /// load day by the whole creep the older build had collected, and a save does not record which of its books a player let creep.</summary>
+        public static double CreepCapFactor(Country country, TaxLine line)
+        {
+            if (!CreepCapped(country.Id) || !(country.IncomeTaxSeedAer > 0f)) { return 1.0; }
+            double creep = StatuteCreep(country, line);
+            double bound = CreepBound(country, line);
+            return creep > bound ? bound / creep : 1.0;
+        }
+
+        private static readonly Dictionary<CountryId, double> TopRates = new Dictionary<CountryId, double>();
+
+        /// <summary>K275: the highest marginal rate the statute AS WRITTEN reaches at any income, % - read at every band's start, the levy's and far above the
+        /// top threshold, so a statute whose rate fell with income would still report its highest (review 3's H1 lesson). A fact of the statute alone, kept
+        /// per country for the process.</summary>
+        public static double StatuteTopMarginalRate(CountryId id)
+        {
+            if (TopRates.TryGetValue(id, out double cached)) { return cached; }
+            Statute s = Of(id);
+            // [AUTHORED] probe points, a CONVENTION: ten times the row's axis ceiling stands above every threshold, and 1 000 in the statute's currency above a
+            // band's start clears MarginalRate's own 100-unit step; any income inside the band would read the same flat rate (a ramp's start reads its lowest)
+            double top = MarginalRate(s, AxisCeiling(s) * 10.0, 0, 1.0);
+            foreach (Bracket b in s.Brackets) { top = Math.Max(top, MarginalRate(s, b.Threshold + 1000.0, 0, 1.0)); }
+            if (s.LevyRate > 0) { top = Math.Max(top, MarginalRate(s, s.LevyThreshold + 1000.0, 0, 1.0)); }
+            TopRates[id] = top;
+            return top;
         }
 
         private static double RatioOf(Country country, double now)
@@ -680,12 +780,27 @@ namespace PoliSim.Data
         /// does not respond, or where no seed yield is on record. A yield at or below zero reads as zero - the seed's whole yield removed in points,
         /// continuous with the hair above zero Germany's, Poland's and the USA's landed on. ⚠ GA-2-2 (2026-10-14): it used to answer the bare lever
         /// there, so at a lever of 0 France's terms read a rate of 0 where Germany's, Poland's and the USA's read the seed's rate less its yield.
+        /// K275 (the coordinator's ruling under Elias's standing instruction, 2026-10-29; review M1): where the creep's cap binds, the yield now is read
+        /// through the same <see cref="CreepCapFactor"/> as the revenue - seed + (yield now × factor − yield at the seed) - so participation, the Gini and a
+        /// bill's hike read the regime the revenue collects, and a player's move keeps the proportion of the yield it moves, as in the ratio. Where the cap
+        /// does not bind this is the expression above to the bit.
         /// </summary>
         public static float EffectiveRate(Country country, TaxLine line, float rate)
         {
             if (!Responds(country.Id)) { return rate; }
             double now = YieldNow(country, line, rate);
             if (!(country.IncomeTaxSeedAer > 0f)) { return rate; }   // as YieldRatio's
+            double cap = CreepCapFactor(country, line);
+            if (cap < 1.0) { return (float)(RateSeedOf(line) + (Math.Max(0.0, now) * cap - country.IncomeTaxSeedAer)); }
+            return (float)(RateSeedOf(line) + (Math.Max(0.0, now) - country.IncomeTaxSeedAer));
+        }
+
+        /// <summary>K275: <see cref="EffectiveRate"/> WITHOUT the creep's cap - the diagnostic's comparator, never a reader's.</summary>
+        public static float EffectiveRateUncapped(Country country, TaxLine line, float rate)
+        {
+            if (!Responds(country.Id)) { return rate; }
+            double now = YieldNow(country, line, rate);
+            if (!(country.IncomeTaxSeedAer > 0f)) { return rate; }
             return (float)(RateSeedOf(line) + (Math.Max(0.0, now) - country.IncomeTaxSeedAer));
         }
 

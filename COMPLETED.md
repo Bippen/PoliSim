@@ -42149,3 +42149,28 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** cheappdn2 145 of 146 (the ledger's evidence named no file; fixed), npdn 4 of 4 clean (ReviewLedgerCheck, PortfolioDisplayNameCheck, CommentImmunityCheck, MetaTextCheck); realpdn Poland 1280 exit 0, 22 captured; docpdn document group clean
 
 **Commit:** this one.
+
+## 947. K275: IN THE PLAYER'S BOOK ONLY THE INCOME TAX'S THRESHOLD CREEP IS CAPPED - THE STATUTE'S TOP RATE OVER THE SEEDED LEVER; THE PLAYER'S MOVES KEEP THEIR FULL PROPORTION; THE BEHAVIOURAL RATE ON THE SAME FACTOR (2026-10-29)
+
+**What was owed:** K275, answering K272: cap only the creep part of the income tax's yield in the player's book. Poland's ratio form overshot its statute from about year 26 at unchanged rates (K251 review 3, M1). Review 4's N6 had rejected a points cap because it kinked the levers.
+
+**Built** (an implementer on `wave/k275`; two reviews: NOT READY (H1 the check unregistered; M1 the behavioural rate uncapped), then READY (three Lows, landed)):
+- `TaxSchedule.StatuteCreep`, `CreepBound`, `CreepCapFactor`, `StatuteTopMarginalRate`, `YieldRatioUncapped`, `EffectiveRateUncapped`, with the creep's reference cached on the statute's memo.
+- `YieldRatio`, `YieldRatioAtStatute` and the flat-equivalent `EffectiveRate` (participation, the Gini, a bill's hike) take the factor where the creep passes the bound; everywhere else they are the old expressions, bit for bit.
+- The policy web's statute line prints the capped yield beside the statute's own where the cap binds.
+- `NoPolicyCentury` records the player's income-tax readings and the AI books' creep.
+- `IncomeTaxCreepCapDiagnostic` (simulation group).
+- `Tools/headless_hold/creep_play.sh`.
+
+**Measured:**
+- nk275b 3 of 3: IncomeTaxCreepCapDiagnostic ALL ASSERTIONS PASS in the engine. Poland's player book binds from year 25, with ratio 2.8222 against the form's 4.0301 at year 40 (creep 4.1559 against the bound 2.9103; 76 years bound, Germany 37) and the take 34.91 % against the top rate 36 %. The player's moves keep the form's proportion. A top band at 0 leaves the tax positive. The behavioural factor equals the revenue's, and the planted squared and seed-pinned rates fail.
+- Out of the engine (`Reviews/2026-10-29_k275_review2.md` reproduced every figure): Poland's idle player book at year 100 has an effective rate of 23.55 % (40.93 % uncapped), a participation term of −1.58 (−4.58) and debt of −199 % (−422 %). Germany binds from year 64.
+- The default dump (k275b) is BYTE-IDENTICAL to `k251` on both seeds: the cap never binds in an AI book (AI creep under 1 + 1e-3), so the sentinel stands.
+
+**Evidence:** `Reviews/2026-10-29_k275_review.md`, `_review2.md`; ledger row s947 (`TaxSchedule.cs`).
+
+**Declared:** K287 (the creep, the bound, the behavioural rate, the pre-K271 save route), K288 (the player's USA not capped). Recorded with them: K277-K286 and K289 (D-IT's K-lines, the levy row, K273 HELD).
+
+**Bars:** nk275b 3 of 3; cheapk275 146 of 146; dryk275 (Sweden, USA 1280) 170 captured, 0 failed; dumpk275b byte-identical to k251 (both seeds); simk275 90 of 90; dock275 document group clean
+
+**Commit:** this one.

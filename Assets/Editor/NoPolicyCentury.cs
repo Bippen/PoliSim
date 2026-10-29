@@ -78,6 +78,82 @@ namespace PoliSim.EditorTools
             public float PrimaryBalancePercent;
             public float InterestPercent;
             public double NominalGrowth;
+            /// <summary>K275: the player's income tax after the year's turn (`IncomeTaxCreepCapDiagnostic`) - the yield ratio the revenue reads, the ratio form
+            /// without the creep's cap, the statute's creep, its bound and the lever's seeded rate; 1 (0 for the seed rate) where the country has no income line.</summary>
+            public double IncomeTaxRatio = 1.0;
+            public double IncomeTaxRatioUncapped = 1.0;
+            public double IncomeTaxCreep = 1.0;
+            public double IncomeTaxCreepBound = 1.0;
+            public float IncomeTaxSeedRate;
+            /// <summary>K275 (review M1): the seed yield, and the flat-equivalent rate the behavioural terms read (`TaxSchedule.EffectiveRate`) capped and uncapped, %.</summary>
+            public float IncomeTaxSeedAer;
+            public float IncomeTaxEffective, IncomeTaxEffectiveUncapped;
+            /// <summary>K275: the player's own moves read at this year's position, at <see cref="IncomeTaxProbeYears"/> only (NaN elsewhere) - the ratio with
+            /// the lever one point up and one down, the top adjustable band one point up on its own dial and the same band at 0, each capped (the revenue's
+            /// reading) and uncapped (the ratio form's). Read on clones of the line, so the run's own line is never touched.</summary>
+            public double TaxRiseCapped = double.NaN, TaxRiseUncapped = double.NaN, TaxCutCapped = double.NaN, TaxCutUncapped = double.NaN;
+            public double TaxBandCapped = double.NaN, TaxBandUncapped = double.NaN, TaxTopZeroCapped = double.NaN, TaxTopZeroUncapped = double.NaN;
+            /// <summary>K275 (review M1): the same three moves read on the flat-equivalent rate, capped and uncapped (NaN outside the probe years).</summary>
+            public float EffRiseCapped = float.NaN, EffRiseUncapped = float.NaN, EffCutCapped = float.NaN, EffCutUncapped = float.NaN, EffBandCapped = float.NaN, EffBandUncapped = float.NaN;
+            /// <summary>K275: the AI books of the same world after the year's turn - how many of them the creep's cap bound, and the largest creep among them.</summary>
+            public int AiCreepBinds;
+            public double AiCreepMax;
+        }
+
+        /// <summary>K275: the years the player's own moves are probed at - the first (the creep inside its bound everywhere) and the two the diagnostic holds.</summary>
+        public static readonly int[] IncomeTaxProbeYears = { 1, 40, 100 };   // [AUTHORED] CONVENTION: the first year and the two the diagnostic holds
+
+        /// <summary>K275: the player's income-tax readings into a year's record, and the AI books' creep - every read on the memoised yield, the probes on clones.</summary>
+        private static void RecordIncomeTax(World world, Country player, int year, Year y)
+        {
+            foreach (Country k in world.Countries)
+            {
+                TaxLine line = IncomeLine(k);
+                if (line == null || !TaxSchedule.Responds(k.Id)) { continue; }
+                if (!ReferenceEquals(k, player))
+                {
+                    if (TaxSchedule.CreepCapped(k.Id)) { y.AiCreepMax = System.Math.Max(y.AiCreepMax, TaxSchedule.StatuteCreep(k, line)); if (TaxSchedule.CreepCapFactor(k, line) < 1.0) { y.AiCreepBinds++; } }
+                    continue;
+                }
+                y.IncomeTaxRatio = TaxSchedule.YieldRatio(k, line, line.Rate);
+                y.IncomeTaxRatioUncapped = TaxSchedule.YieldRatioUncapped(k, line, line.Rate);
+                y.IncomeTaxCreep = TaxSchedule.StatuteCreep(k, line);
+                y.IncomeTaxCreepBound = TaxSchedule.CreepBound(k, line);
+                y.IncomeTaxSeedRate = TaxSchedule.RateSeedOf(line);
+                y.IncomeTaxSeedAer = k.IncomeTaxSeedAer;
+                y.IncomeTaxEffective = TaxSchedule.EffectiveRate(k, line, line.Rate); y.IncomeTaxEffectiveUncapped = TaxSchedule.EffectiveRateUncapped(k, line, line.Rate);
+                if (System.Array.IndexOf(IncomeTaxProbeYears, year) < 0) { continue; }
+                y.TaxRiseCapped = TaxSchedule.YieldRatio(k, line, line.Rate + 1f); y.TaxRiseUncapped = TaxSchedule.YieldRatioUncapped(k, line, line.Rate + 1f);
+                y.TaxCutCapped = TaxSchedule.YieldRatio(k, line, line.Rate - 1f); y.TaxCutUncapped = TaxSchedule.YieldRatioUncapped(k, line, line.Rate - 1f);
+                y.EffRiseCapped = TaxSchedule.EffectiveRate(k, line, line.Rate + 1f); y.EffRiseUncapped = TaxSchedule.EffectiveRateUncapped(k, line, line.Rate + 1f);
+                y.EffCutCapped = TaxSchedule.EffectiveRate(k, line, line.Rate - 1f); y.EffCutUncapped = TaxSchedule.EffectiveRateUncapped(k, line, line.Rate - 1f);
+                List<TaxSchedule.SubRow> rows = TaxSchedule.SubRows(TaxSchedule.Of(k.Id));
+                int top = -1;
+                for (int i = 0; i < rows.Count; i++) { if (rows[i].Adjustable && (rows[i].Kind == TaxSubRowKind.Band || rows[i].Kind == TaxSubRowKind.Ramp)) { top = i; } }
+                if (top >= 0)
+                {
+                    TaxLine band = line.Clone(); band.BracketRates = OneRow(rows.Count, top, (float)rows[top].StatuteRate + 1f, line.BracketRates);
+                    y.TaxBandCapped = TaxSchedule.YieldRatio(k, band, band.Rate); y.TaxBandUncapped = TaxSchedule.YieldRatioUncapped(k, band, band.Rate);
+                    y.EffBandCapped = TaxSchedule.EffectiveRate(k, band, band.Rate); y.EffBandUncapped = TaxSchedule.EffectiveRateUncapped(k, band, band.Rate);
+                    TaxLine zero = line.Clone(); zero.BracketRates = OneRow(rows.Count, top, 0f, line.BracketRates);
+                    y.TaxTopZeroCapped = TaxSchedule.YieldRatio(k, zero, zero.Rate); y.TaxTopZeroUncapped = TaxSchedule.YieldRatioUncapped(k, zero, zero.Rate);
+                }
+            }
+        }
+
+        private static float[] OneRow(int count, int row, float rate, float[] standing)
+        {
+            var rates = new float[count];
+            for (int i = 0; i < count; i++) { rates[i] = standing != null && i < standing.Length ? standing[i] : -1f; }
+            rates[row] = rate;
+            return rates;
+        }
+
+        private static TaxLine IncomeLine(Country c)
+        {
+            if (c.TaxLines == null) { return null; }
+            foreach (TaxLine l in c.TaxLines) { if (l.Type == TaxType.IncomeTax && l.IsImplemented) { return l; } }
+            return null;
         }
 
         private static readonly Dictionary<CountryId, Year[]> Runs = new Dictionary<CountryId, Year[]>();
@@ -204,6 +280,7 @@ namespace PoliSim.EditorTools
                             InterestPercent = report != null ? (float)(100.0 * report.InterestOnDebt / nominal) : float.NaN,
                             NominalGrowth = (nominal / System.Math.Max(1e-6, nominalBefore) - 1.0) * 100.0,
                         };
+                        RecordIncomeTax(world, c, year, years[year - 1]);   // K275
                         nominalBefore = nominal;
                         gdpBefore = c.State.GDP; potentialBefore = c.State.PotentialGDP; productivityBefore = c.PotentialProductivityIndex; yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
                     }
