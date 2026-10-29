@@ -42117,3 +42117,15 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nk251b 8/8, nk251c 5/5 (EnergyPassThrough, PreviewParity's true counts, the sentinel at k251); slrtk251 12/12; cheapk251 clean but the ledger (rows added); simk251 87/89 - the FT-10 slack cells (lowered) and EnergyPassThrough's no-policy baseline (the ministry held off) - re-run clean; the play saves re-staged, the US cards regenerated.
 
 **Commit:** this one.
+
+## 945. E-50 CLOSED: THE PLAYER SHIPS WITH NO UNITY DATA COLLECTION - ELIAS'S READING OF UNITY'S PUBLISHED TERMS, AND THE 6.2 DIAGNOSTIC DATA SWITCH TURNED OFF (2026-10-29)
+
+**What was owed:** E-50 (§691): before release, a written answer on whether a Personal-plan player may ship with the built-in analytics module disabled and Unity's services off, under the Terms of Service §12.3 and §17.2(d).
+
+**Elias's answer (2026-10-29, his own research, pasted; not legal advice):** Unity has not publicly answered the exact §17.2(d) question, but everything it publishes treats switching data collection off as an option developers may use, Personal included: the manual describes disabling unused built-in packages as normal; a Unity employee said everyone, not only Pro, may turn off all data collection from about 2018.3; from Unity 6.2 developers may opt out of Diagnostic Data at any time, and Unity's privacy docs say developers lacking a legal basis must turn it off; the Developer Data terms say turning off Diagnostic Data stops all collection by the runtime. No requirement to send anything was found. One check for Code: the separate 6.2+ setting Project Settings > Diagnostics > Diagnostic Data, overridable per build profile.
+
+**Done by Code:** the project had `UnityConnectSettings.InsightsSettings.m_EngineDiagnosticsEnabled: 1` (Diagnostic Data ON) while Connect, Analytics, Crash and Performance Reporting were off - so 'the game sends Unity no usage data' was not yet true. Set to 0 in `ProjectSettings/UnityConnectSettings.asset`; `PlayerBuild.DisableUnityServices` now also forces it off through the settings asset and reads it back into the build log ('diagnostic data False'); no build-profile asset exists to override it (a profile added later must keep it off, said in the code). The player's network traffic stays measured by `Tools/player_net_watch.ps1` on every build. E-50's row removed from `ERRANDS.md`.
+
+**Bars:** GATE OK; the build step is exercised on the next `Tools/build_player.ps1` run (its log line and the net watch are the proof).
+
+**Commit:** this one.

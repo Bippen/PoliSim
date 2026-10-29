@@ -60,9 +60,25 @@ namespace PoliSim.EditorTools
             // deviceStatsEnabledInBuild is READ-ONLY in 6000.5.6f1 (CS0200) although the 6.6 page lists it read-write - the hardware statistics are not ours to set; read back below
             UnityEditor.Analytics.PerformanceReportingSettings.enabled = false;
             UnityEditor.CrashReporting.CrashReportingSettings.enabled = false;
+            bool diagnosticData = DisableEngineDiagnosticData();
             Debug.Log($"BUILD: Unity services - analytics {UnityEditor.Analytics.AnalyticsSettings.enabled}, initialise on startup {UnityEditor.Analytics.AnalyticsSettings.initializeOnStartup}, "
                       + $"device stats {UnityEditor.Analytics.AnalyticsSettings.deviceStatsEnabledInBuild}, performance reporting {UnityEditor.Analytics.PerformanceReportingSettings.enabled}, "
-                      + $"crash reporting {UnityEditor.CrashReporting.CrashReportingSettings.enabled}");
+                      + $"crash reporting {UnityEditor.CrashReporting.CrashReportingSettings.enabled}, diagnostic data {diagnosticData}");
+        }
+
+        /// <summary>E-50 (closed 2026-10-29): Unity 6.2+'s Project Settings > Diagnostics > Diagnostic Data, stored as
+        /// `UnityConnectSettings.InsightsSettings.m_EngineDiagnosticsEnabled` - the switch Unity's Developer Data terms say stops the runtime's data
+        /// collection. Written off through the settings asset itself (no Editor API was found for it in 6000.5.6f1) and read back; returns the value
+        /// left in force, so the build log shows it. A build profile can override it: none exists in this project, and a profile added later must keep it off.</summary>
+        private static bool DisableEngineDiagnosticData()
+        {
+            UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/UnityConnectSettings.asset");
+            if (assets == null || assets.Length == 0) { Debug.Log("BUILD: Unity services - UnityConnectSettings.asset not found; diagnostic data UNREAD"); return true; }
+            var settings = new SerializedObject(assets[0]);
+            SerializedProperty flag = settings.FindProperty("InsightsSettings.m_EngineDiagnosticsEnabled");
+            if (flag == null) { Debug.Log("BUILD: Unity services - InsightsSettings.m_EngineDiagnosticsEnabled not found; diagnostic data UNREAD"); return true; }
+            if (flag.boolValue) { flag.boolValue = false; settings.ApplyModifiedPropertiesWithoutUndo(); AssetDatabase.SaveAssets(); }
+            return new SerializedObject(assets[0]).FindProperty("InsightsSettings.m_EngineDiagnosticsEnabled").boolValue;
         }
     }
 }
