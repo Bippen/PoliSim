@@ -291,18 +291,32 @@ namespace PoliSim.Elections
         public const double WeightPower = 0.2;
 
         /// <summary>
+        /// K300 (Elias, 2026-10-29; it supersedes K273's support term): [AUTHORED-DRAFT] A CABINET WITH A MAJORITY OF ITS OWN IS PREFERRED - a cabinet whose
+        /// own seats reach the chamber's absolute majority (<see cref="CoalitionMath.Majority"/>) gains this fraction of the seat-strength term's full scale
+        /// (w x <see cref="WeightSeatStrength"/> x 100) in its own score, so the ranking, every party's hold-out and the formateur's investiture read it alike.
+        /// That majority is the investiture line under positive investiture (the Sejm's Art. 154, the Bundestag's Art. 63, Italy's art. 94) and, under the
+        /// Riksdag's negative rule, the seats no combination left outside can refuse: one definition for both rules, the seats at which a cabinet needs no
+        /// one outside it. Where a cabinet answers to a second chamber too (Italy's art. 94: the confidence of both), it needs a majority of its own in each
+        /// (<see cref="Chamber.AlsoMajorityIn"/>, K300's review L4). w is K311's (Elias, 2026-10-29, after K300's in-engine run and its review's M3): the
+        /// midpoint of 0.10-0.40, the band that lifts Poland's 2023 record and makes the intended Polish and Swedish in-run changes without the step
+        /// artefacts above it - a ruling that replaced K300's preregistered choice (`Reviews/2026-10-29_k300_prereg.md` records both, and why the lower edge
+        /// is Poland 2023's own margin). Strikeable with K300 and K311.
+        /// </summary>
+        public const double MajorityBonusWeight = 0.25;
+
+        /// <summary>
         /// K-1h (i), ruled 2026-09-25: A PARTY HOLDS OUT ONLY FOR A CABINET THAT COULD PASS ITS OWN INVESTITURE - one that wins on the lines
         /// and the in-or-against rules alone, before anyone holds out. Until K-1h a party held out for any admissible cabinet of its own that
         /// scored higher, even one that could not pass (§29's pass 1, as built), and on the seated 2026 chamber every party but S held out
         /// that way, so the chamber formed nothing (§607).
         /// </summary>
         public static CoalitionResult Form(int[] seats, double[,] compatibility, IReadOnlyList<RedLine> redLines, bool negativeRule = true,
-            IReadOnlyList<InOrAgainst> inOrAgainst = null, int[] joint = null)
+            IReadOnlyList<InOrAgainst> inOrAgainst = null, int[] joint = null, int[][] alsoMajorityIn = null)
         {
             // §646 (the formateur's evaluator): the chamber is PREPARED once and every admissible cabinet EVALUATED by the one routine a proposal
             // is judged by - so the formation and the formateur's investiture can never disagree. The formation reproduced exactly is pinned by
             // `FormationSweepDiagnostic`.
-            Chamber chamber = Prepare(seats, compatibility, redLines, negativeRule, inOrAgainst, joint);
+            Chamber chamber = Prepare(seats, compatibility, redLines, negativeRule, inOrAgainst, joint, alsoMajorityIn);
             var result = new CoalitionResult
             {
                 Majority = chamber.Majority,
@@ -397,6 +411,9 @@ namespace PoliSim.Elections
             public IReadOnlyList<InOrAgainst> Rules;
             /// <summary>§705: parties that sit as one parliamentary group, each a bitmask (the CDU and the CSU); null where there is none.</summary>
             public int[] Joint;
+            /// <summary>K300's review L4: the other chambers a cabinet answers to (Italy's Senato beside the Camera, art. 94), each by the same party order;
+            /// the majority bonus needs a majority of its own in each as well as in <see cref="Seats"/>. Null where the cabinet answers to one chamber.</summary>
+            public int[][] AlsoMajorityIn;
             public int Majority;
             public int TotalSeats;
             public double[] Power;
@@ -409,7 +426,7 @@ namespace PoliSim.Elections
 
         /// <summary>§646: prepare a chamber for evaluation - the formation's pass 1, its passable set and each party's hold-out, as <see cref="Form"/> computes them.</summary>
         public static Chamber Prepare(int[] seats, double[,] compatibility, IReadOnlyList<RedLine> redLines, bool negativeRule = true,
-            IReadOnlyList<InOrAgainst> inOrAgainst = null, int[] joint = null)
+            IReadOnlyList<InOrAgainst> inOrAgainst = null, int[] joint = null, int[][] alsoMajorityIn = null)
         {
             if (seats == null) { throw new ArgumentNullException(nameof(seats)); }
             int n = seats.Length;
@@ -421,7 +438,7 @@ namespace PoliSim.Elections
             var chamber = new Chamber
             {
                 N = n, Seats = seats, Compatibility = compatibility, Lines = lines, NegativeRule = negativeRule,
-                NoSupportMask = noSupportMask, InOrAgainstMask = inOrAgainstMask, Rules = inOrAgainst ?? new List<InOrAgainst>(), Joint = joint,
+                NoSupportMask = noSupportMask, InOrAgainstMask = inOrAgainstMask, Rules = inOrAgainst ?? new List<InOrAgainst>(), Joint = joint, AlsoMajorityIn = alsoMajorityIn,
                 Majority = CoalitionMath.Majority(seats),
                 Power = CoalitionMath.NegotiatingPower(seats),
             };
@@ -434,9 +451,10 @@ namespace PoliSim.Elections
             chamber.TotalSeats = totalSeats;
 
             // PASS 1 - which cabinets are admissible at all, and what each is worth on its own
-            // terms. The score uses only cohesion, seats and pivotality, so it does NOT depend on
-            // who supports whom; that is what lets pass 2 ask "would this party rather have a
-            // different government?" without the question chasing its own tail.
+            // terms. The score uses only cohesion, seats and pivotality, and K300's majority bonus on
+            // the cabinet's own seats, so it does NOT depend on who supports whom; that is what lets
+            // pass 2 ask "would this party rather have a different government?" without the question
+            // chasing its own tail.
             var baseScore = new double[all + 1];
             // §683: a party with no seat is not a candidate at all - neither admissible nor "blocked". SEAT-1 review M1: so only the subsets of the seated
             // parties are walked, in ascending mask order (the next submask of `seatedMask` above c is (c - seatedMask) & seatedMask) - exactly the masks
@@ -457,7 +475,8 @@ namespace PoliSim.Elections
                 chamber.Admissible.Add(cabinet);
                 baseScore[cabinet] = WeightCohesion * Cohesion(cabinet, n, compatibility)
                     + WeightSeatStrength * 100.0 * cabinetSeats / Math.Max(1, totalSeats)
-                    + WeightPower * 100.0 * PowerOf(cabinet, n, chamber.Power);
+                    + WeightPower * 100.0 * PowerOf(cabinet, n, chamber.Power)
+                    + (cabinetSeats >= chamber.Majority && OwnMajorityIn(alsoMajorityIn, cabinet) ? MajorityBonusWeight * WeightSeatStrength * 100.0 : 0.0);   // K300: a majority of its own (K311's w; L4: in every chamber it answers to)
             }
             chamber.BaseScore = baseScore;
 
@@ -729,6 +748,14 @@ namespace PoliSim.Elections
                 }
             }
 
+            return true;
+        }
+
+        /// <summary>K300's review L4: whether <paramref name="cabinet"/> holds a majority of its own in every one of <paramref name="chambers"/> (true where none is given).</summary>
+        public static bool OwnMajorityIn(int[][] chambers, int cabinet)
+        {
+            if (chambers == null) { return true; }
+            foreach (int[] other in chambers) { if (other == null || CoalitionMath.Seats(other, cabinet) < CoalitionMath.Majority(other)) { return false; } }
             return true;
         }
 

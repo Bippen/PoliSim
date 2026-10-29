@@ -329,15 +329,18 @@ namespace PoliSim.EditorTools
                             // K267 (2026-10-28, Code's recommendation under Elias's standing instruction): F7's condition is kept exactly, and REGISTERED - the
                             // formation's base score (0.5 cohesion, 0.3 seat share, 0.2 negotiating power; support not scored) seats KO+TD on NL's support at the
                             // record's own seats, and KO+TD+NL wins only at NL >= 30 with KO+TD about 200-210; a miss is printed, never failed, until a
-                            // formation-scoring ruling (its own item); the old pass came from a no-campaign count far from the record
+                            // formation-scoring ruling (its own item); the old pass came from a no-campaign count far from the record. K300 (Elias, 2026-10-29)
+                            // is that ruling (its weight K311's): a cabinet with a majority of its own gains `CoalitionFormation.MajorityBonusWeight` of the seat term's full scale, which KO+TD+NL
+                            // holds and KO+TD does not. The condition is unchanged, so the registration lifts itself the day it holds
                             bool f7 = view.HasGovernment && gameCabinet.SetEquals(Keys(ofRecord));
                             CoalitionFormation.Chamber f7Prepared = CoalitionFormation.Prepare(played, GovernmentFormation.Compatibility(parties), WithDeclarations(), negative, new List<InOrAgainst>(),
                                 ChamberRules.JointMasks(CountryId.Poland, parties, played));
                             int koTd = Mask("KO", "TD"), nlSeats = played[Index("NL")];
-                            string f7Line = F("F7's ACCEPTANCE: in a world that follows history, a Polish game's own 2023 election forms KO+TD+NL - the game's entry seats {0}; KO+TD {1} seats, NL {2}; base scores KO+TD+NL {3:0.000}, KO+TD {4:0.000}",
+                            string f7Line = F("F7's ACCEPTANCE: in a world that follows history, a Polish game's own 2023 election forms KO+TD+NL - the game's entry seats {0}; KO+TD {1} seats, NL {2}; scores (K300, K311: a majority of its own gains {5:0.00} of the seat term's full scale, {6:0.0} points) KO+TD+NL {3:0.000}, KO+TD {4:0.000}",
                                 view.HasGovernment ? Say(view.Cabinet.Select(c => c.Abbrev), view.Support.Select(c => c.Abbrev)) : "no government - " + view.Reason,
-                                played[Index("KO")] + played[Index("TD")], nlSeats, f7Prepared.BaseScore[ofRecord], f7Prepared.BaseScore[koTd]);
-                            if (f7) { sb.Append("    ok        ").Append(f7Line).Append(" - the registration (K267) can be lifted\n"); }
+                                played[Index("KO")] + played[Index("TD")], nlSeats, f7Prepared.BaseScore[ofRecord], f7Prepared.BaseScore[koTd], CoalitionFormation.MajorityBonusWeight,
+                                CoalitionFormation.MajorityBonusWeight * CoalitionFormation.WeightSeatStrength * 100.0);
+                            if (f7) { sb.Append("    ok        ").Append(f7Line).Append(" - K300 lifts the registration (K267)\n"); }
                             else { sb.Append("    REGISTERED MISS (K267) ").Append(f7Line).Append('\n'); }
                         }
                     }

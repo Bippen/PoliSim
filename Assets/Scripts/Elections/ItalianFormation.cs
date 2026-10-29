@@ -42,7 +42,8 @@ namespace PoliSim.Elections
             for (int n = 1; n <= ConfidenceProcedure.ItalianMandates; n++)
             {
                 var m = new Mandate { Number = n, Arithmetic = n == 1 ? "the Camera's seats" : n == 2 ? "the Senato's seats" : "both chambers' seats together" };
-                m.View = n == 1 ? GovernmentFormation.ViewOf(country, reading) : ViewOn(country, n == 2 ? senato : Sum(camera, senato), reading.Vintage);
+                m.View = n == 1 ? GovernmentFormation.ViewOf(country, reading) : ViewOn(country, n == 2 ? senato : Sum(camera, senato), reading.Vintage,
+                    n == 2 ? new[] { camera } : new[] { camera, senato });   // K300's review L4: the bonus reads a majority of its own in both chambers, whichever arithmetic the mandate forms on
                 mandates.Add(m);
                 if (m.View == null || !m.View.HasGovernment || m.View.Cabinet.Count == 0) { m.Failure = "the formateur forms no government on " + m.Arithmetic + (m.View?.Reason != null ? " (" + m.View.Reason + ")" : string.Empty); continue; }
                 var cabinet = new List<string>(); var support = new List<string>();
@@ -60,11 +61,11 @@ namespace PoliSim.Elections
             return mandates;
         }
 
-        private static GovernmentFormation.View ViewOn(Country country, IReadOnlyDictionary<string, int> seats, ElectionVintage vintage)
+        private static GovernmentFormation.View ViewOn(Country country, IReadOnlyDictionary<string, int> seats, ElectionVintage vintage, IReadOnlyList<IReadOnlyDictionary<string, int>> alsoMajorityIn)
         {
             var keys = new List<string>(); var counts = new List<int>();
             if (seats != null) { foreach (KeyValuePair<string, int> kv in seats) { keys.Add(kv.Key); counts.Add(kv.Value); } }
-            return GovernmentFormation.ViewOf(country.Id, keys, counts, country.PlayerPartyAbbrev, vintage);
+            return GovernmentFormation.ViewOf(country.Id, keys, counts, country.PlayerPartyAbbrev, vintage, alsoMajorityIn);
         }
 
         private static Dictionary<string, int> Sum(IReadOnlyDictionary<string, int> a, IReadOnlyDictionary<string, int> b)

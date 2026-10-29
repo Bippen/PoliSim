@@ -23615,7 +23615,7 @@ The commentary's own caveats, carried: the results depend on the model's assumpt
 | 14 | the office | `CampaignOffices.OpenCost = 100_000`, `VolunteerCapacity = 150`, `VisitFraction = 0.25` | yes | none | Did opening an office feel like a decision against one television buy - and is 150 volunteers an office or a committee? |
 | 15 | staff | `CampaignStaff.SalaryPerDay = 1_800`, `ManagerFundShare = 0.5` | yes | W-B12 built the organisation's bill into the manager's plan (entry 18), so "every party runs out of money before polling day" is now "every UNMANAGED party does". | Did hiring a manager change what the player did in the last fortnight, or only what they could afford? |
 | 16 | reactivity | `PublicActivity.HalfLifeDays = 7.0` (`CampaignReactivity.cs:26`); `CampaignAi.DefenceThreshold = 1.0`, `AnswerThreshold = 1.0` | yes | none; **Elias's ruling of 2026-08-30 stands: the 0.291 line is not moved** (W-B12 moved it to 0.269 the wrong way, reported, untouched) | Did the player notice an opponent noticing them - a rally in their valkrets a few days after theirs? |
-| 17 | coalition compatibility | `CoalitionCompatibility.WeightIdeological = 0.55`, `DerivedRedLines.IdeologicalGap = 4.5`, `DerivedRedLines.SocialGap = 5.0`, `CoalitionFormation.DefectionMargin = 0.01` | yes | none; the second-country test (Germany, Italy, Poland on their CHES rows) is still the one that would break it | After the count, did the player understand WHY the government they wanted was refused? |
+| 17 | coalition compatibility | `CoalitionCompatibility.WeightIdeological = 0.55`, `DerivedRedLines.IdeologicalGap = 4.5`, `DerivedRedLines.SocialGap = 5.0`, `CoalitionFormation.DefectionMargin = 0.01` · `CoalitionFormation.MajorityBonusWeight = 0.25` | yes | none; the second-country test (Germany, Italy, Poland on their CHES rows) is still the one that would break it | After the count, did the player understand WHY the government they wanted was refused? |
 | 18 | the organisation's bill | `BudgetPlan.DailyFixedCost` (`CampaignStaff.cs:60`; derived: payroll + offices), recomputed each morning in `CampaignRun` | yes | none since it landed | Playing the populist: did SD's six unpaid staff-days read as a populist overreaching, or as the game failing to warn you? |
 | 19 | election night's clock | `ElectionNight.NightMinutes = 240`; the call rule structural | yes | none | Did the calls feel late - and if so, did the player want a softer rule or a faster night? |
 | 20 | the real chamber | chamber sizes 349 / 630 / 577 / 400 / 460 / 435 (sourced); seats change only at an election | yes | none | Between elections, did the chamber read as stable or as dead? In a German game, did BSW or the FDP land on the wrong side of the 5 % line? |
@@ -42270,3 +42270,30 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nk276 7 of 7; nk276b sentinel FAILED on France's FT-10 slack only (ceilings lowered), nk276c (TrajectorySentinelCheck at k276, ReviewLedgerCheck, ParticipationCohortDiagnostic) 3 of 3; stagek276, slrtk276 exit 0; cheapk276 147 of 147; simk276 91 of 92 (the sentinel, answered in nk276c); dumpk276 the family k276; dock276 document group clean
 
 **Commit:** this one.
+
+## 951. K300 + K311 (K273 SUPERSEDED): A CABINET WITH A MAJORITY OF ITS OWN IS PREFERRED - THE MAJORITY BONUS AT w = 0.25; POLAND'S 2023 RECORD FORMS KO+TD+NL (2026-10-29)
+
+**What was owed:** K273 (support counts partly), HELD under its prereg (K289): no fraction seats KO+TD+NL, and in the engine a government of record moved. Elias ruled on the measured options: the majority bonus (K300), (iii)(b) chamber-matched (K302) and w = 0.25 (K311). K301 records the accepted amendment.
+
+**Built** (wave/k273; its prereg committed alone before its code; reviews: K273 NOT READY (held); K300 round 1 READY at 0.53; round 2 READY at 0.25):
+- `CoalitionFormation.MajorityBonusWeight = 0.25` [AUTHORED-DRAFT; K300, K311]: w × the seat-strength term's full scale (7.5 points) is added to the base score of a cabinet holding its chamber's absolute majority on its own seats.
+  - Under positive investiture that line is the investiture line; under the Riksdag's rule, the seats no one outside can refuse.
+  - Italy's cabinet needs it in BOTH chambers (art. 94; `ChamberRules.AlsoMajorityIn`), across mandates 1, 2 and 3.
+- K273's support term is removed.
+- F7 lifts itself.
+- `Tools/k273_support_sweep`: validate, the grid, replay, dump-check and sejm-trace.
+
+**Measured** (`Reviews/2026-10-29_k300_integrator.md`):
+- 7 of 7 record chambers; every Sweden 2022 sweep row unchanged.
+- F7 `ok`: KO+TD+NL 73.166 against 67.646.
+- The sweep's 15 government changes, exactly as predicted, re-pinned.
+- dump-check (iii): PASS, chamber-matched.
+- In-run: 4 of 188 formations change (Poland 2035 / 2039 / 2055 to KO+TD+NL; Sweden 2122 to S+C+MP+L). In the dump, seed 777 diverges from turn 34 and seed 424242 is identical. The sentinel's first 20 turns stand at `k276`.
+
+**Evidence:** `Reviews/2026-10-29_k273_prereg.md`, `_k273_review.md`, `_k300_prereg.md`, `_k300_review.md` (rounds 1-2), `_k300_integrator.md`.
+
+**Declared:** K300, K301, K302, K311 (recorded); the majority line for each rule; the grid's end; Sweden's seed rows (no election of record) to S+V+C+MP.
+
+**Bars:** nk311 15 of 16 (the sweep's pin only; re-pinned, its own commit); nk311l 3 of 3 (TrajectorySentinelCheck at k276, ReviewLedgerCheck, FormationSweepDiagnostic at the new pin); dump-check (iii) PASS (K302); playk311 exit 0; cheapk311 147 of 147; simk311 92 of 92; dock311 document group clean
+
+**Commit:** this one; the FormationSweep re-pin is its own commit after it.

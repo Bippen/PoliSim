@@ -319,9 +319,9 @@ namespace PoliSim.Elections
 
         /// <summary>The formation on a chamber given as seats per party abbreviation - what a night's final count
         /// seats. A seeded party the count does not carry holds no seats in it. K-1: <paramref name="vintage"/> picks the
-        /// declarations - a staged 2022 count forms on 2022's (the film's fixture), everything else on the seated election's.</summary>
+        /// declarations - a staged 2022 count forms on 2022's (the film's fixture), everything else on the seated election's. K300's review L4: <paramref name="alsoMajorityIn"/>, the other chambers the cabinet answers to by key (Italy's mandates 2 and 3: the Camera, or both), where the majority bonus reads a majority of its own too.</summary>
         public static View ViewOf(CountryId country, IReadOnlyList<string> abbrevs, IReadOnlyList<int> seatsByAbbrev, string playerParty,
-            ElectionVintage vintage = ElectionVintage.Seated)
+            ElectionVintage vintage = ElectionVintage.Seated, IReadOnlyList<IReadOnlyDictionary<string, int>> alsoMajorityIn = null)
         {
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(country);
             if (parties == null || parties.Count == 0) { return new View { HasGovernment = false, Reason = "no party system is seeded for this country" }; }
@@ -333,7 +333,7 @@ namespace PoliSim.Elections
                     if (string.Equals(abbrevs[k], parties[p].Abbrev, StringComparison.Ordinal)) { seats[p] = seatsByAbbrev[k]; break; }
                 }
             }
-            if (!TryFormSeats(country, parties, seats, out CoalitionResult result, out bool sourced, out string reason, vintage))
+            if (!TryFormSeats(country, parties, seats, out CoalitionResult result, out bool sourced, out string reason, vintage, alsoMajorityIn: ChamberRules.Aligned(parties, alsoMajorityIn)))
             {
                 return new View { HasGovernment = false, Reason = reason };
             }
@@ -404,7 +404,7 @@ namespace PoliSim.Elections
                 declarationsSourced = DeclaredRedLines.IsSourced(country.Id);
                 return SeatedGovernment.TryAsResult(installed, parties, seats, out result, out reason);
             }
-            return TryFormSeats(country.Id, parties, seats, out result, out declarationsSourced, out reason, vintage, reading: reading);
+            return TryFormSeats(country.Id, parties, seats, out result, out declarationsSourced, out reason, vintage, reading: reading, alsoMajorityIn: ChamberRules.AlsoMajorityIn(country, parties));
         }
 
         /// <summary>PS-3i (§636, the reader): the declarations of the election that seated the SITTING chamber - the start's until the game holds one, then that election's (the resolver election night uses).</summary>
@@ -458,7 +458,7 @@ namespace PoliSim.Elections
             var seats = new int[parties.Count];
             for (int p = 0; p < parties.Count; p++) { seats[p] = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held) ? held : 0; }
             if (!TryFormSeats(country.Id, parties, seats, out CoalitionResult result, out bool sourced, out string reason, SittingVintage(country), extraLines,
-                    reading: asOf.HasValue ? SittingReading(country, asOf.Value) : (DeclarationReading?)null))   // §653: the game passes today - the mid-term reading
+                    reading: asOf.HasValue ? SittingReading(country, asOf.Value) : (DeclarationReading?)null, alsoMajorityIn: ChamberRules.AlsoMajorityIn(country, parties)))   // §653: the game passes today - the mid-term reading
             {
                 return new View { HasGovernment = false, Reason = reason };
             }
@@ -520,7 +520,7 @@ namespace PoliSim.Elections
 
         private static bool TryFormSeats(CountryId country, IReadOnlyList<PoliticalParty> parties, int[] seats,
             out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated, IReadOnlyList<RedLine> extraLines = null, DateTime? asOf = null,
-            DeclarationReading? reading = null)
+            DeclarationReading? reading = null, int[][] alsoMajorityIn = null)
         {
             // PS-3i-2c (§653): a reading names what is read; without one, the vintage - or everything on the measuring date (§644's instrument).
             DeclarationReading read = reading ?? (asOf.HasValue ? DeclarationReading.AllOn(country, vintage, asOf.Value) : DeclarationReading.OfVintage(vintage));
@@ -534,7 +534,7 @@ namespace PoliSim.Elections
             if (extraLines != null) { lines.AddRange(extraLines); }   // PS-3i (§636): a refusal made by moving a motion, for the Speaker's round
             declarationsSourced = DeclaredRedLines.IsSourced(country);
             result = CoalitionFormation.Form(seats, compatibility, lines,
-                negativeRule: ChamberRules.UsesNegativeParliamentarism(country), inOrAgainst: read.Platforms(country, parties), joint: ChamberRules.JointMasks(country, parties, seats));   // K-1f: a party's in-or-against rule, beside the pairs
+                negativeRule: ChamberRules.UsesNegativeParliamentarism(country), inOrAgainst: read.Platforms(country, parties), joint: ChamberRules.JointMasks(country, parties, seats), alsoMajorityIn: alsoMajorityIn);   // K-1f: a party's in-or-against rule, beside the pairs
             return true;
         }
 
@@ -593,6 +593,34 @@ namespace PoliSim.Elections
         /// </summary>
         public static IReadOnlyList<(string A, string B)> JointGroups(CountryId country) =>
             country == CountryId.Germany ? new[] { ("CDU", "CSU") } : System.Array.Empty<(string, string)>();
+
+        /// <summary>
+        /// K300's review L4: THE OTHER CHAMBERS A CABINET ANSWERS TO, for the majority bonus (<see cref="CoalitionFormation.MajorityBonusWeight"/>) - Italy's
+        /// Senato beside the Camera, the confidence of both being art. 94's ("Il Governo deve avere la fiducia delle due Camere", `ConfidenceProcedure.Article94`),
+        /// by the roster's order, where it is seated (a world that seats no Senato reads the Camera alone, stated); null for every other country, whose
+        /// investiture is one chamber's.
+        /// </summary>
+        public static int[][] AlsoMajorityIn(Country country, IReadOnlyList<PoliticalParty> parties) =>
+            country != null && AnswersToBothChambers(country.Id) ? Aligned(parties, new IReadOnlyDictionary<string, int>[] { country.SecondChamberSeats }) : null;
+
+        /// <summary>K300's review L4: the countries whose government needs the confidence of both chambers - Italy (art. 94).</summary>
+        public static bool AnswersToBothChambers(CountryId country) => country == CountryId.Italy;
+
+        /// <summary>Chambers given by key, aligned to <paramref name="parties"/>' order; a chamber holding no seat is dropped (not seated), and null where none is left.</summary>
+        public static int[][] Aligned(IReadOnlyList<PoliticalParty> parties, IReadOnlyList<IReadOnlyDictionary<string, int>> chambers)
+        {
+            if (parties == null || chambers == null) { return null; }
+            var aligned = new List<int[]>();
+            foreach (IReadOnlyDictionary<string, int> chamber in chambers)
+            {
+                if (chamber == null) { continue; }
+                var seats = new int[parties.Count];
+                int total = 0;
+                for (int p = 0; p < parties.Count; p++) { seats[p] = chamber.TryGetValue(parties[p].Abbrev, out int held) ? held : 0; total += seats[p]; }
+                if (total > 0) { aligned.Add(seats); }
+            }
+            return aligned.Count > 0 ? aligned.ToArray() : null;
+        }
 
         /// <summary>§705: each joint group as a bitmask over <paramref name="parties"/> - and, K216, each cabinet bloc (<see cref="CabinetBlocs"/>, its seated members, two at least); null where there is none. A group missing a member is
         /// dropped, and so is one a member of which holds no seat (<paramref name="seats"/>): a Fraktion is formed by the parties seated - the model has

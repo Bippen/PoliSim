@@ -99,7 +99,7 @@ namespace PoliSim.Elections
             for (int p = 0; p < parties.Count; p++) { seats[p] = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held) ? held : 0; }
             List<RedLine> lines = reading.Lines(country.Id, parties);
             if (extraLines != null) { lines.AddRange(extraLines); }
-            return CoalitionFormation.Prepare(seats, GovernmentFormation.Compatibility(parties), lines, ChamberRules.UsesNegativeParliamentarism(country.Id), reading.Platforms(country.Id, parties), ChamberRules.JointMasks(country.Id, parties, seats));   // s705: the Union sits as one
+            return CoalitionFormation.Prepare(seats, GovernmentFormation.Compatibility(parties), lines, ChamberRules.UsesNegativeParliamentarism(country.Id), reading.Platforms(country.Id, parties), ChamberRules.JointMasks(country.Id, parties, seats), ChamberRules.AlsoMajorityIn(country, parties));   // s705: the Union sits as one; K300's review L4: Italy's Senato too
         }
 
         /// <summary>Every invited party's answer to <paramref name="proposal"/>, and the investiture it would face, on <paramref name="vintage"/>'s declarations.</summary>
@@ -130,7 +130,7 @@ namespace PoliSim.Elections
             foreach (string key in proposal.CabinetParties) { cabinet |= 1 << Index(key); }
 
             // The alternatives: every government the formation itself would form on this chamber - the best a party could have instead.
-            CoalitionResult formation = CoalitionFormation.Form(chamber.Seats, chamber.Compatibility, chamber.Lines, chamber.NegativeRule, chamber.Rules, chamber.Joint);
+            CoalitionResult formation = CoalitionFormation.Form(chamber.Seats, chamber.Compatibility, chamber.Lines, chamber.NegativeRule, chamber.Rules, chamber.Joint, chamber.AlsoMajorityIn);
             List<GovernmentOption> holding = CoalitionFormation.Holding(formation, chamber.Seats, chamber.Compatibility);   // never a government the formation would not settle on
             double BestElsewhere(int p, out string where)
             {
