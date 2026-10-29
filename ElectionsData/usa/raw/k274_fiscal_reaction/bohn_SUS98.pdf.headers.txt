@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+Date: Thu, 29 Oct 2026 11:42:58 GMT
+Server: Apache/2.4.69 (Ubuntu)
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Last-Modified: Tue, 04 Aug 2026 18:41:54 GMT
+ETag: "a980-6583d0246a1fb"
+Accept-Ranges: bytes
+Content-Length: 43392
+Content-Type: application/pdf
+

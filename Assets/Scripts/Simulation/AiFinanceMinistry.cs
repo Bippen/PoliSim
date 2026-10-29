@@ -22,11 +22,26 @@ namespace PoliSim.Simulation
     /// benchmark in Regulation (EU) 2024/1264, both fetched byte-exact (`ElectionsData/rules/raw/k251_eu_rule/`); the TSCG's own text is BILLED there.</para>
     ///
     /// <para><b>The United States</b> (PS-6 US-24; R-US21 (v) as ruled, I5: "the dollar limit replaces the AI ministry's ratio-trend logic and its borrowed
-    /// sequester for the USA"): the ministry writes nothing for the USA. Its rule is the federal debt limit (`UsDebtLimit`) - an AI-governed USA raises it when
+    /// sequester for the USA"): the ministry wrote nothing for the USA until K274 (below). Its rule is the federal debt limit (`UsDebtLimit`) - an AI-governed USA raises it when
     /// its extraordinary measures run out (R-US21 (vi)), and where a raise is not law the game's cut of spending to revenue is the day's flows'
     /// (`UsDebtLimit.CutToday`), not a decision's. Retired with it: the ratio-trend trigger (the ratio above its seed and rising two years running), the
     /// Fiscal Responsibility Act of 2023 § 101 cap-growth excess it carried, and the sequester's size borrowed from the EU benchmark (§387, §390) - the
     /// measurement R-US21 was asked on reconstructs the trigger from the memory below (`UsDebtLimitCheck`).</para>
+    ///
+    /// <para><b>K274 (Elias, 2026-10-29; answering K269 (c)): R-US21 (v) RE-SCOPED - the AI USA's budget responds to debt</b> through an empirical
+    /// primary-balance reaction, on top of the debt limit, whose mechanics stand unchanged (the raise when the measures run out, the cut where no raise is
+    /// law). The slope is Bohn's (1998, "The Behavior of U.S. Public Debt and Deficits", Table I column (1), 1916-95: the primary surplus over GDP on the
+    /// start-of-year debt over GDP, <see cref="UsDebtReactionCoefficient"/>; the author's copy stored in `ElectionsData/usa/raw/k274_fiscal_reaction/`,
+    /// pinned by `UsFiscalReactionDiagnostic`). DECLARED readings: only the slope is applied - the regression's constant and its controls (Barro's
+    /// temporary spending and cyclical output) are the model's own primary balance, which the reaction moves and never replaces; it is applied to the
+    /// CHANGE in the debt ratio since the last boundary (the linear rule's first difference, so over the years it sums to the slope times the ratio's rise
+    /// since the AI took office, with no stance of its own to store); and the model's gross federal stock stands for Bohn's privately held debt, the
+    /// change crossing the perimeter as `DebtPathHoldDiagnostic` reads it. The levers (review 1's M2, `Reviews/2026-10-29_k274_prereg2.md`, Code's
+    /// recommendation (ii), Elias's to strike): a tightening cuts every line but Social Security uniformly (inside the ranges, <see cref="UsReactionLever"/>)
+    /// and puts the remainder the ranges leave on the household rates; a loosening lowers the rates the rule raised, then gives the same lines back. The
+    /// release is not capped (the EU rule's is): Bohn's rule is linear in both directions, so a fall after a default's haircut would be given back in one
+    /// year at the slope - DECLARED (whether a default still occurs is the record's K274 measurement and `UsFiscalReactionDiagnostic` (d)). Where the AI governs the player's USA the
+    /// reaction rides the government's budget bill and answers the last closed boundary year (<see cref="DecideForBill"/>, review 1's M1).</para>
     ///
     /// <para><b>Three corrections from the first measurements (§388):</b> the law asks that the debt ratio FALL at the safeguard's pace, so a state already
     /// falling that fast owes nothing more that year; a cut to a line is a level the indexation never gives back, so the golden rule's release is the other
@@ -75,6 +90,11 @@ namespace PoliSim.Simulation
         /// a consolidation's overshoot came back so slowly that Germany ran to a net-creditor trough of some -25 %; at one point all five settle above
         /// zero but for Germany's trough of -2.67 % on one seed (424242), with the release left out of the net-expenditure excess (K271).</summary>
         public const float EuReleaseCapPercentOfGdp = DebtSafeguardHighPointsPerYear;
+        /// <summary>SOURCED - K274: the response of the US primary surplus to the debt, both over GDP - Bohn (1998), Table I, column (1), 1916-95, the coefficient on
+        /// the start-of-year privately held debt over GDP (t 6.048; HAC t 3.787), read in the author's February 1998 copy
+        /// (`ElectionsData/usa/raw/k274_fiscal_reaction/bohn_SUS98_TAB.pdf`; the journal's pages BILLED in the folder's fetch log). Fixed before the
+        /// measurement (`Reviews/2026-10-29_k274_prereg.md`), never tuned to it.</summary>
+        public const float UsDebtReactionCoefficient = 0.054f;
         /// <summary>CONVENTION - a rate rise below this many points is not written (noise).</summary>
         private const float MinRatePoints = 0.01f;
 
@@ -103,7 +123,7 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>The debt-ratio memory: shift last year's ratio into the year before and record today's. Called once per turn for an AI country, AFTER Decide
-        /// (the EU rule reads the year's fall from it; for the USA it is kept, and read only by the measurement R-US21 was asked on).</summary>
+        /// (the EU rule reads the year's fall from it; for the USA the reaction reads the year's change from it - K274 - and the measurement R-US21 was asked on reads it too).</summary>
         public static void Observe(Country country)
         {
             if (country.DebtRatioSeed <= 0f) { country.DebtRatioSeed = country.State.DebtToGdpRatio; }   // a save from before the ministry: its seed is the first ratio it sees
@@ -174,6 +194,21 @@ namespace PoliSim.Simulation
             return decision;
         }
 
+        /// <summary>K274 (review 1's M1): THE BILL PATH'S DECISION - <see cref="Decide"/> for the government's budget bill, which `SimulationManager.TableGovernmentBudget`
+        /// lays between boundaries (the USA's on its request day, `FiscalYearData.BudgetRequestDay`, not the boundary). The US reaction reads
+        /// the boundary year the memory closed last (<see cref="Country.DebtRatioLastReport"/> less <see cref="Country.DebtRatioReportBefore"/>): read as the
+        /// stretch since the last boundary, each year's bill answered only that stretch and the rest of the year was answered by no bill. One bill a year
+        /// answers one boundary year, and over the years the bills sum to the slope times the ratio's change since the first boundary the AI governed (the
+        /// memory is empty until its second, <see cref="Forget"/>). DECLARED: a second government bill inside one boundary year (an arrival budget decided
+        /// before the request day) would answer the same year again; the reading rests on an inauguration's arrival bill being still before Congress on the request day
+        /// (`ParliamentSystem.BillDurationDays` against the request day), which tables nothing beside a pending bill. The EU rule reads as <see cref="Decide"/> does.</summary>
+        public static PolicyDecision DecideForBill(Country country, FiscalTurnReport lastReport)
+        {
+            var decision = new PolicyDecision();
+            if (lastReport != null) { Apply(country, lastReport.FlowBalance, decision, answersClosedYear: true); }
+            return decision;
+        }
+
         /// <summary>Writes the ministry's levers into <paramref name="decision"/> where it carries none of its own for that line or tax, and returns what it wrote so the
         /// caller can Withdraw it after the turn. Pure with respect to the country. The ratio's fall over the last year is read from the memory Observe keeps.</summary>
         public static Written Apply(Country country, FiscalTurnReport lastReport, PolicyDecision decision) =>
@@ -183,8 +218,11 @@ namespace PoliSim.Simulation
         /// (`SimulationManager`'s fiscal period, its accrued balance, before the period's report is written), not the stored report: at the boundary the
         /// stored report is still the year BEFORE, which does not yet carry what the rule wrote a year ago - a release read against it was released twice,
         /// and the rule swung into the 3 % breach it exists to prevent (review 2 measured it). The preview, between boundaries, reads the stored report,
-        /// which is then the closed year.</summary>
-        public static Written Apply(Country country, float closedFlowBalance, PolicyDecision decision)
+        /// which is then the closed year.
+        /// <para>K274 (review 1's M1): <paramref name="answersClosedYear"/> is THE BILL PATH's - the government's budget bill tabled between boundaries
+        /// (<see cref="DecideForBill"/>) - and moves the US reaction only: there it answers the boundary year the memory closed last (the ratio at the last
+        /// boundary less the one before), not the stretch since the last boundary, so one bill a year answers one whole year and the years sum.</para></summary>
+        public static Written Apply(Country country, float closedFlowBalance, PolicyDecision decision, bool answersClosedYear = false)
         {
             var written = new Written();
             if (country.SpendingLines == null || country.SpendingLines.Count == 0) { return written; }
@@ -193,9 +231,42 @@ namespace PoliSim.Simulation
             float balancePercent = closedFlowBalance / nominalGdp * 100f;   // negative = deficit, nominal over nominal (P5-B6); AF-17 (M2): the flow, net of the year's one-offs - a rule judges the standing position
             float debtPercent = country.State.DebtToGdpRatio;
             float fall = country.DebtRatioLastReport > 0f ? country.DebtRatioLastReport - debtPercent : 0f;
-            if (IsEuMember(country.Id)) { ApplyEuRule(country, balancePercent, debtPercent, fall, nominalGdp, decision, written); }   // PS-6 US-24 (R-US21 (v)): the USA writes nothing - its rule is the debt limit (`UsDebtLimit`)
+            if (IsEuMember(country.Id)) { ApplyEuRule(country, balancePercent, debtPercent, fall, nominalGdp, decision, written); }
+            else { ApplyUsReaction(country, answersClosedYear ? UsReactionPercentOfGdp(country.DebtRatioLastReport, country.DebtRatioReportBefore) : UsReactionPercentOfGdp(debtPercent, country.DebtRatioLastReport), nominalGdp, decision, written); }   // K274 (R-US21 (v) re-scoped): Bohn's slope on top of the debt limit (`UsDebtLimit`); the bill path answers the last closed boundary year (review 1's M1)
             return written;
         }
+
+        /// <summary>K274: the move of the primary balance the reaction asks this year, % of GDP (positive = tighten, negative = loosen) - Bohn's slope times the
+        /// change in the debt ratio since the last boundary. Zero where the memory holds no last ratio (the AI's first turn in office, or after a player spell's
+        /// <see cref="Forget"/>), so a ratio's rise under another government is not answered as one year's.</summary>
+        public static float UsReactionPercentOfGdp(float debtPercent, float debtLastReport) =>
+            debtLastReport > 0f ? UsDebtReactionCoefficient * (debtPercent - debtLastReport) : 0f;
+
+        /// <summary>K274: the reaction through the levers a US budget act moves - a tightening cuts the lines in scope (<see cref="UsReactionLever"/>) uniformly
+        /// (inside the ranges) and raises the household rates by what the ranges leave; a loosening lowers the rates the rule raised (to their seeds at most), then
+        /// gives the rest back to the same lines.</summary>
+        private static void ApplyUsReaction(Country country, float adjustmentPercentOfGdp, float nominalGdp, PolicyDecision decision, Written written)
+        {
+            if (adjustmentPercentOfGdp == 0f) { return; }
+            float linesNow = 0f;
+            foreach (SpendingLine line in country.SpendingLines) { if (UsReactionLever(line)) { linesNow += line.Amount; } }
+            float amount = Mathf.Abs(adjustmentPercentOfGdp) / 100f * nominalGdp;
+            if (adjustmentPercentOfGdp < 0f)
+            {
+                RestoreLinesUniformly(country, LowerHouseholdRates(country, amount, decision, written), linesNow, decision, written, usLevers: true);
+                written.ReleasedShareOfLines = 0f;   // the K271 share is the EU net-expenditure cap's, which the USA does not carry
+                return;
+            }
+            float shortfall = CutLinesUniformly(country, amount, linesNow, includeMandatory: true, decision, written, usLevers: true);
+            if (shortfall > 0f) { RaiseHouseholdRates(country, shortfall, decision, written); }
+        }
+
+        /// <summary>K274 (review 1's M2; `Reviews/2026-10-29_k274_prereg2.md` (ii), Code's recommendation, Elias's to strike): the lines the US reaction moves -
+        /// every line but Social Security. The program pays under its own statute (MF-14 holds the line to 42 U.S.C. 415(i)), and 2 U.S.C. 641(g)
+        /// (`ElectionsData/usa/raw/records/govinfo_uscode_2_641_reconciliation.html`) puts "the old-age, survivors, and disability insurance program" out of order
+        /// in any reconciliation bill, the act direct spending and the rates ride (`UsBudgetProcedure`). DECLARED: the game's procedure reads every line as one
+        /// appropriation (R-US9 (a)); this reading keeps the pension line out of the reaction's reach on 641(g) all the same. The retired US rule (R-US21) read the discretionary lines alone, from the Fiscal Responsibility Act's caps, which K274 does not carry.</summary>
+        public static bool UsReactionLever(SpendingLine line) => line.Category != SpendingCategory.SocialSecurity;
 
         /// <summary>Removes what Apply wrote, so a decision object a caller hands in again next turn carries nothing of this turn's ministry.</summary>
         public static void Withdraw(PolicyDecision decision, Written written)
@@ -229,7 +300,7 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>One uniform percentage across the lines in scope, clamped as the applier will clamp it; returns the nominal amount the clamps leave untaken.</summary>
-        private static float CutLinesUniformly(Country country, float toTake, float scopeTotal, bool includeMandatory, PolicyDecision decision, Written written)
+        private static float CutLinesUniformly(Country country, float toTake, float scopeTotal, bool includeMandatory, PolicyDecision decision, Written written, bool usLevers = false)
         {
             if (scopeTotal <= 0f) { return toTake; }
             float percent = toTake / scopeTotal * 100f;
@@ -237,6 +308,7 @@ namespace PoliSim.Simulation
             foreach (SpendingLine line in country.SpendingLines)
             {
                 if (!includeMandatory && line.IsMandatory) { continue; }
+                if (usLevers && !UsReactionLever(line)) { continue; }   // K274 (M2): the US reaction's scope
                 if (line.Pinned || decision.SpendingLineChanges.ContainsKey(line.Category)) { continue; }
                 float range = line.IsMandatory ? SimulationManager.MandatoryPercentChangeRangeForRules : SimulationManager.DiscretionaryPercentChangeRangeForRules;
                 float applied = Mathf.Min(percent, range);
@@ -249,12 +321,13 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>The release side: a surplus given back to every line as one uniform percentage, clamped as the applier will clamp it (the seed band underneath).</summary>
-        private static void RestoreLinesUniformly(Country country, float toGive, float scopeTotal, PolicyDecision decision, Written written)
+        private static void RestoreLinesUniformly(Country country, float toGive, float scopeTotal, PolicyDecision decision, Written written, bool usLevers = false)
         {
             if (scopeTotal <= 0f || toGive <= 0f) { return; }
             float percent = toGive / scopeTotal * 100f;
             foreach (SpendingLine line in country.SpendingLines)
             {
+                if (usLevers && !UsReactionLever(line)) { continue; }   // K274 (M2): the US reaction's scope
                 if (line.Pinned || decision.SpendingLineChanges.ContainsKey(line.Category)) { continue; }
                 float range = line.IsMandatory ? SimulationManager.MandatoryPercentChangeRangeForRules : SimulationManager.DiscretionaryPercentChangeRangeForRules;
                 float applied = Mathf.Min(percent, range);

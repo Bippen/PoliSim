@@ -1,0 +1,19 @@
+# fetch_log - ElectionsData/usa/raw/k274_fiscal_reaction/ (K274, the AI USA's primary-balance reaction), 2026-10-29
+
+Command: `curl -sS -L -A "Mozilla/5.0" -D <file>.headers.txt -o <file> <url>`; bytes stored as received, each file's response headers beside it as `<file>.headers.txt`. Status is the final status after redirects. Digests in `SHA256SUMS.txt`.
+
+| UTC | HTTP | bytes | file | URL |
+|---|---|---|---|---|
+| 2026-10-29T11:42:58Z | 200 | 43392 | bohn_SUS98.pdf | https://econ.ucsb.edu/~bohn/papers/SUS98.pdf |
+| 2026-10-29T11:43:00Z | 200 | 16256 | bohn_SUS98_TAB.pdf | https://econ.ucsb.edu/~bohn/papers/SUS98_TAB.pdf |
+| 2026-10-29T11:37:59Z | 200 | 121371 | wayback_20260923101450_cbo_62044-2026-LTBO.xlsx | https://web.archive.org/web/20260923101450id_/https://www.cbo.gov/system/files/2026-02/62044-2026-LTBO.xlsx |
+
+**What each is.**
+- `bohn_SUS98.pdf` - a file from the same directory of Henning Bohn's (UCSB, `econ.ucsb.edu/~bohn/papers/`) beside the tables, for "The Behavior of U.S. Public Debt and Deficits" (February 1998; published in the *Quarterly Journal of Economics* 113(3), August 1998): six pages behind a MacBinary header (its internal name "SUS98-02.pdf"), text streams LZW-compressed (`/LZWDecode`), stored as served. Which part of the paper its six pages carry (the whole text, or a part of it) is not read here (review 1's L5); nothing rests on it - the coefficient is read in the tables file below.
+- `bohn_SUS98_TAB.pdf` - the same paper's tables, the author's own copy. **Table I, "Determinants of the Budget Surplus"** (the dependent variable the primary budget surplus over GDP; `d_t` the privately held debt over GDP at the start of the year; GVAR and YVAR Barro's temporary spending and cyclical output; OLS, annual): column (1), 1916-95, the coefficient on `d_t` is **0.054** (t 6.048, HAC t 3.787). Read by `UsFiscalReactionDiagnostic`, which decodes the stream and pins `AiFinanceMinistry.UsDebtReactionCoefficient` to it.
+- `wayback_20260923101450_cbo_62044-2026-LTBO.xlsx` - CBO, *The Long-Term Budget Outlook Data: 2026 to 2056* (February 2026, publication 62044; its Contents sheet: "In lieu of publishing a report providing the Congressional Budget Office's latest long-term budget outlook, the agency is publishing the data that it would have presented in that report"), the Internet Archive's capture of 23 September 2026 of cbo.gov's own file. Sheet "2. Debt and Deficits" carries federal debt held by the public, per cent of GDP, to 2056 (2055: 171.785; 2056: 175.076) - the same figures as the February 2026 extended baseline already stored as `ElectionsData/macro/raw/q32_debt/wayback_20260211152810_cbo_51119-2026-02-LTBO-Budget.xlsx`, which `DebtPathAnchors` generates from.
+
+**BILLED.**
+- cbo.gov itself - refused: `https://www.cbo.gov/publication/61187` and the topic pages answer 403 with a 767-byte JavaScript challenge (captcha-delivery.com), 2026-10-29T11:3xZ; the Archive's first capture of the 62044 workbook (2026-03-17) is itself cbo.gov's 403; the capture of 2026-09-23 above is the file. Not retried with another client (a bot check is not circumvented).
+- The published QJE article (Oxford University Press): `https://academic.oup.com/qje/article/113/3/949/1916989` answered 403 (5 483 bytes), 2026-10-29T11:43:01Z. The coefficient is read in the author's February 1998 copy; DECLARED: that it is the published Table I's figure is not verified against the journal's pages.
+- Bohn (2008), "The Sustainability of Fiscal Policy in the United States", and Ghosh, Kim, Mendoza, Ostry and Qureshi (2013), "Fiscal Fatigue, Fiscal Space and Debt Sustainability in Advanced Economies" - not sought as the coefficient's source: Bohn (1998) is the US estimate the item names first. (Ghosh et al.'s NBER working paper w16782 answered 200 on a probe; not kept.)

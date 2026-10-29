@@ -593,7 +593,7 @@ namespace PoliSim.EditorTools
                         for (int day = 1; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); Evaluate(sim.CurrentDate); }
                         sim.AdvanceDay();
                         // (v) whether the ministry's ratio-trend trigger fired, read from its own two-year memory after the turn - since US-24 (R-US21 (v) as ruled) a
-                        // RETIRED rule: the ministry writes nothing for the USA, so the trigger is reconstructed here from the memory, as the ask measured it
+                        // RETIRED rule: the ministry writes only K274's reaction for the USA, never this trigger, so the trigger is reconstructed here from the memory, as the ask measured it
                         float seedRatio = usa.DebtRatioSeed, lastBefore = usa.DebtRatioLastReport, beforeBefore = usa.DebtRatioReportBefore;
                         DateTime boundary = sim.CurrentDate;
                         decisions[player] = PolicyDecision.None();

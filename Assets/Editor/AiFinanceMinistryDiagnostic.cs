@@ -11,8 +11,10 @@ namespace PoliSim.EditorTools
     /// the next turn would read it: (1) an EU country owing nothing writes nothing; (2) one owing an adjustment writes cuts (every percentage negative, inside
     /// the ranges) and, where the ranges bind, a rise in the income-tax and VAT rates by one number of points; (3) one at or below 60 % in surplus writes
     /// RESTORES sized to the surplus (the Fiscal Compact's release), one at or below 60 % beyond the 1 % deficit limit writes cuts back to it; (4) the United
-    /// States writes nothing - PS-6 US-24 (R-US21 (v) as ruled): its rule is the debt limit (`UsDebtLimit`), the ratio-trend trigger and its borrowed
-    /// sequester retired, so after six turns of a rising ratio it still writes no cut, no restore and no tax; (5) both directions on a clone of France - a 1 % surplus at 50 % debt restores 1 % of GDP, balance writes nothing, a 2 % deficit at 50 % closes
+    /// States writes K274's reaction alone (R-US21 (v) re-scoped; its debt limit `UsDebtLimit` stands, the ratio-trend trigger and its borrowed sequester stay
+    /// retired), read through the bill path's decision (the last closed year): nothing where its ratio held, cuts (and rate rises) only where it rose,
+    /// restores and rate cuts only where it fell, the amount the slope times that year's change, never the pension line - the coefficient is
+    /// `UsFiscalReactionDiagnostic`'s; (5) both directions on a clone of France - a 1 % surplus at 50 % debt restores 1 % of GDP, balance writes nothing, a 2 % deficit at 50 % closes
     /// 1 % of GDP, a 4 % deficit takes the 0.5 % EDP adjustment; (6) THE DECISION OBJECTS THE CALLER HANDED IN CARRY NOTHING AFTER SIX TURNS - the ministry
     /// withdraws what it wrote, or a reused object re-applies one year's cuts forever (the defect the first three builds carried); (7) with Sweden the player,
     /// Sweden's rates are untouched after six turns and the ministry never observed it. The century is the trajectory family's (§388).
@@ -54,7 +56,9 @@ namespace PoliSim.EditorTools
                     if (last == null) { Debug.LogError($"FINMIN: {c.Id} has no fiscal report after {Turns} turns."); ok = false; continue; }
                     float balance = last.FlowBalance / c.State.NominalGdp * 100f;   // AF-17 (M2): the figure the ministry reads
                     float debt = c.State.DebtToGdpRatio;
-                    PolicyDecision d = AiFinanceMinistry.Decide(c, last);
+                    // review 1's L1: after the turn the memory already holds today's ratio, so the USA is read through the bill path's decision - the boundary year
+                    // the memory closed last, a whole year's change - and its amount is held to the slope, not only its sign
+                    PolicyDecision d = AiFinanceMinistry.IsEuMember(c.Id) ? AiFinanceMinistry.Decide(c, last) : AiFinanceMinistry.DecideForBill(c, last);
                     int cuts = 0, restores = 0, raises = 0, lowers = 0; float worst = 0f;
                     foreach (var kv in d.SpendingLineChanges) { if (kv.Value < 0f) { cuts++; worst = Mathf.Min(worst, kv.Value); } else if (kv.Value > 0f) { restores++; worst = Mathf.Max(worst, kv.Value); } }
                     foreach (var kv in d.TaxRateOverrides)
@@ -78,8 +82,16 @@ namespace PoliSim.EditorTools
                     {
                         // PS-6 US-24 (R-US21 (v)): the retired ratio-trend trigger, reconstructed from the memory, only to say whether it would have fired here
                         bool wouldHaveFired = c.DebtRatioSeed > 0f && debt > c.DebtRatioSeed && c.DebtRatioLastReport > 0f && debt > c.DebtRatioLastReport && c.DebtRatioReportBefore > 0f && c.DebtRatioLastReport > c.DebtRatioReportBefore;
-                        if (cuts > 0 || restores > 0 || raises > 0) { Debug.LogError($"FINMIN: the United States wrote {cuts} cuts, {restores} restores, {raises} raises - since R-US21 (v) the ministry writes nothing for it (its rule is the debt limit)."); ok = false; }
-                        report.Add($"USA: debt {debt:F1} % (seed {c.DebtRatioSeed:F1}, last {c.DebtRatioLastReport:F1}, before {c.DebtRatioReportBefore:F1}), balance {balance:F2} % → nothing written (R-US21 (v): the debt limit is its rule; the retired ratio-trend trigger {(wouldHaveFired ? "would have fired" : "would not have fired")})");
+                        // K274 (R-US21 (v) re-scoped): the USA writes Bohn's reaction alone - the slope times the last closed year's change of the ratio, in its sign
+                        float asked = AiFinanceMinistry.UsReactionPercentOfGdp(c.DebtRatioLastReport, c.DebtRatioReportBefore);
+                        float wrote = UsWrittenPercentOfGdp(c, d);   // positive = tightened
+                        if (asked == 0f) { Debug.LogError($"FINMIN: the United States' ratio did not move over the last closed year ({c.DebtRatioReportBefore:F2} → {c.DebtRatioLastReport:F2}) after {Turns} turns - the reaction's amount was not exercised."); ok = false; }
+                        else if (Mathf.Abs(wrote - asked) > 0.002f * Mathf.Abs(asked)) { Debug.LogError($"FINMIN: K274 asks {asked:F4} % of GDP of the United States and the ministry wrote {wrote:F4} % - the amount is not the slope times the year's change."); ok = false; }
+                        if (d.SpendingLineChanges.ContainsKey(SpendingCategory.SocialSecurity)) { Debug.LogError("FINMIN: the United States' reaction moved the pension line - no US budget act moves it (K274 (M2): 2 U.S.C. 641(g))."); ok = false; }
+                        if (asked == 0f && (cuts > 0 || restores > 0 || raises > 0 || lowers > 0)) { Debug.LogError($"FINMIN: the United States' ratio did not move and the ministry wrote {cuts} cuts, {restores} restores, {raises} raises, {lowers} rate cuts - K274's reaction asks nothing."); ok = false; }
+                        if (asked > 0f && (cuts == 0 || restores > 0 || lowers > 0)) { Debug.LogError($"FINMIN: the United States' ratio rose over the last closed year ({c.DebtRatioReportBefore:F2} → {c.DebtRatioLastReport:F2}), K274 asks {asked:F3} % of GDP, and the ministry wrote {cuts} cuts, {restores} restores, {lowers} rate cuts."); ok = false; }
+                        if (asked < 0f && (cuts > 0 || raises > 0 || (restores == 0 && lowers == 0))) { Debug.LogError($"FINMIN: the United States' ratio fell over the last closed year ({c.DebtRatioReportBefore:F2} → {c.DebtRatioLastReport:F2}), K274 releases {-asked:F3} % of GDP, and the ministry wrote {cuts} cuts, {raises} raises, {restores} restores, {lowers} rate cuts."); ok = false; }
+                        report.Add($"USA: debt {debt:F1} % (seed {c.DebtRatioSeed:F1}, last {c.DebtRatioLastReport:F1}, before {c.DebtRatioReportBefore:F1}), balance {balance:F2} % → K274 asks {asked:F3} % of GDP, writes {wrote:F3}: {cuts} cut(s), {restores} restore(s), {raises} rate rise(s), {lowers} rate cut(s) (the retired ratio-trend trigger {(wouldHaveFired ? "would have fired" : "would not have fired")})");
                     }
                 }
                 if (!sawCuts) { Debug.LogError("FINMIN: no EU country owing an adjustment wrote a cut - the corrective direction was not exercised."); ok = false; }
@@ -205,8 +217,18 @@ namespace PoliSim.EditorTools
             }
             finally { Object.DestroyImmediate(go2); }
             Debug.Log($"FINMIN: after {Turns} turns - {string.Join("; ", report)}.");
-            Debug.Log(ok ? "FINMIN: PASS - nothing owed nothing written, an adjustment owed cuts then rates, below 60 % the 1 % limit the resting point from either side (the raised rates lowered first, no rate raised), above 60 % a fall faster than the pace released, the United States on its trigger and its discretionary lines only, both directions, the caller's objects withdrawn, the player never read." : "FINMIN: FAILED (see above).");
+            Debug.Log(ok ? "FINMIN: PASS - nothing owed nothing written, an adjustment owed cuts then rates, below 60 % the 1 % limit the resting point from either side (the raised rates lowered first, no rate raised), above 60 % a fall faster than the pace released, the United States on K274's reaction alone at the slope's amount and off the pension line, both directions, the caller's objects withdrawn, the player never read." : "FINMIN: FAILED (see above).");
             CheckExit.Finish(ok ? 0 : 1);
+        }
+
+        /// <summary>K274 (review 1's L1): what <paramref name="d"/> moves the USA's primary balance by, % of GDP (positive = tightened) - the lines' changes on
+        /// their amounts plus each rate's move on its base.</summary>
+        private static float UsWrittenPercentOfGdp(Country c, PolicyDecision d)
+        {
+            float sum = 0f;
+            foreach (var kv in d.SpendingLineChanges) { foreach (SpendingLine line in c.SpendingLines) { if (line.Category == kv.Key) { sum -= kv.Value / 100f * line.Amount; } } }
+            foreach (var kv in d.TaxRateOverrides) { sum += TaxBases.Base(c, kv.Key) * (kv.Value - RateOf(c, kv.Key)) / 100f; }
+            return sum / c.State.NominalGdp * 100f;
         }
 
         /// <summary>K251: a tax line's rate on the country (0 where it has none).</summary>

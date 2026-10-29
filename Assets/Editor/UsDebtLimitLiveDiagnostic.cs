@@ -24,7 +24,8 @@ namespace PoliSim.EditorTools
     /// <item>(b) THE LAW AT THE START (R-US21 (ii), J3) on planted days either side of every step, and printed for every playable start.</item>
     /// <item>(c) A SWEDEN-START WORLD'S AI USA: the debt subject to limit kept day by day by this diagnostic's own walk, and the live bookkeeping held to it -
     /// the day the limit is reached, the raise by act on the day the measures run out (R-US21 (vi)), no cut armed, the ministry writing nothing for the USA at
-    /// any boundary (R-US21 (v)); and the reach and the binding day beside CRS IF10292's "early to mid-2027", the miss stated.</item>
+    /// any boundary but K274's reaction (R-US21 (v) re-scoped: nothing where the debt ratio did not move, a tightening and only that where it rose, a loosening and only
+    /// that where it fell, never the pension line); and the reach and the binding day beside CRS IF10292's "early to mid-2027", the miss stated.</item>
     /// <item>(d) A US GAME (the USA's own start, stepped in the controller's order): the suspension reinstated on 2 January 2025 at the game's own debt subject to
     /// limit at the end of 1 January (R-US21 (ii)'s words, no headroom - the review's L2), P.L. 119-21's increase NOT applied on 4 July 2025 (later raises are the game's Congress's acts),
     /// the limit reached that day; PS-6 K23: the player-president's government tables nothing by itself - the President proposes the raise a bill's course
@@ -189,7 +190,7 @@ namespace PoliSim.EditorTools
                         var series = new List<(DateTime Day, double Dsl)>();
                         DateTime liveReach = DateTime.MinValue, liveRaise = DateTime.MinValue;
                         double dslAtRaise = double.NaN;
-                        bool armed = false, ministryWrote = false;
+                        bool armed = false, ministryWrote = false; int answered = 0;
                         int boundaries = 0;
                         DateTime stopBy = opens.AddYears(3);
                         while (ss.CurrentDate < stopBy)
@@ -202,7 +203,15 @@ namespace PoliSim.EditorTools
                             if (boundary)
                             {
                                 PolicyDecision eve = AiFinanceMinistry.Decide(au, ss.GetLastFiscalReport(CountryId.USA));
-                                ministryWrote |= eve.SpendingLineChanges.Count > 0 || eve.TaxRateOverrides.Count > 0;
+                                // K274: what the ministry writes for the USA is the reaction's alone - its sign is the debt ratio's change since the last boundary
+                                float asked = AiFinanceMinistry.UsReactionPercentOfGdp(au.State.DebtToGdpRatio, au.DebtRatioLastReport);
+                                bool tightens = false, loosens = false;
+                                foreach (var kv in eve.SpendingLineChanges) { tightens |= kv.Value < 0f; loosens |= kv.Value > 0f; }
+                                foreach (TaxLine t in au.TaxLines) { if (eve.TaxRateOverrides.TryGetValue(t.Type, out float to)) { tightens |= to > t.Rate; loosens |= to < t.Rate; } }
+                                // review 1's L1: a boundary whose ratio moved and where the ministry wrote nothing fails too, and so does a write to the pension line (K274 (M2): 641(g))
+                                ministryWrote |= asked == 0f ? (tightens || loosens) : asked > 0f ? (loosens || !tightens) : (tightens || !loosens);
+                                ministryWrote |= eve.SpendingLineChanges.ContainsKey(SpendingCategory.SocialSecurity);
+                                if (asked != 0f) { answered++; }
                                 ss.AdvanceTurn(none);
                                 boundaries++;
                             }
@@ -223,7 +232,7 @@ namespace PoliSim.EditorTools
                         Check(liveRaise == walkRaise && au.DebtLimitRaises == 1 && Math.Abs(au.DebtLimitUsd - (dslAtRaise + UsDebtLimit.RaiseUsd)) < 1d && dslAtRaise > UsDebtLimit.Pl119LimitUsd && !armed,
                             F("(c) the measures run {0} days to {1}, and that day the AI-governed USA raises the limit by act (R-US21 (vi)) by {2} to {3} - live: raised on {4}, {5} raise(s), the limit {6}; no cut was ever armed",
                                 spanFrom, Day(walkRaise), "the excess and " + Usd(UsDebtLimit.RaiseUsd) + " (K77)", Usd(dslAtRaise + UsDebtLimit.RaiseUsd), Day(liveRaise), au.DebtLimitRaises, Usd(au.DebtLimitUsd)));
-                        Check(!ministryWrote && boundaries > 0, F("(c) R-US21 (v): at each of the {0} boundaries crossed the AI ministry writes nothing for the USA (no line, no rate) - the dollar limit is its rule", boundaries));
+                        Check(!ministryWrote && boundaries > 0, F("(c) R-US21 (v) as K274 re-scopes it: at each of the {0} boundaries crossed the AI ministry writes for the USA only Bohn's reaction ({1} with the ratio moved: nothing where it held, tightening and only tightening where it rose, loosening and only loosening where it fell, never the pension line) - the dollar limit's mechanics are the rest", boundaries, answered));
                         int seedDays = walkReach == DateTime.MinValue ? -1 : (walkReach - opens).Days;
                         DateTime vintageDay = DateTime.ParseExact(data["vintage.date"], "yyyy-MM-dd", CultureInfo.InvariantCulture);
                         sb.Append(F("    read      THE CRS WINDOW (IF10292 v22, \"early to mid-2027\", DECLARED as {0} to {1}): the game reaches the limit on {2} - {3}; the measures run out, and the AI raises it, on {4} - {5}. The game's calendar opens on Sweden's start ({6}) on a seed of {7}'s state: carried from the seed's own month-end the same {8} days land on {9} - {10}.\n",

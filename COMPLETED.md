@@ -42174,3 +42174,36 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nk275b 3 of 3; cheapk275 146 of 146; dryk275 (Sweden, USA 1280) 170 captured, 0 failed; dumpk275b byte-identical to k251 (both seeds); simk275 90 of 90; dock275 document group clean
 
 **Commit:** this one.
+
+## 948. K274: THE AI USA'S BUDGET ANSWERS ITS DEBT - BOHN'S PRIMARY-BALANCE REACTION (0.054) ON TOP OF THE DEBT LIMIT; NO DEFAULT CYCLE IN THE CENTURY - THE FAMILY `k274` (2026-10-29)
+
+**What was owed:** K274 (Elias, answering K269 (c)): R-US21 (v) re-scoped. The AI USA defaulted at about years 46 and 77 under its debt-limit rule alone. Its budget should respond to debt through an empirical primary-balance reaction (Bohn-type, sourced and fetched), aiming at CBO's path without a default cycle.
+
+**Built** (an implementer on `wave/k274`; review 1 NOT READY (M1 the bill read a stale boundary, M2 the levers, M3 the (B) wording), review 2 READY):
+- `AiFinanceMinistry.UsDebtReactionCoefficient = 0.054` [SOURCED]: Bohn (1998), "The Behavior of U.S. Public Debt and Deficits", Table I column (1), 1916-95, the coefficient on d_t (t 6.048; HAC 3.787). It is from the author's own copy, fetched byte-exact; the QJE's pages are BILLED (403).
+- Where an AI government holds the USA, the ministry writes 0.054 × the debt ratio's change since the last boundary, as % of GDP, through the EU rule's levers in its order and symmetric. A rise cuts lines inside their ranges, then raises the household rates; a fall lowers the rates the rule raised, then restores lines.
+- The player's USA is untouched. An AI head of the player's USA tables it as its budget bill, reading the last closed boundary year.
+- `UsDebtLimit` is unchanged: the limit is still raised by act when the extraordinary measures run out.
+- CBO's Long-Term Budget Outlook (Feb 2026, publication 62044) was fetched from the Internet Archive's capture, since cbo.gov is BILLED behind a JavaScript challenge. Debt held by the public is 171.785 % (2055) and 175.076 % (2056).
+- `UsFiscalReactionDiagnostic` (simulation group) reads the coefficient off the stored page. `AiFinanceMinistryDiagnostic` (4) and `UsDebtLimitLiveDiagnostic` (c) now hold the reaction's sign.
+
+**Preregs** (`Reviews/2026-10-29_k274_prereg.md`, `_prereg2.md`, committed on main before the first Unity run as f92bd9c3, and written on the branch before the build):
+- (A), no US default in a century on both seeds: PASS.
+- (B), year 30's debt ratio within [150.076, 200.076] around CBO 2056: MISSED on both seeds by 2.89 and 2.17 points (147.19 and 147.91). Against CBO 2055 it would be inside.
+- The change reading is +23 to +24 points to year 30 against CBO's +74.47.
+- The coefficient was not re-chosen.
+
+**Measured** (`Reviews/2026-10-29_k274_integrator.md`):
+- In the engine the all-AI century has no US default.
+  - Seed 777: y10 130.7, y30 147.2, y50 167.3, y100 166.3; peak 178.8.
+  - Seed 424242: y30 147.9, y100 164.9; peak 183.2.
+  - Before: defaults at 46 / 77 and 47 / 76, peaks about 209.
+- The family `k274` against `k251`: the USA from turn 2, Poland and Sweden from turn 3 through the dollar, France, Germany and Italy identical at every turn.
+
+**Evidence:** `Reviews/2026-10-29_k274_review1.md`, `_review2.md`, `_integrator.md`; ledger rows s948 (`AiFinanceMinistry.cs`, `SimulationManager.cs`, both baseline digests).
+
+**Declared:** the slope only (Bohn's constant and controls are the model's own primary balance); applied to the first difference; the gross federal stock stands in for privately held debt; the EU rule's levers and order. (B) is a REGISTERED miss (printed, not re-fitted).
+
+**Bars:** nk274 6 of 6; nk274b (TrajectorySentinelCheck at k274, ReviewLedgerCheck) 2 of 2; cheapk274 146 of 146; simk274 91 of 91; dumpk274 the family k274; dock274 document group clean
+
+**Commit:** this one.

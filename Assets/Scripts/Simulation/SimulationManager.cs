@@ -1439,7 +1439,7 @@ namespace PoliSim.Simulation
         public void TableGovernmentBudget(Country country)
         {
             if (country == null || _pendingBudgetBillByCountry.ContainsKey(country.Id)) { return; }
-            PolicyDecision governmentDecision = AiFinanceMinistry.Decide(country, GetLastFiscalReport(country.Id));
+            PolicyDecision governmentDecision = AiFinanceMinistry.DecideForBill(country, GetLastFiscalReport(country.Id));   // K274 (review 1's M1): the bill answers the last closed boundary year
             // §716 (the review's defect 1): the Finance partner's step rides the government's own bill, after the ministry's rule (its first claim kept) -
             // the player's country under an AI head takes no boundary step (PartnerStepsAtBoundary)
             FinancePartner.Written partnerStep = FinancePartnerRuns(country) ? FinancePartner.Apply(country, governmentDecision, CurrentDate) : null;   // once in any year (StepDue)
