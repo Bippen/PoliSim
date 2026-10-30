@@ -5882,6 +5882,7 @@ namespace PoliSim.Testing
             }
             if (sim.PlayerPreCampaign != null && sim.PlayerCampaign == null)
             {
+                UiGuardContext.CurrentScreen = "cl1_runup_hq_opened";   // S4: the HQ's first settle frames under their own name - the guard filed them under 05t_budget_turn0
                 InvokeNoArg(controller, "OpenLiveCampaign");
                 yield return Settle();
                 Claim("imgui");
@@ -6905,7 +6906,10 @@ namespace PoliSim.Testing
         {
             Debug.Log("SHOT: -shotinterrupts - Poland's campaign (PL-C): the film walks to the polling day, filming the Sejm campaign's HQ on the way, then the nights, then the presidential campaign's HQ and the run-off's.");
             Expect("plc01_sejm_runup_hq", "plc02_sejm_campaign_hq", "plc03_presidential_campaign_hq", "plc04_runoff_campaign_hq");
-            bool runUpFilmed = false, campaignFilmed = false;
+            // S4 (Design's return of 2026-10-30): the re-laid HQ's new states, staged on the live campaign and put back after each frame
+            Expect("plc01b_sejm_office_picker_staged", "plc01c_sejm_office_moved_staged", "plc02b_sejm_regional_poll_staged", "plc02c_sejm_against_composer_staged",
+                "plc02d_sejm_final_week_phones_staged");
+            bool runUpFilmed = false, campaignFilmed = false, finalWeekFilmed = false;
             SetPrivateField(controller, "_onDesk", true);
             FieldInfo walkSpeedField = controller.GetType().GetField("_gameSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
             object walkSpeed = walkSpeedField?.GetValue(controller);
@@ -6919,12 +6923,25 @@ namespace PoliSim.Testing
                 days++;
                 if (boundary) { sim.AdvanceTurn(noDecisions); }
                 // PL-C: the Sejm campaign's HQ, once each - the run-up's first day and the campaign's second
-                if (!runUpFilmed && sim.PlayerPreCampaign != null && sim.PlayerCampaign == null) { runUpFilmed = true; yield return FilmPolishHq(controller, sim, "plc01_sejm_runup_hq"); }
-                if (!campaignFilmed && sim.PlayerCampaign != null && sim.PlayerCampaign.Day >= 1) { campaignFilmed = true; yield return FilmPolishHq(controller, sim, "plc02_sejm_campaign_hq"); }
+                if (!runUpFilmed && sim.PlayerPreCampaign != null && sim.PlayerCampaign == null) { runUpFilmed = true; yield return FilmPolishHq(controller, sim, "plc01_sejm_runup_hq"); yield return FilmHqOfficePicker(controller, sim); }
+                if (!campaignFilmed && sim.PlayerCampaign != null && sim.PlayerCampaign.Day >= 1) { campaignFilmed = true; yield return FilmPolishHq(controller, sim, "plc02_sejm_campaign_hq"); yield return FilmHqRegionalPollAndAgainst(controller, sim); }
+                // S4: PHONES opens with the final week - the day the queue steps on is inside it (the run's own gate)
+                if (!finalWeekFilmed && sim.PlayerCampaign != null && !sim.PlayerCampaign.Finished && sim.PlayerCampaign.Setup.Contest == CampaignContest.Chamber
+                    && sim.PlayerCampaign.Setup.Calendar.DaysUntilElection(sim.PlayerCampaign.Today) <= GotvTurnout.PhoneFinalWeekDays)
+                {
+                    finalWeekFilmed = true;
+                    yield return FilmHqStaged(controller, "plc02d_sejm_final_week_phones_staged", () =>
+                    {
+                        controller.StageHqComposerForFilm(CampaignActionKind.PhoneBank, false, 1, 0);
+                        return string.Format(CultureInfo.InvariantCulture, "the final week - the queue steps on {0:yyyy-MM-dd}, {1} day(s) before polling day; PHONES open in the composer", sim.PlayerCampaign.Today,
+                            sim.PlayerCampaign.Setup.Calendar.DaysUntilElection(sim.PlayerCampaign.Today));
+                    }, () => controller.StageHqComposerForFilm(null, false, 1, 0));
+                }
                 if (sim.PollingDayToday) { break; }
             }
             if (!runUpFilmed) { Debug.LogError("SHOT: PL-C plc01_sejm_runup_hq - MISSING: no run-up began before the polling day (the player's party is in no Polish cast?)"); _failed++; }
             if (!campaignFilmed) { Debug.LogError("SHOT: PL-C plc02_sejm_campaign_hq - MISSING: no Sejm campaign ran before the polling day"); _failed++; }
+            if (!finalWeekFilmed) { Debug.LogError("SHOT: S4 plc02d_sejm_final_week_phones_staged - MISSING: the Sejm campaign never reached its final week on the walk"); _failed++; }
             bool over = false;
             if (!sim.PollingDayToday)
             {
@@ -6982,6 +6999,7 @@ namespace PoliSim.Testing
             CampaignRun.Setup? staged = sim.PlayerCampaign?.Setup ?? sim.PlayerPreCampaign?.Staged;
             Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: PL-C {0} on {1:yyyy-MM-dd} - the {2}, {3} regions, the player's cap: {4}", frame, sim.CurrentDate,
                 staged.HasValue ? staged.Value.Contest.ToString() : "(no staging)", staged.HasValue ? staged.Value.Regions.Length : 0, LiveCampaignSetup.SpendingLimitLine(staged, sim.PlayerPartyIndexForCampaign()) ?? "none"));
+            UiGuardContext.CurrentScreen = frame;   // S4: the settle frames under their own name, never the frame before
             InvokeNoArg(controller, "OpenLiveCampaign");
             yield return Settle();
             Claim("imgui");
@@ -6989,6 +7007,107 @@ namespace PoliSim.Testing
             InvokeNoArg(controller, "CloseLiveCampaign");
             SetPrivateField(controller, "_onDesk", true);
             yield return Settle();
+        }
+
+        /// <summary>
+        /// S4 (Design's return of 2026-10-30): the live HQ opened through the rail's own branch, STAGED by <paramref name="stage"/> (which says what it staged, for
+        /// the log's `SHOT: S4 ... STAGED:` line), filmed as <paramref name="frame"/>, put back by <paramref name="restore"/> and closed to the Desk - the way the
+        /// `_staged` shots stage a state and leave the game as they found it.
+        /// </summary>
+        private IEnumerator FilmHqStaged(GameController controller, string frame, Func<string> stage, Action restore)
+        {
+            UiGuardContext.CurrentScreen = frame;   // the settle frames under their own name, never the frame before (the guard filed the HQ's first frames under 05t)
+            InvokeNoArg(controller, "OpenLiveCampaign");
+            yield return Settle();
+            string what = stage != null ? stage() : "nothing";
+            yield return Settle();
+            Claim("imgui");
+            Debug.Log("SHOT: S4 " + frame + " - STAGED: " + what);
+            yield return Capture(frame);
+            restore?.Invoke();
+            InvokeNoArg(controller, "CloseLiveCampaign");
+            SetPrivateField(controller, "_onDesk", true);
+            yield return Settle();
+        }
+
+        /// <summary>S4 item 5: OFFICE turns the map into the picker - the composer opened on OFFICE with the rule's site (NEXT on the largest electorate without
+        /// one), then a click on another tile moving it; the pick and the composer put back.</summary>
+        private IEnumerator FilmHqOfficePicker(GameController controller, SimulationManager sim)
+        {
+            PreCampaignRun.State pre = sim.PlayerPreCampaign;
+            if (pre == null) { Debug.LogError("SHOT: S4 plc01b_sejm_office_picker_staged - MISSING: no run-up to site an office in"); _failed++; yield break; }
+            int site = LiveCampaignSnapshot.NextOfficeSite(pre, -1, out _);
+            yield return FilmHqStaged(controller, "plc01b_sejm_office_picker_staged", () =>
+            {
+                controller.ComposeForFilm(CampaignActionKind.EstablishOffice);
+                return "OFFICE open in the composer - the map is the picker, NEXT on " + (site >= 0 ? pre.Staged.Regions[site].Name : "none") + " (the largest electorate without an office)";
+            }, () => controller.ComposeForFilm(null));
+            int other = -1;
+            for (int r = 0; r < pre.Staged.Regions.Length; r++) { if (r != site && pre.Staged.StandsIn(pre.Party, r) && !pre.HasOffice(r)) { other = r; break; } }
+            MethodInfo pick = controller.GetType().GetMethod("PickCampaignRegion", BindingFlags.Instance | BindingFlags.NonPublic);
+            yield return FilmHqStaged(controller, "plc01c_sejm_office_moved_staged", () =>
+            {
+                controller.ComposeForFilm(CampaignActionKind.EstablishOffice);
+                if (other >= 0) { pick?.Invoke(controller, new object[] { other }); }
+                return "a click on another tile moved the next office to " + (other >= 0 ? pre.Staged.Regions[other].Name : "none");
+            }, () => { controller.ComposeForFilm(null); SetPrivateField(controller, "_campaignPickedRegion", -1); });
+        }
+
+        /// <summary>
+        /// S4 items 1 and 7 and the regional surfaces: regional polls PLANTED in the run's record for the film - the target region, the region whose top two are
+        /// closest (a too-close tile beside a polled one) and the one with the widest lead - each the region's truth at the prior's offset (`RegionalPolling.TruthIn`
+        /// on the run's true preference, no campaign shift) read WITHOUT sampling noise, its ± the regional poll's at its sample: DECLARED a staging (no random
+        /// stream is drawn, no vote moves), removed after the frame. Then the composer on a rally with AGAINST picked, ×2, the topic stepped once - put back.
+        /// </summary>
+        private IEnumerator FilmHqRegionalPollAndAgainst(GameController controller, SimulationManager sim)
+        {
+            CampaignRun.State run = sim.PlayerCampaign;
+            int me = sim.PlayerPartyIndexForCampaign();
+            if (run == null || me < 0 || run.RegionalPolls == null || run.Setup.RegionalOffset == null)
+            {
+                Debug.LogError("SHOT: S4 plc02b_sejm_regional_poll_staged - MISSING: " + (run == null ? "no campaign" : me < 0 ? "no player party in it" : "no regional poll is on sale in this staging"));
+                _failed++;
+                yield break;
+            }
+            object targetObject = controller.GetType().GetMethod("LocalActRegion", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, null);
+            int target = targetObject is int t ? t : -1;
+            var truths = new Dictionary<int, double[]>();
+            int closest = -1, widest = -1;
+            double closestGap = double.MaxValue, widestGap = -1.0;
+            for (int r = 0; r < run.Setup.Regions.Length; r++)
+            {
+                double[] truth = RegionalPolling.TruthIn(run.Setup, run.TruePreference, null, null, r);
+                if (truth == null) { continue; }
+                truths[r] = truth;
+                double first = 0.0, second = 0.0;
+                foreach (double v in truth) { if (v > first) { second = first; first = v; } else if (v > second) { second = v; } }
+                if (r == target) { continue; }
+                if (first - second < closestGap) { closestGap = first - second; closest = r; }
+                if (first - second > widestGap) { widestGap = first - second; widest = r; }
+            }
+            var planted = new List<int>();
+            foreach (int r in new[] { target, closest, widest })
+            {
+                if (r < 0 || planted.Contains(r) || !truths.ContainsKey(r)) { continue; }
+                double[] shares = truths[r];
+                var moe = new double[shares.Length];
+                for (int i = 0; i < moe.Length; i++) { moe[i] = RegionalPolling.MarginOfErrorPp(shares[i], RegionalPolling.Sample); }
+                System.DateTime fielded = run.Setup.Calendar.CampaignStart.AddDays(System.Math.Max(0, run.Day - 1));
+                run.RegionalPolls[me].Add((System.Math.Max(0, run.Day - 1), r, new Poll(fielded, RegionalPolling.Sample, "Regional poll · " + run.Setup.Regions[r].Name + " (staged)", shares, moe)));
+                planted.Add(r);
+            }
+            void Unplant() { int n = planted.Count; List<(int Day, int Region, Poll Poll)> filed = run.RegionalPolls[me]; filed.RemoveRange(filed.Count - n, n); }
+            yield return FilmHqStaged(controller, "plc02b_sejm_regional_poll_staged",
+                () => "regional polls planted in " + string.Join(", ", planted.ConvertAll(r => run.Setup.Regions[r].Name).ToArray()) + " (the target " + (target >= 0 ? run.Setup.Regions[target].Name : "none")
+                    + "; the closest top two, gap " + (closest >= 0 ? (100.0 * closestGap).ToString("0.0", CultureInfo.InvariantCulture) : "-") + " pts; the widest lead) - the regions' truths read without sampling noise",
+                null);
+            yield return FilmHqStaged(controller, "plc02c_sejm_against_composer_staged", () =>
+            {
+                int rival = controller.StageHqComposerForFilm(CampaignActionKind.Rally, true, 2, 1);
+                return "a rally ×2 in the composer, AGAINST " + (rival >= 0 ? run.Setup.Parties[rival].Name : "none (no rival stands in the target region)") + ", the topic stepped once; the regional polls still planted";
+            }, () => controller.StageHqComposerForFilm(null, false, 1, 0));
+            Unplant();
+            Debug.Log("SHOT: S4 - the planted regional polls removed: " + run.RegionalPolls[me].Count.ToString(CultureInfo.InvariantCulture) + " bought poll(s) left on the party's record");
         }
 
         /// <summary>PL-C (K168, K169): after the Sejm's nights the Polish game walks on by the day path to the presidential campaign - its HQ on its second day

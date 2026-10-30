@@ -33,6 +33,23 @@ namespace PoliSim.UI
             return Load("Art/UI/V35/icon_v35_" + shortName);
         }
 
+        /// <summary>The Campaign HQ's glyph stems drawn as their WORD this session because the file did not load - the HQ's fallbacks, named for the film's log.</summary>
+        public static readonly System.Collections.Generic.HashSet<string> HqGlyphFallbacks = new System.Collections.Generic.HashSet<string>();
+
+        /// <summary>
+        /// S4 (Design's return of 2026-10-30, `assets/s4/glyphs`): one of the Campaign HQ's glyphs - `Resources/Art/UI/CampaignHq/&lt;stem&gt;` (the delivered folder, renamed on main), white on alpha and tinted
+        /// at draw: a Polish party's mark for a polled tile and a picked AGAINST cell (<c>mark_pl_pis_w_14</c>, its 28 px pair at 2560), the field report
+        /// (<c>report_16</c> / <c>report_32</c>), ≈ (<c>approx_18</c> / <c>approx_36</c>). Null where the file is not held - the caller draws the glyph's WORD in
+        /// its place (UI v3.3 §4.2's honest fallback, never a blank and never a stand-in) and the stem is named in <see cref="HqGlyphFallbacks"/>. The PNGs are
+        /// installed from Design's delivery as files, never written from a pulled image (§424).
+        /// </summary>
+        public static Texture2D HqGlyph(string stem)
+        {
+            Texture2D t = Load("Art/UI/CampaignHq/" + stem);
+            if (t == null) { HqGlyphFallbacks.Add(stem); }
+            return t;
+        }
+
         /// <summary>
         /// The area icon for a <see cref="UiPalette.SystemArea"/> - `icon_area_&lt;area&gt;`, the
         /// filename derived from the enum like every other art category here. Omnibus 2026-08-28

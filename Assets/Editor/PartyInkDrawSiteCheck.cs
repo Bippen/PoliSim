@@ -109,6 +109,12 @@ namespace PoliSim.EditorTools
              + "are the parties' own marks in their own inks, and the compass places the nominee, in its party's mark, inside the party's range "
              + "framed in that ink among the real parties' marks - so party identity is the whole subject, the creation flow's own argument. The "
              + "file draws NO area accent (clause 2 by construction)."),
+            ("GameController.CampaignRace.cs",
+             "S4 (Design's return of 2026-10-30, the Campaign HQ re-laid, boards 4a-4g): the race draws each party's bar in its laddered ink, the run-off "
+             + "as one bar split between its two finalists' inks, and the map a region a regional poll has read in its LEADER's ink - who leads the race "
+             + "and who leads where is party identity as the whole subject, the chamber's own argument (only a regional poll colours a tile; a polled "
+             + "tile names its leader by its mark, so colour never carries the meaning alone). The ink is the chamber's accessor, so the HQ and the "
+             + "hemicycle cannot disagree about a colour; the HQ's other files draw no party ink, and this one draws NO area accent (clause 2 by construction)."),
             ("GameController.ForeignResultCard.cs",
              "PS-8 (K163, 2026-10-28): the results card of an election abroad draws each list as a bar in its party's laddered ink by the seats it won - who "
              + "won the chamber is party identity as the whole subject, the chamber's own argument. The card is its own file of the partial class and draws "

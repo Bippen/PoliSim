@@ -1,0 +1,92 @@
+# S4 (Design's return of 2026-10-30, the Campaign HQ re-laid; K320 (5) and K321 (g)): every at-rest string the old HQ drew that the re-lay no longer draws as it was, and where it is reachable now.
+# capture_stem: a capture of the old HQ that drew it. text_before: the old string, figures folded to '#'. now_in: the slip anchor (GameController.CampaignHq*.cs / CampaignRace.cs, the HQ's book) or "at rest:" where it is re-worded on the page. slip_text: the slip's words that hold it.
+# The one string removed outright is the "Open to you today" panel: Design removed it because it repeated the verb cells (RETURN.md, "The re-lay"); its list is kept on the verbs' caption's slip all the same (hq:open).
+capture_stem	text_before	now_in	slip_text
+cl2_campaign_hq_rally_picked	S · SWEDEN	hq:party	S · Sweden / your party's campaign (at rest: the party's mark)
+cl2_campaign_hq_rally_picked	CAMPAIGN HQ	at rest: the head's title	Campaign
+cl2_campaign_hq_rally_picked	THE MAP	at rest: the middle column is the tile map (no separate map)	-
+cl1_runup_hq_opened	PRE CAMPAIGN	at rest: the phase cell	Run-up
+cl2_campaign_hq_rally_picked	CAMPAIGN	at rest: the phase cell	Campaign
+cl2_campaign_hq_rally_picked	ELECTION DAY	at rest: the head's days	polling day
+cl2_campaign_hq_rally_picked	# D TO POLLING DAY	at rest: the head's days	# days to polling day
+cl2_campaign_hq_rally_picked	POLL CLOSED	at rest: the head's days	poll closed
+cl2_campaign_hq_rally_picked	RESOURCES — WAR CHEST, THE DAY, THE GROUND	at rest: the block heads	The chest / The day / the ground is the middle column
+cl2_campaign_hq_rally_picked	KR · # % OF THE CHEST SPENT	hq:chest	# % of the chest spent (at rest: # % spent)
+cl1_runup_hq_opened	KR · WAR CHEST	hq:chest	THE CHEST · # kr / no statutory cap on disk for this country
+plc02_sejm_campaign_hq	PLN · # % OF THE #,#,# CAP SPENT	hq:cap	THE CAP · #,#,# PLN / the electoral code's limit for this committee (at rest: # % spent, the cap #,#,# †)
+cl2_campaign_hq_rally_picked	#.# / # HOURS	hq:day	queued # h · preview # h · left # h (at rest: # of 12 h - bug 5, the cells now fill as hours are queued)
+cl2_campaign_hq_rally_picked	Economy over the term	at rest: the economy row	Economy, the term
+cl2_campaign_hq_rally_picked	AS PUBLISHED — WHAT THE COUNTRY HAS BEEN TOLD, NOT THE TRUE STATE.	hq:economy	as published · what the country was told / not the true state
+cl2_campaign_hq_rally_picked	ORGANISATION — STAFF · OFFICES	at rest: the block head	The organisation
+cl1_runup_hq_opened	NO STAFF HIRED	hq:staff	no staff hired
+cl2_campaign_hq_rally_picked	CAMPAIGN MANAGER	hq:staff:0	CAMPAIGN MANAGER (at rest: the cell MGR)
+cl2_campaign_hq_rally_picked	MEDIA ADVISOR	hq:staff:1	MEDIA ADVISOR (at rest: the cell MEDIA)
+cl2_campaign_hq_rally_picked	POLLSTER	hq:staff:2	POLLSTER (at rest: the cell POLL)
+cl2_campaign_hq_rally_picked	FIELD ORGANIZER	hq:staff:3	FIELD ORGANIZER (at rest: the cell FIELD)
+cl2_campaign_hq_rally_picked	DIGITAL STRATEGIST	hq:staff:4	DIGITAL STRATEGIST (at rest: the cell DIGI)
+cl2_campaign_hq_rally_picked	Paid today	hq:staff:#	paid today · on the job
+cl2_campaign_hq_rally_picked	on the job	hq:staff:#	paid today · on the job
+cl2_campaign_hq_rally_picked	Unpaid today	hq:staff:#	unpaid today · gives nothing today
+cl2_campaign_hq_rally_picked	gives nothing today	hq:staff:#	unpaid today · gives nothing today
+cl1_runup_hq_opened	Staged	hq:staff:#	staged · hired on the campaign's first day
+cl1_runup_hq_opened	hired on the campaign's first day	hq:staff:#	staged · hired on the campaign's first day
+cl1_runup_hq_stepped	Hired day #	hq:staff:#	hired day # · paid from the day after the hire
+cl1_runup_hq_stepped	paid from the day after the hire	hq:staff:#	hired day # · paid from the day after the hire
+cl2_campaign_hq_rally_picked	Payroll	at rest: the organisation's head	# KR/day
+cl2_campaign_hq_rally_picked	Stockholms kommun	hq:offices	Stockholms kommun · # vol (and each tile's slip: office · open)
+cl2_campaign_hq_rally_picked	# vol · # KR/day	hq:offices	<region> · # vol (the upkeep a day: the region's plate, Office · open · # vol · # kr/day)
+cl2_campaign_hq_rally_picked	# offices	at rest: the offices row	# · # vol · # kr/day
+cl2_campaign_hq_rally_picked	# offices (# not shown)	hq:offices	+# more · brass squares on the map
+cl1_runup_hq_opened	NO REGIONAL OFFICES OPEN	hq:offices	none open
+cl1_runup_hq_opened	Stockholms län · staged	hq:offices	Stockholms län · staged · 0 vol (the tile's slip: office · staged)
+cl1_runup_hq_stepped	Göteborgs kommun · planned	hq:offices	Göteborgs kommun · planned · 0 vol (the tile's slip: office · planned)
+cl2_campaign_hq_rally_picked	THE RACE — AS POLLED	at rest: the race head and its stamp	The race · PUBLIC TRACKER / YOUR POLL / THE LAST COUNT · DATED
+cl2_campaign_hq_rally_picked	#.# ±#.#	at rest: the race row	#.# · ±#.#
+cl2_campaign_hq_rally_picked	+#.# pp momentum	hq:party:#	+#.# pp momentum since the last poll (at rest: ▲#.#)
+cl1_runup_hq_stepped	TV BUY +#.## ±#.## PP UNTIL # JAN	hq:tv	TV BUY · ▲#.## PP / ±#.## · the estimate's 95 % band / airs until # Jan # · gone by polling day
+cl1_runup_hq_stepped	TV BUY · ON THE POLLS UNTIL # JAN · FADED BY POLLING DAY	hq:tv	airs until # Jan # · gone by polling day (and the run-up's hq:yesterday lists the note)
+plc02_sejm_campaign_hq	+# MORE PARTIES POLLED	-	not reachable by design: the rows were the parties off the ballot (SLD, PSL), which no longer print (bug 2)
+cl2_campaign_hq_rally_picked	PUBLIC TRACKER · n = # · FIELDED # AUG # · BARS TO # %, SHADED BAND = 95 % INTERVAL (SAMPLING ERROR ONLY)	hq:racehead	PUBLIC TRACKER / n # · fielded # Aug # / the rule under a bar · its 95 % interval / sampling error only / bars to # % (at rest: n # · fielded # Aug #)
+cl1_runup_hq_opened	NO POLL BOUGHT YET - THE LAST COUNT, NO SAMPLING ERROR · n = 0 · FIELDED # JAN # · BARS TO # %, SHADED BAND = 95 % INTERVAL (SAMPLING ERROR ONLY)	hq:racehead	THE LAST COUNT · DATED / the last count, carried as the reading / no sampling error, so no bands / bars to # % (at rest: the last count · no sampling error)
+cl2_campaign_hq_rally_picked	TODAY'S QUEUE	at rest: the day's head and caption	Today · QUEUED TODAY
+cl2_campaign_hq_rally_picked	NOTHING QUEUED — THE DAY'S HOURS ARE UNSPENT	hq:empty	NOTHING QUEUED / the day's 12 hours are free (at rest: nothing queued)
+cl2_campaign_hq_rally_picked	+# MORE QUEUED	hq:qmore	QUEUED · # / <act> · <where> · <price> (at rest: +# more queued)
+cl1_runup_hq_stepped	YESTERDAY · PREPARE ADVERTISING TELEVISION · #,#,# KR	hq:yesterday	YESTERDAY / PREPARE ADVERTISING TELEVISION · # KR (at rest: Yesterday · # acts · # kr)
+cl2_campaign_hq_scandal_stepped	YESTERDAY · S · CORRUPTION · APOLOGIZED	hq:yesterday	YESTERDAY / S · CORRUPTION · APOLOGIZED
+cl2_campaign_hq_rally_picked	+# MORE	hq:yesterday	+# more
+plc02_sejm_campaign_hq	FIELD REPORT · OKREG # · # VOLUNTEERS · # DOORS OPENED · # CALLS COMPLETED	hq:report:#	FIELD REPORT · okręg # / # volunteers out / # doors opened · # calls so far (at rest: the field reports block)
+plc02_sejm_campaign_hq	REGIONAL POLL · OKREG # · KO LEADS BY #.# ± #.# PP · INDEX # · POLLED	hq:tile:#	OKRĘG # · <NAME> / KO leads by #.# ± #.# / your poll · n # · # Aug · index # (at rest: the tile in its leader's ink, +#)
+cl1_runup_hq_opened	HIRE MANAGER	at rest: HIRE and the post cell	HIRE · MGR (hq:post:CampaignManager: CAMPAIGN MANAGER)
+cl1_runup_hq_opened	HIRE POLLSTER	at rest: HIRE and the post cell	HIRE · POLL (hq:post:Pollster: POLLSTER)
+cl1_runup_hq_opened	HIRE DIGITAL	at rest: HIRE and the post cell	HIRE · DIGI (hq:post:DigitalStrategist: DIGITAL STRATEGIST)
+cl1_runup_hq_opened	FUNDRAISE: NO POSTAL TARIFF ON DISK FOR THIS COUNTRY - NO LETTER CAN BE PRICED	hq:fund	ABSENT / no postal tariff on disk for this country / no letter can be priced (at rest: Fundraising · ABSENT · no tariff on disk)
+cl1_runup_hq_opened	OFFICE: OPENS ON DAY ONE - ITS DOORS RAISE YOUR SUPPORTERS' TURNOUT	hq:verb:EstablishOffice	OFFICE / opens on the campaign's first day / its doors raise your supporters' turnout
+cl2_campaign_hq_rally_picked	INTERVIEW?	hq:verb:Interview	INTERVIEW / a request · an outlet books it on the day / unbooked: skipped, the day's queue stands (at rest: INTERVIEW)
+cl2_campaign_hq_rally_picked	AGAINST: NONE	at rest: the composer's Against row	Against · none (hq:against:#: AGAINST · <party> / a named attack on a rival standing here)
+cl2_campaign_hq_rally_picked	TOPIC: GENERAL	at rest: the composer's Topic stepper	Topic · ◂ General ▸ · 1 of # (hq:topic)
+cl2_campaign_hq_rally_picked	SIZE ×1	at rest: the composer's Size cells	Size · ×1 ×2 ×3 · cost ×1 (hq:size)
+cl2_campaign_hq_rally_picked	LOCAL ACTS GO TO STOCKHOLMS KOMMUN · PICKED ON THE MAP	hq:mode	TARGET · STOCKHOLMS KOMMUN / local acts land here · rally, town hall, doors, phones / your pick · a tile picked moves it (at rest: TARGET · <REGION>)
+cl2_campaign_hq_rally_picked	LOCAL ACTS GO TO STOCKHOLMS LÄN · YOUR STRONGEST OFFICE	hq:mode	your strongest office · a tile picked moves it
+cl2_campaign_hq_rally_picked	Queued today	at rest: the day's head	Today · # KR · # of 12 h
+cl2_campaign_hq_rally_picked	# KR · # of # h	hq:queued	what the queue spends when the clock runs / it steps on # Aug # (at rest: # kr · # of 12 h)
+e1_campaign_hq_overcommitted	OVER BUDGET ON BOTH — THE SPEND WOULD BE REFUSED	hq:queued	over the hours and the chest · refused (at rest: the OVER stamp)
+e1_campaign_hq_overcommitted	OVER THE DAY'S HOURS — THE SPEND WOULD BE REFUSED	hq:queued	over the day's hours · refused
+e1_campaign_hq_overcommitted	OVER THE WAR CHEST — THE SPEND WOULD BE REFUSED	hq:queued	over the chest · refused
+cl2_campaign_hq_scandal	A STORY BROKE — YOUR ANSWER, BEFORE THE DAY MOVES	hq:story	A STORY BROKE / your answer lands the morning the day steps
+cl2_campaign_hq_scandal	EVIDENCE AS YOUR PEOPLE READ IT: #.## · NOT THE TRUTH	hq:evidence	EVIDENCE · #.## / as your people read it · not the truth (at rest: seen #.##)
+cl2_campaign_hq_scandal	UNDER THE #.## BELOW WHICH A PARTY'S INSTINCT DENIES	hq:evidence	under #.## a party's instinct denies
+cl2_campaign_hq_scandal	BROKE ON CAMPAIGN DAY # · # AUG #	hq:evidence	broke on # Aug # (at rest: day # · # Aug)
+cl2_campaign_hq_scandal_answered	QUEUED: APOLOGIZE — IT LANDS THE MORNING THE DAY STEPS	hq:storystate	QUEUED / it lands the morning the day steps (at rest: QUEUED · APOLOGIZE)
+cl2_campaign_hq_scandal	NOTHING QUEUED — THE CLOCK HOLDS UNTIL YOU ANSWER	hq:storystate	CLOCK HELD / the clock holds until you answer (at rest: CLOCK HELD)
+cl2_campaign_hq_scandal	RESIGN: NO SECOND CANDIDATE IS CAST TO HAND THE CAMPAIGN TO	hq:answer:Resign	RESIGN / no second candidate is cast / nobody to hand the campaign to
+cl2_campaign_hq_scandal	SACRIFICE STAFF: NOBODY ON THE ROSTER TO SACRIFICE	hq:answer:SacrificeStaffMember	SACRIFICE STAFF / nobody on the roster to sacrifice
+cl2_campaign_hq_scandal	A TRANSPARENT APOLOGY MAY REDUCE LONG-TERM DAMAGE BUT CAUSE A SHORT-TERM POLLING DECLINE · A DENIAL CAN WORK IF THE EVIDENCE IS WEAK BUT BECOME CATASTROPHIC IF EVIDENCE LATER APPEARS · A STAFF SACRIFICE FOR A STORY NO STAFF MEMBER COULD CARRY READS AS CYNICAL	hq:story	apology · less damage later, a dip now / denial · works on weak evidence, fatal if it surfaces / staff sacrifice · cynical where no staff could carry it
+cl2_campaign_hq_rally_picked	OPEN TO YOU TODAY — WHAT THIS PHASE ALLOWS	REMOVED BY DESIGN (it repeated the verb cells); the list is on hq:open	OPEN TODAY · # OF #
+cl2_campaign_hq_rally_picked	· Rally	hq:open	rally · town hall · doors · tv ad · digital (the open verbs, five a line)
+cl2_campaign_hq_rally_picked	# OF # VERBS OPEN IN THIS PHASE	hq:open	OPEN TODAY · # OF # (at rest: CAMPAIGN · # OF # OPEN)
+cl1_runup_hq_opened	NOTHING — NO CAMPAIGN IS OPEN IN THIS PHASE	at rest: the verbs' caption	CLOSED · 0 OF # OPEN
+cl1_runup_hq_opened	RUN-UP DAY # OF # · OPENED # JAN # · THE CAMPAIGN OPENS # JUL # · POLLING DAY # SEP #	hq:timeline	THE CALENDAR / today # Jan # · opened # Jan # / the campaign opens # Jul # / polling day # Sep # (at rest: Today # Jan # · run-up day # of #, campaign · # Jul, # Sep)
+cl2_campaign_hq_rally_picked	CAMPAIGN DAY # OF # · OPENED # JUL # · POLLING DAY # SEP #	hq:timeline	today # Aug # · opened # Jul # / polling day # Sep # (at rest: Today # Aug # · campaign day # of #, # Sep)
+cl2_campaign_hq_rally_picked	TODAY # AUGUST #	at rest: the timeline's today	Today # Aug #
+cl2_campaign_hq_rally_picked	DEBATE IN # DAYS · # AUG · THE TWO LEADING THE PUBLISHED POLL STAND	hq:timeline	debates # Aug, # Sep · next in # days / the two leading the published poll stand (at rest: the tick, debate # Aug)
+plc02_sejm_campaign_hq	THE DEBATES ARE PAST · DAYS # AND #	hq:timeline	debates # Aug, # Sep · past (at rest: the two debate ticks)

@@ -48,7 +48,9 @@ namespace PoliSim.Elections
                 {
                     if (q.Kind == CampaignActionKind.CommissionPolling)   // K2: the campaign poll, the party's own house
                     {
-                        queue.Add(new QueuedAction(q.Kind, setup.InternalHouse.Name, q.Spend, CampaignAi.PollingHours));
+                        // S4: a poll queued with a region is a REGIONAL poll of it (Regional 5a) - its row names the region, as the HQ's POLL REGION queued it
+                        string house = q.RegionIndex >= 0 && q.RegionIndex < setup.Regions.Length ? "Regional poll · " + setup.Regions[q.RegionIndex].Name : setup.InternalHouse.Name;
+                        queue.Add(new QueuedAction(q.Kind, house, q.Spend, CampaignAi.PollingHours));
                         continue;
                     }
                     if (q.Kind == CampaignActionKind.PhoneBank)   // K82: the phone bank, in its region
@@ -169,10 +171,90 @@ namespace PoliSim.Elections
                 }
             }
 
+            // S4 (Design's return of 2026-10-30): the re-laid HQ's reading - the ballot, the poll's source, the ground and yesterday's acts
+            CampaignPollSource source = s.LatestPoll[p].HasValue ? CampaignPollSource.OwnPoll : s.PublicPoll.HasValue ? CampaignPollSource.PublicTracker : CampaignPollSource.LastCount;
+            var yesterdayLines = new List<string>();
+            double yesterdaySpend = 0.0;
+            int yesterdayActs = 0;
+            if (playerRun && s.Day > 0)
+            {
+                double perUnit = LiveCampaignSetup.PursePerUnit(country.Id, setup);
+                string purse = country.Id == CountryId.Sweden ? "kr" : EnergyLayer.CurrencyCode(country.Id);
+                foreach (CampaignRun.DecisionRecord d in s.Ledgers[p].Log)
+                {
+                    if (d.Day != s.Day - 1) { continue; }
+                    yesterdayActs++;
+                    yesterdaySpend += d.Spend;
+                    yesterdayLines.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} · {1} · {2:N0} {3}", SpacedUpper(d.Kind), d.Target, d.Spend * perUnit, purse));
+                }
+            }
+            var staffStates = new int[CampaignStaff.TheFive.Length];
+            foreach (CampaignStaffMember m in s.Staff[p].Members)
+            {
+                int at = System.Array.IndexOf(CampaignStaff.TheFive, m.Role);
+                if (at >= 0) { staffStates[at] = s.Staff[p].Active(m.Role) ? 3 : 2; }
+            }
+            var hq = new CampaignHqReading(setup.Contest, OnBallot(setup), source, CampaignGroundOf(s, country, p, pickedRegion), playerRun, yesterdayActs, yesterdaySpend, yesterdayLines.ToArray(), staffStates);
+
             return new CampaignSnapshot(setup.Parties[p].Name, markKey, country.Name, phase, today, calendar,
                 s.Pools[p], setup.Parties[p].StartingMoney, poll, names, p, (double[])s.MomentumPp.Clone(),
                 queue.ToArray(), staff.ToArray(), offices.ToArray(), perceivedEconomyIndex, notes.ToArray(),
-                debateDays.ToArray(), nextDebate, pending, localActs);
+                debateDays.ToArray(), nextDebate, pending, localActs, hq: hq);
+        }
+
+        /// <summary>S4 (Design's return, bug 2): per party, whether it is on the contest's ballot - stands in at least one region (`CampaignRun.Setup.StandingShare`):
+        /// the 2019 lists the roster carries (SLD, PSL) stand nowhere on the 2023 chamber, and a run-off's cast keeps every roster party with only the finalists standing.</summary>
+        private static bool[] OnBallot(CampaignRun.Setup setup)
+        {
+            var on = new bool[setup.Parties.Length];
+            for (int p = 0; p < on.Length; p++) { on[p] = setup.StandingShare(p) > 0.0; }
+            return on;
+        }
+
+        /// <summary>S4: the regions' fixed seats where a table is on disk - Sweden's valkretsar as Valmyndigheten decided them for the polling day
+        /// (`SeatConversion.DecidedFixedSeats`), Poland's okregi by art. 202's magnitudes (`PolishSejmDistricts2023`); null otherwise.</summary>
+        private static int[] SeatsOf(CampaignRun.Setup setup, CountryId country)
+        {
+            var names = new string[setup.Regions.Length];
+            for (int r = 0; r < names.Length; r++) { names[r] = setup.Regions[r].Name; }
+            if (country == CountryId.Sweden) { return SeatConversion.DecidedFixedSeats(setup.Calendar.ElectionDate, names); }
+            if (country == CountryId.Poland && setup.Contest == CampaignContest.Chamber && names.Length == Generated.PolishSejmDistricts2023.Magnitudes.Length)
+            {
+                return (int[])Generated.PolishSejmDistricts2023.Magnitudes.Clone();
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// S4 (Design's return, "For Code" 2): THE GROUND over the campaign - every region UNKNOWN unless the party bought a poll of it, else its newest reading
+        /// (`RegionalPolling.Readings`); the party's offices with their volunteers; where the next local act goes (the pick, else the one-region rule); whether a
+        /// regional poll is on sale and what one would be fielded at today; each office's field report (its own books). Read-only.
+        /// </summary>
+        private static CampaignGround CampaignGroundOf(CampaignRun.State s, Country country, int p, int pickedRegion)
+        {
+            CampaignRun.Setup setup = s.Setup;
+            int n = setup.Regions.Length;
+            var names = new string[n];
+            for (int r = 0; r < n; r++) { names[r] = setup.Regions[r].Name; }
+            MapRegionReading[] readings = RegionalPolling.Readings(s, p);
+            var price = new double[n];
+            var marks = new OfficeMark[n];
+            var volunteers = new int[n];
+            for (int r = 0; r < n; r++) { price[r] = r < readings.Length && readings[r].Measured ? RegionalPolling.Cost : double.NaN; volunteers[r] = -1; }
+            var reports = new List<FieldReport>();
+            foreach (CampaignOffice office in s.Offices[p].Offices)
+            {
+                if (office.Region < 0 || office.Region >= n) { continue; }
+                marks[office.Region] = OfficeMark.Open;
+                volunteers[office.Region] = office.Volunteers;
+                reports.Add(new FieldReport(office.Region, office.Volunteers, s.Gotv.DoorContacts(office.Region, p), s.Gotv.PhoneContacts(office.Region, p)));
+            }
+            bool picked = pickedRegion >= 0 && pickedRegion < n;
+            int target = picked ? pickedRegion : StrongestRegion(s, p, out _);
+            int sample = s.Staff[p].Improve(RegionalPolling.House(string.Empty)).SampleSize;   // review L-r3: as it would be fielded today, the pollster's boost in
+            return new CampaignGround(names, readings, price, marks, volunteers, CampaignOffices.MaintenancePerDay + setup.Parties[p].OfficeOperationsPerDay,
+                target, picked, siting: false, regionalPollOnSale: setup.RegionalOffset != null, regionalSample: sample, regionalPrice: RegionalPolling.Cost,
+                reports: reports.ToArray(), stands: setup.Stands, seats: SeatsOf(setup, country.Id));
         }
 
         /// <summary>
@@ -291,8 +373,10 @@ namespace PoliSim.Elections
             // Before the first poll is bought the race the HQ draws is the last count itself - the prior, which the
             // campaign's fixed point reproduces - named as such with no sampling error, so the screen never reads a
             // null poll (the first film of the run-up threw on exactly that, at `DrawCampaignRace`).
+            // S4 (Design's return, bug 1): read as the run reads it - normalised to one (`CampaignRun.Begin`'s `Normalised(setup.PriorShares)`). A staging on
+            // the vote model (Poland's, the USA's) hands the history's shares in points, and this read them as fractions: Poland's run-up printed PiS 4359.0.
             Poll poll = pre.LatestPoll ?? new Poll(calendar.PreCampaignStart, 0, "no poll bought yet - the last count, no sampling error",
-                (double[])setup.PriorShares.Clone(), new double[setup.Parties.Length]);
+                NormalisedPrior(setup.PriorShares), new double[setup.Parties.Length]);
 
             var queue = new List<QueuedAction>();
             if (record != null)
@@ -371,9 +455,65 @@ namespace PoliSim.Elections
             int site = NextOfficeSite(pre, pickedRegion, out bool sitePicked);
             string siteLine = site < 0 ? null : setup.Regions[site].Name + (sitePicked ? " · PICKED ON THE MAP" : " · THE LARGEST ELECTORATE WITHOUT ONE");
 
+            // S4 (Design's return of 2026-10-30): the re-laid HQ's reading over the run-up - every region unread (no regional poll is sold before the campaign),
+            // the staged and planned offices, where the next office opens, and yesterday's entries
+            int n = setup.Regions.Length;
+            var regionNames = new string[n];
+            var readings = new MapRegionReading[n];
+            var price = new double[n];
+            var marks = new OfficeMark[n];
+            var volunteers = new int[n];
+            double national = 0.0;
+            foreach (RegionAudience r in setup.Regions) { national += r.Audience; }
+            for (int r = 0; r < n; r++)
+            {
+                regionNames[r] = setup.Regions[r].Name;
+                readings[r] = SwingRegions.Unknown(setup.Regions[r].Name, national > 0.0 ? setup.Regions[r].Audience / national : 0.0);
+                price[r] = double.NaN;
+                volunteers[r] = -1;
+            }
+            foreach (int region in setup.Parties[p].Offices) { if (region >= 0 && region < n) { marks[region] = OfficeMark.Staged; volunteers[region] = 0; } }
+            foreach (int region in pre.PlannedOffices) { if (region >= 0 && region < n && marks[region] == OfficeMark.None) { marks[region] = OfficeMark.Planned; volunteers[region] = 0; } }
+            int sample = RegionalPolling.Sample;   // no staff roster improves a poll before the campaign
+            var ground = new CampaignGround(regionNames, readings, price, marks, volunteers, CampaignOffices.MaintenancePerDay + setup.Parties[p].OfficeOperationsPerDay,
+                site, sitePicked, siting: true, regionalPollOnSale: setup.RegionalOffset != null, regionalSample: sample, regionalPrice: RegionalPolling.Cost,
+                reports: null, stands: setup.Stands, seats: SeatsOf(setup, country.Id));
+            var yesterdayLines = new List<string>();
+            double yesterdaySpend = 0.0;
+            int yesterdayActs = 0;
+            if (pre.Day > 0)
+            {
+                foreach (PreCampaignRun.Entry e in PreCampaignRun.EntriesOn(pre, pre.Day - 1))
+                {
+                    if (e.Refusal != null) { continue; }
+                    yesterdayActs++;
+                    yesterdaySpend += e.Cost;
+                }
+                yesterdayLines.AddRange(notes);
+            }
+            System.DateTime? until = televisionUntil >= 0 ? calendar.PreCampaignStart.AddDays(televisionUntil) : (System.DateTime?)null;
+            double band = televisionPp > 0.0 ? 1.96 * televisionPp * CampaignPersuasion.TelevisionSePer1000Grp / CampaignPersuasion.TelevisionPpPer1000Grp : 0.0;
+            var preStaff = new int[CampaignStaff.TheFive.Length];
+            foreach (StaffRole role in setup.Parties[p].Staff) { int at = System.Array.IndexOf(CampaignStaff.TheFive, role); if (at >= 0) { preStaff[at] = 1; } }
+            foreach ((StaffRole Role, int Day) h in pre.Hired) { int at = System.Array.IndexOf(CampaignStaff.TheFive, h.Role); if (at >= 0) { preStaff[at] = 2; } }
+            var hq = new CampaignHqReading(setup.Contest, OnBallot(setup), pre.LatestPoll.HasValue ? CampaignPollSource.OwnPoll : CampaignPollSource.LastCount, ground,
+                record != null, yesterdayActs, yesterdaySpend, yesterdayLines.ToArray(), preStaff, televisionPp > 0.0 && until.HasValue ? televisionPp : 0.0, band, televisionPp > 0.0 ? until : null);
+
             return new CampaignSnapshot(setup.Parties[p].Name, markKey, country.Name, phase, today, calendar,
                 new ResourcePool(pre.Money, 0.0, pre.Volunteers), pre.MoneyAtStart, poll, names, p, new double[setup.Parties.Length],
-                queue.ToArray(), staff.ToArray(), offices.ToArray(), perceivedEconomyIndex, notes.ToArray(), localActsRegion: siteLine, playerPollNote: pollNote);
+                queue.ToArray(), staff.ToArray(), offices.ToArray(), perceivedEconomyIndex, notes.ToArray(), localActsRegion: siteLine, playerPollNote: pollNote, hq: hq);
+        }
+
+        /// <summary>S4 (bug 1): the staging's prior as the run reads it - each share over their sum (`CampaignRun`'s `Normalised`), whatever unit the staging
+        /// handed it in; the prior itself where it sums to nothing (the run refuses such a staging before an HQ could show it).</summary>
+        private static double[] NormalisedPrior(double[] prior)
+        {
+            double sum = 0.0;
+            foreach (double v in prior) { sum += v; }
+            var shares = (double[])prior.Clone();
+            if (!(sum > 0.0)) { return shares; }
+            for (int i = 0; i < shares.Length; i++) { shares[i] /= sum; }
+            return shares;
         }
 
         /// <summary>K1 row 5 (S-C2): the region the next office opens in - the map's pick where the party stands and has no office planned, else CL-1's rule (`PreCampaignRun.NextOfficeRegion`); −1 when none is left.</summary>
