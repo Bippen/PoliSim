@@ -481,6 +481,25 @@ namespace PoliSim.UI
             }
             else
             {
+                // §961: each label beside a tick claims its span, the final week's first (the phase's edge, and PHONES), then each debate where clear of
+                // every label already drawn - Poland's second debate was drawn over "final week · phones". A label that gives way keeps its tick and its slip line.
+                var taken = new List<Vector2>();
+                bool Clear(float lx, float w)
+                {
+                    if (lx < leftClear || lx + w > rightClear) { return false; }
+                    foreach (Vector2 span in taken) { if (lx < span.y + V35.Px(8f) && lx + w > span.x - V35.Px(8f)) { return false; } }
+                    return true;
+                }
+                string finalWeekLine = null;
+                if (finalWeek > 0)
+                {
+                    Tick(finalWeek, PoliSimTheme.TextSecondary);
+                    string fw = HqContest(s) == CampaignContest.Chamber ? "final week · phones" : "final week";
+                    float w = HqWidth(fw, label);
+                    float lx = at < finalWeek ? X(finalWeek) - V35.Px(6f) - w : X(finalWeek) + V35.Px(6f);
+                    if (Clear(lx, w)) { HqLabel(new Rect(lx, ly, w, lh), fw, label); taken.Add(new Vector2(lx, lx + w)); }
+                    finalWeekLine = "final week from " + HqDate(HqFinalWeekOpens(s)) + " · PHONES opens";
+                }
                 if (s.DebateDays != null)
                 {
                     foreach (int d in s.DebateDays)
@@ -490,7 +509,7 @@ namespace PoliSim.UI
                         string debate = "debate " + HqDay(s.Calendar.CampaignStart.AddDays(d));
                         float w = HqWidth(debate, label);
                         float lx = X(d) + V35.Px(6f);
-                        if (lx >= leftClear && lx + w <= rightClear) { HqLabel(new Rect(lx, ly, w, lh), debate, label); }
+                        if (Clear(lx, w)) { HqLabel(new Rect(lx, ly, w, lh), debate, label); taken.Add(new Vector2(lx, lx + w)); }
                         debates.Add(HqDay(s.Calendar.CampaignStart.AddDays(d)));
                     }
                 }
@@ -500,15 +519,7 @@ namespace PoliSim.UI
                     lines.Add("debates " + string.Join(", ", debates.ToArray()) + next);
                     lines.Add("the two leading the published poll stand");
                 }
-                if (finalWeek > 0)
-                {
-                    Tick(finalWeek, PoliSimTheme.TextSecondary);
-                    string fw = HqContest(s) == CampaignContest.Chamber ? "final week · phones" : "final week";
-                    float w = HqWidth(fw, label);
-                    float lx = at < finalWeek ? X(finalWeek) - V35.Px(6f) - w : X(finalWeek) + V35.Px(6f);
-                    if (lx >= leftClear && lx + w <= rightClear) { HqLabel(new Rect(lx, ly, w, lh), fw, label); }
-                    lines.Add("final week from " + HqDate(HqFinalWeekOpens(s)) + " · PHONES opens");
-                }
+                if (finalWeekLine != null) { lines.Add(finalWeekLine); }
             }
             Tick(at, PoliSimTheme.TextPrimary);
             lines.Add("polling day " + HqDate(s.Calendar.ElectionDate));
@@ -543,10 +554,15 @@ namespace PoliSim.UI
             HqFill(new Rect(x, y, w, HqT(1f)), PoliSimTheme.RuleRow);
             var econ = new Rect(x, y, w, HqH(28f));
             GUIStyle name16 = HqSerif(16f, PoliSimTheme.TextPrimary);
-            float nameW = HqWidth("Economy, the term", name16);
-            HqLabel(new Rect(econ.x, econ.y, nameW, econ.height), "Economy, the term", name16);
             string econFigure = string.Format(CultureInfo.InvariantCulture, "{0:F0} / 100", s.PerceivedEconomyIndex);
             GUIStyle fig = HqMono(14f, PoliSimTheme.TextPrimary, bold: true);
+            // §961: the name, the figure and the AS PUBLISHED stamp share one row - the 330-wide column cannot hold "Economy, the term" with both (the
+            // figure ran under the stamp, "90 / 100AS PUBLISHED"), so the name gives way to "Economy" and "over the term" stays the slip's head (K320)
+            float stampW = HqWidth("AS PUBLISHED", HqMono(14f, PoliSimTheme.TextPrimary, bold: true, anchor: TextAnchor.MiddleCenter)) + V35.Px(12f);
+            string econName = "Economy, the term";
+            if (HqWidth(econName, name16) + HqWidth(econFigure, fig) + stampW + V35.Px(16f) > econ.width) { econName = "Economy"; }
+            float nameW = HqWidth(econName, name16);
+            HqLabel(new Rect(econ.x, econ.y, nameW, econ.height), econName, name16);
             HqLabel(new Rect(econ.x + nameW + V35.Px(8f), econ.y, HqWidth(econFigure, fig), econ.height), econFigure, fig);
             HqStamp(econ, "AS PUBLISHED", PoliSimTheme.TextPrimary, right: true);
             SlipAnchor(econ, "hq:economy");

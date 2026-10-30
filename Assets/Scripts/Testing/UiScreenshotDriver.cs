@@ -695,6 +695,9 @@ namespace PoliSim.Testing
 
             if (CampaignHq)
             {
+                // §961: the campaign film is a tour too - a sheet the game opens by itself (the Speaker asked the player's party after the staged count)
+                // is closed before its frames, or every staged overlay after it (the e2 maps) is filmed under the sheet (§705's rule)
+                _tourController = controller;
                 yield return CaptureCampaignHq(controller);
                 yield break;
             }

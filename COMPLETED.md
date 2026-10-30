@@ -42609,3 +42609,20 @@ Energy's slips from before S1 still hold lines over 10 words. They carry no move
 - **D9-D10:** Sweden's slip marks two terms; the film's staging margin is 3 points.
 - **Not built:** the board's captions under each chart. The live-series charts draw no feet (D-ST 23a ⑨), and their words are on the slips.
 - **D12:** the check does not see a list built from a property (`p.ShortName`).
+
+## 961. S4 FOLLOW-UP - THE CAMPAIGN HQ'S LABEL COLLISIONS AND THE CAMPAIGN FILM'S SHEET, FOUND BY EYE ON §960'S FILMS (2026-10-30)
+
+**What was owed:** §960's refilm of Sweden's HQ and its Poland films, read by eye, showed three defects. No guard measured them, because each label is held to its own rect and never to its neighbours:
+- the economy row's figure ran under its AS PUBLISHED stamp ("90 / 100AS PUBLISHED" in Sweden, "34 / 10AS PUBLISHED" in Poland) - §959;
+- Poland's timeline drew a debate label over "final week · phones" - §959;
+- the -shotcampaign film's `e2_campaign_map_*` frames showed the Formation sheet, not the staged map. The Speaker's request auto-opens the sheet (§647), the sheet draws before every staged overlay, and the campaign film returned before `_tourController` was set, so §705's rule (close a sheet the game opened by itself) never ran for it.
+
+**Built** (on main):
+- **The economy row** measures its three parts. Where "Economy, the term", the figure and the stamp cannot share the 330-wide row, the name gives way to "Economy", and "over the term" stays the slip's head (ECONOMY OVER THE TERM). `docs/declutter/moved_s4hq.tsv` row 18 says so (K320).
+- **The timeline's labels claim their spans.** The final week's label goes first (the phase's edge, and PHONES), then each debate's label where it is clear by 8 px of every label already drawn. A label that gives way keeps its tick and its slip line; the slip's order is unchanged.
+- **The campaign film is a tour:** `_tourController` is set before `CaptureCampaignHq`, so a sheet the game opened by itself is closed as a player would close it, and logged.
+
+**Measured (this tree):** cheap bar 148 of 148 clean (cheaps961); dry film Sweden and Poland at 1280, 322 measured, 0 failed, 0 overflow, 0 canvas text (drys961, scope row drys961); the filmed width: Poland -shotinterrupts at 1280 (reals961pl), 34 captured, 0 HEIGHT MISMATCH, 0 overflow, 0 canvas text violations across 15 asserts - plc02 reads Economy 34 / 100 clear of AS PUBLISHED and final week · phones alone on the timeline; Sweden -shotcampaign at 1280 (reals961sec), 34 captured at 1280x699, 0 overflow - the sheet the Speaker's request opened closed at e3 and logged, the three e2 frames the staged map; review skipped (ui tier); doc bar (docs961)
+
+**Declared:**
+- No guard yet catches one label drawn over another on an IMGUI page. K321's judge (wave/decl, queued last) holds labels to the caps, not to each other. A sibling-overlap rule is FILED for the guard family.

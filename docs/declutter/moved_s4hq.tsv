@@ -15,7 +15,7 @@ cl2_campaign_hq_rally_picked	KR · # % OF THE CHEST SPENT	hq:chest	# % of the ch
 cl1_runup_hq_opened	KR · WAR CHEST	hq:chest	THE CHEST · # kr / no statutory cap on disk for this country
 plc02_sejm_campaign_hq	PLN · # % OF THE #,#,# CAP SPENT	hq:cap	THE CAP · #,#,# PLN / the electoral code's limit for this committee (at rest: # % spent, the cap #,#,# †)
 cl2_campaign_hq_rally_picked	#.# / # HOURS	hq:day	queued # h · preview # h · left # h (at rest: # of 12 h - bug 5, the cells now fill as hours are queued)
-cl2_campaign_hq_rally_picked	Economy over the term	at rest: the economy row	Economy, the term
+cl2_campaign_hq_rally_picked	Economy over the term	at rest: the economy row	Economy, the term - "Economy" where the row cannot hold it beside its figure and AS PUBLISHED (§961); the slip head ECONOMY OVER THE TERM holds it
 cl2_campaign_hq_rally_picked	AS PUBLISHED — WHAT THE COUNTRY HAS BEEN TOLD, NOT THE TRUE STATE.	hq:economy	as published · what the country was told / not the true state
 cl2_campaign_hq_rally_picked	ORGANISATION — STAFF · OFFICES	at rest: the block head	The organisation
 cl1_runup_hq_opened	NO STAFF HIRED	hq:staff	no staff hired
