@@ -1211,8 +1211,9 @@ namespace PoliSim.UI
         /// force's offset) and the index itself are the slip's. One control, always, enabled or not.
         /// </summary>
         private float DrawDialRow(string name, float standing, float draft, float min, float max, string format, string suffix, string trailing, Rect tile,
-            V35DialFace face, bool interactive = true, string captionKey = null, string bandNote = null, string geometryKey = null)
+            V35DialFace face, bool interactive = true, string captionKey = null, string bandNote = null, string geometryKey = null, bool captionNameOnly = false)
         {
+            // S1 (K320): captionNameOnly - while a draft speaks, the band's NAME alone in the ends' lane, its line on the band's slip ("dial:<name>:band")
             bool drafted = interactive && !Mathf.Approximately(standing, draft);
             Color area = UiPalette.GetAreaColor(face.Area);
             Rect inner = DrawBudgetTileCard(tile, drafted, face.Off);
@@ -1224,8 +1225,13 @@ namespace PoliSim.UI
             float result = LedgerRow.Track(track, name, standing, draft, min, max, interactive, _sliderStyle, _sliderThumbStyle, LedgerRow.ScaleOf(_labelStyle));
             if (Event.current.type == EventType.Repaint)
             {
-                bool speaking = interactive && DrawRangeCaption(name, captionKey ?? name, result, standing, min, max, endLane);
+                bool speaking = interactive && DrawRangeCaption(name, captionKey ?? name, result, standing, min, max, endLane, captionNameOnly);
                 if (!speaking) { DrawBudgetEndLabels(endLane, face.EndLeft, face.EndRight, face.Off || !interactive); }
+            }
+            // S1: the band's slip, on every event while the draft differs (a pin is taken on a MouseDown); its anchor is the band's name, drawn while it speaks
+            if (captionNameOnly && interactive && !Mathf.Approximately(result, standing) && RangeCaptions.TryGet(name, out RangeCaptions.Dial bandDial))
+            {
+                DialSlipBook.Anchors["dial:" + name + ":band"] = RangeCaptions.BandSlip(bandDial, RangeCaptions.BandIndex(result, min, max));
             }
             if (interactive && PoliSim.Testing.CaptureIdentity.Armed && Event.current.type == EventType.Repaint)
             {
@@ -1251,9 +1257,11 @@ namespace PoliSim.UI
         /// A tier bill's call to action (v3.5): the button - *Introduce … bill* with the count of changes, or *Pending · n d* while one is before
         /// Parliament - beside the count the draft would meet today (✓ or ✗, FOR and AGAINST; every party's side and reason on its slip), the status under
         /// them; where the role locks the lever, the lock and its reason in the button's place (the lever lock's rule - no control is drawn there).
+        /// <para>S1 (K320), opt-in by page: <paramref name="lockHeadAtRest"/> keeps the lock's role word at rest and its clauses one a line on the lock's slip (the
+        /// whole reason behind the †); <paramref name="statusAnchor"/> makes the status line a slip anchor whose content is the page's book's.</para>
         /// </summary>
         private void DrawLawsBillAction(float width, string label, string anchor, BillConcern concern, bool pending, int daysRemaining, int changes, System.Action introduce, string status,
-            Congress.Kind kind, CabinetPortfolio? portfolio = null)
+            Congress.Kind kind, CabinetPortfolio? portfolio = null, string statusAnchor = null, bool lockHeadAtRest = false)
         {
             GUILayout.Space(V35.Px(4f));
             float h = V35.Px(34f);
@@ -1265,10 +1273,13 @@ namespace PoliSim.UI
                 {
                     DrawStateGlyph(new Rect(row.x, row.y + Mathf.Round((row.height - V35.Px(16f)) * 0.5f), V35.Px(16f), V35.Px(16f)), Symbol.Locked, PoliSimTheme.TextSecondary);
                     GUIStyle lockFace = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
-                    PoliSimWidgets.MeasuredLabel(new Rect(row.x + V35.Px(24f), row.y, row.width - V35.Px(24f), row.height), V35Fit(lockedBecause, lockFace, row.width - V35.Px(24f), out _), lockFace);
+                    string lockText = lockHeadAtRest && !DeskProvenance.On ? EnergySlips.LockHead(lockedBecause) : lockedBecause;
+                    PoliSimWidgets.MeasuredLabel(new Rect(row.x + V35.Px(24f), row.y, row.width - V35.Px(24f), row.height), V35Fit(lockText, lockFace, row.width - V35.Px(24f), out _), lockFace);
                 }
                 SlipAnchor(row, anchor);
-                DialSlipBook.Anchors[anchor] = new SlipContent("LOCKED").Add(lockedBecause.ToUpperInvariant());
+                DialSlipBook.Anchors[anchor] = lockHeadAtRest
+                    ? EnergySlips.Fragments(SymbolRegistry.Word(Symbol.Locked), lockedBecause.ToUpperInvariant())
+                    : new SlipContent("LOCKED").Add(lockedBecause.ToUpperInvariant());
             }
             else
             {
@@ -1353,6 +1364,12 @@ namespace PoliSim.UI
             float sh = Mathf.Ceil(statusFace.CalcHeight(new GUIContent(status), width)) + V35.Px(4f);
             Rect statusRect = GUILayoutUtility.GetRect(width, sh, GUILayout.Width(width), GUILayout.Height(sh));
             if (Event.current.type == EventType.Repaint) { GUI.Label(statusRect, status, statusFace); }
+            if (statusAnchor != null)
+            {
+                // S1: the status line's slip (the page's book holds it) opens over the words, not the empty run to the page's edge
+                float sw = Mathf.Min(width, Mathf.Ceil(statusFace.CalcSize(new GUIContent(status)).x) + V35.Px(4f));
+                SlipAnchor(new Rect(statusRect.x, statusRect.y, Mathf.Max(1f, sw), statusRect.height), statusAnchor);
+            }
             GUILayout.Space(V35.Px(V35.Gutter));
         }
     }

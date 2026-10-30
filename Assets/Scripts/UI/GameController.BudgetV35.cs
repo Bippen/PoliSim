@@ -824,8 +824,10 @@ namespace PoliSim.UI
         /// §735: the range caption (P4-B2) in a v3.5 tile's lane - the draft's band from the catalog (P4-B1) at the presenter's alpha (held, then fading), at
         /// the floor: the band's NAME in bold, a middle dot, its line; the name drops where both do not fit, and where the line alone does not fit the band
         /// stays empty and the guard is told. The tile's ends yield the lane while it speaks. Returns whether it was painted.
+        /// <para>S1 (K320): <paramref name="nameOnly"/> - the band's NAME alone at rest, centred in the lane, the anchor of the band's slip ("dial:" + the
+        /// dial's name + ":band", <see cref="RangeCaptions.BandSlip"/>), where its line is; a page opts in.</para>
         /// </summary>
-        private bool DrawRangeCaption(string name, string captionKey, float draft, float standing, float min, float max, Rect lane)
+        private bool DrawRangeCaption(string name, string captionKey, float draft, float standing, float min, float max, Rect lane, bool nameOnly = false)
         {
             if (!RangeCaptions.TryGet(name, out RangeCaptions.Dial dial)) { return false; }
             int band = RangeCaptions.BandIndex(draft, min, max);
@@ -837,6 +839,15 @@ namespace PoliSim.UI
             GUIStyle line = V35Serif(V35.Floor, ink, TextAnchor.MiddleLeft);
             GUIStyle nameFace = V35Serif(V35.Floor, ink, TextAnchor.MiddleLeft);
             nameFace.fontStyle = FontStyle.Bold;
+            if (nameOnly)
+            {
+                string word = b.Name.ToUpperInvariant();
+                float wordWidth = Mathf.Min(lane.width, Mathf.Ceil(nameFace.CalcSize(new GUIContent(word)).x));
+                var at = new Rect(lane.x + Mathf.Round((lane.width - wordWidth) * 0.5f), lane.y, wordWidth, lane.height);
+                PoliSimWidgets.MeasuredLabel(at, word, nameFace);
+                SlipAnchor(at, "dial:" + name + ":band");
+                return true;
+            }
             string nameText = b.Name.ToUpperInvariant() + " · ";
             float nameWidth = Mathf.Ceil(nameFace.CalcSize(new GUIContent(nameText)).x), lineWidth = Mathf.Ceil(line.CalcSize(new GUIContent(b.Line)).x);
             bool withName = nameWidth + lineWidth <= lane.width;

@@ -63,6 +63,44 @@ namespace PoliSim.UI
 
         public static IEnumerable<Dial> All => Catalog.Values;
 
+        /// <summary>
+        /// S1 (K320): a band as its slip - the band's NAME the head, its line's sentences one a line without their stops (fragments, never a sentence at
+        /// rest or on level 1), a sentence past <see cref="SlipLineWords"/> counted words split at its first clause break (a semicolon or a comma). A page
+        /// that draws the name alone at rest (<c>captionNameOnly</c>) opens this over it, so the line is never lost.
+        /// </summary>
+        public static SlipContent BandSlip(Dial dial, int band)
+        {
+            Band b = dial.Bands[Mathf.Clamp(band, 0, dial.Bands.Length - 1)];
+            var slip = new SlipContent(b.Name.ToUpperInvariant());
+            foreach (string sentence in b.Line.Split(new[] { ". " }, System.StringSplitOptions.RemoveEmptyEntries))
+            {
+                string fragment = sentence.Trim().TrimEnd('.');
+                if (fragment.Length == 0) { continue; }
+                int cut = CountedWords(fragment) > SlipLineWords ? fragment.IndexOfAny(new[] { ';', ',' }) : -1;
+                if (cut > 0 && cut < fragment.Length - 1)
+                {
+                    slip.Add(fragment.Substring(0, cut).Trim().ToUpperInvariant());
+                    slip.Add(fragment.Substring(cut + 1).Trim().ToUpperInvariant());
+                }
+                else { slip.Add(fragment.ToUpperInvariant()); }
+            }
+            return slip;
+        }
+
+        /// <summary>CONVENTION (K320): "about eight words" a slip line - the cap's own figure; K321 reads a line past ten counted words as a breach.</summary>
+        public const int SlipLineWords = 8;
+
+        /// <summary>K320's counted words: a word holds a letter, so figures are not counted; split at spaces, middle dots and slashes, as the scan splits.</summary>
+        public static int CountedWords(string text)
+        {
+            int n = 0;
+            foreach (string token in text.Split(new[] { ' ', '·', '/' }, System.StringSplitOptions.RemoveEmptyEntries))
+            {
+                foreach (char ch in token) { if (char.IsLetter(ch)) { n++; break; } }
+            }
+            return n;
+        }
+
         /// <summary>PF-2 (§592): CONVENTION - the longest line a spending row's caption may carry, in characters: the narrowest lane its instruments leave at 1280, 171.9 px at 7.2 px a character (dry591).
         /// §723: the v3.5 rail (84 px) took some thirty pixels from the page and the narrowest lane is now 129.5 px (drys723) - 17 characters of the same face, with seven to spare.</summary>
         public const int SpendingLineCaptionMax = 17;

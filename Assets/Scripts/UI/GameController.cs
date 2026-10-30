@@ -3932,7 +3932,7 @@ namespace PoliSim.UI
         /// stood on its Politics page and its law tabs; "Parliament" for the parliamentary five (the Riksdag, the Bundestag, the Sejm, the
         /// Parlamento and the Parlement all read so in English). The same gap `GetCentralBankName` closed for the central bank.
         /// </summary>
-        private static string GetLegislatureName(CountryId countryId) => countryId == CountryId.USA ? "Congress" : "Parliament";
+        internal static string GetLegislatureName(CountryId countryId) => countryId == CountryId.USA ? "Congress" : "Parliament";
 
         /// <summary>GA-10-1: the player's legislature, as a page's sentence names it, and in the slips' capitals.</summary>
         private string Legislature => GetLegislatureName(PlayerCountryId);
@@ -7484,7 +7484,7 @@ namespace PoliSim.UI
         private static int? _electricityTaxLawCountCache;
 
         /// <summary>EN-7b (2026-09-15): the electricity tax's count.</summary>
-        private static int ElectricityTaxLawCount
+        internal static int ElectricityTaxLawCount
         {
             get
             {

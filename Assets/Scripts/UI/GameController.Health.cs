@@ -53,15 +53,25 @@ namespace PoliSim.UI
             /// <summary>EN-7a (2026-09-14): draw the reached-by chips under a row that has NO band (in PROVENANCE, as every row's chips). The draw skipped
             /// every PlateBand.None row, so the energy page's instrument chips - recorded built at §486 - never drew; opt-in, so no other plate moves.</summary>
             public readonly bool ChipsWithoutBand;
+            /// <summary>S1 (K320): a gap row's fragment at rest - printed where the reason stands while the † is off, the reason whole behind the † and on the
+            /// slip <see cref="SlipId"/> names. Null prints the reason at rest, as every gap row did before.</summary>
+            public readonly string RestReason;
+            /// <summary>S1 (K320): the slip anchor a gap row registers over its cells - its content is the page's book's (EnergySlips). Null registers none.</summary>
+            public readonly string SlipId;
 
             public PlateRow(string name, string unit, string source, string figure, PlateBand band, float low, float high, float own, float[] peers,
                 bool lowerIsBetter, string[] reachedBy, IReadOnlyList<float> series, string[] honesty, bool couplingDraft, string absentReason = null,
-                float[] segments = null, string[] segmentLabels = null, string unitGlyph = null, string flag = null, bool scaleToHigh = false, bool chipsWithoutBand = false)
+                float[] segments = null, string[] segmentLabels = null, string unitGlyph = null, string flag = null, bool scaleToHigh = false, bool chipsWithoutBand = false,
+                string restReason = null, string slipId = null)
             {
                 Name = name; Unit = unit; Source = source; Figure = figure; Band = band; Low = low; High = high; Own = own; Peers = peers;
                 LowerIsBetter = lowerIsBetter; ReachedBy = reachedBy; Series = series; Honesty = honesty; CouplingDraft = couplingDraft; AbsentReason = absentReason;
                 Segments = segments; SegmentLabels = segmentLabels; UnitGlyph = unitGlyph; Flag = flag; ScaleToHigh = scaleToHigh; ChipsWithoutBand = chipsWithoutBand;
+                RestReason = restReason; SlipId = slipId;
             }
+
+            /// <summary>S1 (K320): the reason a gap row prints - its fragment at rest where it has one, the whole reason behind the †.</summary>
+            public string GapText(bool provenance) => !provenance && RestReason != null ? RestReason : AbsentReason;
         }
 
         private string _plateFamilyName, _plateFamilyVintage, _plateFamilyPublisher, _plateFamilyKey;
@@ -270,7 +280,7 @@ namespace PoliSim.UI
             foreach (PlateRow r in rows)
             {
                 if (rest20b || r.Band != PlateBand.Absent || string.IsNullOrEmpty(r.AbsentReason)) { continue; }
-                gapRowHeight = Mathf.Max(gapRowHeight, Mathf.Ceil(reason.CalcHeight(new GUIContent(r.AbsentReason), gapReasonWidth)) + StatsUnit(16f));
+                gapRowHeight = Mathf.Max(gapRowHeight, Mathf.Ceil(reason.CalcHeight(new GUIContent(r.GapText(prov)), gapReasonWidth)) + StatsUnit(16f));   // S1: the text the row prints
             }
             float keyGapHeight = 0f;
             if (hasKey && keyRow.Band == PlateBand.Absent)
@@ -562,7 +572,9 @@ namespace PoliSim.UI
                 return;
             }
             PoliSimWidgets.MeasuredLabel(new Rect(gx[1] + pad, row.y + StatsUnit(8f), gx[2] - gx[1] - pad * 2f, Mathf.Ceil(DeskCaptionHeight(word))), data.Figure == "billed" ? "BILLED" : "ABSENT", word);
-            GUI.Label(new Rect(gx[2] + pad, row.y + StatsUnit(6f), gx[3] - gx[2] - pad * 2f, row.height - StatsUnit(12f)), data.AbsentReason ?? "", reason);
+            // S1 (K320): the honesty word stays at rest; the reason's fragment beside it, the whole reason behind the † and on the row's slip
+            GUI.Label(new Rect(gx[2] + pad, row.y + StatsUnit(6f), gx[3] - gx[2] - pad * 2f, row.height - StatsUnit(12f)), data.GapText(DeskProvenance.On) ?? "", reason);
+            if (data.SlipId != null) { SlipAnchor(row, data.SlipId); }
         }
 
         /// <summary>20b rule 5: BILLED or ABSENT as the 19a honesty glyph, right-aligned in the figure's own cell at the figure's size, in the gap's

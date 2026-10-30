@@ -62,7 +62,7 @@ namespace PoliSim.UI
         {
             GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
             BeginSlipAnchors();
-            _energySlipBook = new PeopleSlips.Book();
+            _energySlipBook = BuildEnergySlipBook();   // S1 (K320): the book starts from the declutter's slips; the page's own are added as it draws
             float titleHeight = V35.Px(44f);
             Rect titleRow = GUILayoutUtility.GetRect(10f, titleHeight, GUILayout.ExpandWidth(true), GUILayout.Height(titleHeight));
             int clicked = DrawV35TitleTabs(titleRow, "Energy", EnergyTabs, _energyTab, UiPalette.GetAreaColor(UiPalette.SystemArea.Energy));
@@ -81,6 +81,27 @@ namespace PoliSim.UI
             MoveScrolledAnchors(scrolledFrom, GUILayoutUtility.GetLastRect(), _energyScrollPosition);
             GUILayout.EndVertical();
             if (!DeskProvenance.On) { DrawSlips(_energySlipBook, GUILayoutUtility.GetLastRect()); }
+        }
+
+        /// <summary>S1 (K320): the page's book as each pass starts it - <see cref="EnergySlips"/>' slips for the words the declutter took off the page, from
+        /// this turn's clearing and book and what the page knows of the laws, the sectors bill and the role's lock - inside the country's fleet scope.</summary>
+        private PeopleSlips.Book BuildEnergySlipBook()
+        {
+            Country c = _playerCountry;
+            if (c == null || _simulationManager == null || !EnergyLayer.Has(c.Id)) { return new PeopleSlips.Book(); }
+            using (EnergyFleet.For(c))
+            {
+                EnsureEnergyCache(c);
+                ElectricityTaxLawCounts(c, out int enacted, out int pendingLaws);
+                SectorPolicyBill bill = _simulationManager.GetPendingSectorBill(PlayerCountryId);
+                var context = new EnergySlips.Context
+                {
+                    Legislature = Legislature, LawsEnacted = enacted, LawsPending = pendingLaws,
+                    PendingResolves = bill != null ? ResolvesIn(bill.DaysRemaining, bill.Docket) : null,
+                    LockedBecause = _simulationManager.PlayerMayIntroduce(PlayerCountryId, Congress.Kind.Sector, null, out string locked) ? null : locked,
+                };
+                return EnergySlips.Build(c, _energyResult, _energyBook, context);
+            }
         }
 
         /// <summary>§747: a v3.5 section head with its slip anchor on the Energy page's book, and an optional note at its right.</summary>
@@ -299,38 +320,33 @@ namespace PoliSim.UI
             var targetRect = new Rect(gridRow.x + gridW + gutter, gridRow.y, gridRow.xMax - (gridRow.x + gridW + gutter), gridH);
             AiEnergyMinistry.Mandate mandate = AiEnergyMinistry.MandateOf(c.Id);
             var target = new V35TileData { Icon = "flag", IconInk = area, FigurePx = V35.FigureSmall };
-            var targetSlip = new SlipContent("THE MANDATE");
-            if (mandate == null) { target.Glyph = Symbol.Absent; target.Name = "No energy mandate"; targetSlip.Add("THE COUNTRY HOLDS NO STATUTORY ENERGY TARGET THE GAME CARRIES"); }
+            if (mandate == null) { target.Glyph = Symbol.Absent; target.Name = EnergySlips.MandateLabel(null); }
             else
             {
-                target.Name = V35Fit(CapitalWord(mandate.Headline), V35Serif(V35.Name, PoliSimTheme.TextPrimary), targetRect.width - V35.Px(V35.CardPadX) * 2f - V35.Px(V35.CardIcon) - V35.Px(12f), out _);
+                // S1 (K320): at rest the target in the statute's own figures, at most three words (the headline was cut at the tile's width); the headline whole
+                // is the tile's slip (EnergySlips.MandateSlip) and stands as it did behind the †
+                string targetName = DeskProvenance.On ? CapitalWord(mandate.Headline) : EnergySlips.MandateLabel(mandate);
+                target.Name = V35Fit(targetName, V35Serif(V35.Name, PoliSimTheme.TextPrimary), targetRect.width - V35.Px(V35.CardPadX) * 2f - V35.Px(V35.CardIcon) - V35.Px(12f), out _);
                 switch (mandate.Form)
                 {
                     case AiEnergyMinistry.MandateForm.FossilFree:
                         target.Figure = EnergyConnectionQueue.Mw(EnergyLayer.CapacityMw(c.Id, 0) + EnergyFleet.QueuedMw(c, 0) + EnergyLayer.CapacityMw(c.Id, 1) + EnergyFleet.QueuedMw(c, 1)) + " MW";
-                        targetSlip.Add("THE FOSSIL FLEET WITH THE QUEUE - COAL AND GAS - AGAINST A TARGET OF NONE");
                         break;
                     case AiEnergyMinistry.MandateForm.CapacityPath:
                         target.Figure = PlateFigure((float)((EnergyLayer.CapacityMw(c.Id, 4) + EnergyFleet.QueuedMw(c, 4) + EnergyLayer.CapacityMw(c.Id, 5) + EnergyFleet.QueuedMw(c, 5)) / 1000.0), 1) + " GW";
-                        targetSlip.Add("WIND AND SOLAR WITH THE QUEUE, AGAINST THE PATH THE STATUTE SETS");
                         break;
                     default:
                         target.Figure = PlateFigure((float)AiEnergyMinistry.RenewableSharePercent(c), 1) + " %";
-                        targetSlip.Add("THE RENEWABLE SHARE WITH THE QUEUE · THE RECORD " + PlateFigure((float)AiEnergyMinistry.RecordRenewableSharePercent(c.Id), 1) + " %");
                         break;
                 }
-                targetSlip.Add(mandate.Statute.ToUpperInvariant()).Add(mandate.Headline.ToUpperInvariant());
             }
             DrawV35Tile(targetRect, target);
-            SlipAnchor(targetRect, "en:target");
-            _energySlipBook.Anchors["en:target"] = targetSlip;
+            SlipAnchor(targetRect, EnergySlips.Target);   // the slip is the book's (EnergySlips.MandateSlip)
             GUILayout.Space(gutter);
             V35.FloorGuarded = false;
 
             // ---- kept as built (not in the composition; asked): why the price is what it is ----
-            DrawEnergySectionHead("Why the price is what it is", "en:why", width);
-            _energySlipBook.Anchors["en:why"] = new SlipContent("WHY THE PRICE IS WHAT IT IS")
-                .Add("THE RULE ON THE PRICE, THE FLEET AND ITS ZONES, THE WATER AND THE TWO LEDGERS - KEPT AS BUILT UNDER THE NEW PAGE");
+            DrawEnergySectionHead(EnergySlips.WhyTitle, EnergySlips.Why, width);   // S1 (K320): the title at three words, the old title on its slip
             DrawEnergyPlate(EnergyPlatePart.Why);
         }
 
@@ -407,7 +423,7 @@ namespace PoliSim.UI
                 _sectorSubsidyInputs[SectorType.Energy] = DrawDialRow("Retail intervention",
                     energy.SubsidyLevel, GetSectorSubsidyInput(SectorType.Energy, energy.SubsidyLevel),
                     MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 sponsored",
-                    new Rect(row.x, row.y, tileWidth, rowHeight), retail, captionKey: "EnergyTab/Retail");
+                    new Rect(row.x, row.y, tileWidth, rowHeight), retail, captionKey: "EnergyTab/Retail", captionNameOnly: true);
             }
             else
             {
@@ -415,7 +431,7 @@ namespace PoliSim.UI
                 _sectorSubsidyInputs[SectorType.Energy] = DrawDialRow("Subsidy",
                     energy.SubsidyLevel, GetSectorSubsidyInput(SectorType.Energy, energy.SubsidyLevel),
                     MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null,
-                    new Rect(row.x, row.y, tileWidth, rowHeight), retail, captionKey: "EnergyTab/Subsidy");
+                    new Rect(row.x, row.y, tileWidth, rowHeight), retail, captionKey: "EnergyTab/Subsidy", captionNameOnly: true);
             }
 
             // market liberalisation - the regulation dial, as the PMR score
@@ -430,7 +446,7 @@ namespace PoliSim.UI
                     EndLeft = "Liberalised", EndRight = "Regulated",
                     Census = "THE OECD'S PRODUCT MARKET REGULATION SCORE FOR ELECTRICITY AND GAS - THE SEED'S OWN MAPPING INVERTED (50 × PMR / THE OECD MEAN, "
                         + UiFormat.Number(pmrAverage, 2) + ") · IT SHIFTS THE SUPPLY MARGIN BETWEEN HOMES AND INDUSTRY (STEINER, OECD 2000) · NO COUNT OF HOMES IS HELD",
-                }, captionKey: "EnergyTab/Liberalisation");
+                }, captionKey: "EnergyTab/Liberalisation", captionNameOnly: true);
             GUILayout.Space(gutter);
 
             // investment planning - the tax credits dial; the energy layer does not read it
@@ -443,7 +459,7 @@ namespace PoliSim.UI
             _sectorTaxCreditInputs[SectorType.Energy] = DrawDialRow("Investment planning",
                 energy.TaxCreditLevel, GetSectorTaxCreditInput(SectorType.Energy, energy.TaxCreditLevel),
                 MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 planned",
-                new Rect(row.x, row.y, tileWidth, rowHeight), planning, captionKey: "EnergyTab/Investment");
+                new Rect(row.x, row.y, tileWidth, rowHeight), planning, captionKey: "EnergyTab/Investment", captionNameOnly: true);
 
             // state ownership - the nationalization / deregulation dial
             V35DialFace ownership = NamedFace("key", DialStops.Ownership,
@@ -452,26 +468,24 @@ namespace PoliSim.UI
             _sectorDeregulationInputs[SectorType.Energy] = DrawDialRow("State ownership",
                 energy.DeregulationNationalizationLevel, GetSectorDeregulationInput(SectorType.Energy, energy.DeregulationNationalizationLevel),
                 MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated",
-                new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight), ownership, captionKey: "EnergyTab/Ownership");
+                new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight), ownership, captionKey: "EnergyTab/Ownership", captionNameOnly: true);
             GUILayout.Space(gutter);
             if (Event.current.type == EventType.Repaint) { _energyDialsLastArea = new Rect(head.x, head.y, width, row.yMax - head.y); }
 
             // the bill: the Economic Sectors bill, which these dials travel in
             SectorPolicyBill pending = _simulationManager.GetPendingSectorBill(PlayerCountryId);
             int drafted = SectorDraftChanges();
-            string status = pending != null
-                ? $"An Economic Sectors bill is before {Legislature} - {ResolvesIn(pending.DaysRemaining, pending.Docket)}."
-                : "No Economic Sectors bill before " + Legislature + " - these dials travel in it, one draft with the Sectors page.";
-            DrawLawsBillAction(width, "Introduce sectors bill", "en:sectorsbill", ParliamentSystem.GetSectorBillConcern(c, BuildSectorBillFromDrafts()), pending != null,
-                pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status, Congress.Kind.Sector);
+            // S1 (K320): whether a bill stands before the legislature at rest; what the dials travel in, or when the bill resolves, behind the † and on the
+            // status's slip; the role's lock keeps its role word at rest, its clauses on the lock's slip
+            string status = EnergySlips.SectorsBillStatus(Legislature, pending != null ? ResolvesIn(pending.DaysRemaining, pending.Docket) : null).Drawn(DeskProvenance.On);
+            DrawLawsBillAction(width, "Introduce sectors bill", EnergySlips.SectorsBill, ParliamentSystem.GetSectorBillConcern(c, BuildSectorBillFromDrafts()), pending != null,
+                pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status, Congress.Kind.Sector,
+                statusAnchor: EnergySlips.SectorsBillStatusAnchor, lockHeadAtRest: true);
             V35.FloorGuarded = false;
             _dialSlipBookOverride = null;
 
             // ---- kept as built (not in the composition; asked): what else reaches the layer ----
-            DrawEnergySectionHead("What else reaches it", "en:reaches", width);
-            _energySlipBook.Anchors["en:reaches"] = new SlipContent("WHAT ELSE REACHES IT")
-                .Add("THE ONE LAW CATEGORY THAT REACHES THE LAYER, AND THE INSTRUMENTS' READINGS - THE ETS PRICE, EACH DIAL'S REACH, THE CARBON TAX, THE ELECTRICITY TAX")
-                .Add("KEPT AS BUILT UNDER THE NEW PAGE");
+            DrawEnergySectionHead(EnergySlips.ReachesTitle, EnergySlips.Reaches, width);   // S1 (K320): the title at three words, the old title on its slip
             DrawEnergyPlate(EnergyPlatePart.Reaches);
         }
 

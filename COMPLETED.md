@@ -42441,3 +42441,33 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** npbr 15 of 15; dumppbr the family pbr; stagepbr exit 0; slrtpbr 12 of 12; npbrl 1 of 2 (FT-10's slack: France household lowered, three cells CLOSE, the ratchet 4 -> 1); npbrl2 2 of 2; cheappbr 148 of 148; simpbr 92 of 93 (AiFinanceMinistryDiagnostic's at-the-limit plant, a single-precision rounding - the check fixed); npbrf AiFinanceMinistryDiagnostic clean; docpbr document group clean
 
 **Commit:** this one.
+
+## 957. S1 - THE ENERGY PAGE DECLUTTERED (K320, K322): AT REST A LABEL AT MOST THREE WORDS, A CAPTION ONE LINE NEVER CUT, NO SENTENCE; THE MOVED WORDS ON ENERGYSLIPS (2026-10-30)
+
+**What was owed:** K322's first sweep item. Measured before it on the six countries' latest dry films, the Energy page held the sweep's largest set of at-rest breaches: 53 distinct strings, 41 of them drawn by the page outside its provenance views. The other six were the Laws screen, reached through the page's link (S4's).
+
+**Built** (wave/s1en, aaee135f and e7e2fa7f, squash-merged):
+- `EnergySlips`, the page's book of moved words, in `StatsSlips`'s idiom and built from the model. Each moved text keeps a short fragment at rest, prints whole behind the † (the provenance views are unchanged and exempt, K321 (e)), and sits on its slip in fragments of at most 10 words and 4 lines.
+- The mandate tile, two section heads ("WHY THIS PRICE", "OTHER INSTRUMENTS") and two row names are at three words. Formula and zone captions keep their figure at rest and move their clauses to the slip. The dials show the band's name alone, with its line on `dial:<name>:band`. In opposition, the bill status shows the head alone, with the lock's clauses on its slip.
+- Shared helpers take opt-in arguments (`PlateRow`'s rest reason and slip, the bill action's status anchor and lock head, `captionNameOnly` on the dials, `RangeCaptions.BandSlip`), so every other page draws as before.
+- `docs/declutter/moved_s1en.tsv`: 290 rows over 54 distinct texts, each with where its words now live. `Tools/declutter_moved_s1en.pl` regenerates it and verifies it: 0 unreached, 0 slip-cap breaches.
+- The honesty words stay at rest: ABSENT in every gap row, and BILLED in three fragments.
+
+**Measured (this tree):**
+- The cheap bar is 148 of 148 clean (cheaps1en).
+- The dry film of the six countries at 1280 (drys1en, scope row `drys1en`): 938 measured, 0 failed, 0 overflow.
+- The filmed width, Sweden at 1280 (reals1en): 161 captured, 0 failed.
+- The K320 scan of drys1en's tables leaves no Energy breach at rest. What remains on `08_*` captures is the provenance views (exempt) and `08_energy_laws_link_arrived`'s six Laws strings (S4's).
+- Distinct breaching strings at rest across the six countries fell from 470 to 381.
+
+**Declared:**
+- D1: the Laws screen's strings are S4's, each screen its own item (K320 (6)).
+- D2: labels the scan cannot measure (heads, row names, the mandate names, the laws chip) were cut under K320 (2), with their words on slips.
+- D3: the name-only dial captions and the head-only lock are Energy's alone. Sectors and every other page keep their lines until their own items.
+- D4: the rule device's block heads ("MID · 98 · COAL SETS IT …") are kept as the device's caption.
+- D5: the shared Subsidy catalog's band "Nationalised in all but name" (five words) is left for the Sectors item.
+- D6: moved words are listed per item in `docs/declutter/moved_<item>.tsv`, not in one generated file, so parallel items never conflict.
+
+Energy's slips from before S1 still hold lines over 10 words. They carry no moved words, and no Energy capture pins a slip; filed for the slip-cap pass once K321 reads slips.
+
+**Bars:** cheap bar 148 of 148 (cheaps1en); dry film of the six countries at 1280, 938 measured, 0 failed, 0 overflow (drys1en); filmed width Sweden 1280, 161 captured, 0 failed (reals1en); review skipped (ui tier); doc bar (docs957)

@@ -79,13 +79,16 @@ namespace PoliSim.UI
             return Mathf.Ceil(reason.CalcHeight(new GUIContent(why), width)) + StatsUnit(16f);
         }
 
-        private void DrawEnergyGapRow(float[] x, float y, float pad, string name, string unit, string why, bool billed = false)
+        /// <summary>S1 (K320): a gap row whose reason is a moved text - its fragment at rest, the whole reason behind the †, and the slip
+        /// <paramref name="slipId"/> over its cells.</summary>
+        private void DrawEnergyGapRow(float[] x, float y, float pad, string name, string unit, EnergySlips.Moved why, string slipId, bool billed = false)
         {
-            var area = new Rect(x[0], y, x[x.Length - 1] - x[0], EnergyGapRowHeight(why));
+            var area = new Rect(x[0], y, x[x.Length - 1] - x[0], EnergyGapRowHeight(why.Drawn(DeskProvenance.On)));
             float[] gx = PlateGrid.Tracks(area, PlateGrid.GapRow);
             PoliSimTheme.Rule(new Rect(area.x, area.y, area.width, 1f), PoliSimTheme.RuleRow);
             // P6-F2 (§539): the BILLED form for a row whose source is owed - the cost row of the decisions plate
-            var row = new PlateRow(name, unit, "", billed ? "billed" : "absent", PlateBand.Absent, 0f, 1f, -1f, null, true, null, null, new[] { billed ? "BILLED" : "ABSENT · STATED" }, false, why);
+            var row = new PlateRow(name, unit, "", billed ? "billed" : "absent", PlateBand.Absent, 0f, 1f, -1f, null, true, null, null, new[] { billed ? "BILLED" : "ABSENT · STATED" }, false, why.Full,
+                restReason: why.Rest, slipId: slipId);
             DrawPlateGapRow(area, gx, row, DeskBodyWrapped(11.5f, PoliSimTheme.TextPrimary), pad);
         }
 
@@ -99,6 +102,23 @@ namespace PoliSim.UI
         /// <summary>P6-F2c (§543): where the laws link was laid out last frame - the film scrolls to it.</summary>
         private Rect _energyLawsLinkLastArea;
 
+        /// <summary>The electricity tax's laws in force in <paramref name="country"/> and before its legislature - the link's counts and its slip's (S1).</summary>
+        private void ElectricityTaxLawCounts(Country country, out int enacted, out int pending)
+        {
+            enacted = 0; pending = 0;
+            if (!EnergyLayer.HasElectricityTax(country.Id)) { return; }
+            foreach (EnactedLaw law in country.EnactedLaws)
+            {
+                LawDefinition definition = LawCatalog.GetById(law.LawId);
+                if (definition != null && definition.Category == LawCategory.ElectricityTax) { enacted++; }
+            }
+            foreach (KeyValuePair<string, LawBill> bill in _simulationManager.GetPendingLawBills(PlayerCountryId))
+            {
+                LawDefinition definition = LawCatalog.GetById(bill.Key);
+                if (definition != null && definition.Category == LawCategory.ElectricityTax) { pending++; }
+            }
+        }
+
         /// <summary>
         /// The one law category that reaches the energy layer (EN-7b, §500: the electricity tax's statute per class) was reachable only by
         /// knowing to open LAWS and pick its filter. This is the way there from the page that shows what those laws move: one faced control
@@ -110,38 +130,25 @@ namespace PoliSim.UI
         private void DrawEnergyLawsLink(Country country)
         {
             bool offered = EnergyLayer.HasElectricityTax(country.Id);
-            int enacted = 0, pending = 0;
-            if (offered)
-            {
-                foreach (EnactedLaw law in country.EnactedLaws)
-                {
-                    LawDefinition definition = LawCatalog.GetById(law.LawId);
-                    if (definition != null && definition.Category == LawCategory.ElectricityTax) { enacted++; }
-                }
-                foreach (KeyValuePair<string, LawBill> bill in _simulationManager.GetPendingLawBills(PlayerCountryId))
-                {
-                    LawDefinition definition = LawCatalog.GetById(bill.Key);
-                    if (definition != null && definition.Category == LawCategory.ElectricityTax) { pending++; }
-                }
-            }
+            ElectricityTaxLawCounts(country, out int enacted, out int pending);
 
             GUILayout.Space(StatsUnit(6f));
             GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextSecondary, true, TextAnchor.MiddleLeft);
             GUIStyle chipCaption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleCenter);
             float lineHeight = Mathf.Ceil(DeskCaptionHeight(caption)) + StatsUnit(8f);
             Rect row = GUILayoutUtility.GetRect(10f, lineHeight, GUILayout.ExpandWidth(true));
-            const string label = "THE ELECTRICITY TAX'S LAWS ▸";
+            const string label = EnergySlips.LawsChip;   // S1 (K320): a control's label is at most three words; the old label heads the link's slip
             float chipWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(label)).x) + StatsUnit(16f);
             var chip = new Rect(row.x + StatsUnit(4f), row.y + StatsUnit(2f), chipWidth, row.height - StatsUnit(4f));
             if (Event.current.type == EventType.Repaint)
             {
                 PoliSimTheme.Rule(new Rect(row.x, row.y, row.width, 1f), PoliSimTheme.RuleRow);
-                string line = offered
-                    ? string.Format(CultureInfo.InvariantCulture, "OPENS LAWS ON THIS CATEGORY · {0} OFFERED · {1} ENACTED · {2} BEFORE " + LegislatureCaps + " · THE ONE CATEGORY THAT REACHES THE ENERGY LAYER", ElectricityTaxLawCount, enacted, pending)
-                    : "NO NATIONAL ELECTRICITY EXCISE FOR " + country.Name.ToUpperInvariant() + " · THE LAWS ARE NOT OFFERED";
+                // S1 (K320): the counts at rest; what the chip opens and why this category, on the link's slip and behind the †
+                string line = EnergySlips.LawsLink(country.Name, offered, ElectricityTaxLawCount, enacted, pending, LegislatureCaps).Drawn(DeskProvenance.On);
                 PoliSimWidgets.MeasuredLabel(new Rect(chip.xMax + StatsUnit(8f), row.y, Mathf.Max(10f, row.xMax - chip.xMax - StatsUnit(12f)), row.height), line, caption);
                 _energyLawsLinkLastArea = row;
             }
+            SlipAnchor(row, EnergySlips.LawsLinkAnchor);
 
             if (DrawDeskChipButton(chip, label, chipCaption, false, !offered))
             {
@@ -157,8 +164,6 @@ namespace PoliSim.UI
 
         /// <summary>P6-F2b (§542): where the instruments' dials were laid out last frame - the film scrolls to them.</summary>
         private Rect _energyDialsLastArea;
-
-        private const string AbsentLoadGrowth = "THE LOAD DOES NOT GROW WITH GDP OR ELECTRIFICATION · STATED, NOT MODELLED";
 
         /// <summary>The tab's own scroll position - a new field is picked up by the film driver's scroll reflection without a driver edit.</summary>
         private Vector2 _energyScrollPosition;
@@ -220,7 +225,7 @@ namespace PoliSim.UI
             // §569: THE RULE ROW IS THIS SECTION'S HEAD - the price's own derivation, drawn above the fleet it derives from, then the zones row as before (the same
             // pattern the water plate already uses: two extra rows, one height, one draw).
             DrawPlateRows(fleet, areaInk, foot2, false, row => null,
-                extraRowHeightFor: (nameH, capH, srcH, smallH) => EnergyRuleRowHeight(nameH, capH, srcH) + EnergyZonesRowHeight(nameH, capH, srcH, sweden) + EnergyGapRowHeight(AbsentLoadGrowth),
+                extraRowHeightFor: (nameH, capH, srcH, smallH) => EnergyRuleRowHeight(nameH, capH, srcH) + EnergyZonesRowHeight(nameH, capH, srcH, sweden) + EnergyGapRowHeight(EnergySlips.LoadGrowth.Drawn(DeskProvenance.On)),
                 drawExtraRow: (x, y, pad, styles) =>
                 {
                     DrawEnergyRuleRow(x, y, pad, styles, r, country.Id, priceIndex, sweden, marketUnit, wholesalePerMwh);
@@ -241,10 +246,11 @@ namespace PoliSim.UI
             }
             else
             {
-                string why = sweden ? "NO WATER VALUE THIS TURN" : (usa || country.Id == CountryId.France || country.Id == CountryId.Poland)
-                    ? "THE HYDRO SHIFT'S FOLD IS BILLED FOR " + countryUpper + " · NO RESERVOIR MODELLED" : "NO RESERVOIR MODELLED FOR " + countryUpper + " · SWEDEN'S IS THE ONE";
-                water.Add(new PlateRow("Water value and reservoirs", marketUnit, "RESERVOIR DISPATCH · SWEDEN ONLY", "absent",
-                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "SWEDEN'S STORE IS THE ONE THIS GAME KEEPS" }, null, new[] { "ABSENT · STATED" }, false, why));
+                // S1 (K320): a country with no reservoir keeps its fragment at rest (the BILLED fold kept in it), the reason whole behind the † and on the slip
+                EnergySlips.Moved why = sweden ? new EnergySlips.Moved(null, "NO WATER VALUE THIS TURN") : EnergySlips.WaterAbsent(country.Id);
+                water.Add(new PlateRow(EnergySlips.WaterGapName, marketUnit, "RESERVOIR DISPATCH · SWEDEN ONLY", "absent",
+                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "SWEDEN'S STORE IS THE ONE THIS GAME KEEPS" }, null, new[] { "ABSENT · STATED" }, false, why.Full,
+                    restReason: why.Rest, slipId: sweden ? null : EnergySlips.WhyWater));
             }
             string foot3 = string.Format(CultureInfo.InvariantCulture,
                 "THE TWO LEDGERS CLOSE ON THE SAME BOOK AND ARE DRAWN ON ONE SCALE: SYSTEM COST {0:N1} BN OF FUEL, ETS AND ADDERS PLUS {1:N1} BN OF INFRAMARGINAL RENT IS THE WHOLESALE OUTLAY {2:N1} BN - {6:0} % OF WHAT IS PAID; INCIDENCE {3:N1} BN PAID AGAINST {4:N1} BN RECEIVED, THE GAP {5:0.0} · THE RENT IS PRINTED, NOT MODELLED - NOTHING READS IT",
@@ -269,7 +275,7 @@ namespace PoliSim.UI
                 ? new PlateRow("ETS price", (usa ? "USD" : "EUR") + " PER TONNE · THE " + EnergyLayer.Year + " MEAN CARRIED BY THE PRICE LEVEL", "EEX · THE CATALOG · NO PATH", PlateFigure((float)((etsSeed + r.EtsRisePerT) * priceIndex), 1),
                     PlateBand.None, 0f, 0f, 0f, null, true, new[] { "NO PATH · " + EnergyLayer.Year + " MEAN CARRIED BY THE LEVEL", "THE FLEET'S CARBON COST, NOT THE TAX'S" }, null, new[] { "SOURCED" }, false, chipsWithoutBand: true)
                 : new PlateRow("ETS price", "PER TONNE", "NO EMISSIONS TRADING FOR " + countryUpper, "absent",
-                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE FLEET PAYS NO CARBON PRICE" }, null, new[] { "ABSENT · STATED" }, false, "THE ROW IS ZERO BY THE CATALOG · A FEDERAL CARBON PRICE DOES NOT EXIST"));
+                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE FLEET PAYS NO CARBON PRICE" }, null, new[] { "ABSENT · STATED" }, false, EnergySlips.EtsAbsent.Full, restReason: EnergySlips.EtsAbsent.Rest, slipId: EnergySlips.ReachesEts));
             // EN-7a (2026-09-14): the Energy sector's five dials ARE the four instruments - retail intervention (the subsidy's money side on the energy
             // line, the levy the other way), market liberalisation (the regulation gap splitting the supply margin), investment planning and state
             // ownership (absent: the fleet neither invests nor changes hands, and the rent an ownership share would read is printed, never read),
@@ -277,13 +283,13 @@ namespace PoliSim.UI
             if (!SectorCouplings.HasEnergyLine(country))
             {
                 instruments.Add(new PlateRow("Retail intervention", "× THE SEEDED LEVIES", "NO ENERGY LINE FOR " + countryUpper, "absent",
-                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE LEVIES STAND AT THEIR SEED" }, null, new[] { "ABSENT · STATED" }, false, "THE CLIMATE FUND SITS OFF THE BUDGET · THE SUBSIDY DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT"));
+                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE LEVIES STAND AT THEIR SEED" }, null, new[] { "ABSENT · STATED" }, false, EnergySlips.RetailNoLine.Full, restReason: EnergySlips.RetailNoLine.Rest, slipId: EnergySlips.ReachesRetail));
             }
             else if (!EnergyLedger.HasPolicyLevy(country.Id))
             {
                 // the review's finding: the USA's line carries the subsidy but its retail components are billed - no levy, so no retail effect, and a 0.00 read as a levy displaced
                 instruments.Add(new PlateRow("Retail intervention", "× THE SEEDED LEVIES", "NO POLICY LEVY IN THE STACK FOR " + countryUpper, "absent",
-                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "SUBSIDY DIAL ▸ ENERGY LINE" }, null, new[] { "ABSENT · STATED" }, false, "THE RETAIL COMPONENTS ARE BILLED · THE SUBSIDY'S COST LANDS ON THE ENERGY LINE WITH NO RETAIL EFFECT"));
+                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "SUBSIDY DIAL ▸ ENERGY LINE" }, null, new[] { "ABSENT · STATED" }, false, EnergySlips.RetailNoLevy.Full, restReason: EnergySlips.RetailNoLevy.Rest, slipId: EnergySlips.ReachesRetail));
             }
             else
             {
@@ -293,9 +299,9 @@ namespace PoliSim.UI
             instruments.Add(new PlateRow("Market liberalisation", "POINTS BELOW THE SEED'S REGULATION · MARGIN TO HOUSEHOLDS", "THE ENERGY SECTOR'S REGULATION DIAL · STEINER, OECD 2000", PlateFigure((float)(EnergyLedger.LiberalisationGap(country) * 100.0), 0),
                 PlateBand.None, 0f, 0f, 0f, null, true, new[] { "REGULATION DIAL ▸ MARGIN SPLIT", "INDUSTRY'S BILL ▸", "HOUSEHOLDS' PRICE ▸" }, null, new[] { "DECLARED" }, false, chipsWithoutBand: true));
             instruments.Add(new PlateRow("Investment planning", "THE TAX CREDITS DIAL", "THE FLEET MOVES BY ORDER, NOT BY THIS DIAL", "absent",
-                PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "NOTHING IN THE LAYER TO REACH" }, null, new[] { "ABSENT · STATED" }, false, "THE DIAL REACHES NO ORDER - THE FLEET MOVES BY THE CONNECTION QUEUE ABOVE, UNPRICED · THE DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT"));
+                PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "NOTHING IN THE LAYER TO REACH" }, null, new[] { "ABSENT · STATED" }, false, EnergySlips.PlanningAbsent.Full, restReason: EnergySlips.PlanningAbsent.Rest, slipId: EnergySlips.ReachesPlanning));
             instruments.Add(new PlateRow("State ownership", "THE NATIONALIZATION / DEREGULATION DIAL", "NO OWNERSHIP TERM IN THE LEDGERS", "absent",
-                PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE SECTOR ROW STILL READS IT" }, null, new[] { "ABSENT · STATED" }, false, "A STATE SHARE OF THE GENERATORS' RECEIPTS WOULD READ THE RENT THE PAGE PRINTS AND NOTHING READS · THE DIAL STILL MOVES THE SECTOR'S OUTPUT AND EMPLOYMENT"));
+                PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE SECTOR ROW STILL READS IT" }, null, new[] { "ABSENT · STATED" }, false, EnergySlips.OwnershipAbsent.Full, restReason: EnergySlips.OwnershipAbsent.Rest, slipId: EnergySlips.ReachesOwnership));
             instruments.Add(new PlateRow("Research grants", "THE RESEARCH GRANTS DIAL", "NO RESEARCH MECHANIC", "—",
                 PlateBand.None, 0f, 0f, 0f, null, true, new[] { "DESCRIPTIVE · THE SECTOR ROW ONLY" }, null, new[] { "ABSENT · STATED" }, false, chipsWithoutBand: true));
             instruments.Add(new PlateRow("Carbon tax", "THE NATIONAL RATE PER TONNE", "THE TAX LEDGER · " + countryUpper, PlateFigure(EnvironmentFamily.CarbonTaxRate(country), 0),
@@ -319,7 +325,7 @@ namespace PoliSim.UI
             else
             {
                 instruments.Add(new PlateRow("Electricity tax", "EUR PER MWh", "NO FEDERAL ELECTRICITY EXCISE FOR " + countryUpper, "absent",
-                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE LAWS ARE NOT OFFERED" }, null, new[] { "ABSENT · STATED" }, false, "THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE"));
+                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE LAWS ARE NOT OFFERED" }, null, new[] { "ABSENT · STATED" }, false, EnergySlips.ElectricityTaxAbsent.Full, restReason: EnergySlips.ElectricityTaxAbsent.Rest, slipId: EnergySlips.ReachesElectricityTax));
             }
             string foot4 = "THE ENERGY SECTOR'S FIVE DIALS ARE THE INSTRUMENTS FROM RETAIL INTERVENTION TO RESEARCH GRANTS - FOUR OF THEM THE TILES ABOVE, THE SAME DRAFT AS THE SECTORS PAGE'S, NO SIXTH CONTROL · THE ETS PRICE IS THE MARKET'S, THE CARBON TAX A BUDGET ROW, THE ELECTRICITY TAX THE LAWS' · WHAT EACH REACHES IS ITS CHIP · WHAT THE LAYER LACKS IS DRAWN AS ABSENT WHERE THE QUANTITY WOULD SIT";
             // §569: WHAT ELSE REACHES IT closes the page - the laws chip at the head of the instrument readouts, as Design's order puts it; the dials themselves are
@@ -348,16 +354,21 @@ namespace PoliSim.UI
             // reservoir dispatch: the seed's zone price carried by the price level, the water value's departure from its seed proxy on the
             // zone's own beta, the deficit slope on both - and a binding link splits the chain. The geometry is one - 10c's waterfall -
             // and the FORM is carried by the parts' names and by the caption that says what priced the block.
-            bool chain = sweden && r.Links != null && r.Links.Length > 0 && r.WaterValue != null && r.WaterValue.Length >= 3;
+            bool chain = EnergySlips.IsChain(r, sweden);
             int zone = 0;
             if (chain && r.ZoneNames != null) { int se3 = Array.IndexOf(r.ZoneNames, "SE3"); if (se3 >= 0) { zone = se3; } }
             string zoneName = r.ZoneNames != null && zone < r.ZoneNames.Length ? r.ZoneNames[zone] : id.ToString();
             float nameTop = y + StatsUnit(2f);
-            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, nameTop, x[1] - x[0] - pad, styles.NameH), "The rule on the price", styles.Name);
+            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, nameTop, x[1] - x[0] - pad, styles.NameH), EnergySlips.RuleName, styles.Name);
             PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, nameTop + styles.NameH, x[1] - x[0] - pad, styles.CapH),
                 zoneName + " · " + marketUnit + (chain ? " · SEED × LEVEL · WATER · DEFICIT" : " · FUEL+O&M · ETS · ADDER · TRANCHE⁄SCARCITY"), styles.Caption);
-            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, nameTop + styles.NameH + styles.CapH, x[1] - x[0] - pad, styles.SrcH), "ONE DEVICE · THE FORM IS IN THE PARTS' NAMES", styles.Source);
-            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, nameTop + styles.NameH + styles.CapH + styles.SrcH, x[1] - x[0] - pad, styles.SrcH), "AND IN THE CAPTION THAT SAYS WHAT PRICED IT", styles.Source);
+            // S1 (K320): the device's two source lines are the † view's; at rest they are the rule's slip, anchored on the name cell
+            if (DeskProvenance.On)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, nameTop + styles.NameH + styles.CapH, x[1] - x[0] - pad, styles.SrcH), EnergySlips.RuleDeviceLine1, styles.Source);
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, nameTop + styles.NameH + styles.CapH + styles.SrcH, x[1] - x[0] - pad, styles.SrcH), EnergySlips.RuleDeviceLine2, styles.Source);
+            }
+            SlipAnchor(new Rect(x[0] + pad, nameTop, x[1] - x[0] - pad, styles.NameH + styles.CapH + styles.SrcH * 2f), EnergySlips.WhyRule);
             if (r.Zones == null || zone >= r.Zones.Length) { return; }
             float left = x[1] + pad, right = x[x.Length - 2] - pad;
             float cellW = (right - left) / 3f;
@@ -446,26 +457,13 @@ namespace PoliSim.UI
                 PoliSimWidgets.MeasuredLabel(new Rect(cx, labelY + styles.CapH, cellW - pad, styles.CapH),
                     string.Format(CultureInfo.InvariantCulture, "{0:N0} MW DEMAND · {1:N0} MW MUST-RUN", block.DemandMw, block.MustRunMw), termLabel);
             }
-            // the head's figure re-derived from the body with the clearing's own weights - each block's seed MW times its hours, the
-            // energy it serves - printed so the reader can check it; the first film weighted by MW alone and read 73 against 58
-            double weighted = 0, load = 0;
-            for (int z = 0; z < r.Zones.Length; z++)
-            {
-                int zi = r.ZoneNames != null && z < r.ZoneNames.Length ? EnergyLayer.ZoneIndex(r.ZoneNames[z]) : -1;
-                for (int b = 0; b < r.Zones[z].Length && b < 3; b++)
-                {
-                    double mw = zi < 0 ? r.Zones[z][b].DemandMw : sweden ? EnergyLayerData.ZoneConsumptionBlockMw[zi][b] : EnergyLayerData.DispatchDemandMw[zi][b];
-                    double energy = Math.Max(0.0, mw) * (zi < 0 ? 1.0 : EnergyLayerData.DispatchHours[zi][b]);
-                    weighted += r.Zones[z][b].Price * energy; load += energy;
-                }
-            }
-            double rederived = load > 0 ? weighted / load : 0;
-            string over = chain ? "TWELVE BLOCKS" : "THREE BLOCKS";
-            string derivation = Math.Abs(rederived - wholesalePerMwh) < 0.05
-                ? string.Format(CultureInfo.InvariantCulture, "{0:0.0} = Σ PRICE × ENERGY ⁄ Σ ENERGY, {1} · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE", wholesalePerMwh, over)
-                : string.Format(CultureInfo.InvariantCulture, "{0:0.0} IS THE CLEARING'S; Σ PRICE × ENERGY ⁄ Σ ENERGY, {1}, READS {2:0.0} HERE - THE TWO WEIGHTS DIFFER", wholesalePerMwh, over, rederived);
+            // the head's figure re-derived from the body with the clearing's own weights (EnergySlips.Rederived), printed so the reader can check it - S1 (K320):
+            // the figure and the formula at rest, the weights behind the † and on the derivation's slip
+            string derivation = EnergySlips.Derivation(wholesalePerMwh, EnergySlips.Rederived(r, sweden), chain).Drawn(DeskProvenance.On);
             float footY = y + Mathf.Max(StatsUnit(2f) + styles.NameH + styles.CapH + styles.SrcH * 2f, StatsUnit(4f) + styles.CapH + lane + StatsUnit(2f) + styles.CapH * 2f) + StatsUnit(4f);
-            PoliSimWidgets.MeasuredLabel(new Rect(left, footY, right - left, EnergyDerivationLineHeight(styles.CapH)), derivation, termLabel);
+            var footRect = new Rect(left, footY, right - left, EnergyDerivationLineHeight(styles.CapH));
+            PoliSimWidgets.MeasuredLabel(footRect, derivation, termLabel);
+            SlipAnchor(new Rect(footRect.x, footRect.y, Mathf.Min(footRect.width, Mathf.Ceil(termLabel.CalcSize(new GUIContent(derivation)).x) + StatsUnit(4f)), footRect.height), EnergySlips.WhyDerivation);
         }
 
         /// <summary>The parts' names with their values, left to right; a zero term drawn as nothing above and its name struck here.</summary>
@@ -501,7 +499,8 @@ namespace PoliSim.UI
             PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, styles.NameH), "The zones", styles.Name);
             PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH, x[1] - x[0] - pad, styles.CapH), marketUnit + " · BASE · MID · PEAK PER ZONE", styles.Caption);
             PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH + styles.CapH, x[1] - x[0] - pad, styles.SrcH),
-                sweden ? "LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC" : "THE CLEARING · SEEDED LOADS", styles.Source);
+                sweden ? EnergySlips.ZonesLinks.Drawn(DeskProvenance.On) : "THE CLEARING · SEEDED LOADS", styles.Source);   // S1 (K320): the links' reading at rest, where they are drawn on the slip
+            SlipAnchor(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, styles.NameH + styles.CapH + styles.SrcH), EnergySlips.WhyZones);
             float zonesH = EnergyZonesRowHeight(styles.NameH, styles.CapH, styles.SrcH, sweden);
             if (r.Zones != null && r.Zones.Length > 0)
             {
@@ -573,12 +572,15 @@ namespace PoliSim.UI
                 }
                 else
                 {
-                    string note = id == CountryId.Italy ? "ONE ZONE · THE REAL MARKET HAS SEVEN: NORD · CNOR · CSUD · SUD · CALA · SICI · SARD" : id == CountryId.USA ? "ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS: EASTERN · WESTERN · ERCOT" : "ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS";
-                    PoliSimWidgets.MeasuredLabel(new Rect(left, gutterY, right - left, smallH), note, small);
+                    // S1 (K320): the one zone and the count of the real market's at rest; the real zones' names behind the † and on the zones' slip
+                    string note = EnergySlips.ZonesNote(id).Drawn(DeskProvenance.On);
+                    var noteRect = new Rect(left, gutterY, right - left, smallH);
+                    PoliSimWidgets.MeasuredLabel(noteRect, note, small);
+                    SlipAnchor(new Rect(noteRect.x, noteRect.y, Mathf.Min(noteRect.width, Mathf.Ceil(small.CalcSize(new GUIContent(note)).x) + StatsUnit(4f)), noteRect.height), EnergySlips.WhyZones);
                 }
             }
             // 15a: load growth is absent, and its absence sits beside the load it would move
-            DrawEnergyGapRow(x, y + zonesH, pad, "Load growth", "GWh PER YEAR", AbsentLoadGrowth);
+            DrawEnergyGapRow(x, y + zonesH, pad, "Load growth", "GWh PER YEAR", EnergySlips.LoadGrowth, EnergySlips.WhyLoad);
         }
 
         // ---- the water value, aligned under the rule row's three blocks: that row's water part, read by column -------------------
@@ -590,8 +592,10 @@ namespace PoliSim.UI
         private void DrawEnergyWaterRow(float[] x, float y, float pad, PlateStyles styles, EnergyMarket.Result r, string marketUnit)
         {
             PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, styles.NameH), "Water value", styles.Name);
-            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH, x[1] - x[0] - pad, styles.CapH), marketUnit + " · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS", styles.Caption);
+            // S1 (K320): the unit at rest; where the row stands against the rule row, behind the † and on the water's slip
+            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH, x[1] - x[0] - pad, styles.CapH), EnergySlips.WaterCaption(marketUnit).Drawn(DeskProvenance.On), styles.Caption);
             PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH + styles.CapH, x[1] - x[0] - pad, styles.SrcH), "THE RESERVOIRS' OPPORTUNITY COST · SLOPE AUTHORED", styles.Source);
+            SlipAnchor(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, styles.NameH + styles.CapH + styles.SrcH), EnergySlips.WhyWater);
             float left = x[1] + pad, right = x[x.Length - 2] - pad;
             float cellW = (right - left) / 3f;
             GUIStyle figure = DeskCaption(11f, PoliSimTheme.TextPrimary, true);
@@ -640,8 +644,9 @@ namespace PoliSim.UI
             Rect box1 = DrawOneEnergyBridge(x, y, pad, styles, left, right, "System cost", EnergyLedger.BookCurrency + " BN · COST + RENT = OUTLAY",
                 string.Format(CultureInfo.InvariantCulture, "OUTLAY {0:N1} BN · RENT {1:N1} BN, PRINTED", book.WholesaleOutlay, book.InframarginalRent), g1, fail, pixelsPerUnit);
             float y2 = y + rowH + leaderH;
-            Rect box2 = DrawOneEnergyBridge(x, y2, pad, styles, left, right, "Incidence", EnergyLedger.BookCurrency + " BN · PAID, THEN RECEIVED · ONE SCALE WITH THE ROW ABOVE",
-                string.Format(CultureInfo.InvariantCulture, "{0:N1} BN PAID · {1:N1} BN RECEIVED · GAP {2:0.0}", book.PaidTotal, book.ReceivedTotal, book.Gap), g2, fail, pixelsPerUnit);
+            // S1 (K320): the unit and the order at rest; the shared scale behind the † and on the incidence's slip
+            Rect box2 = DrawOneEnergyBridge(x, y2, pad, styles, left, right, "Incidence", EnergySlips.IncidenceCaption().Drawn(DeskProvenance.On),
+                string.Format(CultureInfo.InvariantCulture, "{0:N1} BN PAID · {1:N1} BN RECEIVED · GAP {2:0.0}", book.PaidTotal, book.ReceivedTotal, book.Gap), g2, fail, pixelsPerUnit, EnergySlips.WhyIncidence);
             if (g1 == null || g2 == null || box1.width <= 0f || box2.width <= 0f) { return; }
             // the leader: the outlay one ledger closes on is the generators' receipt the other pays out - one figure, joined
             int slots1 = g1.Steps.Count + 2, slots2 = g2.Steps.Count + 2;
@@ -658,20 +663,25 @@ namespace PoliSim.UI
             float lx0 = Mathf.Min(closeX, genX), lx1 = Mathf.Max(closeX, genX);
             DrawDashedRule(new Rect(lx0, midY - 0.5f, lx1 - lx0, 1f), leaderInk, 2f, 2f);
             GUIStyle leaderLabel = DeskCaption(7f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleCenter);
-            string leader = string.Format(CultureInfo.InvariantCulture, "THE SAME {0:N1} - WHAT THE MARKET COST IS WHAT THE GENERATORS RECEIVED", book.WholesaleOutlay);
+            // S1 (K320): the shared figure at rest; what it means behind the † and on the leader's slip
+            string leader = EnergySlips.Leader(book.WholesaleOutlay).Drawn(DeskProvenance.On);
             float lw = leaderLabel.CalcSize(new GUIContent(leader)).x + pad * 2f;
             float lcx = (lx0 + lx1) * 0.5f;
             var labelRect = new Rect(Mathf.Clamp(lcx - lw * 0.5f, left, right - lw), midY - styles.CapH * 0.5f, lw, styles.CapH);
             PoliSimTheme.Rule(labelRect, PoliSimTheme.Card);
             PoliSimWidgets.MeasuredLabel(labelRect, leader, leaderLabel);
+            SlipAnchor(labelRect, EnergySlips.WhyLeader);
         }
 
+        /// <summary>One ledger as a bridge: its name cell (name, caption, source - the cell is the slip <paramref name="anchor"/>'s where one is named), the
+        /// bridge on the shared scale, the steps' abbreviations under their slots.</summary>
         private Rect DrawOneEnergyBridge(float[] x, float y, float pad, PlateStyles styles, float left, float right, string name, string caption, string source,
-            AttributionBridge.Geometry g, string fail, float pixelsPerUnit)
+            AttributionBridge.Geometry g, string fail, float pixelsPerUnit, string anchor = null)
         {
             PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, styles.NameH), name, styles.Name);
             PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH, x[1] - x[0] - pad, styles.CapH * 2f), caption, styles.Caption);
             PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH + styles.CapH * 2f, x[1] - x[0] - pad, styles.SrcH), source, styles.Source);
+            if (anchor != null) { SlipAnchor(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, styles.NameH + styles.CapH * 2f + styles.SrcH), anchor); }
             if (g == null)
             {
                 PoliSimWidgets.MeasuredLabel(new Rect(left, y + StatsUnit(4f), right - left, styles.CapH * 2f), "THE LINES DO NOT CLOSE · " + (fail ?? "").ToUpperInvariant(), DeskCaption(8f, PoliSimTheme.Bad));
