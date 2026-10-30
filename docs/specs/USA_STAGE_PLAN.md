@@ -2460,6 +2460,15 @@ With US-28 (§848): a fork made before the player's pick names the default in it
 - (ii) the alternative: a re-elected president keeps the sitting Vice President, as the record does (US-28b).
 
 
+**SP-6b part one: the ballot drive's rules, declared before the first run (S7, Design's return of 2026-10-30; committed before any measurement).** `UsBallotAccess` and `UsBallotAccessCheck` hold them:
+1. A jurisdiction is on the ballot once filed, and lost once its deadline passes unfiled (filing on the day is allowed). It is collecting from one signature, off before any, and BILLED where its count (with no fee-instead route) or its deadline is not on disk. A BILLED jurisdiction cannot be filed in.
+2. Filing needs the summary's count, or the fee where the summary names the fee instead of the petition. A fee beside the petition is charged at filing; a fee whose amount is BILLED is not charged.
+3. Signatures accrue only by GATHER: size × daily yield × days, at a price p. p and the yield are BILLED, so GATHER stays ABSENT until both are sourced (K326). No signature decays, every signature is valid, and the upper limits of a range are not enforced.
+4. On the ballot, the independent takes its share from every column in proportion. Off it, it gets zero, the rest are renormalised, and write-ins are not counted.
+5. A place (a winner-take-all state, the ME/NE pair at large, or a district) goes to the independent where its share exceeds the larger nominee's. A district takes its state's independent share.
+6. The nearest elector is the place not won, on the ballot, with the smallest gap in points; ties go by code.
+7. With no majority, the House chooses by states from the top three (R-US3 (a)), and each delegation votes its party's nominee.
+
 ---
 
 ## 5. The Design asks
