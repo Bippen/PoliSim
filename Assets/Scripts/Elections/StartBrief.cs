@@ -285,7 +285,7 @@ namespace PoliSim.Elections
 
         /// <summary>
         /// Board 18a (Design, 2026-09-24): THE BRIEF AS A LEDGER OF ITS SLOTS, the same records <see cref="Clauses"/> reads, one row per slot:
-        /// Government → M + KD + L · Ulf Kristersson (M); Since → 18 OCT 2022; Seats → 103 OF 349; Support → SD; Polling day → 13 SEP 2026;
+        /// Government → M+KD+L · Ulf Kristersson (M); Since → 18 OCT 2022; Seats → 103 OF 349; Support → SD; Polling day → 13 SEP 2026;
         /// In the Riksdag → 8 PARTIES · 349 SEATS · ELECTED 11 SEP 2022. Where the record holds no government the row reads "— NONE OF RECORD"
         /// and the rows that hang off a government (Since, Seats, Support) are not emitted; a polling day already past when the start opens
         /// (France) is "Last polling day"; a day the record does not hold reads its note.
@@ -317,12 +317,12 @@ namespace PoliSim.Elections
                 {
                     int cabinetSeats = 0;
                     foreach (string abbrev in government.Cabinet) { if (seats.TryGetValue(abbrev, out int n)) { cabinetSeats += n; } }
-                    rows.Add(new Row("Government", PartySystems.JoinShortNames(System.Array.ConvertAll(government.Cabinet, a => PartySystems.ShortName(id, a)), " + ") + " · " + government.Head, basis));   // §707: the party's name, not the data key ("Grune")
+                    rows.Add(new Row("Government", PartySystems.JoinShortNames(System.Array.ConvertAll(government.Cabinet, a => PartySystems.ShortName(id, a))) + " · " + government.Head, basis));   // §707: the party's name, not the data key ("Grune"); S10 (10a): K312's "+", as every group of parties joins
                     rows.Add(new Row("Since", Stamp(government.From), basis));
                     rows.Add(new Row("Seats", cabinetSeats.ToString(CultureInfo.InvariantCulture) + " OF " + size.ToString(CultureInfo.InvariantCulture), basis + "; the seats " + chamber.Basis));
                     if (government.Support != null && government.Support.Length > 0)
                     {
-                        rows.Add(new Row("Support", PartySystems.JoinShortNames(System.Array.ConvertAll(government.Support, a => PartySystems.ShortName(id, a)), " + "), basis));
+                        rows.Add(new Row("Support", PartySystems.JoinShortNames(System.Array.ConvertAll(government.Support, a => PartySystems.ShortName(id, a))), basis));
                     }
                     if (government.President != null) { rows.Add(new Row("President", government.President, basis)); }   // PS-3b (§629): France's cabinet sits under its president
                 }

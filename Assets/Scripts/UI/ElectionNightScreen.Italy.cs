@@ -429,7 +429,7 @@ namespace PoliSim.UI
                 {
                     name = CoalitionName(members) + " coalition";
                     var shorts = new List<string>(); foreach (string m in members) { shorts.Add(Short(CountryId.Italy, m)); }
-                    lines.Add(string.Join(" · ", shorts));
+                    lines.Add(PartySystems.JoinShortNames(shorts));   // S10 (10a, K312): the coalition named as one - FdI+Lega+FI+NM, PD · AVS · +E · IC
                     lines.Add("Admitted at 10" + Nbsp + "% with a list at 3" + Nbsp + "% (art. 83 lett. e)");
                     if (final)
                     {

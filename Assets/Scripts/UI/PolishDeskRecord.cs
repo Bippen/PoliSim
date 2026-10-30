@@ -89,7 +89,8 @@ namespace PoliSim.UI
             return false;
         }
 
-        /// <summary>(2): the government's standing as the leaving left it - "KO · NL govern on 182 of 460 seats, a minority".</summary>
+        /// <summary>(2): the government's standing as the leaving left it - "KO+NL govern on 182 of 460 seats, a minority" (the cabinet named as one group,
+        /// K312's join through its helper: S10, 10a).</summary>
         public static string StandingWords(Country country)
         {
             GovernmentRecord g = country?.Government;
@@ -103,7 +104,7 @@ namespace PoliSim.UI
             var names = new List<string>();
             foreach (string k in g.Cabinet) { names.Add(PartySystems.ShortName(country.Id, k) ?? k); }
             string n(int v) => v.ToString(CultureInfo.InvariantCulture);
-            return string.Join(" · ", names) + (names.Count == 1 ? " governs on " : " govern on ") + n(held) + " of " + n(total) + " seats, " + (held * 2 > total ? "a majority" : "a minority");
+            return PartySystems.JoinShortNames(names) + (names.Count == 1 ? " governs on " : " govern on ") + n(held) + " of " + n(total) + " seats, " + (held * 2 > total ? "a majority" : "a minority");
         }
     }
 }

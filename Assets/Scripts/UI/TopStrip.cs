@@ -125,9 +125,10 @@ namespace PoliSim.UI
             if (g.Kind == WorldClock.ExecutiveKind.Presidency) { return null; }
 
             int total = Total(country.ParliamentSeats), cabinet = Seats(country.ParliamentSeats, g.Cabinet), support = Seats(country.ParliamentSeats, g.Support);
-            string cabinetWords = g.Cabinet.Count > 0 ? string.Join(" · ", g.Cabinet.ConvertAll(Short)) : "none";
+            // S10 (10a, K312): the cabinet and its support each named as one group - "+", or " · " where a name holds a '+' - through the one helper
+            string cabinetWords = g.Cabinet.Count > 0 ? PartySystems.JoinShortNames(g.Cabinet.ConvertAll(Short)) : "none";
             chip.Slip.Add(cabinetWords + " in cabinet, " + N(cabinet) + " of " + N(total));
-            if (g.Support.Count > 0) { chip.Slip.Add(string.Join(" · ", g.Support.ConvertAll(Short)) + " support from outside: " + N(cabinet + support)); }
+            if (g.Support.Count > 0) { chip.Slip.Add(PartySystems.JoinShortNames(g.Support.ConvertAll(Short)) + " support from outside: " + N(cabinet + support)); }
 
             if (g.Caretaker)
             {

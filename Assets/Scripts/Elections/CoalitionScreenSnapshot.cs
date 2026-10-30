@@ -40,7 +40,7 @@ namespace PoliSim.Elections
             RedLines = redLines ?? new List<RedLine>();
         }
 
-        /// <summary>The parties in a mask, as a joined label.</summary>
+        /// <summary>The parties in a mask, as one joined label - K312's join through its one helper (S10, 10a): "+", or " · " where a name holds a '+'.</summary>
         public string Name(int mask)
         {
             var parts = new List<string>();
@@ -49,7 +49,7 @@ namespace PoliSim.Elections
                 if ((mask & (1 << p)) != 0) { parts.Add(PartyNames[p]); }
             }
 
-            return parts.Count == 0 ? "—" : string.Join("+", parts.ToArray());
+            return parts.Count == 0 ? "—" : PoliSim.Data.PartySystems.JoinShortNames(parts);
         }
 
         /// <summary>Declared lines only - the ones a party said out loud and a citation records. K-1f: not the candidacy pair's lines -

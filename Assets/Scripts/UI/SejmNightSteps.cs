@@ -269,12 +269,14 @@ namespace PoliSim.UI
             return n;
         }
 
-        /// <summary>The short names joined as the foot joins them (RETURN.md: "the short forms, joined with ' · '"; K312's helper).</summary>
+        /// <summary>A cabinet's or a support's short names joined as one group: K312's rule through its one helper - "+" (KO+TD+NL), " · " only where a name
+        /// holds a '+'. S10 (Design's return of 2026-10-30, 10a: "§11's verdicts now read KO+TD+NL") replaced S11's own " · " join here, so the foot, the
+        /// steps' † lines and the Docket's titles and slips read one join.</summary>
         public static string Names(IReadOnlyList<string> keys)
         {
             var names = new List<string>(keys?.Count ?? 0);
             if (keys != null) { foreach (string k in keys) { names.Add(PartySystems.ShortName(CountryId.Poland, k)); } }
-            return PartySystems.JoinShortNames(names, " · ");
+            return PartySystems.JoinShortNames(names);
         }
     }
 

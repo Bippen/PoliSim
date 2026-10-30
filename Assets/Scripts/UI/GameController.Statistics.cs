@@ -438,6 +438,18 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>S10 (Design's return of 2026-10-30, 10b): the debt chart's framework face - the label's two lines from <see cref="FiscalRules"/> (the figure the
+        /// line is drawn at, and the framework's word), or the stamp where the framework names no ratio; mono 14 bold in the faint ink (#5D564A).</summary>
+        private GraphRenderer.FrameworkFace DebtFrameworkFace()
+        {
+            FiscalRules.DebtReferenceLabelLines(PlayerCountryId, out string figure, out string word);
+            return new GraphRenderer.FrameworkFace
+            {
+                Figure = figure, Word = word, Stamp = FiscalRules.NoDebtRatioStamp(PlayerCountryId),
+                Label = V35Mono(14f, PoliSimTheme.TextSecondary, bold: true), Ink = PoliSimTheme.TextSecondary,
+            };
+        }
+
         /// <summary>One chart of the sheet (23a ⑩-⑭): drawn by the renderer in its reading's unit, and its head's parts anchored for their slips.</summary>
         private void DrawStatsChart(StatsChart c, StatHistory history, float? projected, GUIStyle graphLabel, float? threshold, string thresholdLabel,
             List<float> enactments, IReadOnlyList<float> shadow, GraphSection section)
@@ -446,10 +458,12 @@ namespace PoliSim.UI
             bool dated = series.LastQuarterlyDate.HasValue && series.LastQuarterlyDate.Value < _simulationManager.CurrentDate;
             GraphRenderer graph = StatsGraphFor(c.Id);
             graph.V35Head = StatsChartFaces(c.Id);   // §728: the head as a v3.5 tile (the icon, the figure, ▲▼, the name); put back after
+            graph.Framework = c.Id == "debt" ? DebtFrameworkFace() : null;   // S10 (10b): the framework line as Design styled it; put back after
             graph.Draw(c.Title, series.Quarterly, projected, graphLabel, c.HigherIsBetter, c.Money, threshold, thresholdLabel, enactments, shadow,
                 reading: c.Unit, heldSeed: c.HeldSeed, section: section, datedHead: dated,
                 breachOf: c.Rule.HasValue ? level => c.BreachOf(PlayerCountryId, level) : (System.Func<float, string>)null);   // §725: the head's warning, the slip's test
             graph.V35Head = null;
+            graph.Framework = null;
             string id = "chart:" + c.Id;
             StatsAnchor(graph.HeadDeltaRect, id + "/delta");
             StatsAnchor(graph.HeadVerdictRect, id + "/verdict");
@@ -457,7 +471,7 @@ namespace PoliSim.UI
             if (c.Id == "gdp") { StatsAnchor(graph.HeadTitleRect, id + "/name"); }
             // §733: the threshold line's label opens the slip the book has always held for it (NAIRU, comfortable) - no anchor had registered it
             if (c.Id == "unemployment") { StatsAnchor(graph.ThresholdLabelRect, id + "/nairu"); }
-            if (c.Id == "debt" && FiscalRules.DebtReferencePercent(PlayerCountryId).HasValue) { StatsAnchor(graph.ThresholdLabelRect, id + "/comfortable"); }   // K269 (d): no line, no slip - the USA's framework names no ratio
+            if (c.Id == "debt") { StatsAnchor(graph.ThresholdLabelRect, id + "/comfortable"); }   // K269 (d), S10 (10b): the gutter's label, or the USA's NO RATIO IN LAW stamp - each opens the framework's slip (the anchor's key kept)
             if (c.HeldSeed.HasValue && graph.PlotAreaRect.width > 0f)
             {
                 // 23a ⑭: the empty paper before the first live point opens the held seed's slip

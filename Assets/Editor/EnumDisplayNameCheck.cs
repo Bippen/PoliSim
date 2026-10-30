@@ -185,6 +185,19 @@ namespace PoliSim.EditorTools
             }
             string italy = FormationProjection.Join(CountryId.Italy, new List<string> { "PD", "AVS", "PlusE", "IC" });
             if (italy == "PD · AVS · +E · IC") { joins++; } else { failures.Add($"K312: Italy's centre-left by its keys joins '{italy}', not 'PD · AVS · +E · IC' - the short names or the join"); }
+            int joinChecks = 5;
+            // S10 (Design's return of 2026-10-30, 10a's table): the groups as the boards print them, by their keys through the sites that name them - the
+            // formation's join, and the Sejm night's (`SejmNightSteps.Names`: the foot, the steps' † lines, the Docket's titles and slips)
+            foreach ((string what, string got, string expect) in new[]
+            {
+                ("Italy's centre-right", FormationProjection.Join(CountryId.Italy, new List<string> { "FdI", "Lega", "FI", "NM" }), "FdI+Lega+FI+NM"),
+                ("Italy's example pair", FormationProjection.Join(CountryId.Italy, new List<string> { "AzIV", "M5S" }), "Az-IV+M5S"),
+                ("Poland's cabinet on the Sejm night", SejmNightSteps.Names(new List<string> { "KO", "TD", "NL" }), "KO+TD+NL"),
+            })
+            {
+                joinChecks++;
+                if (got == expect) { joins++; } else { failures.Add($"K312 (10a): {what} joins '{got}', not '{expect}' as Design's table prints it"); }
+            }
             foreach (string plant in KeyCaught) { if (ScanKeys(plant, map).Count > 0) { keyCaught++; } else { failures.Add($"the party keys' teeth: the scan missed the planted raw key `{plant.Replace('\n', ' ')}`"); } }
             foreach (string plant in KeyPassed)
             {
@@ -220,10 +233,12 @@ namespace PoliSim.EditorTools
               .Append("an identifier typed by its nearest declaration above (a `var`, an untyped lambda parameter or a field declared in another file is not typed), a member typed by reflection (a simple type name shared by two types reads as either); ")
               .Append("a value carried through a string local first, a method's return, a concatenation inside a hole, a literal spanning lines and the film harness are not seen; DisplayName.Of on a tax, welfare or spending identifier is the UI's route to the same table and is not judged; ")
               .Append("single-word enums written raw (the minister's and the Fed chair's philosophy, IssueId, ScandalSeverity, AgreementState, RevisionStatus, LawVerb, the Italian chamber) read as words and are not guarded - a joined member added to one would print raw\n");
-            sb.Append($"  the party keys: {keyMembers} of {KeyMembers.Length} key member(s) typed by reflection; K312's join {joins} of 5; teeth {keyCaught} of {KeyCaught.Length} planted raw key(s) caught, {keyPassed} of {KeyPassed.Length} clean form(s) passed; {keyHits} raw key(s) or hand join(s) in player text - ")
+            sb.Append($"  the party keys: {keyMembers} of {KeyMembers.Length} key member(s) typed by reflection; K312's join {joins} of {joinChecks}; teeth {keyCaught} of {KeyCaught.Length} planted raw key(s) caught, {keyPassed} of {KeyPassed.Length} clean form(s) passed; {keyHits} raw key(s) or hand join(s) in player text - ")
               .Append("its limits: the sinks named (the round's log, a proposal's, answer's, formation view's or projection's reason, a formation's no-government reason, the night's government line); a key typed by a member of the table above, a string local initialised from one, ")
               .Append("a foreach variable over a key list, or an entry's Key over a dictionary the table keys by party; a key handed to another helper (CandidateOf, a caller's own) is not followed, a foreach over a list built in a local and a sink text built in a local first are not typed; ")
-              .Append("a hand join is seen only where its list visibly is short names (Shorts, ShortName, ConvertAll(Name)); a log a player never sees (the Sejm formation's log, a government's breaks) is no sink and keeps the key\n");
+              .Append("a hand join (\"+\", \" + \" or, since S10, \" · \") is seen only where its list visibly is short names (Shorts, ShortName, ConvertAll(Name), ConvertAll(Short)) or is a local list every Add of which is one short-name call (ShortName, Short); ")
+              .Append("a list of name-and-figure pairs, a caption's fragments and a comma list in prose are not groups and are not judged; the helper handed a separator other than its own \"+\" is a hand join (S10: the Sejm night forced \" · \"); ")
+              .Append("a log a player never sees (the Sejm formation's log, a government's breaks) is no sink and keeps the key\n");
 
             foreach (string f in failures) { sb.Append("  ⚠ FAULT  ").Append(f).Append('\n'); }
             sb.Append($"\n=== EnumDisplayNameCheck: {(failures.Count == 0 ? "CLEAN" : failures.Count + " fault(s)")} ===\n");
@@ -401,6 +416,11 @@ namespace PoliSim.EditorTools
             "var verdict = new ProposalVerdict();\nFormationProposal proposal = p;\nforeach (string key in proposal.CabinetParties) { if (bad) { verdict.Reason = \"the cabinet names an unknown party or one twice: \" + key; } }",
             "var verdict = new ProposalVerdict();\nFormationProposal proposal = p;\nforeach (KeyValuePair<string, List<CabinetPortfolio>> kv in proposal.Posts) { verdict.Reason = \"a post is offered to a party outside the cabinet: \" + kv.Key; }",
             "SpeakerRound round = r;\nround.Log.Add($\"{d}: the cabinet {string.Join(\"+\", Shorts(country, cabinet))} takes office\");",
+            // S10 (Design's 10a): a group of short names joined with " · " by hand, a local list of short names, and the helper forced to a separator
+            "chip.Slip.Add(string.Join(\" · \", g.Cabinet.ConvertAll(Short)) + \" in cabinet, \" + N(cabinet));",
+            "var names = new List<string>();\nforeach (string k in g.Cabinet) { names.Add(PartySystems.ShortName(country.Id, k) ?? k); }\nreturn string.Join(\" · \", names) + \" govern on \" + n(held);",
+            "var shorts = new List<string>(); foreach (string m in members) { shorts.Add(Short(CountryId.Italy, m)); }\nlines.Add(string.Join(\"+\", shorts));",
+            "return PartySystems.JoinShortNames(names, \" · \");",
         };
         private static readonly string[] KeyPassed =
         {
@@ -413,6 +433,12 @@ namespace PoliSim.EditorTools
             "var verdict = new ProposalVerdict();\nFormationProposal proposal = p;\nforeach (string key in proposal.CabinetParties) { verdict.Reason = \"an unknown party: \" + PartySystems.ShortName(country.Id, key); }\nforeach (KeyValuePair<string, List<CabinetPortfolio>> kv in proposal.Posts) { verdict.Reason = \"outside the cabinet: \" + PartySystems.ShortName(country.Id, kv.Key); }",
             "SpeakerRound round = r;\nList<string> lines = l;\nforeach (string line in lines) { round.Log.Add(\"the step: \" + line); }",
             "SpeakerRound round = r;\nround.Log.Add($\"{d}: the cabinet {PartySystems.JoinShortNames(Shorts(country, cabinet))} takes office\");\nDebug.Log(\"FORMED \" + string.Join(\"+\", Shorts(country, cabinet)));",
+            // S10 (Design's 10a, "where ' · ' stays"): name-and-figure pairs, a caption's fragments, a comma list in prose, the helper itself, a log
+            "var parts = new List<string>();\nforeach (string key in keys) { parts.Add(PartySystems.ShortName(CountryId.Poland, key) + \" \" + SeatsOn(s, key).ToString(CultureInfo.InvariantCulture)); }\nreturn string.Join(\" · \", parts);",
+            "lines.Add(\"In cabinet · \" + string.Join(\" · \", foot.Clauses));",
+            "var names = new List<string>(keys.Count);\nforeach (string k in keys) { names.Add(Short(c, k)); }\nreturn string.Join(\", \", names) + \" declined to join\";",
+            "string cabinetWords = PartySystems.JoinShortNames(g.Cabinet.ConvertAll(Short)) + \" in cabinet\";\nstring support = PartySystems.JoinShortNames(names);",
+            "Debug.Log(\"FORMED \" + string.Join(\" · \", g.Cabinet.ConvertAll(Short)));",
         };
 
         /// <summary>0 where the chain holds no party key, 1 a key, 2 a list of keys: the last member a <see cref="KeyMembers"/> member of the type the
@@ -466,24 +492,87 @@ namespace PoliSim.EditorTools
                 }
             }
 
-            // K312: a list of SHORT NAMES joined with "+" by hand, anywhere in the runtime outside a diagnostic - it goes through PartySystems.JoinShortNames,
-            // which joins with " · " where a name holds a '+'. Seen where the list visibly is short names (Shorts(..), ShortName, ConvertAll(Name)).
+            // K312: a list of SHORT NAMES - a group of parties named as one - joined by hand, anywhere in the runtime outside a diagnostic: it goes through
+            // PartySystems.JoinShortNames, which joins with "+", or " · " where a name holds a '+'. Seen where the list visibly is short names (Shorts(..),
+            // ShortName, ConvertAll(Name), ConvertAll(Short)) or is a local list whose every Add since its declaration is one short-name call; joined with "+",
+            // " + " or (S10, Design's 10a: S11's night printed "KO · TD · NL") " · ". A list of name-and-figure pairs ("PiS 193 · KO 158") and a caption's
+            // fragments are built otherwise and are no group; a comma list is prose ("C, KD declined to join").
             string[] lines = text.Split('\n');
             foreach (Match m in HandJoin.Matches(code))
             {
                 int open = m.Index + m.Length - 1, close = MatchParen(code, open);
-                int comma = -1, depth = 0;
-                for (int k = open + 1; k < close; k++) { char ch = code[k]; if (ch == '(' || ch == '[' || ch == '{') { depth++; } else if (ch == ')' || ch == ']' || ch == '}') { depth--; } else if (ch == ',' && depth == 0) { comma = k; break; } }
+                int comma = TopLevelComma(code, open, close);
                 if (comma < 0) { continue; }
                 string separator = text.Substring(open + 1, comma - open - 1).Trim();
                 string list = code.Substring(comma + 1, close - comma - 1);
-                if ((separator != "\"+\"" && separator != "\" + \"") || !(list.Contains("Shorts(") || list.Contains("ShortName") || list.Contains("ConvertAll(Name)"))) { continue; }
+                bool dot = separator == GroupDot;
+                if (separator != "\"+\"" && separator != "\" + \"" && !dot) { continue; }
+                bool visible = list.Contains("Shorts(") || list.Contains("ConvertAll(Name)") || list.Contains("ConvertAll(Short)")
+                    || (list.Contains("ShortName") && !(dot && list.Contains("+")));   // under " · " a ShortName with a figure joined on is a pair, not a name
+                if (!visible && !IsShortNameList(code, list, m.Index)) { continue; }
                 int line = 1, lineStart = 0;
                 for (int k = 0; k < m.Index; k++) { if (text[k] == '\n') { line++; lineStart = k + 1; } }
                 if (InsideDiagnostic(lines[line - 1], m.Index - lineStart)) { continue; }
                 hits.Add($"{line}: a list of short names joined with {separator} by hand (K312: PartySystems.JoinShortNames) - {lines[line - 1].Trim()}");
             }
+            // S10 (10a): the helper handed a separator of its own - S11's night forced " · " on every cabinet (`JoinShortNames(names, " · ")`), so the rule never ran
+            foreach (Match m in ForcedJoin.Matches(code))
+            {
+                if (Regex.IsMatch(code.Substring(Math.Max(0, m.Index - 40), Math.Min(40, m.Index)), @"\bstring\s*$")) { continue; }   // the helper's own declaration
+                int open = m.Index + m.Length - 1, close = MatchParen(code, open);
+                int comma = TopLevelComma(code, open, close);
+                if (comma < 0) { continue; }
+                string separator = text.Substring(comma + 1, close - comma - 1).Trim();
+                if (separator == "\"+\"") { continue; }
+                int line = 1, lineStart = 0;
+                for (int k = 0; k < m.Index; k++) { if (text[k] == '\n') { line++; lineStart = k + 1; } }
+                if (InsideDiagnostic(lines[line - 1], m.Index - lineStart)) { continue; }
+                hits.Add($"{line}: a group of short names forced to the separator {separator} (K312, S10: the helper's own join is \"+\", \" · \" only where a name holds a '+') - {lines[line - 1].Trim()}");
+            }
             return hits;
+        }
+
+        /// <summary>S10: " · " as a join's separator literal.</summary>
+        private const string GroupDot = "\" · \"";
+        private static readonly Regex ForcedJoin = new Regex(@"\bJoinShortNames\(", RegexOptions.Compiled);
+        private static readonly Regex ListHead = new Regex(@"^\s*(@?[A-Za-z_]\w*)\s*(?:$|\.\s*(?:ToArray|GetRange)\b)", RegexOptions.Compiled);
+
+        /// <summary>The first comma at depth zero inside the call whose parenthesis opens at <paramref name="open"/>, or -1.</summary>
+        private static int TopLevelComma(string code, int open, int close)
+        {
+            int depth = 0;
+            for (int k = open + 1; k < close; k++)
+            {
+                char ch = code[k];
+                if (ch == '(' || ch == '[' || ch == '{') { depth++; } else if (ch == ')' || ch == ']' || ch == '}') { depth--; } else if (ch == ',' && depth == 0) { return k; }
+            }
+            return -1;
+        }
+
+        /// <summary>S10: whether a join's list is a LOCAL list of short names - a plain identifier (or its ToArray / GetRange) whose last declaration before the
+        /// join (`var x =`, `List&lt;string&gt; x =`) is followed by at least one Add and every Add between them is one short-name call and nothing else
+        /// (`x.Add(PartySystems.ShortName(id, k))`, `x.Add(Short(c, k))`, a `?? k` fallback allowed). A name with a figure joined on is a pair and disqualifies.</summary>
+        private static bool IsShortNameList(string code, string list, int at)
+        {
+            Match head = ListHead.Match(list);
+            if (!head.Success) { return false; }
+            string name = Regex.Escape(head.Groups[1].Value.TrimStart('@'));
+            int declared = -1;
+            foreach (Match d in Regex.Matches(code.Substring(0, at), @"\b(?:var|List<string>)\s+@?" + name + @"\s*=")) { declared = d.Index; }
+            if (declared < 0) { return false; }
+            int adds = 0;
+            foreach (Match a in Regex.Matches(code.Substring(declared, at - declared), @"\b" + name + @"\s*\.\s*Add\("))
+            {
+                int open = declared + a.Index + a.Length - 1, close = MatchParen(code, open);
+                string arg = code.Substring(open + 1, Math.Max(0, close - open - 1)).Trim();
+                Match call = Regex.Match(arg, @"^(?:PartySystems\s*\.\s*)?(?:ShortName|Short)\s*\(");
+                if (!call.Success) { return false; }
+                int callClose = MatchParen(arg, call.Index + call.Length - 1);
+                string rest = callClose >= arg.Length ? "?" : arg.Substring(callClose + 1).Trim();
+                if (rest.Length > 0 && !Regex.IsMatch(rest, @"^\?\?\s*@?[A-Za-z_]\w*$")) { return false; }
+                adds++;
+            }
+            return adds > 0;
         }
 
         /// <summary>Whether the chain at [start, end) of a sink's (literal-blanked) text is PRINTED: straight in an interpolation hole, joined into the

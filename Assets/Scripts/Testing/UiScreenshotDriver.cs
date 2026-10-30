@@ -1119,6 +1119,13 @@ namespace PoliSim.Testing
                         else { Debug.LogError($"SHOT: D-ST - the controller has no PinSlipForFilm / _slipPins; {stem}_slips_pinned NOT written."); _failed++; }
                     }
 
+                    // S10 (Design's return of 2026-10-30, 10b: "Yes, please film it"): the debt chart's framework line in Sweden (below its anchor) and Italy (above the
+                    // Treaty's line), and the USA's NO RATIO IN LAW stamp - the chart scrolled into frame, then its gutter's slip pinned
+                    if (stem == "02a_statistics_domestic" && Array.IndexOf(DebtLineCountries, _countryId) >= 0)
+                    {
+                        yield return FilmDebtLine(controller);
+                    }
+
                     // §647 (POLITICAL_SYSTEM_SPEC.md §5.3, premise 1): THE FORMATION SHEET. The warm-up election opens the Speaker's round with the film's
                     // party in opposition, so the Speaker never asks it; the sheet is staged the §630 way - the party re-seated as the first in the round's
                     // order, a round opened on the same chamber and declarations, filmed, then the film's round and party put back.
@@ -8844,6 +8851,94 @@ namespace PoliSim.Testing
         private static void ResetScrolls(object target) => SetScrolls(target, 0f);
 
         private static void ScrollBy(object target, float y) => SetScrolls(target, y);
+
+        /// <summary>S10 (10b): the sessions that film the debt chart's framework line - Design's two (Sweden below its anchor, Italy above the Treaty's line) and the
+        /// USA, whose chart draws the NO RATIO IN LAW stamp instead of a line.</summary>
+        private static readonly CountryId[] DebtLineCountries = { CountryId.Sweden, CountryId.Italy, CountryId.USA };
+
+        /// <summary>S10 (10b): DECLARED - how far past the line a staged series is set, in points of GDP, so the frame reads plainly on its side of it.</summary>
+        private const float DebtLineStageMarginPoints = 3f;
+
+        /// <summary>S10 (10b): how far above the plot's own top the frame is scrolled (px at 1280, scaled) - the chart's head and its neighbours in frame.</summary>
+        private const float DebtLineHeadroom = 120f;
+
+        /// <summary>
+        /// S10 (Design's return of 2026-10-30, 10b, "Yes, please film it: Sweden below the anchor and Italy above the Treaty line, at 1280 and 2560, so Design can
+        /// check the label against a real series"): THE DEBT CHART'S FRAMEWORK LINE ON FILM. The Statistics sheet scrolled to the debt chart - its top read off the
+        /// chart's own plot as the last repaint laid it out (`_debtGraph.PlotAreaRect`, content coordinates of the sheet's scroll) - filmed at rest
+        /// (`02a2_statistics_debt_line`), then with its gutter's slip pinned (`02a2_statistics_debt_line_slips_pinned`). <b>Staged where the run's own series does
+        /// not stand on the side Design asked for</b> (the `_staged` frames' rule: the state put back after): the kept quarterly series is shifted, whole, so its
+        /// window clears the line by <see cref="DebtLineStageMarginPoints"/>, its shape the run's own; the SHOT line says whether it was staged and by how much.
+        /// The USA is filmed as it stands.
+        /// </summary>
+        private IEnumerator FilmDebtLine(GameController controller)
+        {
+            const string rest = "02a2_statistics_debt_line", pinned = rest + "_slips_pinned";
+            Expect(rest, pinned);
+            BindingFlags any = BindingFlags.Instance | BindingFlags.NonPublic;
+            var player = controller.GetType().GetField("_playerCountry", any)?.GetValue(controller) as Country;
+            var graph = controller.GetType().GetField("_debtGraph", any)?.GetValue(controller) as GraphRenderer;
+            var section = controller.GetType().GetField("_statsSeriesSection", any)?.GetValue(controller) as GraphSection;
+            MethodInfo pinOnAnchor = controller.GetType().GetMethod("PinSlipOnAnchorForFilm", any);
+            FieldInfo pins = controller.GetType().GetField("_slipPins", any);
+            List<float> points = player?.History?.DebtToGdpRatio?.Quarterly;
+            if (player == null || graph == null || section == null || pinOnAnchor == null || pins == null || points == null)
+            {
+                Debug.LogError($"SHOT: S10 10b - the controller has no _playerCountry / _debtGraph / _statsSeriesSection / PinSlipOnAnchorForFilm / _slipPins (or no kept debt series); {rest} and {pinned} NOT written.");
+                _failed += 2;
+                yield break;
+            }
+
+            float? limit = FiscalRules.DebtReferencePercent(_countryId);
+            var kept = new List<float>(points);
+            string staged = "the run's own series";
+            (int start, int end) = GraphRenderer.WindowOf(points.Count, section.PageFromEnd);
+            if (limit.HasValue && end > start)
+            {
+                float lo = float.MaxValue, hi = float.MinValue;
+                for (int i = start; i < end; i++) { lo = Mathf.Min(lo, points[i]); hi = Mathf.Max(hi, points[i]); }
+                bool below = _countryId == CountryId.Sweden;   // Design's ask: Sweden below its anchor, Italy above the Treaty's line
+                float shift = below ? Mathf.Min(0f, limit.Value - DebtLineStageMarginPoints - hi) : Mathf.Max(0f, limit.Value + DebtLineStageMarginPoints - lo);
+                if (shift != 0f)
+                {
+                    for (int i = 0; i < points.Count; i++) { points[i] += shift; }
+                    staged = $"STAGED - the kept series shifted {shift:+0.00;-0.00} points of GDP (its window {lo:0.00}-{hi:0.00} % against the line at {limit.Value:0} %), its shape the run's own";
+                }
+                else { staged = $"the run's own series, its window {lo:0.00}-{hi:0.00} % {(below ? "below" : "above")} the line at {limit.Value:0} %"; }
+            }
+            try
+            {
+                ResetScrolls(controller);
+                yield return Settle();
+                yield return Settle();
+                Rect plot = graph.PlotAreaRect;
+                if (plot.width <= 0f || plot.height <= 0f)
+                {
+                    Debug.LogError($"SHOT: S10 10b - the debt chart was not laid out on the Statistics sheet (no plot rect); {rest} and {pinned} NOT written.");
+                    _failed += 2;
+                    yield break;
+                }
+                float scroll = Mathf.Max(0f, plot.y - V35.Px(DebtLineHeadroom));
+                SetScrolls(controller, scroll);
+                yield return Settle();
+                yield return Settle();
+                Rect label = graph.ThresholdLabelRect;
+                if (label.width <= 0f || label.height <= 0f) { Debug.LogError($"SHOT: S10 10b - the debt chart drew no {(limit.HasValue ? "framework label" : "NO RATIO IN LAW stamp")} in its gutter ({_countryId})"); _failed++; }
+                Debug.Log($"SHOT: {rest} - {_countryId}: {(limit.HasValue ? FiscalRules.DebtReferenceLabel(_countryId) + " line" : FiscalRules.NoDebtRatioStamp(_countryId) + ", no line")}; {staged}; the plot at {plot.y:0} in the sheet's scroll, filmed from {scroll:0}; the gutter's words at {label.x:0},{label.y:0} {label.width:0}x{label.height:0}");
+                yield return Capture(rest);
+                pinOnAnchor.Invoke(controller, new object[] { "chart:debt/comfortable", new Vector2(label.center.x, label.center.y) });
+                yield return Settle();
+                yield return Settle();
+                yield return Capture(pinned);
+                (pins.GetValue(controller) as System.Collections.IList)?.Clear();
+            }
+            finally
+            {
+                for (int i = 0; i < kept.Count && i < points.Count; i++) { points[i] = kept[i]; }   // the run's series put back, staged or not
+                ResetScrolls(controller);
+            }
+            yield return Settle();
+        }
 
         /// <summary>PS-6 US-35: where the Parliament tab's rows are filmed - for a country whose Congress view draws (the USA), a little above the rows' own top
         /// as the last repaint measured it (`_parliamentRowsTop`), so the bills, the dated rows and the divisions are in frame however tall the view stands;

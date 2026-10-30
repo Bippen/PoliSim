@@ -68,6 +68,8 @@ namespace PoliSim.UI
         private float _drawnProjectedValue;
         private bool _drawnHasThreshold;
         private float _drawnThresholdValue;
+        /// <summary>S10: the texture was drawn for a framework face (a transparent ground, no threshold dashes) - part of the redraw key.</summary>
+        private bool _drawnFramework;
         private bool _neverDrawn = true;
         private float _lastMin;
         private float _lastMax;
@@ -100,6 +102,36 @@ namespace PoliSim.UI
         /// surface for its own draw (the Statistics sheet's live series) and cleared after; the Riksbank's and People's charts keep board 8b's head until
         /// their passes. Null: the board-8b head.</summary>
         public V35HeadFaces V35Head;
+
+        /// <summary>
+        /// S10 (Design's return of 2026-10-30, 10b): THE FRAMEWORK LINE'S FACE - the debt chart's limit as Design styled it. Set by the Statistics sheet around
+        /// the debt chart's draw and cleared after, as <see cref="V35Head"/> is; null: the threshold line and its label as every other chart draws them.
+        /// <para>With a face set, the plot gives up a gutter at its right (<see cref="FrameworkGutter"/>). The limit (the draw's threshold value, still folded
+        /// into the scale) is a dashed line in the faint ink across the plot, drawn UNDER the series - the plot's paper first, the line, then the series' texture,
+        /// whose ground is left transparent - and reaching <see cref="FrameworkReach"/> into the gutter; it is never the warning ink, because a limit is a
+        /// reference, not a verdict. Its label stands in the gutter on two lines (<see cref="Figure"/>, <see cref="Word"/>), centred on the line's height and
+        /// held inside the plot's height, so it never sits over the series. Where the framework names no ratio (<see cref="Stamp"/>) no line is drawn and the
+        /// stamp stands in the gutter instead, dashed, its words stacked to the gutter's width (DECLARED: Design's board sets it on one line inside the plot,
+        /// where the game's plot, far shorter than the board's, would put it over the series' upper band).</para>
+        /// </summary>
+        public sealed class FrameworkFace
+        {
+            /// <summary>The label's two lines: the figure ("35 %") and the framework's word ("anchor"); null where no line is drawn.</summary>
+            public string Figure, Word;
+            /// <summary>The stamp drawn where no line is ("NO RATIO IN LAW"); null where a line is.</summary>
+            public string Stamp;
+            /// <summary>The label's and the stamp's face (Design: mono 14 bold in the faint ink).</summary>
+            public GUIStyle Label;
+            public Color Ink;
+        }
+
+        /// <summary>S10 (10b): the face this draw's limit takes - see <see cref="FrameworkFace"/>.</summary>
+        public FrameworkFace Framework;
+
+        /// <summary>S10 (10b, Design's measures at 1280, scaled by <see cref="V35.Px"/>): the gutter right of the plot, the line's reach into it, the label's
+        /// inset from the plot, a label line's height, the line's weight and its dash, and the stamp's air inside its edge.</summary>
+        private const float FrameworkGutter = 70f, FrameworkReach = 6f, FrameworkInset = 10f, FrameworkLineHeight = 16f, FrameworkWeight = 1.5f,
+            FrameworkDash = 4f, FrameworkGap = 3f, FrameworkStampPad = 5f;
 
         /// <summary>The plot's axis face: the v3.5 head's (at the floor) while one is set, board 8b's otherwise.</summary>
         private GUIStyle AxisFace => V35Head?.Axis ?? _axisLabelStyle;
@@ -224,9 +256,10 @@ namespace PoliSim.UI
 
             DrawHeadRow(title, visibleWindow, firstLive, higherIsBetter, labelStyle, deltaInPoints, totalPages, section, datedHead);
 
-            if (NeedsRedraw(visibleWindow, visibleProjectedValue, thresholdValue) || firstLive != _drawnFirstLive)
+            bool framework = Framework != null;   // S10 (10b): the debt chart's framework line
+            if (NeedsRedraw(visibleWindow, visibleProjectedValue, thresholdValue) || firstLive != _drawnFirstLive || framework != _drawnFramework)
             {
-                Regenerate(visibleWindow, visibleProjectedValue, thresholdValue, firstLive);
+                Regenerate(visibleWindow, visibleProjectedValue, thresholdValue, firstLive, framework);
             }
 
             // Display height is decoupled from the texture's own pixel resolution (StretchToFill below
@@ -238,10 +271,16 @@ namespace PoliSim.UI
             if (_texture != null)
             {
                 Rect plot = PlotRect(rect, labelStyle);   // 8b: the y-labels leave the plot for the gutter
+                if (framework) { plot.width = Mathf.Max(10f, plot.width - V35.Px(FrameworkGutter)); }   // S10 (10b): the label's gutter right of the plot
                 if (Event.current.type == EventType.Repaint) { PlotAreaRect = plot; }
+                if (framework) { DrawFrameworkUnder(plot, thresholdValue); }   // the plot's paper and the line, under the series
                 GUI.DrawTexture(plot, _texture, ScaleMode.StretchToFill);
                 DrawAxisLabelOverlay(rect, plot);
-                if (thresholdValue.HasValue && !string.IsNullOrEmpty(thresholdLabel))
+                if (framework)
+                {
+                    DrawFrameworkLabel(plot, thresholdValue);
+                }
+                else if (thresholdValue.HasValue && !string.IsNullOrEmpty(thresholdLabel))
                 {
                     DrawThresholdLabelOverlay(plot, thresholdValue.Value, thresholdLabel);
                 }
@@ -791,6 +830,103 @@ namespace PoliSim.UI
             ThresholdLabelRect = new Rect(rect.xMax - 2f - labelWidth, y - labelHeight * 0.5f, labelWidth, labelHeight);   // §733: the label's own extent, its slip's anchor
         }
 
+        /// <summary>S10 (10b): the limit's height on the plot, on the scale the series was drawn against.</summary>
+        private float FrameworkLineY(Rect plot, float limit)
+        {
+            float normalized = _lastMax > _lastMin ? Mathf.InverseLerp(_lastMin, _lastMax, limit) : 0.5f;
+            return plot.y + plot.height * (1f - normalized);
+        }
+
+        /// <summary>S10 (10b): beneath the series' texture - the plot's paper, then the framework line (dashed, the faint ink, never the warning's) across the plot
+        /// and <see cref="FrameworkReach"/> into the gutter. Nothing where the framework names no ratio but the paper. Repaint-gated.</summary>
+        private void DrawFrameworkUnder(Rect plot, float? limit)
+        {
+            if (Event.current.type != EventType.Repaint) { return; }
+            PoliSimTheme.Rule(plot, BackgroundColor);
+            if (!limit.HasValue || Framework.Figure == null) { return; }
+            float weight = Mathf.Max(1f, V35.Px(FrameworkWeight));
+            float y = Mathf.Round(FrameworkLineY(plot, limit.Value) - weight * 0.5f);
+            DashedRun(new Rect(plot.x, y, plot.width + V35.Px(FrameworkReach), weight), Framework.Ink, true);
+        }
+
+        /// <summary>S10 (10b): the gutter's words - the limit's two lines centred on the line's height (held inside the plot's height), or, where no line is drawn,
+        /// the stamp in its dashed edge, its words stacked to the gutter's width and centred on the plot. Both through the measured label, so the film's guard
+        /// reads them; their extent is <see cref="ThresholdLabelRect"/>, the slip's anchor.</summary>
+        private void DrawFrameworkLabel(Rect plot, float? limit)
+        {
+            FrameworkFace f = Framework;
+            // a line's rect is never shorter than the face's own line (the guard reads a single line too tall for its rect as an overflow); Design's 16 px is the pitch
+            float textHeight = Mathf.Ceil(f.Label.CalcSize(new GUIContent("Ag")).y);
+            float gutterX = plot.xMax, gutter = V35.Px(FrameworkGutter), pitch = Mathf.Max(V35.Px(FrameworkLineHeight), textHeight);
+            if (limit.HasValue && f.Figure != null)
+            {
+                float x = gutterX + V35.Px(FrameworkInset), width = Mathf.Max(1f, gutter - V35.Px(FrameworkInset));
+                bool two = !string.IsNullOrEmpty(f.Word);
+                float height = two ? 2f * pitch : pitch;
+                float top = Mathf.Round(FrameworkLineY(plot, limit.Value) - height * 0.5f);
+                top = Mathf.Clamp(top, plot.y, Mathf.Max(plot.y, plot.yMax - height));
+                Vector2 figure = PoliSimWidgets.MeasuredLabel(new Rect(x, top, width, pitch), f.Figure, f.Label);
+                Vector2 word = two ? PoliSimWidgets.MeasuredLabel(new Rect(x, top + pitch, width, pitch), f.Word, f.Label) : Vector2.zero;
+                ThresholdLabelRect = new Rect(x, top, Mathf.Min(width, Mathf.Ceil(Mathf.Max(figure.x, word.x))), height);
+                return;
+            }
+            if (string.IsNullOrEmpty(f.Stamp)) { return; }
+            float weight = Mathf.Max(1f, V35.Px(FrameworkWeight)), pad = V35.Px(FrameworkStampPad), margin = Mathf.Max(0f, V35.Px(FrameworkReach) - weight);
+            float boxWidth = Mathf.Max(1f, gutter - margin), inner = Mathf.Max(1f, boxWidth - 2f * (pad + weight));
+            List<string> lines = StackWords(f.Stamp, f.Label, inner);
+            float textWidth = 0f;
+            foreach (string l in lines) { textWidth = Mathf.Max(textWidth, Mathf.Ceil(f.Label.CalcSize(new GUIContent(l)).x)); }
+            // the stamp keeps inside the plot's height: where its lines at the pitch would not, they close up to it (each line's rect still the face's own height)
+            float step = lines.Count > 1 ? Mathf.Max(1f, Mathf.Min(pitch, (plot.height - 2f * weight - textHeight) / (lines.Count - 1))) : pitch;
+            float w = Mathf.Min(boxWidth, textWidth + 2f * (pad + weight)), h = (lines.Count - 1) * step + textHeight + 2f * weight;
+            var box = new Rect(Mathf.Round(gutterX + margin), Mathf.Round(plot.y + Mathf.Max(0f, (plot.height - h) * 0.5f)), w, h);
+            if (Event.current.type == EventType.Repaint) { DashedFrame(box, f.Ink, weight); }
+            var centred = new GUIStyle(f.Label) { alignment = TextAnchor.MiddleCenter };
+            for (int i = 0; i < lines.Count; i++)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(box.x + weight + pad, box.y + weight + i * step, Mathf.Max(1f, box.width - 2f * (weight + pad)), textHeight), lines[i], centred);
+            }
+            ThresholdLabelRect = box;
+        }
+
+        /// <summary>S10: words stacked into lines no wider than <paramref name="width"/> in <paramref name="face"/>, greedily, a word never split.</summary>
+        private static List<string> StackWords(string text, GUIStyle face, float width)
+        {
+            var lines = new List<string>();
+            string line = null;
+            foreach (string word in text.Split(' '))
+            {
+                if (word.Length == 0) { continue; }
+                string tried = line == null ? word : line + " " + word;
+                if (line != null && face.CalcSize(new GUIContent(tried)).x > width) { lines.Add(line); line = word; }
+                else { line = tried; }
+            }
+            if (line != null) { lines.Add(line); }
+            return lines;
+        }
+
+        /// <summary>S10: a dashed run of <paramref name="r"/>'s thickness along its length (horizontal) or height - Design's 1.5 px dashed rule, in whole pixels
+        /// (<see cref="V35.Px"/> rounds the weight to the window's pixels), dash and gap scaled the same way. Repaint-gated by its callers.</summary>
+        private static void DashedRun(Rect r, Color ink, bool horizontal)
+        {
+            float dash = Mathf.Max(2f, V35.Px(FrameworkDash)), gap = Mathf.Max(1f, V35.Px(FrameworkGap));
+            float length = horizontal ? r.width : r.height;
+            for (float s = 0f; s < length; s += dash + gap)
+            {
+                float run = Mathf.Min(dash, length - s);
+                PoliSimTheme.Rule(horizontal ? new Rect(r.x + s, r.y, run, r.height) : new Rect(r.x, r.y + s, r.width, run), ink);
+            }
+        }
+
+        /// <summary>S10: a dashed edge of <paramref name="weight"/> around <paramref name="r"/> - the stamp's.</summary>
+        private static void DashedFrame(Rect r, Color ink, float weight)
+        {
+            DashedRun(new Rect(r.x, r.y, r.width, weight), ink, true);
+            DashedRun(new Rect(r.x, r.yMax - weight, r.width, weight), ink, true);
+            DashedRun(new Rect(r.x, r.y, weight, r.height), ink, false);
+            DashedRun(new Rect(r.xMax - weight, r.y, weight, r.height), ink, false);
+        }
+
         private bool NeedsRedraw(IReadOnlyList<float> history, float? projectedValue, float? thresholdValue)
         {
             if (_neverDrawn || _texture == null || history.Count != _drawnHistory.Count)
@@ -825,7 +961,7 @@ namespace PoliSim.UI
             return hasThreshold && !Mathf.Approximately(thresholdValue.Value, _drawnThresholdValue);
         }
 
-        private void Regenerate(IReadOnlyList<float> history, float? projectedValue, float? thresholdValue, int firstLive = 0)
+        private void Regenerate(IReadOnlyList<float> history, float? projectedValue, float? thresholdValue, int firstLive = 0, bool framework = false)
         {
             if (_texture == null)
             {
@@ -836,10 +972,13 @@ namespace PoliSim.UI
                 };
             }
 
+            // S10 (10b): under a framework face the ground is the paper's own colour at no alpha - the plot's paper and the framework line are drawn
+            // beneath the texture, so the line runs under the series; the colour is the paper's so the bilinear stretch does not darken the series' edges
+            Color ground = framework ? new Color(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, 0f) : BackgroundColor;
             var pixels = new Color[TextureWidth * TextureHeight];
             for (int i = 0; i < pixels.Length; i++)
             {
-                pixels[i] = BackgroundColor;
+                pixels[i] = ground;
             }
 
             GetScaleRange(history, projectedValue, thresholdValue, firstLive, !_moneyUnit.HasValue, out float min, out float max);
@@ -847,7 +986,7 @@ namespace PoliSim.UI
             _lastMax = max;
 
             DrawHorizontalLine(pixels, TextureHeight / 2, GridColor);
-            if (thresholdValue.HasValue)
+            if (thresholdValue.HasValue && !framework)   // S10: a framework face draws its own line, under the texture
             {
                 int thresholdY = Mathf.RoundToInt(Mathf.InverseLerp(min, max, thresholdValue.Value) * (TextureHeight - 1));
                 DrawDashedHorizontalLine(pixels, thresholdY, ThresholdLineColor);
@@ -874,6 +1013,7 @@ namespace PoliSim.UI
             _drawnProjectedValue = projectedValue ?? 0f;
             _drawnHasThreshold = thresholdValue.HasValue;
             _drawnThresholdValue = thresholdValue ?? 0f;
+            _drawnFramework = framework;
             _neverDrawn = false;
         }
 

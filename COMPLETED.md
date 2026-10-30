@@ -42561,3 +42561,51 @@ Energy's slips from before S1 still hold lines over 10 words. They carry no move
 - POLL REGION is closed in the presidential race because that staging carries no regional offsets (PL-C's declared limit).
 - "INTERVIEW?" marked a booking request; it is now drawn as INTERVIEW, with the rule on its slip.
 - TOPIC is K1 row 9's issues, not the model's axes.
+
+## 960. S10 - DESIGN'S SMALL ITEMS: K312'S JOIN WHEREVER A GROUP OF PARTIES IS NAMED AS ONE, AND THE DEBT CHART'S FRAMEWORK LINE AS DESIGN STYLED IT (DESIGN'S RETURN OF 2026-10-30, 10A/10B) (2026-10-30)
+
+**What was owed:** §10 of the self-contained request.
+- **10a:** Design applied K312's join on every board of the round and asked Code to confirm the reading. S11 still printed KO · TD · NL.
+- **10b:** the debt chart's framework line, its gutter label, the USA's stamp, three slips, and a film at 1280 and 2560 so Design can check the label against a real series.
+- Design's return is saved under `PoliSim-captures/design/RETURN_2026-10-30_full/` (`S10 Small Items.dc.html`, `send/s10_return/RETURN.md`). 10c needed nothing: by the brief's rule, silence closes the older questions.
+
+**Built** (wave/s10si f7077ef0, 05787ec0, 430517e5, applied on main):
+- **10a, Design's reading confirmed.** A cabinet, a coalition, a pair or a support named as one group joins with "+", and with " · " only where a name holds a '+'. Lists of name-and-figure pairs, caption fragments and comma lists in prose are not joins.
+  - The Polish night: `SejmNightSteps.Names` no longer forces " · ", so the foot, the † lines and the Docket's titles and slips read KO+TD+NL.
+  - The strip's standing chip (M+KD+L in cabinet), `PolishDeskRecord.StandingWords`, and the Italian night's coalition slip (FdI+Lega+FI+NM, while the centre-left stays PD · AVS · +E · IC) all go through the helper.
+  - `CoalitionScreenSnapshot.Name` and StartBrief's Government and Support rows ("M + KD + L" becomes "M+KD+L").
+  - `EnumDisplayNameCheck` now reads " · " hand joins, local short-name lists, `ConvertAll(Short)`, a separator forced on the helper, and Design's 10a table by keys. Its teeth: 16 of 16 planted forms caught, 14 of 14 clean forms passed. On the base tree it found exactly the 7 old sites.
+- **10b, the line** (`GraphRenderer.FrameworkFace`, set only around the debt chart):
+  - a 70 px gutter right of the plot;
+  - the limit drawn as a dashed 1.5 px line in the faint ink #5D564A, under the series and never in the warning's ink, running 6 px into the gutter;
+  - its label in the gutter on two lines in mono 14 bold (35 % / anchor for Sweden, 60 % / Treaty for the EU four), read off `FiscalRules`;
+  - the USA: no line, and a dashed NO RATIO IN LAW stamp.
+- **The slips** are Design's fragments. Each marked term opens a level-2 slip of one sentence holding what the old slip said beyond them: the anchor's 5-point band, the Treaty's 60 % beside Sweden's own rules, and Poland's 3/5 ceiling. `FiscalRulesCheck` holds the labels, the stamp and the slips.
+- **Film:** `02a2_statistics_debt_line` and its `_slips_pinned` frame in the Sweden, Italy and USA sessions. Where the series does not stand on the side Design asked for, the kept quarterly series is shifted whole to 3 points past the line and put back afterwards; the SHOT line says so.
+- `docs/declutter/moved_s10si.tsv` (the word EU, from the label to the slip's head); three cells of `moved_s11pl.tsv` now quote KO+TD+NL.
+
+**Not landed:** the branch's money-path commit 532f247b. It sends the Sejm projection's no-government reason through `FormationProjection.Join`, and it changes no text today because Poland's keys are its short names. It would have owed a review row on SimulationManager for a no-op, so it stays on the branch (FILED), together with the check's three key members that ride with it.
+
+**At integration:**
+- The cheap bar and the dry film passed first time.
+- All seven real films of the first run captured at 1920x962 against the asked 1280 and 2560.
+  - The cause was a floating Game window saved maximized (`m_ShowMode: 0`, 1920x1009, `m_Maximized: 1`) in BOTH the project's layout (`UserSettings/Layouts/default-6000.dwlt`) and the user's copy, which Unity restores from (`%APPDATA%/Unity/Editor-5.x/Preferences/Layouts/current/`).
+  - Deleting the project's file, the cure of 2026-09-03, was not enough. With no Unity running, the window was set to 1280x741 and un-maximized in both files; one test film read 1280x699, and the films were re-run.
+  - **This corrects §959:** Sweden's HQ films did not fail because "the window was resized outside Unity". They failed on this layout.
+- **Sweden's HQ, refilmed on this tree (§959's debt):** reals4hqse (-shotinterrupts) and reals4hqsec (-shotcampaign) both ran at 1280x699 with 0 HEIGHT MISMATCH and 0 OVERFLOW. Read by eye, the frames show three defects no guard measures (each label is held to its own rect, not to its neighbours), the first two shipped by §959. All three go to §961:
+  - the economy row's figure runs under its AS PUBLISHED stamp ("90 / 100AS PUBLISHED"), in Poland's HQ as well;
+  - Poland's timeline draws a debate label over "final week · phones";
+  - and the -shotcampaign film's `e2_campaign_map_*` frames show the Formation sheet, not the staged map. The Speaker's request auto-opens the sheet (§647), and the sheet draws before every staged overlay. The last film that showed the map (sit_first, 2026-09-21) predates §647, so this is an older staging regression, not §959's.
+- The Italian night (a Canvas surface §10 changed) is reached only by Italy's -shotinterrupts film, so that film was added.
+
+**Measured (this tree):** cheap bar 148 of 148 clean (cheaps10si); simulation bar 93 of 93 clean, the trajectory sentinel the baseline's on both seeds, so no review is due (sims10si); dry film Sweden, Italy, Poland and the USA at 1280, 644 measured, 0 failed, 0 overflow, 0 canvas text (drys10si, scope row drys10si); real films, each at the asked geometry with 0 HEIGHT MISMATCH, 0 overflow and 0 canvas text violations: Sweden at 1280 (reals10sise) and 2560 (reals10sisew), 15 declared frames each, 0 missing, the debt line staged -3.00 points as its SHOT line says; Italy at 1280 (reals10siit) and 2560 (reals10siitw), 0 missing; the USA at 1280 (reals10sius), 10 declared, 0 missing, the stamp in the gutter; Poland -shotinterrupts at 1280 (reals10sipl) and 2560 (reals10siplw), 15 Canvas asserts each, the foot reading Expected: KO+TD+NL and the Docket KO+TD+NL in office; Italy -shotinterrupts at 1280 (reals10siiti), the night's nine Canvas frames 0 violations; Sweden's HQ refilmed (reals4hqse, reals4hqsec) at 1280x699, 0 OVERFLOW; doc bar (docs960)
+
+**Declared** (the implementer's D1-D13, the ones that go back to Design):
+- **D3:** "since 2019" is not on Sweden's slip. No source on disk dates the framework that way (the skrivelse cites decisions of 2017 and 2018), so the line names its instrument, skr. 2025/26:76. Returning the year needs riksdagen.se fetched.
+- **D4:** the USA's stamp is stacked in the gutter on four lines (NO / RATIO / IN / LAW, as filmed), not set on one line inside the plot. The game's plot is shorter than the board's, and inside it the stamp would cover the series' upper band.
+- **D5:** the stamp is 4 counted words, read as a caption-stamp (no verb, not a control), so K320's 3-word label cap does not apply.
+- **D6-D7:** the 1.5 px line is drawn in whole pixels (dash 4 on, 3 off at 1280, scaled). Near the plot's top or bottom the label is held inside the plot, so it is not exactly centred on the line.
+- **D8:** the existing slip heads are kept (DEBT ANCHOR, EU REFERENCE VALUE, NO RATIO IN LAW), where the board heads the slip with the country.
+- **D9-D10:** Sweden's slip marks two terms; the film's staging margin is 3 points.
+- **Not built:** the board's captions under each chart. The live-series charts draw no feet (D-ST 23a ⑨), and their words are on the slips.
+- **D12:** the check does not see a list built from a property (`p.ShortName`).

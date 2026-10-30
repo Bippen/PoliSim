@@ -63,36 +63,89 @@ namespace PoliSim.UI
             return AiFinanceMinistry.IsEuMember(country) ? AiFinanceMinistry.EuDebtReferencePercent : (float?)null;
         }
 
-        /// <summary>K269 (d): the debt chart line's label - the rule it draws, in the chart's few characters; null where no line is drawn.</summary>
-        public static string DebtReferenceLabel(CountryId country)
+        /// <summary>K269 (d), S10 (Design's return of 2026-10-30, 10b): the debt chart line's label on one line - the figure, then the framework's word ("35 % anchor",
+        /// "60 % Treaty"); null where no line is drawn. The chart sets it on two lines (<see cref="DebtReferenceLabelLines"/>).</summary>
+        public static string DebtReferenceLabel(CountryId country) =>
+            DebtReferenceLabelLines(country, out string figure, out string word) ? figure + " " + word : null;
+
+        /// <summary>S10 (10b): the label's two lines in the chart's gutter - the figure the line is drawn at (<see cref="DebtReferencePercent"/>) and the framework's
+        /// word: Sweden's "anchor" (its own framework's benchmark), "Treaty" for the other four. False, both null, where no line is drawn.</summary>
+        public static bool DebtReferenceLabelLines(CountryId country, out string figure, out string word)
         {
             float? reference = DebtReferencePercent(country);
-            if (!reference.HasValue) { return null; }
-            string figure = reference.Value.ToString("0", CultureInfo.InvariantCulture) + " %";
-            return country == CountryId.Sweden ? "anchor " + figure : "EU " + figure;
+            figure = word = null;
+            if (!reference.HasValue) { return false; }
+            figure = reference.Value.ToString("0", CultureInfo.InvariantCulture) + " %";
+            word = country == CountryId.Sweden ? "anchor" : "Treaty";
+            return true;
         }
 
-        /// <summary>K269 (d): the debt chart line's slip - its title and its instrument, line by line; no title and no lines where no line is drawn.</summary>
+        /// <summary>S10 (10b): the stamp the debt chart carries where its framework names no ratio - the USA, whose limit is the debt ceiling, a dollar sum
+        /// (<see cref="NationalNote(CountryId)"/>); null where a line is drawn.</summary>
+        public static string NoDebtRatioStamp(CountryId country) => DebtReferencePercent(country).HasValue ? null : "NO RATIO IN LAW";
+
+        /// <summary>S10 (10b): the terms the debt line's slip marks for its level 2 (<see cref="DebtReferenceTerms"/>).</summary>
+        public const string AnchorTerm = "Skuldankaret", FrameworkTerm = "fiscal framework", TreatyTerm = "reference value";
+
+        /// <summary>
+        /// K269 (d), S10 (Design's return of 2026-10-30, 10b, "the slips"): the debt line's slip - its head and Design's fragments, the figures read from the rule
+        /// table. Sweden: "[[Skuldankaret]] · 35 % of GDP" / "The [[fiscal framework]] · skr. 2025/26:76" / "A reference, not a rule that binds". The Treaty's four:
+        /// "60 % of GDP · the [[reference value]]" / "TFEU Art. 126 · Protocol No 12" / the four by name. The USA, the stamp's slip: "No debt ratio in law" /
+        /// "The debt ceiling is a dollar sum" / "So no line is drawn". DECLARED: Design's "The fiscal framework, since 2019" names no year here - the sourced
+        /// skrivelse dates nothing ("gäller tills vidare") and cites the anchor's decisions of 2017 and 2018 - so the line names its instrument. What the slip said
+        /// before beyond the fragments (the 5-point band, the Treaty's figure beside Sweden's anchor, each country's national rule) is the marked terms' level 2.
+        /// </summary>
         public static System.Collections.Generic.List<string> DebtReferenceLines(CountryId country, out string title)
         {
             var lines = new System.Collections.Generic.List<string>();
             float? reference = DebtReferencePercent(country);
-            title = null;
-            if (!reference.HasValue) { return lines; }
+            if (!reference.HasValue)
+            {
+                title = NoDebtRatioStamp(country);
+                lines.Add("No debt ratio in law");
+                lines.Add("The debt ceiling is a dollar sum");
+                lines.Add("So no line is drawn");
+                return lines;
+            }
             string figure = reference.Value.ToString("0", CultureInfo.InvariantCulture) + " %";
-            string eu = AiFinanceMinistry.EuDebtReferencePercent.ToString("0", CultureInfo.InvariantCulture) + " %";
             if (country == CountryId.Sweden)
             {
                 title = "DEBT ANCHOR";
-                lines.Add("SWEDEN'S DEBT ANCHOR: " + figure + " OF GDP, A BENCHMARK, NOT A TARGET (SKR. 2025/26:76)");
-                lines.Add("MORE THAN " + SwedenDebtAnchorBandPoints.ToString("0", CultureInfo.InvariantCulture) + " POINTS AWAY, THE GOVERNMENT EXPLAINS WHY TO THE RIKSDAG");
-                lines.Add("THE EU'S REFERENCE VALUE IS " + eu + " (TFEU ART. 126(2), PROTOCOL NO 12)");
+                lines.Add("[[" + AnchorTerm + "]] · " + figure + " of GDP");
+                lines.Add("The [[" + FrameworkTerm + "]] · skr. 2025/26:76");
+                lines.Add("A reference, not a rule that binds");
                 return lines;
             }
             title = "EU REFERENCE VALUE";
-            lines.Add("GROSS DEBT ABOVE " + figure + " OF GDP IS ABOVE THE TREATY'S REFERENCE VALUE (TFEU ART. 126(2), PROTOCOL NO 12)");
-            lines.Add(country == CountryId.Poland ? "THE CONSTITUTION'S 3/5 CEILING (ART. 216) IS THE SAME FIGURE ON THE NATIONAL DEFINITION" : "NO NATIONAL RULE NAMES A DEBT RATIO HERE");
+            lines.Add(figure + " of GDP · the [[" + TreatyTerm + "]]");
+            lines.Add("TFEU Art. 126 · Protocol No 12");
+            var four = new System.Collections.Generic.List<string>();
+            foreach (CountryId c in (CountryId[])System.Enum.GetValues(typeof(CountryId)))
+            {
+                if (c != CountryId.Sweden && DebtReferencePercent(c) == AiFinanceMinistry.EuDebtReferencePercent) { four.Add(PoliSim.Elections.StartBrief.CountryOf(c)); }
+            }
+            lines.Add(string.Join(", ", four));
             return lines;
+        }
+
+        /// <summary>S10 (10b): the level-2 slips of the terms the debt line's slip marks - each one plain sentence, the words the fragments leave out: Sweden's 5-point
+        /// band either way (skr. 2025/26:76) and the Treaty's figure beside its anchor (Protocol No 12), or the national rule beside the Treaty's line. None for
+        /// the USA.</summary>
+        public static System.Collections.Generic.List<(string Term, string Definition)> DebtReferenceTerms(CountryId country)
+        {
+            var terms = new System.Collections.Generic.List<(string Term, string Definition)>();
+            if (!DebtReferencePercent(country).HasValue) { return terms; }
+            string eu = AiFinanceMinistry.EuDebtReferencePercent.ToString("0", CultureInfo.InvariantCulture) + " %";
+            if (country == CountryId.Sweden)
+            {
+                terms.Add((AnchorTerm, "Off by more than " + SwedenDebtAnchorBandPoints.ToString("0", CultureInfo.InvariantCulture) + " points of GDP either way, the government explains why to the Riksdag (skr. 2025/26:76)."));
+                terms.Add((FrameworkTerm, "Sweden's own budget rules, beside the Treaty's " + eu + " reference value that holds for every member state (TFEU Art. 126(2), Protocol No 12)."));
+                return terms;
+            }
+            terms.Add((TreatyTerm, country == CountryId.Poland
+                ? "Poland's 3/5 ceiling (Constitution Art. 216) is the same figure on the national definition of debt."
+                : "No national rule here names a debt ratio, so the Treaty's is the line drawn."));
+            return terms;
         }
         /// <summary>SOURCED - the deviation that obliges an explanation, points of GDP: "Om skuldkvoten avviker, uppåt eller nedåt, från skuldankaret med mer
         /// än 5 procent av BNP ..." (skr. 2025/26:76).</summary>
