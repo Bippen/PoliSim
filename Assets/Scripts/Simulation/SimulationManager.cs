@@ -4428,6 +4428,8 @@ namespace PoliSim.Simulation
             _extraElectionOrderedOn = CurrentDate;
             _extraElectionDate = Elections.ConfidenceProcedure.RulesOf(country.Id) == Elections.ConfidenceProcedure.Rules.Parlamento
                 ? Elections.ConfidenceProcedure.ItalianElectionDay(dissolvedOn ?? CurrentDate)   // PS-7 (K155): art. 61's seventy days from the dissolution, the last Sunday in them (K206: a dissolution the semestre bianco defers is dated the day it lifts)
+                : Elections.ConfidenceProcedure.RulesOf(country.Id) == Elections.ConfidenceProcedure.Rules.Sejm
+                ? Elections.SejmFormation.ShortenedTermElectionDay(CurrentDate)   // K302: Art. 155 ust. 2's shortened term, Art. 98 ust. 5's forty-five days, the last Sunday in them (DECLARED: the 2007 practice, ruling E2's principle)
                 : Elections.ConfidenceProcedure.ExtraElectionDay(CurrentDate);
             // §640 (the reader): a run-up begun for another polling day is dropped - the extra election comes first, and that run-up re-begins on its own
             // calendar once the extra election is held; left standing it would be adopted by the wrong campaign. Stated: where the procedure resumes after
@@ -6127,6 +6129,9 @@ namespace PoliSim.Simulation
             bool ordinary = PlayerCountryId.HasValue && Elections.WorldClock.TryNextPollingDay(PlayerCountryId.Value, CurrentDate, out pollingDay);
             // PS-7 (K206): Italy's calendar re-anchors on the game's last count - an art. 88 dissolution starts a new five-year term (art. 60)
             if (ordinary && PlayerCountryId.Value == CountryId.Italy && LastItalianCount(out System.DateTime lastCount)) { pollingDay = Elections.WorldClock.ItalyOrdinaryAfter(lastCount, CurrentDate); }
+            // K302 (Art. 98 ust. 6): Poland's re-anchors on the term the game's last count began - a shortened term's Sejm begins four years of its own (the same chain
+            // day for day until a term is shortened, `SejmFormation.OrdinaryAfter`)
+            if (ordinary && PlayerCountryId.Value == CountryId.Poland && Elections.WorldCalendar.TryNextOrdinaryDay(_world?.GetCountry(CountryId.Poland), CurrentDate, out System.DateTime polish)) { pollingDay = polish; }
             // PS-3i (§636): an ordered EXTRA election is the next polling day where it falls first; the four-year cycle carries on beside it.
             if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate && (!ordinary || _extraElectionDate < pollingDay)) { pollingDay = _extraElectionDate; return true; }
             return ordinary;

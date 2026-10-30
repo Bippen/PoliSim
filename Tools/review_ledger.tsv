@@ -417,3 +417,7 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	c6a6ee4976f5f00835baa246a6ca
 file	Assets/Scripts/Simulation/EnergyLedger.cs	56e24aef8b4a2bf7e2e14f75426278fc42cd6197944bb13e7bd494dd04b561ee	reviewed	2026-10-30	s954	Reviews/2026-10-30_fisc2_integrator.md	-
 baseline	777	4e5611c454ba4a7e204b480620ede9e632f0d502c0528c769a926b01a89f7bb1	reviewed	2026-10-30	s954	Reviews/2026-10-30_fisc2_integrator.md	-
 baseline	424242	d3aaee0a3e9e02a8bcf6b6bbd9d9e0f315cb21f2ac8e425ed6690a0fdeacceb5	reviewed	2026-10-30	s954	Reviews/2026-10-30_fisc2_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	46eefe3bb14f33340aa205874772343c506100a8669fe051155fbb0e7df67b86	reviewed	2026-10-30	s955	Reviews/2026-10-29_art155_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	12fbda131035a14439f7814db85160e45c524d8cd20dc08f8ad8de9d1f033f2f	reviewed	2026-10-30	s955	Reviews/2026-10-29_art155_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.Sejm.cs	6fca1e15a13ab8a67941bc9b2f0f04bb4d83901d97908130437dcf5c9490ee86	reviewed	2026-10-30	s955	Reviews/2026-10-29_art155_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.WorldCalendar.cs	d82a96891e4d70982a3e98bf657d13ff7d72f14a78f66f8a2a0cf03e1c8a8029	reviewed	2026-10-30	s955	Reviews/2026-10-29_art155_review.md	-

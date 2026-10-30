@@ -42384,3 +42384,28 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nfisc2 15 of 15; dryfisc2 4 sessions, 0 failed; dumpfisc2 the family fisc2; stagefisc2 exit 0; slrtfisc2 12 of 12; nfisc2l 0 of 2 (FT-10's slack ceilings; SpendingLine's stale grandfathered row - both answered by their checks' own rules); cheapfisc2 147 of 148 (ReviewLedgerCheck, answered); simfisc2 91 of 92 (TrajectorySentinelCheck's FT-10 slack, answered); nfisc2l2 (TrajectorySentinelCheck, ReviewLedgerCheck) 2 of 2; docfisc2 document group clean
 
 **Commit:** this one.
+
+## 955. K302: POLAND'S ART. 155 - THE PRESIDENT'S CABINET BY A SIMPLE MAJORITY, ELSE THE SHORTENED TERM AND ITS ELECTIONS (K303-K307) (2026-10-30)
+
+**What was owed:** K302 (Elias). After Art. 154 ust. 3 failed, a Polish Sejm could end with no government and a caretaker to the ordinary day. Art. 155 was not modelled (docs/ASKS_FOR_ELIAS.md, AF-8's asks).
+
+**Built** (wave/art155; reviews: round 1 (M1, L1-L9), round 2 READY after the real film; ed2aba91 answered R2-M1, R2-L1 and R2-L2):
+- **Art. 155 ust. 1:** `SejmFormation.PresidentAppoints` picks the formation's best-scoring admissible cabinet that a simple majority carries (more for than against, half the statutory deputies present), else its best, refused. Abstention follows the confidence procedure's sides.
+- **Art. 155 ust. 2:** refused, the cabinet carries on as caretaker and the term is shortened. The elections fall on the last Sunday within Art. 98 ust. 5's 45 days (the 2007 order, fetched byte-exact). The new Sejm sits on day 15, its term its own (ust. 6), and the calendar re-anchors on it.
+- **The player's Poland:** two `SejmStage` values (the President's step, his cabinet's vote), each window's last day. **AI Poland:** the sequence on the first sitting, and the extra election through `WorldCalendar.TryExtraElection`.
+- **The night:** the Sejm night's verdict on one line beside CONTINUE (`PolandFooter`, `FitPolandVerdict`), the whole sentence in its slip, and the staged refusal frame `e7e2`.
+- **Saves:** no format step. An older save's lapsed AI caretaker is re-ordered on the load's day (`ReorderLapsedShortenings`).
+- `Tools/art155_replay` measures Art. 155 and the declared support lines out of Unity.
+
+**Measured** (`Reviews/2026-10-30_art155_integrator.md`):
+- SejmFormationDiagnostic (f)-(k) clean after the integrator's fix. Two (g) lines read live records after the loop had stepped to the vote day; they now read each state on its own day. The engine's log was right throughout.
+- Real films at 1280 and 2560: 23 captured, 0 failed, no overflow. The foot shows 179 / 212 of the verdict's 483 characters.
+- **The dump is byte-identical to fisc2 on both seeds:** in the `fisc2` family no Polish Sejm ends without a government, so Art. 155 never runs. The sentinel stands at `fisc2`.
+
+**Evidence:** `Reviews/2026-10-29_art155_review.md` (rounds 1-2), `Reviews/2026-10-30_art155_integrator.md`; `ElectionsData/poland/raw/shortened_term_2007/` (SHA256SUMS, fetch log).
+
+**Declared:** K303-K307 (recorded). AF-8's Art. 155 ask is ANSWERED. **Filed (Low):** the Polish foot leads with the first sitting's date, so its cut falls on the outcome; leading with the outcome would show it.
+
+**Bars:** nart155 8 of 9 (SejmFormationDiagnostic's two (g) lines read live records after the vote day - the check fixed, the engine right); dryart155 Poland 1280, 0 failed; realart155 (1280, -shotinterrupts) and realart155w (2560) 23 captured, 0 failed each, no overflow; dumpart155 byte-identical to dumpfisc2 on both seeds; cheapart155 148 of 148 (SejmFormationDiagnostic clean on the fix); simart155 92 of 92; docart155 document group clean
+
+**Commit:** this one.

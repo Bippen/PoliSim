@@ -757,7 +757,9 @@ namespace PoliSim.Elections
         /// 2023 (the PKW's notices), then each term's by Konstytucja Art. 98 ust. 2 (held in `raw/records/trybunal_konstytucja.html`): the window's
         /// first Sunday before the fourth anniversary of the term's first sitting (<see cref="FirstSundayOfTermWindow"/>) - the 10th term's from its
         /// sitting of record, 13 Nov 2023 (17 Oct 2027), every later one from the first sitting its own election gives (<see cref="PolandFirstSittingAfterDays"/>).
-        /// Premise, stated: every term runs its four years - a shortened term (Art. 98 ust. 3-5) is not modelled. PS-6 US-8: <b>the USA's</b> - the
+        /// This chain runs every term its four years; a term the Sejm's procedure shortens (K302: Art. 155 ust. 2, Art. 98 ust. 5-6) begins a new one, on which
+        /// the calendar a country reads re-anchors (`WorldCalendar.TryNextOrdinaryDay`, `SejmFormation.OrdinaryAfter`); the Sejm's own resolution to shorten
+        /// its term (Art. 98 ust. 3) is not modelled. PS-6 US-8: <b>the USA's</b> - the
         /// presidential day of 3 U.S.C. §21(1) (<see cref="UsPresidentialElection.PresidentialDay"/>), the cycle anchored on the election of record, 5 November
         /// 2024 (<see cref="LatestElectionDay"/>, NARA's [EC-DATES]), every fourth year in both directions as Sweden's. PS-6 US-27: and the midterm days - 2 U.S.C.
         /// §7's same Tuesday "in every even numbered year" ([USC-7]), the House's and a Senate class's - so a US game votes every second year from the same anchor:

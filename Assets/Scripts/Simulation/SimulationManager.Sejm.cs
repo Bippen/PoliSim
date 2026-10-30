@@ -9,8 +9,10 @@ namespace PoliSim.Simulation
     /// <see cref="Elections.SejmFormation"/>'s. The night opens it on the outgoing government (<see cref="OpenSejmFormation"/>); each day of the player's
     /// country runs the steps that fall due (<see cref="AdvanceSejmFormation"/>, from the confidence day): the resignation at the first sitting (Art. 162
     /// ust. 1, the cabinet carrying on under ust. 3), the President's designation and appointment (Art. 154 ust. 1), the confidence vote (ust. 2), the Sejm's
-    /// own election and the appointment of the cabinet it elects (ust. 3). A cabinet installed here goes through the manager's install - its arrival
-    /// budget reset and a window the player no longer governs closed (§698), which the night's install never did for Poland (PF-19's Polish path).
+    /// own election and the appointment of the cabinet it elects (ust. 3); and K302 (Elias, 2026-10-29), Art. 155: the President's own appointment and the
+    /// Sejm's confidence by a simple majority (ust. 1), refused, the shortened term and the elections it orders (ust. 2, Art. 98 ust. 5) - the player's
+    /// extra election (`ScheduleExtraElection`). A cabinet installed here goes through the manager's install - its arrival budget reset and a window the
+    /// player no longer governs closed (§698), which the night's install never did for Poland (PF-19's Polish path).
     /// </summary>
     public partial class SimulationManager
     {
@@ -21,9 +23,9 @@ namespace PoliSim.Simulation
         public Elections.SejmFormation OpenSejmFormation(Country country, System.DateTime pollingDay)
         {
             if (country?.Government == null || !SejmStepsApply(country.Id)) { return null; }
-            Elections.SejmFormation f = Elections.SejmFormation.OpenAfter(country.Id, pollingDay);
+            Elections.SejmFormation f = Elections.SejmFormation.OpenAfter(country, pollingDay);   // K302: a shortened term's Sejm first sits by Art. 98 ust. 5
             country.Government.Sejm = f;
-            Debug.Log($"SEJM: {country.Id} - elected on {pollingDay:yyyy-MM-dd}; the first sitting {f.FirstSitting:yyyy-MM-dd}{(f.OfRecord ? " (the record's)" : " (Art. 109 ust. 2's last day)")}; {country.Government.PmParty} governs until then");
+            Debug.Log($"SEJM: {country.Id} - elected on {pollingDay:yyyy-MM-dd}; the first sitting {f.FirstSitting:yyyy-MM-dd}{(f.OfRecord ? " (the record's)" : Elections.SejmFormation.ElectedAfterShortenedTerm(country, pollingDay) ? " (Art. 98 ust. 5's last day, after a shortened term)" : " (Art. 109 ust. 2's last day)")}; {country.Government.PmParty} governs until then");
             return f;
         }
 
@@ -118,7 +120,13 @@ namespace PoliSim.Simulation
                     bool carried = view != null && view.HasGovernment && Elections.SejmFormation.Carries(country, Keys(view.Cabinet), Keys(view.Support), out _, out _);
                     if (!carried)
                     {
-                        Conclude(f, "the Sejm elects no prime minister (Art. 154 ust. 3); Art. 155 and the shortened term are not modelled - the caretaker serves on");
+                        // K302: Art. 155 ust. 1 - "W razie niepowołania Rady Ministrów w trybie art. 154 ust. 3 Prezydent Rzeczypospolitej w ciągu 14 dni powołuje
+                        // Prezesa Rady Ministrów": ust. 3's own fourteen days run out, then the President appoints on the last of his (DECLARED, each step on its
+                        // window's last day)
+                        f.Stage = Elections.SejmStage.PresidentAppoints;
+                        f.NextOn = CurrentDate.AddDays(Elections.SejmFormation.PresidentAppointsAfterSejmVoteDays);
+                        f.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Sejm elects no prime minister (Art. 154 ust. 3) - its fourteen days run to {CurrentDate.AddDays(Elections.SejmFormation.StepWindowDays):yyyy-MM-dd}, and the President appoints a cabinet on {f.NextOn:yyyy-MM-dd} (Art. 155 ust. 1)");
+                        Debug.Log($"SEJM: {country.Id} - the Sejm elects no prime minister on {CurrentDate:yyyy-MM-dd}; the President appoints under Art. 155 ust. 1 on {f.NextOn:yyyy-MM-dd}");
                         return;
                     }
                     SetDesignee(f, Keys(view.Cabinet), Keys(view.Support), Elections.GovernmentRecord.FromView(country, view, CurrentDate, world: _world).PmParty);
@@ -134,7 +142,48 @@ namespace PoliSim.Simulation
                     Conclude(f, "the cabinet the Sejm elected governs");
                     return;
                 }
+                case Elections.SejmStage.PresidentAppoints:
+                {
+                    // K302: Art. 155 ust. 1 - the President appoints the prime minister and, on his proposal, the cabinet: the formation's best of the cabinets the
+                    // Sejm would carry by a simple majority (`SejmFormation.PresidentAppoints`, DECLARED as Art. 154 ust. 1's designee is); it governs from today,
+                    // the Sejm's confidence to follow within fourteen days
+                    Elections.SejmFormation.PresidentsCabinet named = Elections.SejmFormation.PresidentAppoints(country, Elections.DeclarationReading.OfElection(country.Id, f.PollingDay));
+                    if (named.Cabinet.Count == 0)
+                    {
+                        ShortenTerm(country, f, "the President finds no admissible cabinet to appoint (Art. 155 ust. 1)");   // DECLARED: nothing the Sejm could vote on
+                        return;
+                    }
+                    SetDesignee(f, named.Cabinet, named.Support, named.PmParty);
+                    if (SameCabinet(g, f)) { g.Reappoint(CurrentDate); }
+                    else { InstallSejmCabinet(country, f, $"appointed by the President, {PoliSim.Wording.EnglishText.Possessive(f.PmParty, false, true)} prime minister and the cabinet he proposed (Konstytucja Art. 155 ust. 1), the Sejm's confidence by a simple majority to follow"); }
+                    f.Log.Add($"{CurrentDate:yyyy-MM-dd}: the President appoints {string.Join("+", f.Cabinet)} led by {f.PmParty}{(f.Support.Count > 0 ? " with " + string.Join("+", f.Support) : string.Empty)} (Art. 155 ust. 1) - {named.Choice()}");
+                    f.Stage = Elections.SejmStage.AwaitingPresidentsConfidence;
+                    f.NextOn = CurrentDate.AddDays(Elections.SejmFormation.StepWindowDays);
+                    return;
+                }
+                case Elections.SejmStage.AwaitingPresidentsConfidence:
+                {
+                    // K302: "Sejm w ciągu 14 dni od dnia powołania ... udziela jej wotum zaufania większością głosów w obecności co najmniej połowy ustawowej liczby posłów"
+                    Elections.SejmFormation.PresidentsCabinet vote = Elections.SejmFormation.SimpleMajority(country, f.Cabinet, f.Support, Elections.DeclarationReading.OfElection(country.Id, f.PollingDay));
+                    f.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Sejm's confidence in the President's cabinet - {vote.Line()}");
+                    Debug.Log($"SEJM: {country.Id} - the confidence vote on the President's cabinet {vote.Line()}");
+                    if (vote.Carried) { Conclude(f, "the President's cabinet holds the Sejm's confidence by a simple majority (Art. 155 ust. 1)"); return; }
+                    // Art. 162 ust. 2 pkt 1: refused, the President's cabinet resigns, and carries on under ust. 3 - the caretaker until the new Sejm's cabinet, as an AI
+                    // Poland's is (`FormAsAi` installs and discharges it on the first sitting)
+                    country.Government.Discharge(CurrentDate);
+                    ShortenTerm(country, f, $"the Sejm refused the President's cabinet its confidence, {vote.For} for and {vote.Against} against (Art. 155 ust. 1)");
+                    return;
+                }
             }
+        }
+
+        /// <summary>K302: Art. 155 ust. 2 - "Prezydent Rzeczypospolitej skraca kadencję Sejmu i zarządza wybory": the term shortened today and the elections ordered on
+        /// Art. 98 ust. 5's day (`ScheduleExtraElection`, the player's extra election, `SejmFormation.ShortenedTermElectionDay`); the procedure concludes with the
+        /// caretaker in office (Art. 162 ust. 3) until the new Sejm's cabinet.</summary>
+        private void ShortenTerm(Country country, Elections.SejmFormation f, string why)
+        {
+            ScheduleExtraElection(country, why + " - the President shortens the Sejm's term and orders elections (Konstytucja Art. 155 ust. 2) within forty-five days (Art. 98 ust. 5)");
+            Conclude(f, $"{why}; the term is shortened and elections ordered for {ExtraElectionDate:yyyy-MM-dd} (Art. 155 ust. 2, Art. 98 ust. 5) - the caretaker serves on until the new Sejm's cabinet");
         }
 
         /// <summary>The formation on the new Sejm under the election's own declarations - the projection the night names.</summary>

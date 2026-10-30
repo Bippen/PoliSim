@@ -87,9 +87,10 @@ namespace PoliSim.UI
             Transform right = Column(body, "Governs", 322f);
             right.GetComponent<VerticalLayoutGroup>().spacing = 4f;
             BuildChamberPoland(right, night, overlay);
-            BuildFooter(content, verdict, screen, null, null, overlay);
+            Text verdictLine = PolandFooter(content, verdict, screen, overlay);
 
             Resolve(contentRect);
+            if (FitPolandVerdict(verdictLine, verdict)) { Resolve(contentRect); }
             if (screen.Okregi != null) { screen.Okregi.Rebuild(); }
             PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
             return screen;
@@ -738,6 +739,63 @@ namespace PoliSim.UI
             double r = Math.Round(pp, 1);
             string body = Math.Abs(r).ToString("0.0", CultureInfo.InvariantCulture);
             return r > 0 ? "+" + body : r < 0 ? "−" + body : body;
+        }
+
+        /// <summary>
+        /// K302 (the art155 review's R2-M1): THE SEJM NIGHT'S FOOT, ONE LINE - the verdict beside CONTINUE at the foot's own face (the shared foot's 12-unit bold
+        /// upper case), cut at a whole word to the room the laid foot leaves it, "…" where cut, the whole sentence in its slip, as D-IT's Italian foot is
+        /// (`ItalyFooter`). The shared foot wrapped it into a foot sized for about three lines, and Art. 155's sentence on a refusal runs to about four at 1280.
+        /// The cut is made by <see cref="FitPolandVerdict"/> once the page is laid. Returns the verdict's text, null where there is none.
+        /// </summary>
+        private static Text PolandFooter(Transform parent, string verdict, ElectionNightScreen screen, Transform overlay)
+        {
+            var foot = new GameObject("Footer");
+            foot.transform.SetParent(parent, false);
+            foot.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 56f);
+            var row = foot.AddComponent<HorizontalLayoutGroup>();
+            row.childControlWidth = true;
+            row.childControlHeight = true;
+            row.childForceExpandWidth = false;
+            row.childForceExpandHeight = false;
+            row.childAlignment = TextAnchor.MiddleLeft;
+            row.spacing = 24f;
+            foot.AddComponent<LayoutElement>().minHeight = 56f;
+            Text line = null;
+            if (!string.IsNullOrEmpty(verdict))
+            {
+                line = CanvasChrome.MakeTextRealWeight(foot.transform, "Verdict", verdict.ToUpperInvariant(), PoliSimTheme.Display, 12, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft, FontStyle.Bold);
+                line.horizontalOverflow = HorizontalWrapMode.Overflow;
+                line.verticalOverflow = VerticalWrapMode.Overflow;
+                line.raycastTarget = false;
+                line.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
+                CanvasRows.Slip(line.gameObject, overlay, "THE VERDICT", SlipLines(verdict));
+            }
+            else { CanvasRows.Spacer(foot.transform); }
+            BuildContinueButton(foot.transform, screen.Dismiss);
+            return line;
+        }
+
+        /// <summary>K302 (R2-M1): the verdict's one line cut to the room its laid rect holds, measured in canvas units by the text's own generator (its
+        /// preferred width at its own face and size) - the longest run of whole words with " …" after it that fits, or the whole sentence where it fits. True
+        /// where the line was cut, so the page is laid again.</summary>
+        private static bool FitPolandVerdict(Text line, string verdict)
+        {
+            if (line == null || string.IsNullOrEmpty(verdict)) { return false; }
+            float room = line.rectTransform.rect.width;
+            string whole = verdict.ToUpperInvariant();
+            line.text = whole;
+            if (line.preferredWidth <= room) { return false; }
+            string[] words = whole.Split(' ');
+            string best = "…";
+            for (int i = 1; i <= words.Length; i++)
+            {
+                string candidate = string.Join(" ", words, 0, i) + " …";
+                line.text = candidate;
+                if (line.preferredWidth > room) { break; }
+                best = candidate;
+            }
+            line.text = best;
+            return true;
         }
 
         /// <summary>The body row the columns sit in, taking the page's spare height (the older nights' `BuildBody` rule).</summary>

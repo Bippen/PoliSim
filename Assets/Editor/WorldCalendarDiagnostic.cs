@@ -20,7 +20,8 @@ namespace PoliSim.EditorTools
     /// <item><description><b>The procedures' rules, planted</b> (no day stepped): a count's formation is due on its first sitting and not before; a failed
     /// formation's discharge ends it; the Riksdag's broken-off round orders the extra election three months on (RF 6 kap. 5 §), its reason the round's own,
     /// unless the ordinary falls inside them; Italy's orders art. 61's day from the dissolution, from the day the semestre bianco lifts where it bars it (art. 88
-    /// c. 2); the Bundestag's and the Sejm's order none; France holds no polling day (K162); a day a country's record is dated holds no second count.</description></item>
+    /// c. 2); the Bundestag's orders none; the Sejm's (K302) shortens the term and orders Art. 98 ust. 5's day from the sitting, the Sejm so elected sitting
+    /// on the fifteenth day with a term of its own; France holds no polling day (K162); a day a country's record is dated holds no second count.</description></item>
     /// <item><description><b>The Bundestag past its first ballot</b> (H1 of the s938 review), planted: a German chamber in which the first ballot elects no one goes on
     /// by Art. 63 Abs. 3-4 through the player's own round - the fourteen days opened, then the ballot the most votes win - and the round ends within them.</description></item>
     /// <item><description><b>No counted stream drawn</b> (M5): the chamber count, the US count, Poland's presidential round and the formations (the Bundestag's,
@@ -147,16 +148,29 @@ namespace PoliSim.EditorTools
                 Check(extraBarred && barredDay == ConfidenceProcedure.ItalianElectionDay(new DateTime(2029, 2, 3)),
                     F("Italy: failing on {0:yyyy-MM-dd}, inside the President's last six months, the dissolution waits for 3 Feb 2029 and the election falls on {1:yyyy-MM-dd} - {2}", barredSitting, barredDay, barredWhy));
 
-                // Poland: no extra election; France: no polling day; a dated day holds no second count
+                // Poland (K302): the Sejm's steps failed on the first sitting are Art. 155's - the term shortened that day, the elections on Art. 98 ust. 5's last
+                // Sunday, the Sejm they elect first sitting on the fifteenth day and its term its own (ust. 6); France: no polling day; a dated day holds no second count
                 Country poland = w.GetCountry(CountryId.Poland);
                 var plPoll = new DateTime(2027, 10, 17);
                 poland.ElectionHistory.Add(new ElectionRecord { Date = plPoll, CountryId = "Poland", Method = ElectionMethod.PolandDistricts });
-                poland.Government.Discharge(WorldCalendar.FirstSittingAfter(CountryId.Poland, plPoll));
+                DateTime plSitting = WorldCalendar.FirstSittingAfter(poland, plPoll);
+                poland.Government.Discharge(plSitting);
+                bool extraPl = WorldCalendar.TryExtraElection(poland, out DateTime plDay, out DateTime plOrdered, out string plWhy);
+                bool plPolls = extraPl && WorldCalendar.IsChamberPollingDay(poland, plDay, out bool plExtra) && plExtra;
+                poland.ElectionHistory.Add(new ElectionRecord { Date = plDay, CountryId = "Poland", Method = ElectionMethod.PolandDistricts });
+                DateTime plSitting2 = WorldCalendar.FirstSittingAfter(poland, plDay);
+                bool plDue = !WorldCalendar.FormationDue(poland, plSitting2.AddDays(-1), out _, out _) && WorldCalendar.FormationDue(poland, plSitting2, out _, out _);
+                bool plOwedNothing = !WorldCalendar.TryExtraElection(poland, out _, out _, out _);
+                bool plNext = WorldCalendar.TryNextOrdinaryDay(poland, plDay.AddDays(1), out DateTime plOrdinary);
+                Check(plSitting == new DateTime(2027, 11, 16) && extraPl && plOrdered == plSitting && plDay == new DateTime(2027, 12, 26) && plPolls && plSitting2 == new DateTime(2028, 1, 10) && plDue && plOwedNothing
+                      && plNext && plOrdinary == new DateTime(2031, 12, 14) && plWhy != null && plWhy.Contains("Art. 155 ust. 2"),
+                    F("Poland (K302): a count of {0:yyyy-MM-dd} first sits on {1:yyyy-MM-dd}; its steps failed there, the President shortens the term that day and orders elections for Sunday 26 Dec 2027 (16 Nov + 45 days is Friday 31 Dec, Art. 98 ust. 5) - {2:yyyy-MM-dd}; that Sejm first sits on 10 Jan 2028, the fifteenth day ({3:yyyy-MM-dd}), formed on it, and its term runs to the window opening 11 Dec 2031, its first Sunday 14 Dec 2031 ({4:yyyy-MM-dd}, Art. 98 ust. 2 and 6) - {5}",
+                        plPoll, plSitting, plDay, plSitting2, plOrdinary, plWhy));
                 Country france = w.GetCountry(CountryId.France);
                 bool frenchDay = false;
                 for (DateTime d = new DateTime(2026, 1, 19); d < new DateTime(2032, 1, 1); d = d.AddDays(1)) { if (WorldCalendar.IsChamberPollingDay(france, d, out _)) { frenchDay = true; break; } }
-                Check(!WorldCalendar.TryExtraElection(poland, out _, out _, out _) && !frenchDay && !WorldCalendar.IsChamberPollingDay(sweden, sePoll, out _),
-                    "Poland: a failed third step orders no extra election (Art. 155 not modelled); France holds no polling day from 2026 to 2031 (K162); a day the record is dated holds no second count");
+                Check(!frenchDay && !WorldCalendar.IsChamberPollingDay(sweden, sePoll, out _),
+                    "France holds no polling day from 2026 to 2031 (K162); a day the record is dated holds no second count");
 
                 // M5 (review 2): each country's SECOND ordinary day after a count, against the days written here - on a fresh world, a count planted on the first
                 World fresh = WorldFactory.CreateDefault();

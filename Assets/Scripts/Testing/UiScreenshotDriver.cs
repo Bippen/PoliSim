@@ -6551,6 +6551,9 @@ namespace PoliSim.Testing
                 yield return Settle();
             }
 
+            // (1b) K302 (the art155 review's R2-M1): the Sejm night's foot on an Art. 155 refusal - staged, see FilmPolishRefusalFoot
+            yield return FilmPolishRefusalFoot(controller, poland, latest);
+
             // (2) the President's nights, on their days
             FieldInfo speedField = controller.GetType().GetField("_gameSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
             object speed = speedField?.GetValue(controller);
@@ -6675,6 +6678,92 @@ namespace PoliSim.Testing
                 }
             }
             if (speed != null) { speedField.SetValue(controller, speed); }
+        }
+
+        /// <summary>K302 (the art155 review's R2-M1): the frame <see cref="FilmPolishRefusalFoot"/> films.</summary>
+        private const string PolishRefusalFrame = "e7e2_election_night_art155_refusal_staged";
+
+        /// <summary>
+        /// K302 (the art155 review's R2-M1): THE SEJM NIGHT'S FOOT ON AN ART. 155 REFUSAL, STAGED - the verdict the controller itself words
+        /// (`GameController.ResolveSejmVerdict`) for the planted 230/230 chamber (PiS 230, KO 230 and no other seat: no cabinet carries even a simple majority,
+        /// the President's cabinet is refused, the term shortened), drawn on the board of the election the film just held at its final minute - the longest
+        /// sentence the night's foot carries, filmed at its own geometry (one line cut to the room beside CONTINUE, the whole in its slip). The chamber is
+        /// planted on the seated country for the verdict's own projection and put back, with the verdict's fields, in a finally before anything yields - no
+        /// day, screen or check reads the plant. Silent: nothing here fires a cue (the listener is muted at the film's start, the harness rule).
+        /// </summary>
+        private IEnumerator FilmPolishRefusalFoot(GameController controller, Country poland, ElectionRecord latest)
+        {
+            const BindingFlags Own = BindingFlags.Instance | BindingFlags.NonPublic;
+            FieldInfo verdictField = typeof(GameController).GetField("_pendingElectionVerdict", Own), endsField = typeof(GameController).GetField("_pendingElectionVerdictEndsGame", Own);
+            FieldInfo seatedField = typeof(GameController).GetField("_playerCountry", Own);
+            MethodInfo resolve = typeof(GameController).GetMethod("ResolveSejmVerdict", Own);
+            Country seated = seatedField?.GetValue(controller) as Country;
+            if (verdictField == null || endsField == null || resolve == null || seated == null || seated.Id != CountryId.Poland)
+            {
+                Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the controller's verdict hooks or its seated Poland were not found; NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            Dictionary<string, int> seatsWas = seated.ParliamentSeats;
+            object verdictWas = verdictField.GetValue(controller), endsWas = endsField.GetValue(controller);
+            string verdict = null;
+            try
+            {
+                var planted = new Dictionary<string, int>();
+                foreach (string key in seatsWas.Keys) { planted[key] = 0; }
+                planted["PiS"] = 230;
+                planted["KO"] = 230;
+                seated.ParliamentSeats = planted;
+                resolve.Invoke(controller, new object[] { latest, GovernmentFormation.Formed.None("staged for the foot's frame"), SejmFormation.OpenAfter(seated, latest.Date) });
+                verdict = verdictField.GetValue(controller) as string;
+            }
+            catch (Exception e)
+            {
+                Exception inner = e.InnerException ?? e;
+                Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the verdict's resolution THREW ({inner.GetType().Name}: {inner.Message}); NOT filmed.");
+                _failed++;
+            }
+            finally
+            {
+                seated.ParliamentSeats = seatsWas;
+                verdictField.SetValue(controller, verdictWas);
+                endsField.SetValue(controller, endsWas);
+            }
+            if (verdict == null) { yield break; }
+            if (!verdict.Contains("Art. 155 ust. 2"))
+            {
+                Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the planted chamber's verdict names no shortened term (\"{verdict}\"); NOT filmed under the refusal's name.");
+                _failed++;
+                yield break;
+            }
+            PolishSejmNight.State final = PolishSejmNight.At(PolishSejmNight.FinalMinute, latest.Shares, latest.OkregShift);
+            if (final == null)
+            {
+                Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the election's night did not build at its final minute; NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            for (int k = 0; k < final.Keys.Length; k++) { final.Seats[k] = latest.Seats.TryGetValue(final.Keys[k], out int s) ? s : 0; }   // the chamber's seats, as the controller's night stands them
+            SetPrivateField(controller, "_canvasLive", true);
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+            ElectionNightScreen staged = ElectionNightScreen.BuildPoland(GameController.PolishSejmNightInputs(seated, final, latest.Date), latest.Date.Date.AddHours(21), verdict);
+            if (staged == null) { Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the board did not build; nothing filmed."); _failed++; }
+            else
+            {
+                yield return Settle();
+                Claim("electionnight");
+                yield return Capture(PolishRefusalFrame);
+                RecordCanvasTextAssert(PolishRefusalFrame, controller);
+                string shown = null;
+                foreach (UnityEngine.UI.Text t in staged.Root.GetComponentsInChildren<UnityEngine.UI.Text>(true)) { if (t.name == "Verdict") { shown = t.text; } }
+                Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: K302 {0} - STAGED: the verdict a PiS 230 / KO 230 chamber gives (planted for its projection, put back), on the board of the {1:yyyy-MM-dd} count; the foot shows \"{2}\" ({3} of {4} characters), the whole sentence in its slip.",
+                    PolishRefusalFrame, latest.Date, shown ?? "NO VERDICT LINE", shown?.Length ?? 0, verdict.Length));
+                if (shown == null) { Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the board drew no Verdict line."); _failed++; }
+                if (staged.Root != null) { UnityEngine.Object.Destroy(staged.Root); }
+            }
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
+            SetPrivateField(controller, "_canvasLive", false);
+            yield return Settle();
         }
 
         /// <summary>

@@ -311,6 +311,31 @@ absolute majority within 14 days; ust. 3: failing that, the Sejm elects):
 after appointment (within ust. 2's 14 days), lost 190–266 → the Sejm's own election the same evening (ust. 3), 248–201
 → appointment 2023-12-13. Art. 155 was not reached.
 
+**Art. 98 ust. 5–6 — the shortened term's elections and the Sejm they choose** (added 2026-10-29 for K302, the ustęp split read
+off the page's own `<li>` items, which carry the numbers the running text above loses):
+> ust. 5: "Prezydent Rzeczypospolitej, zarządzając skrócenie kadencji Sejmu, zarządza jednocześnie wybory do Sejmu i Senatu i wyznacza ich datę na dzień przypadający nie później niż w ciągu 45 dni od dnia zarządzenia skrócenia kadencji Sejmu. Prezydent Rzeczypospolitej zwołuje pierwsze posiedzenie nowo wybranego Sejmu nie później niż na 15 dzień po dniu przeprowadzenia wyborów."
+>
+> ust. 6: "W razie skrócenia kadencji Sejmu stosuje się odpowiednio przepis ust. 1."
+
+*gloss:* shortening the term, the President orders the elections at once, on a day no later than 45 days after the order,
+and convenes the new Sejm no later than the 15th day after the vote; the new term runs four years from its first sitting
+(ust. 1). Art. 109 ust. 2's 30 days hold "z wyjątkiem przypadków określonych w art. 98 ust. 3 i 5". The Kodeks wyborczy
+[KW-2011] (the code's 2011 original text, not the consolidated text in force): art. 4 § 1, "Wybory odbywają się w dniu wolnym
+od pracy"; art. 195 § 1, the same 45 days - "od dnia wejścia w życie uchwały Sejmu o skróceniu swojej kadencji lub od dnia
+ogłoszenia postanowienia Prezydenta Rzeczypospolitej o skróceniu kadencji Sejmu": for a President's shortening (Art. 155
+ust. 2's case) from the order's publication, on or after the order's day, so a polling day within 45 days of the order (the
+constitution's count, the game's) is within them under both texts; art. 195 § 2 pkt 1 lit. c shortens art. 202 § 3's
+district notice "do 40 dnia przed dniem wyborów", the floor a shortened term's polling day needs from the order.
+
+**The one shortened term on record** (`raw/shortened_term_2007/`, register below): the Sejm shortened its own term by
+resolution of 7 September 2007 (Art. 98 ust. 3); the President's order of that day [PREZ-2007], "Na podstawie art. 98 ust. 5
+w związku z art. 98 ust. 3 Konstytucji ... w związku z uchwałą Sejmu Rzeczypospolitej Polskiej z dnia 7 września 2007 r. w
+sprawie skrócenia kadencji Sejmu", set "§ 2. Dzień wyborów wyznaczam na niedzielę dnia 21 października 2007 r." *(decoded
+from the PDF's content stream)*; ELI's listing [ELI-DU-2007] carries the order's title and the PKW's notice of the vote
+"przeprowadzonych w dniu 21 października 2007 r." (poz. 1438). **DERIVED:** 7 Sep + 45 days is Monday 22 Oct, so the
+polling day was the last Sunday in the window. The Sejm's resolution itself was not found by ELI's title search of the
+Monitor Polski for 2007 (the order quotes it).
+
 **Art. 160 — the confidence vote at the prime minister's request (the 2025-06-11 vote):**
 > "Artykuł 160 Prezes Rady Ministrów może zwrócić się do Sejmu o wyrażenie Radzie Ministrów wotum zaufania. Udzielenie wotum zaufania Radzie Ministrów następuje większością głosów w obecności co najmniej połowy ustawowej liczby posłów."
 
@@ -405,6 +430,14 @@ metadata where the page shows none, as marked)
 
 41 raw files. Every file's SHA-256 is in `raw/records/SHA256SUMS.txt` (sha256sum format); the digests are not repeated
 in this table because the sheet is the record and a retyped digest is a transcription (the claim convention).
+
+**K302's sources** (accessed 2026-10-29; saved as `raw/shortened_term_2007/<file>`, fetched byte-exact by curl, the fetch log beside them):
+
+| id | URL | publisher | page's own date | basis | file | SHA-256 |
+|---|---|---|---|---|---|---|
+| [PREZ-2007] | https://api.sejm.gov.pl/eli/acts/DU/2007/1145/text.pdf | Prezydent RP via Sejm (ELI) | "z dnia 7 września 2007 r." | the order of the 2007 elections after the shortened term, Dz.U. 2007 nr 162 poz. 1145, PDF | `eli_DU_2007_1145_zarzadzenie_wyborow.pdf` | see SHA256SUMS |
+| [PREZ-2007-META] | https://api.sejm.gov.pl/eli/acts/DU/2007/1145 | Sejm (ELI) | `announcementDate` 2007-09-07 | its metadata: the basis "art. 98 ust. 5" | `eli_meta_DU_2007_1145_zarzadzenie_wyborow.json` | see SHA256SUMS |
+| [ELI-DU-2007] | https://api.sejm.gov.pl/eli/acts/search?publisher=DU&year=2007&title=wybor%C3%B3w%20do%20Sejmu&limit=50 | Sejm (ELI) | live | the finder listing: the order (poz. 1145) and the PKW's notice of the vote of 21 October 2007 (poz. 1438) | `eli_search_DU_2007_wyborow_do_sejmu.json` | see SHA256SUMS |
 
 ## GAPS
 

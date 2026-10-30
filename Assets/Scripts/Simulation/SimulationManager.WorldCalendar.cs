@@ -18,10 +18,11 @@ namespace PoliSim.Simulation
     /// of the world's state: the day's readout is put back as found (`NationalElection.KeepRegionalReadout`), so the player's screens never read an AI count's
     /// regions.</description></item>
     /// <item><description><b>The formation</b>: on the new chamber's first sitting (`WorldCalendar.FirstSittingAfter`), the country's own procedure run whole by the
-    /// code that projects the player's night (q20's one formation code): the Riksdag's Speaker's round, the Bundestag's first ballot (and past it Art. 63 Abs. 3-4 by the player's own round, H1), the Sejm's steps, Italy's
-    /// mandates - every party answering by its own rule (no player's party sits in an AI country) - and the government it forms INSTALLED
-    /// (`GovernmentRecord.FromProjection`), unlike the player's night, which installs nothing. Where it forms none the outgoing government is discharged and
-    /// governs on as caretaker, and the Riksdag's and Italy's procedures order the extra election their statutes give (`WorldCalendar.TryExtraElection`, K161).</description></item>
+    /// code that projects the player's night (q20's one formation code): the Riksdag's Speaker's round, the Bundestag's first ballot (and past it Art. 63 Abs. 3-4 by the player's own round, H1), the Sejm's steps
+    /// (Art. 154 and, K302, Art. 155), Italy's mandates - every party answering by its own rule (no player's party sits in an AI country) - and the government it
+    /// forms INSTALLED (`GovernmentRecord.FromProjection`), unlike the player's night, which installs nothing. Where it forms none the outgoing government is
+    /// discharged and governs on as caretaker, and the Riksdag's, the Sejm's and Italy's procedures order the extra election their statutes give
+    /// (`WorldCalendar.TryExtraElection`, K161; the Sejm's shortened term, K302).</description></item>
     /// <item><description><b>The USA</b>: its record seated by date until the game elects (the House from the 3rd of January after a count, the president at the
     /// oath), and its presidential and midterm counts on 3 U.S.C. §21(1)'s and 2 U.S.C. §7's days by the player's own US model with no campaign (R-US5 (a): the
     /// count a pure function of the world). DECLARED: an AI USA seats no Senate (US-2's premise, kept - the Senate's seats change no AI economy, and the funding
@@ -65,6 +66,7 @@ namespace PoliSim.Simulation
                     // H1 (the s938 review): an AI Bundestag's chancellor election past its first ballot runs its days by the player's own round code - the fourteen
                     // days (Art. 63 Abs. 3) and the ballot the most votes win (Abs. 4), `AdvanceSpeakerRound`, every party answering by its own rule
                     if (country.Government?.Round != null && country.Government.Round.Open && country.Government.Round.Bundestag) { AdvanceSpeakerRound(country, country.Government); }
+                    ReorderLapsedShortening(country);   // K302 (the review's L5): a shortened term's polling day already past is ordered again today
                     if (WorldCalendar.IsChamberPollingDay(country, CurrentDate, out bool extra)) { CountChamberAsAi(country, extra); }
                     if (WorldCalendar.FormationDue(country, CurrentDate, out ElectionRecord counted, out DateTime sitting)) { FormAsAi(country, counted, sitting); }
                 }
@@ -73,6 +75,30 @@ namespace PoliSim.Simulation
                     Debug.LogError($"CALENDAR: {country.Id} on {CurrentDate:yyyy-MM-dd} - the day's election abroad threw {e.GetType().Name}: {e.Message}; the country stands as it was\n{e.StackTrace}");
                 }
             }
+        }
+
+        /// <summary>
+        /// K302 (the review's L5): <b>A SHORTENED TERM WHOSE POLLING DAY HAS PASSED IS ORDERED AGAIN</b> - DECLARED, re-anchored on the day it is found by the same rule:
+        /// the President shortens the term that day (the caretaker discharged anew, its `CaretakerSince` the day) and the elections fall on Art. 98 ust. 5's day
+        /// from it (`WorldCalendar.TryExtraElection`). Reached only where a world holds an AI Polish caretaker whose owed day is behind its clock - a save cut by a
+        /// build before K302, whose failed Sejm left the caretaker serving on with no election, or a day whose count predicted nothing. Never in a continuous run of this build: the extra count is held on its own day, after which nothing is owed. Run on every AI
+        /// country's day before its count, and on a load (`SaveGameService.RestoreInto`, <see cref="ReorderLapsedShortenings"/>), so no screen reads a past day.
+        /// </summary>
+        private void ReorderLapsedShortening(Country country)
+        {
+            if (country?.Government == null || (PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id)) { return; }
+            if (ConfidenceProcedure.RulesOf(country.Id) != ConfidenceProcedure.Rules.Sejm) { return; }
+            if (!WorldCalendar.TryExtraElection(country, out DateTime owed, out DateTime orderedOn, out string _) || owed >= CurrentDate.Date) { return; }
+            country.Government.Discharge(CurrentDate);
+            country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the shortened term's elections, owed on {owed:yyyy-MM-dd} from the order of {orderedOn:yyyy-MM-dd}, were never held - the term is shortened again today and the elections ordered for {SejmFormation.ShortenedTermElectionDay(CurrentDate):yyyy-MM-dd} (Art. 155 ust. 2, Art. 98 ust. 5; DECLARED, K302)");
+            if (!IsCounterfactual) { Debug.Log($"CALENDAR: {country.Id} - the shortened term's polling day {owed:yyyy-MM-dd} had passed unheld; ordered again on {CurrentDate:yyyy-MM-dd}, the elections on {SejmFormation.ShortenedTermElectionDay(CurrentDate):yyyy-MM-dd}"); }
+        }
+
+        /// <summary>K302 (the review's L5): <see cref="ReorderLapsedShortening"/> for every AI country - the load's call, after the world and the clock are restored.</summary>
+        internal void ReorderLapsedShortenings()
+        {
+            if (_world == null) { return; }
+            foreach (Country country in _world.Countries) { ReorderLapsedShortening(country); }
         }
 
         /// <summary>PS-8 (K160): an AI country's chamber count on its polling day - the idle game's arithmetic (see the class), its chamber seated with it.</summary>
@@ -125,7 +151,7 @@ namespace PoliSim.Simulation
                 {
                     var seats = new List<string>();
                     foreach (KeyValuePair<string, int> kv in record.Seats) { if (kv.Value > 0) { seats.Add(kv.Key + " " + kv.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)); } }
-                    Debug.Log($"CALENDAR: {id} held {(extra ? "its extra election" : "its election")} on {CurrentDate:yyyy-MM-dd} as an AI country by {record.Method}{(factors != null ? " (the record's factors, " + factoredElection + ")" : string.Empty)} - {string.Join(", ", seats)}; the new chamber first sits on {WorldCalendar.FirstSittingAfter(id, CurrentDate):yyyy-MM-dd}");
+                    Debug.Log($"CALENDAR: {id} held {(extra ? "its extra election" : "its election")} on {CurrentDate:yyyy-MM-dd} as an AI country by {record.Method}{(factors != null ? " (the record's factors, " + factoredElection + ")" : string.Empty)} - {string.Join(", ", seats)}; the new chamber first sits on {WorldCalendar.FirstSittingAfter(country, CurrentDate):yyyy-MM-dd}");
                 }
             }
             finally { putBack(); }
@@ -168,7 +194,26 @@ namespace PoliSim.Simulation
             }
             GovernmentRecord outgoing = country.Government;
             string reason = projection?.Reason ?? "no procedure forms this country's government";
-            if (outgoing != null)
+            if (outgoing != null && projection != null && projection.RefusedCabinet.Count > 0 && !(outgoing.PmParty == projection.RefusedPmParty && SameKeys(outgoing.Cabinet, projection.RefusedCabinet)))
+            {
+                // K302 (the review's L6): Art. 162 ust. 2 pkt 1 and ust. 3 - the cabinet the President appointed under Art. 155 ust. 1 and the Sejm refused resigns and
+                // carries on until the new Sejm's cabinet, so it is the caretaker: installed today and discharged today, the steps run whole on the first sitting (the
+                // player's steps install it on the President's day and discharge it on the vote's). Where the President re-appoints the outgoing cabinet itself, that
+                // record carries on, as the player's `Reappoint` keeps it (the branch below)
+                GovernmentRecord refused = GovernmentRecord.OfNamedCabinet(projection.RefusedPmParty, projection.RefusedCabinet, projection.RefusedSupport, CurrentDate,
+                    $"appointed by the President after the election of {counted.Date:yyyy-MM-dd} and refused the Sejm's confidence (Konstytucja Art. 155 ust. 1) - it resigned and carries on (Art. 162 ust. 2 pkt 1, ust. 3)");
+                refused.Outcome = (SejmFormation.Carries(country, projection.RefusedCabinet, null, out _, out _) ? CoalitionOutcomeKind.MajorityCoalition : CoalitionOutcomeKind.MinorityGovernment).ToString();
+                refused.Kind = outgoing.Kind;
+                refused.Executive = outgoing.Executive;
+                refused.AllocatePortfolios(country);
+                refused.FormAgreements(country, CurrentDate, _world);
+                HashSet<CabinetPortfolio> chairsBefore = CabinetSystem.PlayersChairs(country);   // K59 - a no-op in an AI country, kept so every install is bracketed
+                country.Government = refused;
+                CabinetSystem.SeatOnEntry(country, chairsBefore);
+                refused.Discharge(CurrentDate);
+                refused.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {WorldCalendar.FailureMarker}{counted.Date:yyyy-MM-dd} - {reason}; the President's cabinet governs on as caretaker");
+            }
+            else if (outgoing != null)
             {
                 outgoing.Discharge(CurrentDate);   // the record's version moves (ChamberVerdicts), CaretakerSince set - the procedure's end, read by WorldCalendar
                 outgoing.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {WorldCalendar.FailureMarker}{counted.Date:yyyy-MM-dd} - {reason}; the outgoing government governs on as caretaker");   // read back by WorldCalendar.FormationFailure (M1)

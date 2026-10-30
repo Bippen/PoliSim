@@ -7,7 +7,7 @@ namespace PoliSim.UI
 {
     /// <summary>
     /// AF-8 (Elias's ruling q8, 2026-10-18): POLAND'S NIGHT INSTALLS NOTHING. The government changes by the statute's steps - the cabinet resigns at the new
-    /// Sejm's first sitting (Konstytucja Art. 162), then Art. 154's - which the manager runs from the day after (`SimulationManager.Sejm.cs`). The verdict
+    /// Sejm's first sitting (Konstytucja Art. 162), then Art. 154's and, failing them, Art. 155's (K302) - which the manager runs from the day after (`SimulationManager.Sejm.cs`). The verdict
     /// says when the Sejm sits and names the formation's projection as what is EXPECTED TO FORM (q20's words), never as a government in office; leaving
     /// the chamber still ends the run, as everywhere.
     /// </summary>
@@ -26,7 +26,7 @@ namespace PoliSim.UI
                 return;
             }
             string sitting = f != null ? f.FirstSitting.ToString("d MMMM yyyy", CultureInfo.InvariantCulture) : "its first sitting";
-            string steps = $"The Sejm first sits on {sitting}, where the cabinet resigns; the next is appointed by Art. 154's steps.";
+            string steps = $"The Sejm first sits on {sitting}, where the cabinet resigns; the next is appointed by Art. 154's steps, or failing them Art. 155's.";   // K302
             // GATE-18 q20 (Elias's ruling of 2026-10-18: "one formation code"): what the steps are expected to form is the steps' own projection
             // (`SimulationManager.ProjectFormation`, in the order `SejmStep` runs them: the President's designee and the Sejm's confidence, then the Sejm's own
             // election - the record's cabinet where it carries tonight's count, `SejmFormation.TryRecordCabinet`, else the formation's projection), so the
@@ -44,7 +44,8 @@ namespace PoliSim.UI
             }
             else if (!expected.Expected)
             {
-                _pendingElectionVerdict = $"{steps} No government is expected to form from this Sejm - {expected.Reason ?? "no formation"}. The outgoing cabinet carries on until one is appointed (Art. 162).";
+                // K302: the Sejm's projection forms none only where Art. 155's vote is refused - the President's cabinet then carries on as caretaker until the new Sejm's
+                _pendingElectionVerdict = $"{steps} No government is expected to form from this Sejm - {expected.Reason ?? "no formation"}. A caretaker carries on until the new Sejm's cabinet is appointed (Art. 162).";
             }
             else if (expected.Head != null)
             {

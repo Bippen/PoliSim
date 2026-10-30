@@ -13,24 +13,29 @@ namespace PoliSim.Elections
     /// <list type="bullet">
     /// <item><description><b>The ordinary days</b> are <see cref="WorldClock.TryNextPollingDay"/>'s - Sweden's second Sunday of September every fourth year,
     /// Germany's first Sunday of Art. 39 GG's window (K159), Poland's Art. 98 ust. 2 window, Italy's last Sunday before the term's fifth anniversary (K156),
-    /// re-anchored on the country's own last count (K206: a dissolution starts a new term), the USA's even Novembers (its own counts,
+    /// re-anchored on the country's own last count (K206: a dissolution starts a new term), Poland's re-anchored the same way after a shortened term (K302,
+    /// Art. 98 ust. 6: `SejmFormation.OrdinaryAfter`), the USA's even Novembers (its own counts,
     /// `UsPresidentialElection`, `UsCongressElection`) - and Poland's presidential first vote by `PresidentialElection.TryNextFirstVote`.</description></item>
     /// <item><description><b>The snap elections</b> (K161) are the confidence procedures' own, where the model runs them for an AI country: an AI country's
-    /// government is formed by its procedure after each count (<see cref="FirstSittingAfter"/>), and where the procedure fails the statute's own election
+    /// government is formed by its procedure after each count (<see cref="FirstSittingAfter(Country, DateTime)"/>), and where the procedure fails the statute's own election
     /// follows - the Riksdag's round broken off (RF 6 kap. 5 §: four rejected proposals; and, as the player's round breaks off in `AskNext`, a round with no
     /// party to ask), the extra election within three months unless the ordinary falls in them; Italy's three failed mandates (art. 88, the semestre bianco of
-    /// art. 88 c. 2, art. 61's polling day). With no player's party in an AI country every party asked tables and is voted on, so an AI round ends only in an
+    /// art. 88 c. 2, art. 61's polling day); the Sejm's procedure run to its end (K302: Art. 155 ust. 1's simple majority refused, the President shortens the
+    /// term and orders elections, ust. 2, within forty-five days, Art. 98 ust. 5 - `SejmFormation.ShortenedTermElectionDay`). With no player's party in an AI
+    /// country every party asked tables and is voted on, so an AI round ends only in an
     /// investiture won, four rejections, or no party to ask. DECLARED: no mid-term confidence procedure runs in an AI country (COAL-1's exits and motions are
     /// the player's country's, K130-K133), so an AI country holds no other snap election. The Bundestag's failed first ballot goes on by Art. 63 Abs. 3-4
     /// through the player's own round (`SimulationManager.ContinueChancellorElection`: the fourteen days, then the ballot the most votes win, the
-    /// Bundespräsident appointing - §713's premise; a dissolution under Abs. 4 Satz 3 is not taken, so no German extra election); the Sejm's failed third
-    /// step leaves the outgoing cabinet in office as Art. 162 ust. 3 names it - Art. 155 is not modelled (as in the player's Poland).</description></item>
+    /// Bundespräsident appointing - §713's premise; a dissolution under Abs. 4 Satz 3 is not taken, so no German extra election). DECLARED, as K204's mandates
+    /// are: an AI Sejm's steps, Art. 155's with them, run whole on its first sitting, so its shortened term is ordered that day.</description></item>
     /// <item><description><b>France</b> (K162): no election is held - its chamber and government of record are seated by date to the record's end,
     /// <see cref="FranceRecordEnds"/>, then held, until SP-8 models its two rounds.</description></item>
     /// </list>
     /// The procedure's state is the country's own, so nothing is added to the save: a count is due on a polling day no record of the country carries; the
     /// formation is due on and after the count's first sitting while the government in office was formed before that count and is no caretaker discharged on
-    /// or after that sitting; an extra election is due where that discharge is the procedure's failure (Sweden's and Italy's alone).
+    /// or after that sitting; an extra election is due where that discharge is the procedure's failure (Sweden's, Italy's and, since K302, Poland's). A Polish
+    /// count's first sitting is read off the country's own counts too (<see cref="FirstSittingAfter(Country, DateTime)"/>: Art. 98 ust. 5's fifteenth day after
+    /// a shortened term's election).
     /// </summary>
     public static class WorldCalendar
     {
@@ -65,6 +70,11 @@ namespace PoliSim.Elections
                 default: return pollingDay.Date;
             }
         }
+
+        /// <summary>K302: <see cref="FirstSittingAfter(CountryId, DateTime)"/> read off the country's own counts - a Polish Sejm a shortened term's election chooses first
+        /// sits on Art. 98 ust. 5's fifteenth day (`SejmFormation.FirstSittingAfter(Country, DateTime)`); every other answer is the statute's by the country alone.</summary>
+        public static DateTime FirstSittingAfter(Country country, DateTime pollingDay) =>
+            country != null && country.Id == CountryId.Poland ? SejmFormation.FirstSittingAfter(country, pollingDay) : FirstSittingAfter(country?.Id ?? default, pollingDay);
 
         /// <summary>What a record carries where the vote model could not predict its polling day of record and the chamber of record was seated in its place.</summary>
         public const string RecordSeatedReason = "The vote model holds no prediction for this day: the chamber of record is seated, its election's own lists.";
@@ -101,12 +111,30 @@ namespace PoliSim.Elections
         }
 
         /// <summary>The country's next ordinary polling day on or after <paramref name="onOrAfter"/> - <see cref="WorldClock.TryNextPollingDay"/>, Italy's re-anchored on
-        /// its own latest count (K206; `WorldClock.ItalyOrdinaryAfter`, as the player's Italy is).</summary>
+        /// its own latest count (K206; `WorldClock.ItalyOrdinaryAfter`, as the player's Italy is), Poland's on its own latest count's term (K302, Art. 98 ust. 6:
+        /// `SejmFormation.OrdinaryAfter`, the same chain day for day until a term is shortened - asked on the last count's own day too, which it answers with
+        /// that day, as the chain does on an ordinary polling day: the review's L1, where the chain's next day showed on the evening of the first ordinary
+        /// election after a shortened term).</summary>
         public static bool TryNextOrdinaryDay(Country country, DateTime onOrAfter, out DateTime day)
         {
             if (country == null || !WorldClock.TryNextPollingDay(country.Id, onOrAfter, out day)) { day = DateTime.MinValue; return false; }
             if (country.Id == CountryId.Italy && TryLatestCount(country, out ElectionRecord last)) { day = WorldClock.ItalyOrdinaryAfter(last.Date, onOrAfter); }
+            if (country.Id == CountryId.Poland && TryLatestCount(country, out ElectionRecord lastPolish) && lastPolish.Date.Date <= onOrAfter.Date) { day = SejmFormation.OrdinaryAfter(country, lastPolish.Date, onOrAfter); }
             return true;
+        }
+
+        /// <summary>K302 (the review's L6): an AI Poland's caretaker after Art. 155 ust. 1's refusal - the President's cabinet, installed on the new Sejm's first sitting
+        /// and discharged that day (Art. 162 ust. 2 pkt 1, ust. 3; `SimulationManager.FormAsAi`) - formed on or after the sitting, unlike every other caretaker the
+        /// calendar reads (the government in office before the count, discharged on the sitting). The art155 review's R2-L1: and carrying the failure line
+        /// `FormAsAi` writes on it the day it installs it (<see cref="FailureMarker"/>, dated its <see cref="GovernmentRecord.FormedOn"/>) - so a player's
+        /// Art. 154 ust. 2 designee, refused and carrying on while ust. 3 runs, is never read as Art. 155's; a lapse ordered again (L5) writes another line and
+        /// leaves this one standing.</summary>
+        private static bool RefusedPresidentsCabinet(Country country, GovernmentRecord g, DateTime firstSitting)
+        {
+            if (ConfidenceProcedure.RulesOf(country.Id) != ConfidenceProcedure.Rules.Sejm || !g.Caretaker || g.FormedOn < firstSitting || g.CaretakerSince < firstSitting) { return false; }
+            string head = g.FormedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ": " + FailureMarker;
+            foreach (string line in g.Breaks) { if (line.StartsWith(head, StringComparison.Ordinal)) { return true; } }
+            return false;
         }
 
         /// <summary>Whether the formation after the country's latest count is still owed on <paramref name="today"/>: on or after that count's first sitting, the
@@ -115,7 +143,7 @@ namespace PoliSim.Elections
         {
             firstSitting = DateTime.MinValue;
             if (!TryLatestCount(country, out counted)) { return false; }
-            firstSitting = FirstSittingAfter(country.Id, counted.Date);
+            firstSitting = FirstSittingAfter(country, counted.Date);
             GovernmentRecord g = country.Government;
             if (today.Date < firstSitting || g == null) { return false; }
             if (g.FormedOn > counted.Date) { return false; }
@@ -126,8 +154,11 @@ namespace PoliSim.Elections
         /// K161: the extra election the country's procedure owes, where its formation after the latest count failed - the government discharged on or after that
         /// count's first sitting. Sweden (RF 6 kap. 5 §): the Sunday on or before three months after the discharge (`ConfidenceProcedure.ExtraElectionDay`), unless
         /// the ordinary election falls within the three months and serves. Italy (art. 88, K155, K206): the chambers dissolved that day - or on the day the
-        /// semestre bianco lifts (art. 88 c. 2) - and the new ones elected on art. 61's day (`ConfidenceProcedure.ItalianElectionDay`). False for every other
-        /// country and outcome; once the extra election is held, its count is the latest and nothing is owed.
+        /// semestre bianco lifts (art. 88 c. 2) - and the new ones elected on art. 61's day (`ConfidenceProcedure.ItalianElectionDay`). Poland (K302, Art. 155
+        /// ust. 2): the President shortens the Sejm's term that day and orders elections on Art. 98 ust. 5's last Sunday (`SejmFormation.ShortenedTermElectionDay`) -
+        /// the steps ran whole on the first sitting, so the Sejm's failure there is Art. 155's, and its caretaker the President's refused cabinet
+        /// (<see cref="RefusedPresidentsCabinet"/>). False for every other country and outcome; once the extra election is held, its count is the latest and nothing
+        /// is owed.
         /// </summary>
         public static bool TryExtraElection(Country country, out DateTime day, out DateTime orderedOn, out string why)
         {
@@ -135,8 +166,8 @@ namespace PoliSim.Elections
             why = null;
             if (country?.Government == null || !TryLatestCount(country, out ElectionRecord counted)) { return false; }
             GovernmentRecord g = country.Government;
-            DateTime firstSitting = FirstSittingAfter(country.Id, counted.Date);
-            if (!g.Caretaker || g.CaretakerSince < firstSitting || g.FormedOn > counted.Date) { return false; }
+            DateTime firstSitting = FirstSittingAfter(country, counted.Date);
+            if (!g.Caretaker || g.CaretakerSince < firstSitting || (g.FormedOn > counted.Date && !RefusedPresidentsCabinet(country, g, firstSitting))) { return false; }
             orderedOn = g.CaretakerSince;
             switch (ConfidenceProcedure.RulesOf(country.Id))
             {
@@ -155,6 +186,12 @@ namespace PoliSim.Elections
                     why = ConfidenceProcedure.ItalianMandates.ToString(CultureInfo.InvariantCulture) + " mandates failed - the chambers dissolved"
                         + (barred ? " on " + dissolvedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ", when the President's last six months end (art. 88 c. 2)" : " (art. 88)")
                         + ", the new ones elected within seventy days (art. 61)";
+                    return true;
+                case ConfidenceProcedure.Rules.Sejm:
+                    // K302: the Sejm's procedure has one failure, Art. 155 ust. 1's refusal, and one order after it (ust. 2)
+                    day = SejmFormation.ShortenedTermElectionDay(orderedOn);
+                    why = "the Sejm refused the President's cabinet its confidence (Art. 155 ust. 1) - the President shortened the Sejm's term and ordered elections within"
+                        + " forty-five days (Art. 155 ust. 2, Art. 98 ust. 5)";
                     return true;
                 default:
                     return false;
@@ -352,9 +389,10 @@ namespace PoliSim.Elections
             if (g.Kind == WorldClock.ExecutiveKind.Presidency) { return (g.Executive ?? "The president") + " is President"; }
             string cabinet = g.Cabinet.Count > 0 ? FormationProjection.Join(country.Id, g.Cabinet) : "no cabinet";
             string led = g.PmParty != null ? " led by " + PartySystems.ShortName(country.Id, g.PmParty) : string.Empty;
-            if (CountsChamber(country.Id) && TryLatestCount(country, out ElectionRecord counted) && g.FormedOn <= counted.Date)
+            if (CountsChamber(country.Id) && TryLatestCount(country, out ElectionRecord counted)
+                && (g.FormedOn <= counted.Date || RefusedPresidentsCabinet(country, g, FirstSittingAfter(country, counted.Date))))   // K302: the Sejm's refused cabinet, a caretaker too
             {
-                DateTime sitting = FirstSittingAfter(country.Id, counted.Date);
+                DateTime sitting = FirstSittingAfter(country, counted.Date);
                 if (today.Date < sitting) { return cabinet + led + " governs until the new chamber first sits on " + OnDay(sitting) + ", when the government is formed"; }
                 if (TryExtraElection(country, out DateTime extra, out DateTime _, out string _)) { return cabinet + led + " governs as caretaker; a new election on " + OnDay(extra); }
                 if (g.Round != null && g.Round.Open) { return cabinet + led + " governs as caretaker while the chancellor's election goes on (Art. 63 Abs. 3-4)"; }

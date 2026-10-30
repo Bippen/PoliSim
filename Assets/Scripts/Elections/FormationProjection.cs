@@ -43,6 +43,12 @@ namespace PoliSim.Elections
         public bool Partial;
         /// <summary>Where no government is expected: why, in the procedure's own terms.</summary>
         public string Reason;
+        /// <summary>K302: the Sejm's, where no government is expected - the cabinet the President appointed under Art. 155 ust. 1 and the Sejm refused (its prime
+        /// minister's party, its parties, its supporters), which resigns and carries on as caretaker (Art. 162 ust. 2 pkt 1, ust. 3) until the new Sejm's cabinet.
+        /// Empty where a government is expected or none was appointed.</summary>
+        public string RefusedPmParty;
+        public List<string> RefusedCabinet = new List<string>();
+        public List<string> RefusedSupport = new List<string>();
         /// <summary>The steps projected, dated by their place in the procedure (not by day): the log a check prints.</summary>
         public List<string> Steps = new List<string>();
         /// <summary>The board's view of the expected government (the cabinet and its seats, its supporters, its investiture); null where the procedure

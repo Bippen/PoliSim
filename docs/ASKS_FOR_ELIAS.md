@@ -241,7 +241,7 @@ Each item was read by independent reviewers, and every finding is fixed or asked
   - Should the revert date also stand as a permanent line on the Desk's face (it is now a dated entry and a slip line)?
 - **AF-8, Poland's steps (§874).**
   - Where no record names the designee, the President designates the formation's projection.
-  - Art. 155 and the shortened term are not modelled.
+  - Art. 155 and the shortened term are not modelled. ANSWERED: K302 (Elias) built it as its own item; K303-K307 record its readings (§955).
   - **GA-0-45 premise 6:** Sweden's blocs for 2026 and later. Options: (a) source them from 2026's dated declarations (MP has only a paraphrase); (b) cut them; (c) carry 2022's forward. (a) and (b) move Sweden's counts through tactical lending.
   - **Premise 7:** the seatless player country read as governing, kept as an instrument convention.
   - A player's party that is in the record's cabinet (2023: KO+TD+NL) is seated in it as on the record, unasked. The model never does that elsewhere. Keep it, drop the player's party, or use the projection?

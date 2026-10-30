@@ -195,8 +195,15 @@ cut."* Each premise the audit found stated in code with no row here:
   majority of the game's Sejm; each vote's outcome is the game's own chamber's. Where no record dates a step, it
   falls on its window's last day, as the 10th term's did. DECLARED and asked: where no record names the President's
   designee, the designee is the formation's projection on the new Sejm. DECLARED and asked: a player's party that is in the record's cabinet
-  is seated in it as on the record (the night says so) - where elsewhere the model never drafts the player's party unasked. Not modelled, stated: Art. 155 and the
-  shortened term it ends in - where the Sejm elects no one, the caretaker serves on.
+  is seated in it as on the record (the night says so) - where elsewhere the model never drafts the player's party unasked. K302 (Elias, 2026-10-29):
+  Art. 155 is built - where the Sejm elects no one, the President appoints a cabinet (DECLARED, and ruled by the integrator on the review: the
+  formation's best of the cabinets a simple majority carries, no defection rounds; every party voting by the confidence procedure's sides - for in or
+  behind the cabinet, against where red-lined from it, else abstaining), carried by more for than against; refused, the President's cabinet resigns
+  and carries on as caretaker (Art. 162 ust. 2 pkt 1, ust. 3 - in the player's Poland and an AI Poland alike), and the President shortens the term
+  and orders elections on Art. 98 ust. 5's last Sunday (DECLARED: the 2007 practice, ruling E2's principle; counted from the order, which the Kodeks's
+  count from its publication cannot precede), the Sejm so elected first sitting on the fifteenth day with a term of its own (ust. 6). Repeated
+  shortened terms are not limited - the constitution sets none. The player's Poland walks its days; an AI Poland runs the steps whole on the first
+  sitting, and an AI caretaker an older save left owing a day already past is ordered again on the day it is found (DECLARED).
 - **The constructive vote's AI weighed on Mondays** - no statute: **CUT**. The AI weighs it every day.
 - **"Any party may move" the constructive vote** - the statute is the Bundestag's standing orders, GO-BT § 97 Abs. 1
   [GOBT-4]: a quarter of the members, or a Fraktion of a quarter, sign the motion, or it is not put on the agenda. The

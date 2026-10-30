@@ -23,7 +23,8 @@ namespace PoliSim.Simulation
     /// projection says so (`FormationProjection.Partial`).</description></item>
     /// <item><description><b>The Sejm</b> (Konstytucja Art. 162, 154): the President's designee at the first sitting (the record's where the record names one,
     /// else the formation's projection), the confidence vote (`SejmFormation.Carries`); refused, the Sejm's own election (the record's cabinet where it
-    /// carries, `SejmFormation.TryRecordCabinet`, else the projection where it carries) - the order `SejmStep` runs them in.</description></item>
+    /// carries, `SejmFormation.TryRecordCabinet`, else the projection where it carries); K302: Art. 155 ust. 1, the President's cabinet carried by a simple
+    /// majority (`SejmFormation.PresidentAppoints`), else the term shortened and its elections' day (ust. 2, Art. 98 ust. 5) - the order `SejmStep` runs them in.</description></item>
     /// </list>
     /// A wait on the player - asked, or offered a place - is answered by the AI's rule for the player's party (K49, `AnswerWaitsAsTheAi`: the draft tabled; an
     /// offer accepted where every invited party accepts, else declined and redrafted without it, `AnswerOfferNow`), and the projection says it read one. Every
@@ -287,7 +288,7 @@ namespace PoliSim.Simulation
         private FormationProjection ProjectSejm(Country country, DateTime pollingDay)
         {
             var projection = new FormationProjection { Country = country.Id, PollingDay = pollingDay, Procedure = "the Sejm's steps (Konstytucja Art. 162, 154)" };
-            DateTime sitting = SejmFormation.FirstSittingAfter(country.Id, pollingDay);
+            DateTime sitting = SejmFormation.FirstSittingAfter(country, pollingDay);   // K302: Art. 98 ust. 5's fifteenth day after a shortened term's election
             bool ofRecord = SejmFormation.TryOfRecord(country.Id, pollingDay, out SejmFormation.StepsOfRecord record);
             // Art. 154 ust. 1, at the first sitting (SejmStep, AwaitingSitting): the record's designee where the record names one, else the formation's projection
             List<string> cabinet = null, support = null;
@@ -341,7 +342,34 @@ namespace PoliSim.Simulation
                 Installed(country, pollingDay, appointedOn, false, ref electedPm, ref electedCabinet, ref electedSupport);
                 return ExpectNamed(projection, electedPm, electedCabinet, electedSupport, "THE SEJM ELECTS ITS CABINET (ART. 154 UST. 3)", null, y3, m3);
             }
-            projection.Reason = "the Sejm elects no prime minister (Art. 154 ust. 3) - the outgoing cabinet carries on (Art. 162 ust. 3)";
+            projection.Steps.Add("the Sejm elects no prime minister (Art. 154 ust. 3)");
+
+            // K302: Art. 155 ust. 1 (PresidentAppoints, AwaitingPresidentsConfidence) - the President appoints, and the Sejm's confidence by a simple majority; ust. 2 -
+            // refused, the President shortens the Sejm's term and orders elections. Its days are the steps' own in the player's Poland (`SejmStep`: ust. 3's fourteen
+            // days run out after its vote, then the President's fourteen, the vote on the appointment's fourteenth); an AI Sejm's steps run whole on its first
+            // sitting, so its shortening is dated that day (`WorldCalendar.TryExtraElection` reads it)
+            projection.Procedure = "the Sejm's steps (Konstytucja Art. 162, 154, 155)";
+            bool daysOfSteps = SejmStepsApply(country.Id);
+            DateTime sejmVoted = ofRecord ? record.SejmElected : sitting.AddDays((cabinet != null ? 2 : 1) * SejmFormation.StepWindowDays);
+            DateTime appointedBy = sejmVoted.AddDays(SejmFormation.PresidentAppointsAfterSejmVoteDays), votedBy = appointedBy.AddDays(SejmFormation.StepWindowDays);
+            SejmFormation.PresidentsCabinet named = SejmFormation.PresidentAppoints(country, DeclarationReading.OfElection(country.Id, pollingDay));
+            if (named.Cabinet.Count > 0)
+            {
+                projection.Steps.Add(Pf("the President appoints {0} (Art. 155 ust. 1), {1}; the Sejm's confidence: {2}", string.Join("+", named.Cabinet), named.Choice(), named.Line()));
+                string pm155 = named.PmParty;
+                List<string> cabinet155 = new List<string>(named.Cabinet), support155 = new List<string>(named.Support);
+                Installed(country, pollingDay, daysOfSteps ? appointedBy : sitting, true, ref pm155, ref cabinet155, ref support155);
+                if (named.Carried) { return ExpectNamed(projection, pm155, cabinet155, support155, "THE PRESIDENT'S CABINET - THE SEJM'S CONFIDENCE BY A SIMPLE MAJORITY (ART. 155 UST. 1)", null, named.For, named.Members); }
+                // refused: the President's cabinet resigns and carries on as caretaker (Art. 162 ust. 2 pkt 1, ust. 3) - the AI's install reads it (`FormAsAi`)
+                projection.RefusedPmParty = pm155;
+                projection.RefusedCabinet.AddRange(cabinet155);
+                projection.RefusedSupport.AddRange(support155);
+            }
+            // the shortening's day as `SejmStep` takes it: the vote's day, or the President's own where he finds no admissible cabinet to appoint
+            DateTime shortenedOn = daysOfSteps ? (named.Cabinet.Count > 0 ? votedBy : appointedBy) : sitting;
+            projection.Reason = Pf("the Sejm refuses the President's cabinet{0} its confidence, {1} for and {2} against (Art. 155 ust. 1) - the President shortens the Sejm's term and orders elections for {3} (Art. 155 ust. 2, Art. 98 ust. 5)",
+                named.Cabinet.Count > 0 ? " " + string.Join("+", named.Cabinet) : string.Empty, named.For, named.Against,
+                SejmFormation.ShortenedTermElectionDay(shortenedOn).ToString("d MMMM yyyy", CultureInfo.InvariantCulture));
             projection.Steps.Add(projection.Reason);
             return projection;
         }

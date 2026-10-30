@@ -101,6 +101,12 @@ namespace PoliSim.Persistence
         // additive - an older save carries none, and none is what it means: before AF-8 a Polish night installed the formation's government at once, so no
         // such save holds a procedure in progress. What such a save keeps, not migrated: one cut between a Polish polling day and the record's 13 Dec 2023
         // holds the government the old night installed, from polling day. The other direction drops a procedure in progress (the outgoing cabinet governs on).
+        // Nor for K302 (2026-10-29) under ruling A: Art. 155 adds no saved field - two `SejmStage` values, appended after `Concluded`, which a save carries as
+        // their numbers. What a save keeps, not migrated: a player's save cut by an older build after its Sejm concluded with no government keeps that caretaker
+        // to the ordinary day (Art. 155 is not applied after the fact); an AI Polish caretaker from such a save owes a shortened term's elections on a day already
+        // past, and the load orders them again from the load's day (`SimulationManager.ReorderLapsedShortenings`, DECLARED). The other direction: a save cut in
+        // the middle of Art. 155 (the President's step or its vote), opened in a build before K302, holds a stage that build has no step for - its procedure stays
+        // open, the confidence day never runs again and the Polish desk refuses Art. 158 while it is.
         // Nor for A-LOOP q34 (2026-10-19) under ruling A: `Country.SeedLevied`, which lines the seed levied (the burden's seed side), is additive - an older
         // save carries none, and `SimulationManager.RestoreSaveState` reads it as the lines levied at the load, the older build's own reading (its burden
         // counted only today's levied lines on both sides), so the game loads to the burden it was saved at. What such a save keeps, not migrated: a line
@@ -335,6 +341,9 @@ namespace PoliSim.Persistence
             // PS-6 US-2: what the game does not elect is the record's on the save's date - a save cut before US-2 is put right as it loads, before any
             // screen or fork reads it; a save from a build with US-2 already holds it, and nothing moves
             sim.SeatTheRecordOnItsDate();
+            // K302 (the review's L5): an AI Polish caretaker from a build before K302 owes a shortened term's elections on a day already past - ordered again on
+            // the load's day by the same rule, before any screen reads it (DECLARED); a save from this build owes none past, and nothing moves
+            sim.ReorderLapsedShortenings();
         }
 
         /// <summary>Atomic: serialize beside the target, then swap - a crash mid-save must never
