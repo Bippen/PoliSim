@@ -92,7 +92,11 @@ named constants:
   the floor a mirrored gameplay guard, not a sourced bound. A deflating year indexes the spending
   lines down with prices, except the pension line of the USA (42 U.S.C. 415(i): no negative COLA)
   and Germany (SGB VI § 68a: the pension value does not fall) - `SimulationManager.PensionNominalGuarantee`
-  (K201). `InflationExpectations` itself
+  (K201). Since pbr (K314, 2026-10-30) the pension line is pensioners at the statutory age x the benefit
+  ratio x the going wage: its real term carries the ratio's sourced path, B(now) / B(the last index's year)
+  (`PensionBenefitRatio`; the Ageing Report 2024's Table II.1.79 for the EU five, CBO 62556's derived
+  average benefit over the average covered wage for the USA; flat past 2070 / 2100), in every book; the
+  coverage ratio is not carried (K315). `InflationExpectations` itself
   adapts each turn partway toward realized inflation (`ExpectationsAdaptationSpeed`) — standard
   adaptive-expectations formulation. Monetary policy no longer touches inflation directly; the
   interest rate's effect flows through the real chain: rate → Consumption/Investment → GDP growth →

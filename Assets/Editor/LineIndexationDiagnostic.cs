@@ -81,6 +81,7 @@ namespace PoliSim.EditorTools
                     sim.AdvanceTurn(decisions);
                 }
                 var report = new List<string>();
+                var benefits = new List<string>();   // pbr: the benefit ratio's index each pension line carried
                 foreach (Country c in world.Countries)
                 {
                     bool player = c.Id == CountryId.Sweden;
@@ -93,6 +94,14 @@ namespace PoliSim.EditorTools
                         float real = line.Amount / seed / price;
                         float driverRatio = Mathf.Max(0.0001f, SpendingDrivers.Level(SpendingDrivers.Of(line.Category), c)) / seedDriver[(c.Id, line.Category)];
                         float residual = real / driverRatio;
+                        // pbr (K314; the prereg's (A0) 3): the pension line carries the benefit ratio's path on top of the going wage - its residual over B's index
+                        // (B at the last boundary's year over B at the epoch's year, read from the generated table) joins the caseload lines' one factor
+                        if (line.Category == SpendingCategory.SocialSecurity)
+                        {
+                            float benefitIndex = SpendingIndexationDiagnostic.BenefitRatioFromTable(c.Id, c.CalendarYear) / SpendingIndexationDiagnostic.BenefitRatioFromTable(c.Id, SimulationManager.EpochDate.Year);
+                            residual /= benefitIndex;
+                            benefits.Add($"{c.Id} {benefitIndex:F4}");
+                        }
                         bool driverless = SpendingDrivers.Of(line.Category) == SpendingDriver.None;
                         if (driverless)
                         {
@@ -116,7 +125,7 @@ namespace PoliSim.EditorTools
                     if (planted.HasValue && c.Id == planted.Value) { plantedFactor = driverlessRatio; }
                     report.Add($"{c.Id}{(player ? " (player)" : "")}: {withDriver} caseload line(s) at {(float.IsNaN(caseloadRatio) ? 1f : caseloadRatio):F3} (real wage {wage[c.Id]:F3}), {without} driverless at {(float.IsNaN(driverlessRatio) ? 1f : driverlessRatio):F3}");
                 }
-                Debug.Log($"LINE INDEXATION: {(planted.HasValue ? $"the planted run ({planted.Value} at {PlantedGrowth:F1} % a year), " : "")}after {years} years - {string.Join("; ", report)}. A caseload line carries the country's real wage growth on top of prices and its driver (the income index's rule); a driverless line carries the compounded potential growth; in the player's book as in the AI's (K269 (a)).");
+                Debug.Log($"LINE INDEXATION: {(planted.HasValue ? $"the planted run ({planted.Value} at {PlantedGrowth:F1} % a year), " : "")}after {years} years - {string.Join("; ", report)}. A caseload line carries the country's real wage growth on top of prices and its driver (the income index's rule); a driverless line carries the compounded potential growth; in the player's book as in the AI's (K269 (a)). The pension line carries the benefit ratio's index on top (pbr, K314): {string.Join(", ", benefits)}.");
             }
             finally
             {

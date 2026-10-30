@@ -123,9 +123,35 @@ namespace PoliSim.EditorTools
                 bool rateFirst = franceIncome == null || (release.TaxRateOverrides.TryGetValue(TaxType.IncomeTax, out float incomeAfter) && Mathf.Abs(incomeAfter - franceIncome.RateSeed) < 1e-4f);
                 if (givenNeg > 0 || givenPos == 0 || !rateFirst || Mathf.Abs(given / ngdp * 100f - wantRelease) > 0.02f) { Debug.LogError($"FINMIN: France at 50 % debt, a 1 % surplus and its income tax {smallPoints} points above its seed did not take the rate to its seed before restoring lines with the rest of {wantRelease:F2} % of GDP ({given / ngdp * 100f:F3} %, {rateCut / ngdp * 100f:F3} on rates, {givenPos} restores, the rate at its seed: {rateFirst})."); ok = false; }
                 if (franceIncome != null) { franceIncome.Rate = savedIncomeRate; }
-                franceLast.FlowBalance = -AiFinanceMinistry.EuLowDebtDeficitLimitPercent / 100f * ngdp;
-                PolicyDecision atLimit = AiFinanceMinistry.Decide(france, franceLast);
-                if (atLimit.SpendingLineChanges.Count > 0 || atLimit.TaxRateOverrides.Count > 0) { Debug.LogError("FINMIN: France at 50 % debt and a deficit at the 1 % limit received a decision - the rule does not rest at its limit."); ok = false; }
+                // The integrator's fix at §956: the plant is the limit AS THE RULE READS IT (its own flow / GDP x 100). -0.01 x GDP / GDP x 100 is not always
+                // -1 in single precision, and a balance a rounding step either side of the limit is a real (one-ulp) cut or release - the test passed only where
+                // the rounding happened to land exactly, and pbr's French GDP after six turns moved it.
+                float limitPercent = -AiFinanceMinistry.EuLowDebtDeficitLimitPercent;
+                float limitFlow = limitPercent / 100f * ngdp;
+                bool exactPlant = limitFlow / ngdp * 100f == limitPercent;
+                int startBits = System.BitConverter.ToInt32(System.BitConverter.GetBytes(limitFlow), 0);
+                for (int u = 1; u <= 64 && !exactPlant; u++)   // step the flow one unit in the last place at a time, either side
+                {
+                    foreach (int bits in new[] { startBits + u, startBits - u })
+                    {
+                        float f = System.BitConverter.ToSingle(System.BitConverter.GetBytes(bits), 0);
+                        if (!exactPlant && f / ngdp * 100f == limitPercent) { limitFlow = f; exactPlant = true; }
+                    }
+                }
+                // the rule's own resting point, independent of any plant: at exactly the limit below 60 % it asks nothing
+                float restsAt = AiFinanceMinistry.EuRequiredAdjustmentPercentOfGdp(limitPercent, 50f, 0f);
+                if (restsAt != 0f) { Debug.LogError($"FINMIN: the rule at exactly the 1 % limit and 50 % debt asks {restsAt:R} % of GDP - it does not rest at its limit."); ok = false; }
+                if (exactPlant)
+                {
+                    franceLast.FlowBalance = limitFlow;
+                    PolicyDecision atLimit = AiFinanceMinistry.Decide(france, franceLast);
+                    if (atLimit.SpendingLineChanges.Count > 0 || atLimit.TaxRateOverrides.Count > 0)
+                    {
+                        Debug.LogError($"FINMIN: France at 50 % debt and a deficit at the 1 % limit received a decision - the rule does not rest at its limit ({atLimit.SpendingLineChanges.Count} line change(s), {atLimit.TaxRateOverrides.Count} rate change(s)).");
+                        ok = false;
+                    }
+                }
+                else { Debug.Log("FINMIN: no single-precision flow within 64 units of the last place reads France's limit exactly through the rule's division - the resting point is held on the rule's own function above."); }
                 franceLast.FlowBalance = -0.02f * ngdp;
                 PolicyDecision closeBack = AiFinanceMinistry.Decide(france, franceLast);
                 float closed = -Sum(france, closeBack, out int closedNeg, out int closedPos);

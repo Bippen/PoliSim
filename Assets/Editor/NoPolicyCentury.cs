@@ -125,6 +125,22 @@ namespace PoliSim.EditorTools
             /// <summary>K276 review 1: what holds the state's rate off its anchor, points of the 15+ rate - the unemployment rate less the effective natural rate
             /// (the discouraged-worker term reads it), the labour tax's, the health's and the education's participation terms - the attribution beside (c).</summary>
             public float UnemploymentGap, LabourTaxTerm, HealthTerm, EducationTerm;
+            /// <summary>pbr (K314): the pension line's share of nominal GDP after the year's turn, per cent; the statutory headcount (PensionPayment.PensionersMillions at
+            /// the age in force) and the 65+ population, the pyramid's units; the country's calendar year (Country.CalendarYear, the year the boundary indexed into) -
+            /// read by `PensionBenefitRatioDiagnostic`'s (A1) and (A2). Read only.</summary>
+            public double PensionSharePercent = double.NaN, StatutoryPensioners = double.NaN, Elderly65 = double.NaN;
+            public int CountryCalendarYear;
+        }
+
+        /// <summary>pbr: the four pension readings of <see cref="Year"/> from a country as it stands. Read only.</summary>
+        internal static void RecordPension(Country c, Year y)
+        {
+            double pension = 0;
+            foreach (SpendingLine l in c.SpendingLines) { if (l.Category == SpendingCategory.SocialSecurity) { pension += l.Amount; } }
+            y.PensionSharePercent = 100.0 * pension / System.Math.Max(1e-6, (double)c.State.NominalGdp);
+            y.StatutoryPensioners = c.Cohorts != null && PensionAgeStatute.Has(c.Id) ? PensionPayment.PensionersMillions(c, PensionAgeStatute.AgeInForce(c, c.CalendarYear)) : double.NaN;
+            y.Elderly65 = c.Cohorts != null ? c.Cohorts.InAgeRange(65, 999) : double.NaN;
+            y.CountryCalendarYear = c.CalendarYear;
         }
 
         /// <summary>K275: the years the player's own moves are probed at - the first (the creep inside its bound everywhere) and the two the diagnostic holds.</summary>
@@ -186,6 +202,14 @@ namespace PoliSim.EditorTools
         private static readonly Dictionary<CountryId, Year[]> Runs = new Dictionary<CountryId, Year[]>();
         private static readonly Dictionary<CountryId, Year> Openings = new Dictionary<CountryId, Year>();
         private static readonly Dictionary<CountryId, Year[]> UnchangedRuns = new Dictionary<CountryId, Year[]>();
+        private static readonly Dictionary<CountryId, Year> UnchangedOpenings = new Dictionary<CountryId, Year>();
+
+        /// <summary>pbr: the no-policy-change run's opening - its pension readings before the first day (<see cref="RecordPension"/>), the base of (A1)'s index.</summary>
+        public static Year UnchangedOpening(CountryId player, int years)
+        {
+            Unchanged(player, years);
+            return UnchangedOpenings[player];
+        }
 
         /// <summary>MF q29: the player's country as the century opened, before its first day - the base of year one's growth and of the run's life-expectancy gain.</summary>
         public static Year Opening(CountryId player)
@@ -295,6 +319,7 @@ namespace PoliSim.EditorTools
                 try
                 {
                     if (!noPolicyChange) Openings[player] = new Year { LifeExpectancy = c.State.LifeExpectancy, CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate), OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0, MortalityMultiplier = c.State.MortalityMultiplier, LifeExpectancyWithoutTreatable = WithoutTreatable(c, MortalitySchedule.YearOf(sim.CurrentDate)) };
+                    if (noPolicyChange) { var opening = new Year(); RecordPension(c, opening); UnchangedOpenings[player] = opening; }   // pbr: (A1)'s base
                     double nominalBefore = c.State.NominalGdp;   // K218
                     double gdpBefore = c.State.GDP, potentialBefore = c.State.PotentialGDP, productivityBefore = c.PotentialProductivityIndex, yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
                     for (int year = 1; year <= horizon; year++)
@@ -353,6 +378,7 @@ namespace PoliSim.EditorTools
                             Participation = c.State.LaborForceParticipationRate,
                         };
                         RecordIncomeTax(world, c, year, years[year - 1]);   // K275
+                        RecordPension(c, years[year - 1]);   // pbr: read only
                         nominalBefore = nominal;
                         gdpBefore = c.State.GDP; potentialBefore = c.State.PotentialGDP; productivityBefore = c.PotentialProductivityIndex; yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
                     }

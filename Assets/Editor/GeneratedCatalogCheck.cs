@@ -487,6 +487,26 @@ namespace PoliSim.EditorTools
                 Debug.LogError($"CATALOGCHECK: {relative} has changed since UsDemographicOutlook was generated (on disk {onDisk}). Re-run Tools/uspop_prep.pl - and read the diff first: it moves the US baseline.");
             }
 
+            // pbr (K314): the pension benefit ratio's path - PensionBenefitRatioPath against the files Tools/pbr_prep.pl generated it from, the same drift rule
+            // (re-run the tool, read the diff first: it moves every country's pension line).
+            for (int i = 0; i < PensionBenefitRatioPath.SourcePath.Length; i++)
+            {
+                string relative = PensionBenefitRatioPath.SourcePath[i];
+                string path = Path.Combine(Directory.GetCurrentDirectory(), relative.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path))
+                {
+                    failures++;
+                    Debug.LogError($"CATALOGCHECK: {relative} is not on disk, so PensionBenefitRatioPath's digest cannot be compared against anything.");
+                    continue;
+                }
+                string onDisk = ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(path));
+                bool ok = i < PensionBenefitRatioPath.SourceDigest.Length && string.Equals(onDisk, PensionBenefitRatioPath.SourceDigest[i], StringComparison.OrdinalIgnoreCase);
+                sb.Append(F("    {0,-8} {1} {2} (PensionBenefitRatioPath, pbr)\n", "ALL", ok ? "ok  " : "DRIFT", relative));
+                if (ok) { continue; }
+                failures++;
+                Debug.LogError($"CATALOGCHECK: {relative} has changed since PensionBenefitRatioPath was generated (on disk {onDisk}). Re-run Tools/pbr_prep.pl - and read the diff first: it moves every pension line.");
+            }
+
             int years = PopulationProjections.LastYear - PopulationProjections.FirstYear + 1;
             foreach (KeyValuePair<CountryId, float[][]> entry in PopulationProjections.Bands)
             {

@@ -10,6 +10,7 @@ public static class FrfPlay
     {
         System.Threading.Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         UnityEngine.Debug.unityLogger.logEnabled = false;
+        PoliSim.Data.PensionBenefitRatio.ProbeSuspended = System.Environment.GetEnvironmentVariable("PBR_PROBE") == "1";   // pbr (the prereg's (A0) 4): PBR_PROBE=1 holds the benefit ratio flat - the neutrality run
         string mode = args[0], player = args[1];
         int years = int.Parse(args[2], CultureInfo.InvariantCulture), seed = int.Parse(args[3], CultureInfo.InvariantCulture);
         if (mode == "off") { SimulationManager.SetFiscalReactionPairForSweep(0f, 1f, 1f); }

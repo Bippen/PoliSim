@@ -7,7 +7,8 @@ namespace PoliSim.Data
     /// demographic or cyclical driver indexes to that driver's level - pensions to the 65+ cohort, unemployment benefits to the unemployment rate,
     /// education to the 0–19 cohort, health to the age structure - all read off F2's cohort substrate and the
     /// state, never authored. What a line carries besides its driver - the year's prices, and the real wage or the economy's real growth - is
-    /// SimulationManager.IndexSpendingLines' rule, one rule in every book since K269 (a). (Before P5-B2 every line grew at the
+    /// SimulationManager.IndexSpendingLines' rule, one rule in every book since K269 (a); the pension line's real term also carries the benefit ratio's sourced path
+    /// since pbr (K314, `PensionBenefitRatio`). (Before P5-B2 every line grew at the
     /// seed's PotentialGrowthRate and nothing else - §312 measured it: no line indexed to prices, none followed
     /// the actual economy; the pension and health "pressures" were bounded nudges of at most 0.5 % a year.)
     /// </summary>

@@ -6,7 +6,8 @@ namespace PoliSim.Data
     /// PN-2 (2026-09-16, the plan's S6; opened §474): **the pension payment as a READOUT.** The model has one pension line and a pyramid,
     /// so the average benefit it implies is that line over the people the statute retires, and the replacement rate is that benefit over
     /// the mean income the tax schedules already read. Nothing here is a lever: the line is headcount × benefit and the player moves the
-    /// line, not the payment.
+    /// line, not the payment. Since pbr (K314, 2026-10-30) the line's benefit follows the benefit ratio's sourced path (`PensionBenefitRatio`), so the
+    /// average benefit and the replacement rate this readout prints fall against the wage as the Ageing Report and CBO project; the seed is untouched.
     ///
     /// <para><b>ONE ACCESSOR, READ BY BOTH SITES.</b> The row on the Budget page and `PensionPaymentDiagnostic`'s seed gate read these
     /// three methods; the arithmetic exists once, so the figure on the screen is the figure the gate is measured against.</para>

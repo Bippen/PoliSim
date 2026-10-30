@@ -19,7 +19,8 @@ namespace PoliSim.EditorTools
     /// through PolicyDecision.SpendingPinChanges) must read, at year five, exactly what it read at year one; and a
     /// line set to a nominal target on turn 1 must read that target (clamped) at year one and index from it after.
     /// The AI rule is asserted on one country that is NOT the player: its lines carry the same real-growth factor. Every line carries the year's prices
-    /// (P5-B6: the price level at the last index over 1 at the seed).
+    /// (P5-B6: the price level at the last index over 1 at the seed). pbr (K314, 2026-10-30): the pension line's real term also carries the benefit ratio's
+    /// path - B at the last boundary's calendar year over B at the epoch's year, read here from the generated table - within the same tolerance.
     ///
     /// Sits on the simulation bar: it builds and advances worlds.
     /// </summary>
@@ -31,6 +32,15 @@ namespace PoliSim.EditorTools
         /// growth as read before each turn, which is the figure the boundary indexes with: measured out of the engine, the widest driverless miss over the six is 2.4e-7, so a
         /// dropped year of the slowest growth (Italy's) fails by an order of magnitude more than the tolerance.</summary>
         private const float GrowthTolerance = Tolerance;
+
+        /// <summary>pbr (K314; the prereg's (A0) 2): the benefit ratio the pension line carries, read HERE from the generated table (not from the recompute):
+        /// B in a year, held at the table's first year before it and at its last after it, as the ruling reads the path.</summary>
+        internal static float BenefitRatioFromTable(CountryId id, int year)
+        {
+            if (!PoliSim.Data.Generated.PensionBenefitRatioPath.Ratio.TryGetValue(id, out float[] path)) { return 1f; }
+            int first = id == CountryId.USA ? PoliSim.Data.Generated.PensionBenefitRatioPath.UsFirstYear : PoliSim.Data.Generated.PensionBenefitRatioPath.EuFirstYear;
+            return path[Math.Max(0, Math.Min(path.Length - 1, year - first))];
+        }
 
         public static void Run()
         {
@@ -104,6 +114,8 @@ namespace PoliSim.EditorTools
                         float prices = country.State.PriceLevel;
                         // K269 (a): and its real term - the real wage index at the last index over the seed's on a caseload, the compounded potential growth with no driver
                         float real = driver == SpendingDriver.None ? growth : country.RealWageIndexAtLastIndex / seedWage;
+                        // pbr (K314): and the pension line's benefit ratio - B at the last boundary's calendar year over B at the epoch's year, from the table
+                        if (l.Category == SpendingCategory.SocialSecurity) { real *= BenefitRatioFromTable(player, country.CalendarYear) / BenefitRatioFromTable(player, SimulationManager.EpochDate.Year); }
                         float expectedCommitted = seedAmount[l.Category] * ratioCommitted * prices * real;
                         float expectedStanding = seedAmount[l.Category] * ratioStanding * prices * real;
                         linesChecked++;

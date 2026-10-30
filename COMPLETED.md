@@ -42409,3 +42409,35 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nart155 8 of 9 (SejmFormationDiagnostic's two (g) lines read live records after the vote day - the check fixed, the engine right); dryart155 Poland 1280, 0 failed; realart155 (1280, -shotinterrupts) and realart155w (2560) 23 captured, 0 failed each, no overflow; dumpart155 byte-identical to dumpfisc2 on both seeds; cheapart155 148 of 148 (SejmFormationDiagnostic clean on the fix); simart155 92 of 92; docart155 document group clean
 
 **Commit:** this one.
+
+## 956. PBR - THE PENSION BENEFIT RATIO (K293'S FILING): THE PENSION LINE CARRIES ITS SOURCE'S BENEFIT RATIO IN EVERY BOOK; RETIRING THE FISCAL REACTION RE-MEASURED AND REFUSED (K314-K319) (2026-10-30)
+
+**What was owed:** K293 kept the fiscal reaction in the player's book, because retired, Italy's and Poland's idle books passed 300 % of GDP while their pension lines grew to about 21 % of GDP. It filed each country's pension benefit ratio, which had to come before the retirement could be measured again.
+
+**Built** (wave/pbr, rebased as wave/pbr2; the prereg and amendments 1-3 each committed alone before the code each governs; independent review READY on conditions, its M1 and M2 answered):
+- **K314:** the pension line is the statutory headcount × the benefit ratio B × the going wage, in every book. At each boundary its real term is the wage × B(now) / B(last index year).
+  - B for the EU five is the Ageing Report 2024's Table II.1.79. For the USA it is CBO 62556's average benefit over its average covered wage.
+  - It is rebased on each opening year and flat past the source's end.
+  - `Tools/pbr_prep.pl --check` regenerates `PensionBenefitRatioPath` byte for byte.
+  - Save format 71.
+- **K315:** the coverage ratio is not carried. Italy 2050's (A1) miss is registered on its coverage attribution.
+- **K316:** a pension-age bill does not move B, and there is no indexation lever (filed).
+- **K317:** fisc2's (B), re-measured word for word, fails. Sweden crosses the −100 % floor on both seeds on the income tax's creep. The fiscal reaction stays in the player's book; its remaining job is absorbing that creep.
+- **K318 and K319**, ruled after the measurement with bounds that state what they relax:
+  - Italy 2070 (A1) +30.2 %, (A2) +6.0 % against ±5: the carried statute's coverage.
+  - Sweden (h2) −13.0 against the DSM's −5.8 ±5.6: the primary balance before ageing, filed as its own calibration item.
+
+**Measured** (`Reviews/2026-10-30_pbr_integrator.md`):
+- The prereg's checks are all clean in the engine (npbr 15 of 15, the three Unity-only checks included), with K315, K318 and K319 registered and holding.
+- (A0) neutrality: with B held at 1, byte-identical to main, reproduced by the review.
+- The play saves re-staged at format 71; the round-trip 12 of 12.
+- **The movers by name:** every country moves from turn 1 (the USA from turn 2). Debt at turn 100 on seed 777: the USA −15.2 %, France −1.7 %, Sweden −1.1 %, Poland −0.75 %, Germany −0.38 %, Italy −0.24 %.
+- The family `pbr`; the sentinel re-pinned (a7c54cbe / 7b70bc3e). FT-10: France household lowered 5.5 → 4.5; France industry and Poland's two cells CLOSE inside the clean band; the breach ratchet 4 → 1. AiFinanceMinistryDiagnostic's at-the-limit plant read −0.99999994 % through the rule's single-precision division (one unit inside the limit, so a correct microscopic release); the check now asserts the rule's own resting point and plants end to end only where a flow reads the limit exactly.
+
+**Evidence:** `Reviews/2026-10-30_pbr_prereg.md` (with amendments 1-3), `_pbr_review.md`, `_pbr_integrator.md`; `ElectionsData/usa/raw/pbr_social_security/` (SHA256SUMS, fetch log).
+
+**Declared:** K314-K319 (recorded). **Filed:** the effective retirement age (K315); a pension-indexation verb (K316); Sweden's primary balance before ageing (K319); the review's Lows L1-L9 (in the integrator's note).
+
+**Bars:** npbr 15 of 15; dumppbr the family pbr; stagepbr exit 0; slrtpbr 12 of 12; npbrl 1 of 2 (FT-10's slack: France household lowered, three cells CLOSE, the ratchet 4 -> 1); npbrl2 2 of 2; cheappbr 148 of 148; simpbr 92 of 93 (AiFinanceMinistryDiagnostic's at-the-limit plant, a single-precision rounding - the check fixed); npbrf AiFinanceMinistryDiagnostic clean; docpbr document group clean
+
+**Commit:** this one.

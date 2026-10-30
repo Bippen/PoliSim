@@ -705,8 +705,12 @@ namespace PoliSim.Simulation
         /// caseload lines above the no-policy book's) - but retired there it does not hold:
         /// the fisc2 prereg's Part 2 (`Reviews/2026-10-29_fisc2_prereg.md`) measured Italy's and Poland's idle books past 300 % of GDP within the century on
         /// both seeds - the pension line, the statutory headcount at the going wage, outgrows the revenue as their populations age (no benefit ratio is
-        /// modelled), and the creep the player's statute keeps (K271, K275) does not offset it. It stays, and its retirement there waits on the pension
-        /// line's benefit ratio (filed with K269 (a)). Filed with it at K251: K269 (b) revenue's
+        /// modelled), and the creep the player's statute keeps (K271, K275) does not offset it. Its retirement there waited on the pension line's benefit ratio
+        /// (filed with K269 (a)); pbr (K314, 2026-10-30) gave the line its sourced ratio and re-measured fisc2's (B) (`Reviews/2026-10-30_pbr_prereg.md`): Italy
+        /// and Poland no longer pass 300 % (Italy's idle book peaks at 255 / 240 %, Poland's ends at -15 / -16 %), but Sweden's crosses (B2)'s floor (-142 % at
+        /// year 100 on seed 777, below -100 % from year 67; -109 % on 424242) - its revenue at unit multiplier rises from 42 % of GDP to 53 % on the statute's
+        /// creep while its lines hold near 47 % - and misses (B3) (+3.6 points at year 100, K310's gap), and Poland's seed 777 misses (B3) by 0.05. So (B)
+        /// fails and the reaction STAYS in the player's book: its remaining job is absorbing the income tax's creep, no longer the pension line's drift. Filed with it at K251: K269 (b) revenue's
         /// drift at unchanged rates; K269 (c) a US fiscal reaction through the budget (the AI USA's debt-limit rule runs a recurring default cycle); K269 (d) the
         /// three fiscal-framework laws and the debt chart's "comfortable" line, which read the anchor this method alone consumes. The role is read on the REAL
         /// country: a preview's clone carries no government.</para>
@@ -7888,6 +7892,7 @@ namespace PoliSim.Simulation
                 DebtRatioLastReport = country.DebtRatioLastReport,
                 IncomeTaxThresholdLift = country.IncomeTaxThresholdLift,   // K271: the AI government's re-indexation the preview's income tax reads
                 EnergyLevyRealGrowth = country.EnergyLevyRealGrowth,   // K297: the real growth the player's energy levy rule carries
+                PensionBenefitRatioYear = country.PensionBenefitRatioYear,   // pbr (K314): the last index's year, which the preview's pension line reads the benefit ratio from
                 EuReleasedShareOfLines = country.EuReleasedShareOfLines,   // K271: the release the ministry's excess leaves out
                 DebtRatioReportBefore = country.DebtRatioReportBefore,
                 BaselineYouthUnemploymentRate = country.BaselineYouthUnemploymentRate,
@@ -8477,7 +8482,8 @@ namespace PoliSim.Simulation
         /// is GDP per head, the going wage its labour-intensity scenario; and a non-ageing caseload line at the going wage (population, the working age, family, income
         /// security) drifts from the DSM's constant share as employment per head falls. A player's change
         /// sets a line's level and the rule carries it from there; a pinned line stays pinned. The income-tax thresholds still read the role
-        /// (K271: the player keeps the statute). DECLARED: the pension line is the statutory headcount at the going wage in all six (no benefit ratio).</para>
+        /// (K271: the player keeps the statute). K292 DECLARED the pension line the statutory headcount at the going wage in all six (no benefit ratio); since pbr
+        /// (K314) its real term also carries the benefit ratio's sourced path (`PensionBenefitRatio`), the coverage ratio not carried (K315).</para>
         ///
         /// <para>Replaced here: ApplyDiscretionarySpendingGrowth and ApplyMandatorySpendingGrowth (both potential-rate
         /// growth on every line, the AI rule's ancestor) and the two bounded demographic pressures on the pension and
@@ -8508,6 +8514,11 @@ namespace PoliSim.Simulation
             country.RealWageIndexAtLastIndex = country.State.RealWageIndex;
             TaxSchedule.LiftThresholds(country, aiBudget, prices, wages);   // K271: an AI government re-indexes its income-tax thresholds to nominal incomes (not the USA's; the player keeps the statute)
             if (!aiBudget) { country.EnergyLevyRealGrowth = (country.EnergyLevyRealGrowth > 0f ? country.EnergyLevyRealGrowth : 1f) * realGrowth; }   // K297: the player's energy line's real growth, which its levy rule carries (EnergyLedger)
+            // pbr (K314, 2026-10-30): THE PENSION BENEFIT RATIO, in every book - the pension line is pensioners x the benefit ratio x the going wage, so its real term
+            // carries B(the year this boundary indexes into) / B(the last index's year) (`PensionBenefitRatio`: the Ageing Report 2024's Table II.1.79 for the EU five,
+            // CBO 62556's derived ratio for the USA; flat past the source's last year, ruled). 1 on every other line, and exactly 1 with the path held flat (the probe).
+            float benefitRatio = PensionBenefitRatio.Ratio(country.Id, country.PensionBenefitRatioYear, country.CalendarYear);
+            country.PensionBenefitRatioYear = country.CalendarYear;
             foreach (SpendingLine line in country.SpendingLines)
             {
                 SpendingDriver driver = SpendingDrivers.Of(line.Category);
@@ -8522,8 +8533,9 @@ namespace PoliSim.Simulation
                 // every line, which §367 measured at ×4.55 for the USA in a century against output ×4.29. A line with no driver is the discretionary
                 // block a finance ministry sizes against the economy, and follows real potential growth as before. Since K269 (a) the player's lines take the same factor.
                 bool driverless = driver == SpendingDriver.None;
-                float factor = prices * driverRatio * (driverless ? realGrowth : wages);   // RF-2 re-formed (§384): a caseload at the going real wage, a discretionary line at the economy's growth
-                factor = PensionNominalGuarantee(country.Id, line.Category, prices, driverRatio, driverless ? realGrowth : wages, factor);   // MF-14 (K201): no nominal pension cut in the USA and Germany
+                float realTerm = driverless ? realGrowth : line.Category == SpendingCategory.SocialSecurity ? wages * benefitRatio : wages;   // pbr (K314): the pension line's per-pensioner real term is the going wage x the benefit ratio's path
+                float factor = prices * driverRatio * realTerm;   // RF-2 re-formed (§384): a caseload at the going real wage, a discretionary line at the economy's growth
+                factor = PensionNominalGuarantee(country.Id, line.Category, prices, driverRatio, realTerm, factor);   // MF-14 (K201): no nominal pension cut in the USA and Germany (pbr: the per-pensioner term with B inside it)
                 line.SeedAmount *= factor;
                 if (line.Pinned) { continue; }
                 // SC-1 (ruled 2026-09-15, §503): the line's OWN PATH indexes and is clamped to its seed band; the applied dial cost rides the same factor
@@ -8540,7 +8552,8 @@ namespace PoliSim.Simulation
         /// applicable increase percentage is greater than zero" - a falling CPI pays no COLA and cuts nothing, so the line's PRICE term is floored at 1
         /// (the caseload and the real term still move);</item>
         /// <item>Germany - SGB VI § 68a (1) (Schutzklausel): "Abweichend von § 68 vermindert sich der bisherige aktuelle Rentenwert nicht" - the pension
-        /// value, which follows the wage development, does not fall, so the line's PER-PENSIONER term (prices × the real term) is floored at 1 and the
+        /// value, which follows the wage development, does not fall, so the line's PER-PENSIONER term (prices × the real term - since pbr the going wage × the
+        /// benefit ratio's path, K314) is floored at 1 and the
         /// caseload alone moves it. DECLARED: § 68a (2)-(3)'s catch-up (the forgone cut offset against later rises, which are halved until it is
         /// cleared) is not modelled - the line keeps the floor and later rises in full.</item>
         /// </list>
@@ -8571,11 +8584,12 @@ namespace PoliSim.Simulation
 
         /// <summary>K269 (a) (2026-10-29): the real term the next boundary is projected to carry on <paramref name="line"/> - <see cref="IndexSpendingLines"/>' own split:
         /// a driverless line the economy's real potential growth, a caseload the STANDING real wage growth (`MacroSystem.RealWageGrowthPerTurnPercent` with no
-        /// productivity cycle - the wage equation's own rate, as the price term reads the standing inflation). An estimate, as the price term is.</summary>
+        /// productivity cycle - the wage equation's own rate, as the price term reads the standing inflation). An estimate, as the price term is.
+        /// <para>pbr (K314): the pension line's carries the benefit ratio's path one year on as well (`PensionBenefitRatio.ProjectedRatio`).</para></summary>
         public static float ProjectedRealTerm(Country country, SpendingLine line) =>
             SpendingDrivers.Of(line.Category) == SpendingDriver.None
                 ? 1f + country.PotentialGrowthRate / 100f
-                : 1f + MacroSystem.RealWageGrowthPerTurnPercent(country, 0f) / 100f;
+                : (1f + MacroSystem.RealWageGrowthPerTurnPercent(country, 0f) / 100f) * (line.Category == SpendingCategory.SocialSecurity ? PensionBenefitRatio.ProjectedRatio(country) : 1f);
 
         /// <summary>SC-1: one line's index step - its dial costs ride the factor, then the line is written from its indexed own path (<see cref="ComposeLine"/>).</summary>
         private static void IndexComposedLine(Country country, SpendingLine line, float indexedOwnPath, float factor)

@@ -1,0 +1,56 @@
+HTTP/1.1 200 OK
+Server: nginx
+Date: Thu, 29 Oct 2026 23:28:42 GMT
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+Content-Length: 36896
+Connection: keep-alive
+x-archive-orig-connection: keep-alive
+x-archive-orig-content-length: 36896
+x-archive-orig-x-content-type-options: nosniff
+x-archive-orig-x-platform-cluster: 5jmn55jyi3w74-main-bvxea6i
+x-archive-orig-x-timer: S1789828315.707779,VS0,VE96
+x-archive-orig-content-language: en
+x-archive-orig-x-frame-options: SAMEORIGIN
+x-archive-orig-x-debug-info: eyJyZXRyaWVzIjowfQ==
+x-archive-orig-x-generator: Drupal 10 (https://www.drupal.org)
+x-archive-orig-x-platform-processor: tqizgdvakdwnqv2es5ktoc5jmm
+x-archive-orig-via: 1.1 varnish, 1.1 varnish, 1.1 varnish
+x-archive-orig-last-modified: Thu, 17 Sep 2026 17:56:48 GMT
+x-archive-orig-traceresponse: 00-18d6bf5e8b239f3b8dc1322c7a43abd8-9ee3ece2eeb86c88-01
+x-archive-orig-x-platform-router: 2gdrwanq5fefyrhuuc2mpdvlpm
+x-archive-orig-fastly-restarts: 1
+x-archive-orig-accept-ranges: bytes
+x-archive-orig-age: 0
+x-archive-orig-date: Sat, 19 Sep 2026 14:31:54 GMT
+x-archive-orig-x-served-by: cache-iad-kiad7000208-IAD, cache-iad-kiad7000208-IAD, cache-iad-kiad7000061-IAD, cache-pao-kpao1770067-PAO
+x-archive-orig-x-cache: MISS, MISS, MISS
+x-archive-orig-x-cache-hits: 0, 0, 0
+x-archive-orig-x-datadome: protected
+x-archive-orig-set-cookie: datadome=2BObC8bW4_kzhcTMmfmkHudYO7BLD3JVlPrGjsS7p28Zx2dzTXp71~5m_qeqARiTTfkc5FCKh71SoQKVpWqGp1N~xcv5DrTUwsNv6slcJ8nrdjCANVyXB9ujfqrZX7nJ; Max-Age=31536000; Domain=.cbo.gov; Path=/; Secure; SameSite=Lax
+x-archive-orig-cache-control: public, max-age=43200, s-maxage=43200, stale-if-error=86400
+x-archive-orig-surrogate-control: max-age=43200, stale-if-error=86400
+x-archive-orig-expires: Sun, 20 Sep 2026 02:31:54 GMT
+cache-control: max-age=1800
+accept-ranges: bytes
+memento-datetime: Sat, 19 Sep 2026 14:31:54 GMT
+link: <https://www.cbo.gov/system/files/2026-09/62556-2026-Additional-Info.xlsx>; rel="original", <https://web.archive.org/web/timemap/link/https://www.cbo.gov/system/files/2026-09/62556-2026-Additional-Info.xlsx>; rel="timemap"; type="application/link-format", <https://web.archive.org/web/https://www.cbo.gov/system/files/2026-09/62556-2026-Additional-Info.xlsx>; rel="timegate"
+content-security-policy: default-src 'self' 'unsafe-eval' 'unsafe-inline' data: blob: archive.org web.archive.org web-static.archive.org wayback-api.archive.org athena.archive.org analytics.archive.org pragma.archivelab.org wwwb-events.archive.org
+x-archive-src: spn2-20260919180018/spn2-20260919132006-wwwb-spn37.us.archive.org-8001.warc.gz
+server-timing: captures_list;dur=0.606251, exclusion.robots;dur=0.061651, exclusion.robots.policy;dur=0.047723, esindex;dur=0.009188, cdx.remote;dur=14.327423, LoadShardBlock;dur=103.572818, PetaboxLoader3.datanode;dur=121.291443, PetaboxLoader3.resolve;dur=45.330897, load_resource;dur=84.253317
+x-app-server: wwwb-app262
+x-ts: 200
+x-tr: 241
+server-timing: TR;dur=0,Tw;dur=998,Tc;dur=2
+set-cookie: wb-p-b-SERVER=wwwb-app262; path=/
+cache-control: private
+X-location: All
+X-AS: 33885
+X-RL: 0
+X-NA: 0
+X-Page-Cache: MISS
+Server-Timing: MISS
+X-NID: Telenor Sverige AB
+Referrer-Policy: no-referrer-when-downgrade
+Permissions-Policy: interest-cohort=()
+X-sd: 1
+

@@ -179,6 +179,11 @@ namespace PoliSim.Data
         /// lines carry the year's real wage growth as the ratio now/then (IndexSpendingLines) - the income index of Socialförsäkringsbalken 58 kap. in the
         /// model's terms. 0 = a save from before: a factor of 1 once.</summary>
         public float RealWageIndexAtLastIndex;
+        /// <summary>pbr (K314, 2026-10-30): the calendar year the spending lines were last indexed at, so the pension line carries the benefit ratio's path as
+        /// the ratio B(now) / B(then) (`PensionBenefitRatio`, IndexSpendingLines) - the year, not B's value, so the NEXT YEAR projection can read B one year on
+        /// (the prereg's amendment 1). The epoch's year at the seed (CaptureStructuralBases): the path is rebased on the country's own opening year. 0 = a save
+        /// from before pbr: a factor of 1 once. The preview's clone carries it (§506).</summary>
+        public int PensionBenefitRatioYear;
         /// <summary>K271 (2026-10-29): THE AI GOVERNMENT'S RE-INDEXATION of the income-tax thresholds - a multiplier on the statute's own threshold scale
         /// (`TaxSchedule.ThresholdScale`), 1 at the seed. Each boundary an AI book governs (not the USA's), it carries the year's real wage growth, and for a
         /// statute that leaves its thresholds nominal (Poland's) the year's prices too, so the thresholds follow nominal incomes - the no-policy convention of
@@ -315,6 +320,7 @@ namespace PoliSim.Data
             TrendPotentialGrowthRate = PotentialGrowthRate;
             PriceLevelAtLastIndex = State.PriceLevel;   // P5-B6
             RealWageIndexAtLastIndex = State.RealWageIndex;   // RF-2 re-formed (§384)
+            PensionBenefitRatioYear = Simulation.SimulationManager.EpochDate.Year;   // pbr (K314): the benefit ratio's path rebased on the opening year (K276's idiom: the epoch's year)
             DebtRatioSeed = State.DebtToGdpRatio;   // the AI finance ministry (§388)
             ParticipationAtLastBoundary = State.LaborForceParticipationRate;   // FT-7 (§391)
             // FT-8 (§398): the two references the natural rate reads the labour force through - the structural participation and the composition rate on the seed's pyramid

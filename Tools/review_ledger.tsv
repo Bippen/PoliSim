@@ -421,3 +421,11 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	46eefe3bb14f33340aa205874772
 file	Assets/Scripts/Simulation/SimulationManager.FormationProjection.cs	12fbda131035a14439f7814db85160e45c524d8cd20dc08f8ad8de9d1f033f2f	reviewed	2026-10-30	s955	Reviews/2026-10-29_art155_review.md	-
 file	Assets/Scripts/Simulation/SimulationManager.Sejm.cs	6fca1e15a13ab8a67941bc9b2f0f04bb4d83901d97908130437dcf5c9490ee86	reviewed	2026-10-30	s955	Reviews/2026-10-29_art155_review.md	-
 file	Assets/Scripts/Simulation/SimulationManager.WorldCalendar.cs	d82a96891e4d70982a3e98bf657d13ff7d72f14a78f66f8a2a0cf03e1c8a8029	reviewed	2026-10-30	s955	Reviews/2026-10-29_art155_review.md	-
+file	Assets/Scripts/Data/Generated/PensionBenefitRatioPath.cs	51d578220dfdc18670c49fcbfdffb8b8fa251d6fd33b6a025e1dcb63ee0f6ee0	reviewed	2026-10-30	s956	Reviews/2026-10-30_pbr_review.md	-
+file	Assets/Scripts/Data/PensionBenefitRatio.cs	c7720e07c780ec7a396b1810043ede45f753cab23a4d03f440a38a4432828978	reviewed	2026-10-30	s956	Reviews/2026-10-30_pbr_review.md	-
+file	Assets/Scripts/Data/PensionPayment.cs	c5757baad711410e212d9f4e9e970fafe392aaad14aef06335e496968308947e	reviewed	2026-10-30	s956	Reviews/2026-10-30_pbr_review.md	-
+file	Assets/Scripts/Data/SpendingDrivers.cs	4f0101aebd4c3fb9555606f17e05b5fd4d532dbcf883c97da52bd1a61adc27e5	reviewed	2026-10-30	s956	Reviews/2026-10-30_pbr_review.md	-
+file	Assets/Scripts/Data/SpendingLine.cs	b02c2440b8a5e0948d1076e904ff5ba1e519ac172bd885c6c39dca3a35766c39	reviewed	2026-10-30	s956	Reviews/2026-10-30_pbr_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	98d360f522ac3552b530a0688b5730393090d12f0a690fe0051da00030b17b7a	reviewed	2026-10-30	s956	Reviews/2026-10-30_pbr_review.md	-
+baseline	777	a7c54cbe9bf72b2cdd86d0d6bd92a8c68735bcc35e57f5375fba0aa4bd531730	reviewed	2026-10-30	s956	Reviews/2026-10-30_pbr_integrator.md	-
+baseline	424242	7b70bc3eab2037df8aebd11a33f05039474d930e8830bc05da02b43b0d924bd8	reviewed	2026-10-30	s956	Reviews/2026-10-30_pbr_integrator.md	-

@@ -46,3 +46,8 @@ ElectionsData/macro/raw/k276_pension_age/** -text
 # K299 (2026-10-29): CBO's 2025 demographic outlook data with its response headers, byte-exact as fetched (digests in the folder's SHA256SUMS.txt); the table Tools/uspop_prep.pl --check compares byte for byte
 ElectionsData/usa/raw/uspop_cbo_demographics/** -text
 Assets/Scripts/Data/Generated/UsDemographicOutlook.cs -text
+# pbr (K293's filing, 2026-10-30): CBO's 2026 long-term Social Security projections and their underlying tables with their response headers, byte-exact as fetched (digests in the folder's SHA256SUMS.txt) - the USA's pension benefit ratio
+ElectionsData/usa/raw/pbr_social_security/** -text
+# pbr (K314): the generator's two outputs, byte for byte as Tools/pbr_prep.pl writes them (CRLF); its --check compares them
+Assets/Scripts/Data/Generated/PensionBenefitRatioPath.cs -text
+Assets/Editor/Generated/PensionBenefitRatioAnchors.cs -text

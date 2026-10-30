@@ -12,13 +12,14 @@ public static class PlayerBook
     {
         System.Threading.Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         UnityEngine.Debug.unityLogger.logEnabled = false;
+        PensionBenefitRatio.ProbeSuspended = System.Environment.GetEnvironmentVariable("PBR_PROBE") == "1";   // pbr (the prereg's (A0) 4): PBR_PROBE=1 holds the benefit ratio flat - the neutrality run
         string mode = args[0];
         if (mode != "play" && mode != "nofrf" && mode != "unchanged") { System.Console.Error.WriteLine("PLAYER BOOK: the mode is play, nofrf or unchanged"); System.Environment.Exit(2); }
         string[] players = args[1].Split(',');
         int years = int.Parse(args[2], CultureInfo.InvariantCulture);
         string[] seeds = args[3].Split(',');
         var multiplier = typeof(SimulationManager).GetMethod("GetFiscalReactionMultiplier", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        System.Console.WriteLine("mode,seed,player,year,debt_pct,revenue_pct,multiplier,pit_pct,spending_pct,lines_pct,driverless_pct,caseload_pct,pension_pct,health_pct,interest_pct,primary_pct,unemployment,guard_bn,crisis_phase");
+        System.Console.WriteLine("mode,seed,player,year,debt_pct,revenue_pct,multiplier,pit_pct,spending_pct,lines_pct,driverless_pct,caseload_pct,pension_pct,health_pct,interest_pct,primary_pct,unemployment,guard_bn,crisis_phase,calendar_year,benefit_index,pension_pct_g,statutory_pensioners,elderly65");   // pbr: the last five appended, every earlier column as before
         foreach (string seedText in seeds)
         {
             foreach (string player in players)
@@ -76,7 +77,14 @@ public static class PlayerBook
                         r != null ? F(100.0 * r.TotalSpending / n) : "", F(100.0 * lines / n), F(100.0 * driverless / n), F(100.0 * caseload / n), F(100.0 * pension / n), F(100.0 * health / n),
                         r != null ? F(100.0 * r.InterestOnDebt / n) : "", r != null ? F(100.0 * ((double)r.BudgetBalance + r.InterestOnDebt) / n) : "",
                         F(c.State.Unemployment), (c.Crisis != null ? c.Crisis.GuardAbsorbedBillions : 0f).ToString("F1", CultureInfo.InvariantCulture),
-                        c.Crisis != null ? c.Crisis.Phase.ToString() : "None"));
+                        c.Crisis != null ? c.Crisis.Phase.ToString() : "None",
+                        // pbr: the calendar year, the benefit ratio's index on the opening year (from the table, as the line reads it), the pension line's share to six
+                        // figures, the statutory headcount and the 65+ population (the pyramid's units) - (A1) and (A2)'s inputs
+                        c.CalendarYear.ToString(CultureInfo.InvariantCulture),
+                        PensionBenefitRatio.Ratio(c.Id, SimulationManager.EpochDate.Year, c.CalendarYear).ToString("G6", CultureInfo.InvariantCulture),
+                        (100.0 * pension / n).ToString("G6", CultureInfo.InvariantCulture),
+                        (c.Cohorts != null && PensionAgeStatute.Has(c.Id) ? PensionPayment.PensionersMillions(c, PensionAgeStatute.AgeInForce(c, c.CalendarYear)) : double.NaN).ToString("G6", CultureInfo.InvariantCulture),
+                        (c.Cohorts != null ? (double)c.Cohorts.InAgeRange(65, 999) : double.NaN).ToString("G6", CultureInfo.InvariantCulture)));
                 }
             }
         }

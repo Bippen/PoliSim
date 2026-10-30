@@ -69,11 +69,24 @@ namespace PoliSim.EditorTools
         /// Italy and Poland (h2) - the income-security residual on the population, not the unemployment rate, `SpendingDrivers.Of`, under its prereg's rule, `Reviews/2026-10-29_fisc2_prereg.md`) - each prints a REGISTERED MISS line with its reason and does not fail (the K211 / K217 pattern), until the item
         /// its reason names lands. The reason names the decomposition's terms; the figures are the run's own, printed above the line. Keyed "Country (hN)" for
         /// the EU five and "USA (h3) N years" for CBO's two. A key that is not here is a band K218 closes or one that held already: a miss there FAILS.
+        /// pbr (K319, ruled after its measurement): Sweden (h2) is registered again, BOUNDED (<see cref="PrimaryBalanceBounded"/>) - it prints its bounds' figures and fails
+        /// once either breaks.
         /// </summary>
         private static readonly Dictionary<string, string> Registered = new Dictionary<string, string>
         {
             { "Germany (h2)", "the primary balance - the model opens in a deeper primary deficit than the DSM's balance before ageing, and its revenue share slips at re-indexed thresholds, while the pension line's ageing runs near the DSM's cost of ageing - then the interest on the larger stock (K252's seed converging on the issuance rate): a calibration item (fisc2 removed the income-security cycle that led it)" },
+            // K319 (Code's recommendation, Elias's standing instruction of 2026-10-27; ruled after pbr's measurement, its prereg's amendment 3): measured -13.0 against
+            // -5.8 +/-5.6 (1.6 beyond the edge), the model's -pb -8.5 (-6.7 before pbr) against the DSM's -1.1 (of which the cost of ageing -0.7). Bounded: see
+            // PrimaryBalanceBounded - the registration holds only while its two bounds do, and a broken bound FAILS.
+            { "Sweden (h2)", "the primary balance before ageing - the model's Swedish primary balance outside the pension line runs above the DSM's before its cost of ageing over the window, while the pension line, on the Ageing Report's benefit ratio since pbr (K314), follows the DSM's own cost of ageing and adds its decline on top (K319; FILED: Sweden's primary balance before ageing, a calibration item of its own)" },
         };
+
+        /// <summary>K319: the registrations that hold only while the decomposition names the primary balance outside the pension line as the largest gap term and the
+        /// miss beyond the band's edge is at most <see cref="PrimaryBalanceBoundExcess"/> points - Sweden (h2).</summary>
+        private static readonly HashSet<string> PrimaryBalanceBounded = new HashSet<string> { "Sweden (h2)" };
+
+        /// <summary>[AUTHORED-DRAFT] K319's (ii): the points beyond the band's edge a bounded registration may reach.</summary>
+        private const double PrimaryBalanceBoundExcess = 2.5;
 
         public static void Run()
         {
@@ -102,13 +115,56 @@ namespace PoliSim.EditorTools
 
         /// <summary>K218: a band is asserted (<see cref="Check"/>) unless it is in <see cref="Registered"/>, where a miss prints a named REGISTERED MISS line with its
         /// reason and does not fail; a registered band that holds says so, so the registration can be lifted.</summary>
-        private static void Band(string key, bool ok, string what)
+        private static void Band(string key, bool ok, string what, (bool Holds, string Text)? bound = null)
         {
             if (!Registered.TryGetValue(key, out string reason)) { Check(ok, what); return; }
             if (ok) { _sb.Append("      ok   ").Append(what).Append(" - REGISTERED under K218 and holding: the registration can be lifted\n"); return; }
-            _sb.Append("      REGISTERED MISS (K218) ").Append(what).Append(" - ").Append(reason).Append('\n');
+            if (bound.HasValue && !bound.Value.Holds) { Check(false, what + " - registered, but its bound broke: " + bound.Value.Text); return; }   // K319: a bounded registration fails once its bound breaks
+            string bounds = bound.HasValue ? " - " + bound.Value.Text : "";
+            _sb.Append("      REGISTERED MISS (K218) ").Append(what).Append(" - ").Append(reason).Append(bounds).Append('\n');
             _registeredMisses++;
-            Debug.Log("DEBT HOLD: REGISTERED MISS - " + what + " - " + reason);
+            Debug.Log("DEBT HOLD: REGISTERED MISS - " + what + " - " + reason + bounds);
+        }
+
+        /// <summary>K319 (pbr's prereg, amendment 3): the bounds of a primary-balance registration over <paramref name="from"/>-<paramref name="to"/> - (i) the decomposition's
+        /// largest gap term (the model's against the DSM's) is the primary balance outside the pension line: the model's -pb less the pension line's own part (the sum over
+        /// the window of its share of GDP less its share at the opening) against the DSM's -pb less its cost of ageing; the other terms the pension line's part against the
+        /// DSM's cost of ageing, interest, real growth, inflation and the rest against the stock-flow; (ii) the miss beyond the band's edge at most
+        /// <see cref="PrimaryBalanceBoundExcess"/> points. Read only.</summary>
+        private static (bool Holds, string Text) PrimaryBalanceBound(CountryId id, IReadOnlyList<NoPolicyCentury.Year> run, float open, int startYear, int from, int to, double excess)
+        {
+            double pensionOpen = NoPolicyCentury.UnchangedOpening(id, to - startYear).PensionSharePercent;
+            double mPb = 0, mInterest = 0, mGrowth = 0, mInflation = 0, mPension = 0;
+            float before = ModelAt(run, open, startYear, from);
+            for (int year = from + 1; year <= to; year++)
+            {
+                NoPolicyCentury.Year r = run[year - startYear - 1];
+                double n = r.NominalGrowth / 100.0, g = r.RealGrowth / 100.0;
+                mPb -= r.PrimaryBalancePercent; mInterest += r.InterestPercent;
+                mGrowth -= before * g / (1.0 + n); mInflation -= before * (n - g) / (1.0 + n);
+                mPension += r.PensionSharePercent - pensionOpen;
+                before = r.DebtToGdpRatio;
+            }
+            double mRest = ModelAt(run, open, startYear, to) - ModelAt(run, open, startYear, from) - mPb - mInterest - mGrowth - mInflation;
+            double dPb = 0, dInterest = 0, dGrowth = 0, dInflation = 0, dStockFlow = 0, dAgeing = 0;
+            for (int year = from + 1; year <= to; year++)
+            {
+                dPb -= At(DebtPathAnchors.DsmPrimaryBalance[id], DebtPathAnchors.DsmFirstYear, year);
+                dAgeing += At(DebtPathAnchors.DsmCostOfAgeing[id], DebtPathAnchors.DsmFirstYear, year);
+                dInterest += At(DebtPathAnchors.DsmInterest[id], DebtPathAnchors.DsmFirstYear, year);
+                dGrowth += At(DebtPathAnchors.DsmGrowthEffect[id], DebtPathAnchors.DsmFirstYear, year);
+                dInflation += At(DebtPathAnchors.DsmInflationEffect[id], DebtPathAnchors.DsmFirstYear, year);
+                dStockFlow += At(DebtPathAnchors.DsmStockFlow[id], DebtPathAnchors.DsmFirstYear, year);
+            }
+            double outside = (mPb - mPension) - (dPb - dAgeing);
+            var others = new (string Name, double Gap)[] { ("the pension line", mPension - dAgeing), ("interest", mInterest - dInterest), ("real growth", mGrowth - dGrowth), ("inflation", mInflation - dInflation), ("the rest", mRest - dStockFlow) };
+            (string Name, double Gap) next = others[0];
+            foreach (var o in others) { if (Math.Abs(o.Gap) > Math.Abs(next.Gap)) { next = o; } }
+            bool largest = Math.Abs(outside) > Math.Abs(next.Gap);
+            bool within = excess <= PrimaryBalanceBoundExcess;
+            string text = F("K319's bounds: (i) the primary balance outside the pension line the largest gap term, {0:+0.0;-0.0;0.0} (the model's {1:+0.0;-0.0;0.0} less the pension line's own {2:+0.0;-0.0;0.0}, against the DSM's {3:+0.0;-0.0;0.0} less its cost of ageing {4:+0.0;-0.0;0.0}), the next {5} {6:+0.0;-0.0;0.0} (the pension line {7:+0.0;-0.0;0.0}, interest {8:+0.0;-0.0;0.0}, real growth {9:+0.0;-0.0;0.0}, inflation {10:+0.0;-0.0;0.0}, the rest {11:+0.0;-0.0;0.0}) - {12}; (ii) {13:0.0} points beyond the band's edge, at most {14:0.0} - {15}",
+                outside, mPb, mPension, dPb, dAgeing, next.Name, next.Gap, others[0].Gap, others[1].Gap, others[2].Gap, others[3].Gap, others[4].Gap, largest ? "holds" : "BROKEN", excess, PrimaryBalanceBoundExcess, within ? "holds" : "BROKEN");
+            return (largest && within, text);
         }
 
         /// <summary>The player's country's debt ratio before its first day - the base every change is read from; K252: and the effective rate its stock opens at.</summary>
@@ -234,8 +290,10 @@ namespace PoliSim.EditorTools
             float dsmChange = At(baseline, DebtPathAnchors.DsmFirstYear, DsmHorizonYear) - dsmAtStart;
             float band = HorizonBandShareOfFan * (At(p90, DebtPathAnchors.DsmFanFirstYear, DsmFanYear) - At(p10, DebtPathAnchors.DsmFanFirstYear, DsmFanYear));
             float modelChange = model2035 - open;
-            Band(F("{0} (h2)", id), Mathf.Abs(modelChange - dsmChange) <= band, F("{0} (h2): the change {1}-{2} {3:+0.0;-0.0} points (level {4:0.0} %), the DSM baseline's {5:+0.0;-0.0}, band +/-{6:0.0}{7}",
-                id, start, DsmHorizonYear, modelChange, model2035, dsmChange, band, Crises(run, DsmHorizonYear - start)));
+            string h2 = F("{0} (h2)", id);
+            (bool Holds, string Text)? h2Bound = PrimaryBalanceBounded.Contains(h2) ? PrimaryBalanceBound(id, run, open, start, start, DsmHorizonYear, Mathf.Abs(modelChange - dsmChange) - band) : ((bool, string)?)null;   // K319
+            Band(h2, Mathf.Abs(modelChange - dsmChange) <= band, F("{0} (h2): the change {1}-{2} {3:+0.0;-0.0} points (level {4:0.0} %), the DSM baseline's {5:+0.0;-0.0}, band +/-{6:0.0}{7}",
+                id, start, DsmHorizonYear, modelChange, model2035, dsmChange, band, Crises(run, DsmHorizonYear - start)), h2Bound);
         }
 
         private static void HoldUsa()
