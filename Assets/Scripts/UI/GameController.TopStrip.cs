@@ -221,6 +221,8 @@ namespace PoliSim.UI
             if (confidence != null) { coming.Add(confidence); }
             TopStrip.Chip art158 = TopStrip.Art158Chip(_playerCountry, today);   // K197: the Sejm's constructive vote, for its one day
             if (art158 != null) { coming.Add(art158); }
+            TopStrip.Chip sejm = TopStrip.SejmStepChip(_playerCountry, today);   // S11 (11d): the Sejm's next step while its formation runs
+            if (sejm != null) { coming.Add(sejm); }
             if (lapse != null && !lapseBinds) { coming.Add(lapse); }
             List<TopStrip.Chip> shown = TopStrip.FoldTimeChips(binds, coming, out TopStrip.Chip more);
             // what the right half leaves: a chip that would run under it folds into the "+N" chip too

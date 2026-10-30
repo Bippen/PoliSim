@@ -12,12 +12,18 @@ namespace PoliSim.Testing
     ///
     /// - `preferredHeight > rect.height` — the CLIPPING case (vertical default is Truncate);
     /// - `preferredWidth  > rect.width` when horizontal wrapping is OFF — the ESCAPE case, reported
-    ///   under the same summary because a call site that turned wrapping off usually meant "fits".
+    ///   under the same summary because a call site that turned wrapping off usually meant "fits";
+    /// - S11 (the real film reals11pl, 2026-10-30): a one-line caption that a layout placed and whose RECT runs past a laid ancestor's - the CONTAINMENT
+    ///   case. The ESCAPE test compares a text with its own rect, and a caption held at its measured width (`ElectionNightScreen.HoldWidth`) has a rect as
+    ///   wide as its words: the Polish night's calls line was cut at the column's edge at 1280 and passed. Walked up through each parent that lays its
+    ///   children out (a `LayoutGroup`), stopping at a child its layout ignores; a text placed by anchors alone (a tick's figure, a word inside a bar) is not
+    ///   a layout's child and is not read.
     ///
     /// **Limits, verbatim from the scoping (rule 14):** coverage equals PINNED STATES — canvases
     /// build on demand, so a screen the driver never pins is never enumerated; `Overflow`-mode text
     /// that escapes is CONTAINMENT, not clipping, and a full ancestor-bounds sweep is the bounded
-    /// extension this guard does not attempt; a fitting Text whose RECT clips against an ancestor
+    /// extension this guard does not attempt (S11 added the laid ancestors' sweep above - a text placed by
+    /// anchors past a parent with no layout is still unseen); a fitting Text whose RECT clips against an ancestor
     /// mask is likewise unseen; TMP, if it ever arrives, has its own preferred-size API and belongs
     /// to the deferred-TMP record. Non-text content is out of scope entirely.
     ///
@@ -72,6 +78,12 @@ namespace PoliSim.Testing
                         violations++;
                         detail.AppendLine($"CANVAS TEXT ESCAPE [{context}] '{Path(text.transform)}': preferredWidth {text.preferredWidth:F1} > rect {rect.width:F1} (\"{Shorten(text.text)}\")");
                     }
+
+                    if (text.horizontalOverflow == HorizontalWrapMode.Overflow && OutsideLaidAncestor(text.rectTransform, out string ancestor, out float by))
+                    {
+                        violations++;
+                        detail.AppendLine($"CANVAS TEXT CONTAINMENT [{context}] '{Path(text.transform)}': its rect runs {by:F1} px past '{ancestor}', which laid it out (\"{Shorten(text.text)}\")");
+                    }
                 }
             }
 
@@ -108,17 +120,25 @@ namespace PoliSim.Testing
                     new Vector2(120f, 12f));
                 Text good = MakeProbeText(root.transform, "KnownFitting", "ok", new Vector2(400f, 80f));
 
+                // S11: the containment probe - a row 100 wide laying out a caption held at 200 (it runs past the row), and one held at 60 (it fits)
+                Text escaping = MakeHeldRow(root.transform, "KnownEscapingRow", 200f);
+                Text contained = MakeHeldRow(root.transform, "KnownContainedRow", 60f);
+
                 Canvas.ForceUpdateCanvases();
+                LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)escaping.transform.parent);
+                LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)contained.transform.parent);
                 bool caughtBad = bad.preferredHeight > bad.rectTransform.rect.height + Epsilon;
                 bool passedGood = good.preferredHeight <= good.rectTransform.rect.height + Epsilon;
+                bool caughtEscape = OutsideLaidAncestor(escaping.rectTransform, out _, out _);
+                bool passedContained = !OutsideLaidAncestor(contained.rectTransform, out _, out _);
 
-                if (caughtBad && passedGood)
+                if (caughtBad && passedGood && caughtEscape && passedContained)
                 {
-                    Debug.Log("SELFTEST canvas-text -> OK (known-clipping caught, known-fitting passed)");
+                    Debug.Log("SELFTEST canvas-text -> OK (known-clipping caught, known-fitting passed; known-escaping row caught, known-contained row passed)");
                     return true;
                 }
 
-                Debug.LogError($"SELFTEST canvas-text FAILED: caughtBad={caughtBad} passedGood={passedGood} - the probe is broken, its clean reports are void.");
+                Debug.LogError($"SELFTEST canvas-text FAILED: caughtBad={caughtBad} passedGood={passedGood} caughtEscape={caughtEscape} passedContained={passedContained} - the probe is broken, its clean reports are void.");
                 return false;
             }
             finally
@@ -137,6 +157,51 @@ namespace PoliSim.Testing
             text.text = content;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.rectTransform.sizeDelta = size;
+            return text;
+        }
+
+        /// <summary>S11: whether <paramref name="rect"/> runs past (horizontally, by more than a pixel) any ancestor that laid it out - each parent with a
+        /// `LayoutGroup`, walked up until a child its layout ignores or a parent with none. <paramref name="ancestor"/> and <paramref name="by"/> name the first.</summary>
+        private static bool OutsideLaidAncestor(RectTransform rect, out string ancestor, out float by)
+        {
+            ancestor = null;
+            by = 0f;
+            var corners = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            float left = corners[0].x, right = corners[2].x;
+            Transform child = rect;
+            while (child.parent is RectTransform parent && parent.GetComponent<LayoutGroup>() != null)
+            {
+                LayoutElement element = child.GetComponent<LayoutElement>();
+                if (element != null && element.ignoreLayout) { return false; }
+                parent.GetWorldCorners(corners);
+                float past = Mathf.Max(corners[0].x - left, right - corners[2].x);
+                if (past > 1f)
+                {
+                    ancestor = parent.name;
+                    by = past;
+                    return true;
+                }
+                child = parent;
+            }
+            return false;
+        }
+
+        /// <summary>S11's self-test row: a 100-unit row with a horizontal layout and one caption held at <paramref name="held"/> units.</summary>
+        private static Text MakeHeldRow(Transform parent, string name, float held)
+        {
+            var row = new GameObject(name);
+            row.transform.SetParent(parent, false);
+            row.AddComponent<RectTransform>().sizeDelta = new Vector2(100f, 20f);
+            var h = row.AddComponent<HorizontalLayoutGroup>();
+            h.childControlWidth = true;
+            h.childControlHeight = true;
+            h.childForceExpandWidth = false;
+            Text text = MakeProbeText(row.transform, name + "Caption", "probe", new Vector2(10f, 20f));
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            LayoutElement le = text.gameObject.AddComponent<LayoutElement>();
+            le.minWidth = le.preferredWidth = held;
+            le.flexibleWidth = 0f;
             return text;
         }
 

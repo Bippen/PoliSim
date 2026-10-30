@@ -6551,8 +6551,8 @@ namespace PoliSim.Testing
                 yield return Settle();
             }
 
-            // (1b) K302 (the art155 review's R2-M1): the Sejm night's foot on an Art. 155 refusal - staged, see FilmPolishRefusalFoot
-            yield return FilmPolishRefusalFoot(controller, poland, latest);
+            // (1b) K302 (the art155 review's R2-M1) and S11 (boards 11a-11c, 11e): the Sejm night in each state the steps can end in, and the announcement plate - staged, see FilmPolishStagedNights
+            yield return FilmPolishStagedNights(controller, poland, latest);
 
             // (2) the President's nights, on their days
             FieldInfo speedField = controller.GetType().GetField("_gameSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -6576,6 +6576,14 @@ namespace PoliSim.Testing
                     sim.AdvanceCountryDayTick(_countryId);
                     days++;
                     if (boundary) { sim.AdvanceTurn(noDecisions); }
+                    // S11 (board 11d): the Sejm's steps on the Docket, live - on the new Sejm's first sitting and on the day its steps conclude
+                    SejmFormation sejm = SejmDesk.Record(poland);
+                    if (!_sejmSittingFilmed && sejm != null && sim.CurrentDate.Date == sejm.FirstSitting.Date) { _sejmSittingFilmed = true; yield return FilmSejmDocket(controller, sim, poland, "e7s_docket_sejm_first_sitting"); }
+                    if (_sejmSittingFilmed && !_sejmConcludedFilmed && sejm != null && !sejm.Open && sejm.Log.Count > 0 && sejm.Log[sejm.Log.Count - 1].StartsWith(sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), StringComparison.Ordinal))
+                    {
+                        _sejmConcludedFilmed = true;
+                        yield return FilmSejmDocket(controller, sim, poland, "e7t_docket_sejm_steps_concluded");
+                    }
                     // PL-C: the presidential campaign's HQ and the run-off's, filmed on this walk - it is the one that crosses 2025 (the walk after the nights
                     // starts past the run-off, and the next first vote is beyond any search)
                     if (!_plcFirstFilmed && sim.PlayerCampaign != null && sim.PlayerCampaign.Setup.Contest == CampaignContest.PresidentialFirstVote && sim.PlayerCampaign.Day >= 1)
@@ -6677,50 +6685,81 @@ namespace PoliSim.Testing
                     ResetScrolls(controller);
                 }
             }
+            if (!_sejmSittingFilmed) { Debug.LogError("SHOT: S11 e7s_docket_sejm_first_sitting - MISSING: the walk after the night never reached the new Sejm's first sitting"); _failed++; }
+            if (!_sejmConcludedFilmed) { Debug.LogError("SHOT: S11 e7t_docket_sejm_steps_concluded - MISSING: the walk after the night never reached the day the Sejm's steps concluded"); _failed++; }
             if (speed != null) { speedField.SetValue(controller, speed); }
         }
 
-        /// <summary>K302 (the art155 review's R2-M1): the frame <see cref="FilmPolishRefusalFoot"/> films.</summary>
+        /// <summary>K302 (the art155 review's R2-M1): the frame <see cref="FilmPolishStagedNight"/> films for the refusal - S11 keeps its name.</summary>
         private const string PolishRefusalFrame = "e7e2_election_night_art155_refusal_staged";
 
         /// <summary>
-        /// K302 (the art155 review's R2-M1): THE SEJM NIGHT'S FOOT ON AN ART. 155 REFUSAL, STAGED - the verdict the controller itself words
-        /// (`GameController.ResolveSejmVerdict`) for the planted 230/230 chamber (PiS 230, KO 230 and no other seat: no cabinet carries even a simple majority,
-        /// the President's cabinet is refused, the term shortened), drawn on the board of the election the film just held at its final minute - the longest
-        /// sentence the night's foot carries, filmed at its own geometry (one line cut to the room beside CONTINUE, the whole in its slip). The chamber is
-        /// planted on the seated country for the verdict's own projection and put back, with the verdict's fields, in a finally before anything yields - no
-        /// day, screen or check reads the plant. Silent: nothing here fires a cue (the listener is muted at the film's start, the harness rule).
+        /// S11 (Design's return of 2026-10-30, boards 11a-11c, 11e): THE SEJM NIGHT'S STATES, STAGED - each of the steps the formation can end at, and the none
+        /// case, on the board of the election the film just held: (e7e2) the refusal, PiS 230 / KO 230 (no cabinet carries even a simple majority, the President's
+        /// cabinet refused, the term shortened - K302's frame), and after it the announcement plate (e7e6) built from that night's steps; (e7e3) the President's step,
+        /// PiS 240 (the record's designee carries); (e7e4) the Sejm's step on the record's own seats (`WorldClock.TryReference`: the designee refused, the record's
+        /// cabinet elected); (e7e5) the President's second step on `SejmFormationDiagnostic` (h)'s simple-majority chamber (KO 83, Konf 10, NL 35, PiS 220, TD 112).
         /// </summary>
-        private IEnumerator FilmPolishRefusalFoot(GameController controller, Country poland, ElectionRecord latest)
+        private IEnumerator FilmPolishStagedNights(GameController controller, Country poland, ElectionRecord latest)
+        {
+            yield return FilmPolishStagedNight(controller, latest, PolishRefusalFrame, Plant(("PiS", 230), ("KO", 230)), 3, false, "e7e6_snap_election_plate_staged");
+            yield return FilmPolishStagedNight(controller, latest, "e7e3_election_night_president_step_staged", Plant(("PiS", 240), ("KO", 120), ("TD", 50), ("NL", 30), ("Konf", 20)), 1, true, null);
+            Dictionary<string, int> record = WorldClock.TryReference(CountryId.Poland, latest.Date, out WorldClock.Reference history) && history.Seats != null ? new Dictionary<string, int>(history.Seats) : null;
+            if (record == null) { Debug.LogError("SHOT: S11 e7e4_election_night_sejm_step_staged - the record holds no seats for this election; NOT filmed."); _failed++; }
+            else { yield return FilmPolishStagedNight(controller, latest, "e7e4_election_night_sejm_step_staged", record, 2, true, null); }
+            yield return FilmPolishStagedNight(controller, latest, "e7e5_election_night_second_step_staged", Plant(("KO", 83), ("Konf", 10), ("NL", 35), ("PiS", 220), ("TD", 112)), 3, true, null);
+        }
+
+        private static Dictionary<string, int> Plant(params (string Key, int Seats)[] seats)
+        {
+            var d = new Dictionary<string, int>();
+            foreach ((string key, int n) in seats) { d[key] = n; }
+            return d;
+        }
+
+        /// <summary>
+        /// K302 (the art155 review's R2-M1) and S11: ONE STAGED SEJM NIGHT - the verdict the controller itself resolves (`GameController.ResolveSejmVerdict`: the
+        /// projection, the steps read against it, the foot's clauses) for a <paramref name="plant"/>ed chamber (every other list zero), drawn on the board of the
+        /// election the film just held at its final minute, its seats the plant's so the frame reads as one chamber. The chamber is planted on the seated country for
+        /// the verdict's own projection and put back, with every field the verdict writes, in a finally before anything yields - no day, screen or check reads the
+        /// plant. A night whose steps do not end where the frame's name says (<paramref name="wantStep"/>, <paramref name="wantExpected"/>), or that drew only the
+        /// projection's end, is NOT filmed under that name and fails the film. Where <paramref name="plateFrame"/> is named and none is expected, the announcement
+        /// plate (`GameController.SejmPlate.cs`) is staged from the same steps over the Docket and filmed, then cleared. Silent: nothing here fires a cue.
+        /// </summary>
+        private IEnumerator FilmPolishStagedNight(GameController controller, ElectionRecord latest, string frame, Dictionary<string, int> plant, int wantStep, bool wantExpected, string plateFrame)
         {
             const BindingFlags Own = BindingFlags.Instance | BindingFlags.NonPublic;
             FieldInfo verdictField = typeof(GameController).GetField("_pendingElectionVerdict", Own), endsField = typeof(GameController).GetField("_pendingElectionVerdictEndsGame", Own);
+            FieldInfo stepsField = typeof(GameController).GetField("_pendingSejmSteps", Own), footField = typeof(GameController).GetField("_pendingSejmFoot", Own);
             FieldInfo seatedField = typeof(GameController).GetField("_playerCountry", Own);
             MethodInfo resolve = typeof(GameController).GetMethod("ResolveSejmVerdict", Own);
             Country seated = seatedField?.GetValue(controller) as Country;
-            if (verdictField == null || endsField == null || resolve == null || seated == null || seated.Id != CountryId.Poland)
+            if (verdictField == null || endsField == null || stepsField == null || footField == null || resolve == null || seated == null || seated.Id != CountryId.Poland)
             {
-                Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the controller's verdict hooks or its seated Poland were not found; NOT filmed.");
+                Debug.LogError($"SHOT: S11 {frame} - the controller's verdict hooks or its seated Poland were not found; NOT filmed.");
                 _failed++;
                 yield break;
             }
             Dictionary<string, int> seatsWas = seated.ParliamentSeats;
-            object verdictWas = verdictField.GetValue(controller), endsWas = endsField.GetValue(controller);
+            object verdictWas = verdictField.GetValue(controller), endsWas = endsField.GetValue(controller), stepsWas = stepsField.GetValue(controller), footWas = footField.GetValue(controller);
             string verdict = null;
+            SejmNightSteps steps = null;
+            SejmFoot foot = null;
+            var planted = new Dictionary<string, int>();
             try
             {
-                var planted = new Dictionary<string, int>();
                 foreach (string key in seatsWas.Keys) { planted[key] = 0; }
-                planted["PiS"] = 230;
-                planted["KO"] = 230;
+                foreach (KeyValuePair<string, int> kv in plant) { planted[kv.Key] = kv.Value; }
                 seated.ParliamentSeats = planted;
-                resolve.Invoke(controller, new object[] { latest, GovernmentFormation.Formed.None("staged for the foot's frame"), SejmFormation.OpenAfter(seated, latest.Date) });
+                resolve.Invoke(controller, new object[] { latest, GovernmentFormation.Formed.None("staged for the S11 frame"), SejmFormation.OpenAfter(seated, latest.Date) });
                 verdict = verdictField.GetValue(controller) as string;
+                steps = stepsField.GetValue(controller) as SejmNightSteps;
+                foot = footField.GetValue(controller) as SejmFoot;
             }
             catch (Exception e)
             {
                 Exception inner = e.InnerException ?? e;
-                Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the verdict's resolution THREW ({inner.GetType().Name}: {inner.Message}); NOT filmed.");
+                Debug.LogError($"SHOT: S11 {frame} - the verdict's resolution THREW ({inner.GetType().Name}: {inner.Message}); NOT filmed.");
                 _failed++;
             }
             finally
@@ -6728,41 +6767,129 @@ namespace PoliSim.Testing
                 seated.ParliamentSeats = seatsWas;
                 verdictField.SetValue(controller, verdictWas);
                 endsField.SetValue(controller, endsWas);
+                stepsField.SetValue(controller, stepsWas);
+                footField.SetValue(controller, footWas);
             }
-            if (verdict == null) { yield break; }
-            if (!verdict.Contains("Art. 155 ust. 2"))
+            if (verdict == null || steps == null || foot == null) { if (verdict != null) { Debug.LogError($"SHOT: S11 {frame} - the verdict resolved with no steps or no foot; NOT filmed."); _failed++; } yield break; }
+            string plantLine = string.Join(" · ", new List<string>(PlantWords(plant)));
+            if (steps.Partial || steps.EndStep != wantStep || steps.Expected != wantExpected)
             {
-                Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the planted chamber's verdict names no shortened term (\"{verdict}\"); NOT filmed under the refusal's name.");
+                Debug.LogError($"SHOT: S11 {frame} - the planted chamber ({plantLine}) ends at step {steps.EndStep} (expected {steps.Expected}, partial {steps.Partial}), not step {wantStep} (expected {wantExpected}) - \"{verdict}\"; NOT filmed under this name.");
+                _failed++;
+                yield break;
+            }
+            if (!wantExpected && !verdict.Contains("Art. 155 ust. 2"))
+            {
+                Debug.LogError($"SHOT: S11 {frame} - the planted chamber's verdict names no shortened term (\"{verdict}\"); NOT filmed under the refusal's name.");
                 _failed++;
                 yield break;
             }
             PolishSejmNight.State final = PolishSejmNight.At(PolishSejmNight.FinalMinute, latest.Shares, latest.OkregShift);
             if (final == null)
             {
-                Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the election's night did not build at its final minute; NOT filmed.");
+                Debug.LogError($"SHOT: S11 {frame} - the election's night did not build at its final minute; NOT filmed.");
                 _failed++;
                 yield break;
             }
-            for (int k = 0; k < final.Keys.Length; k++) { final.Seats[k] = latest.Seats.TryGetValue(final.Keys[k], out int s) ? s : 0; }   // the chamber's seats, as the controller's night stands them
+            for (int k = 0; k < final.Keys.Length; k++) { final.Seats[k] = planted.TryGetValue(final.Keys[k], out int s) ? s : 0; }   // the plant's seats, so the board reads as the chamber the steps ran on
+            ElectionNightScreen.SejmNight night = GameController.PolishSejmNightInputs(seated, final, latest.Date);
+            night.Steps = steps;
+            night.Foot = foot;
             SetPrivateField(controller, "_canvasLive", true);
             PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
-            ElectionNightScreen staged = ElectionNightScreen.BuildPoland(GameController.PolishSejmNightInputs(seated, final, latest.Date), latest.Date.Date.AddHours(21), verdict);
-            if (staged == null) { Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the board did not build; nothing filmed."); _failed++; }
+            ElectionNightScreen staged = ElectionNightScreen.BuildPoland(night, latest.Date.Date.AddHours(21), verdict);
+            if (staged == null) { Debug.LogError($"SHOT: S11 {frame} - the board did not build; nothing filmed."); _failed++; }
             else
             {
                 yield return Settle();
                 Claim("electionnight");
-                yield return Capture(PolishRefusalFrame);
-                RecordCanvasTextAssert(PolishRefusalFrame, controller);
+                yield return Capture(frame);
+                RecordCanvasTextAssert(frame, controller);
                 string shown = null;
                 foreach (UnityEngine.UI.Text t in staged.Root.GetComponentsInChildren<UnityEngine.UI.Text>(true)) { if (t.name == "Verdict") { shown = t.text; } }
-                Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: K302 {0} - STAGED: the verdict a PiS 230 / KO 230 chamber gives (planted for its projection, put back), on the board of the {1:yyyy-MM-dd} count; the foot shows \"{2}\" ({3} of {4} characters), the whole sentence in its slip.",
-                    PolishRefusalFrame, latest.Date, shown ?? "NO VERDICT LINE", shown?.Length ?? 0, verdict.Length));
-                if (shown == null) { Debug.LogError($"SHOT: K302 {PolishRefusalFrame} - the board drew no Verdict line."); _failed++; }
+                SejmNightSteps.Step d = steps.Deciding;
+                var cells = new List<string>();
+                for (int i = 0; i < 3; i++) { SejmNightSteps.Step st = steps.Steps[i]; cells.Add((i + 1).ToString(CultureInfo.InvariantCulture) + ":" + (st.Voted ? (st.Asked ?? "?") + (st.Carried ? " carried " : " refused ") + st.For.ToString(CultureInfo.InvariantCulture) + "/" + st.Members.ToString(CultureInfo.InvariantCulture) : "not put")); }
+                Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: S11 {0} - STAGED: the chamber {1} (planted for its projection, put back) on the board of the {2:yyyy-MM-dd} count; ends at step {3} of 3 ({4}); cells {5}; the vote {6}; the snap election {7}; the caretaker {8}; the foot shows \"{9}\" ({10} counted words), the whole verdict in its slip.",
+                    frame, plantLine, latest.Date, steps.EndStep, steps.Expected ? "expected: " + string.Join("+", d.CabinetParties) : "none expected", string.Join(" | ", cells),
+                    d == null ? "none" : string.Format(CultureInfo.InvariantCulture, "{0} for, {1} against, {2} abstaining of {3}", d.For, d.Against, d.Abstaining, d.Members),
+                    steps.SnapPollingDay == DateTime.MinValue ? "-" : steps.SnapPollingDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), steps.CaretakerParty ?? "-", shown ?? "NO VERDICT LINE", SejmNightSteps.CountedWords(shown)));
+                if (shown == null) { Debug.LogError($"SHOT: S11 {frame} - the board drew no Verdict line."); _failed++; }
+                else if (shown.Contains("…")) { Debug.LogError($"SHOT: S11 {frame} - the foot was CUT (\"{shown}\") - a clause drops whole, never cut (11b)."); _failed++; }
                 if (staged.Root != null) { UnityEngine.Object.Destroy(staged.Root); }
             }
             PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
             SetPrivateField(controller, "_canvasLive", false);
+            yield return Settle();
+
+            if (plateFrame == null) { yield break; }
+            SejmDesk.Plate plate = SejmDesk.PlateOf(steps);
+            if (plate == null) { Debug.LogError($"SHOT: S11 {plateFrame} - the night's steps give no plate (none expected {!steps.Expected}, the snap day {steps.SnapPollingDay:yyyy-MM-dd}); NOT filmed."); _failed++; yield break; }
+            FieldInfo tabField = controller.GetType().GetField("_consolidatedTab", Own), deskField = controller.GetType().GetField("_onDesk", Own);
+            object tabWas = tabField?.GetValue(controller), deskWas = deskField?.GetValue(controller);
+            SetPrivateField(controller, "_onDesk", false);
+            SetEnumField(controller, "_consolidatedTab", "Decisions");
+            ResetScrolls(controller);
+            SetPrivateField(controller, "_sejmPlateStaged", plate);
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture(plateFrame);
+            Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: S11 {0} - STAGED from {1}'s steps over the Docket: the term shortened {2:yyyy-MM-dd}, polling day {3:yyyy-MM-dd} ({4} days on), the caretaker {5}; the steps {6}; the campaign opens {7:yyyy-MM-dd}.",
+                plateFrame, frame, plate.OrderedOn, plate.PollingDay, (int)(plate.PollingDay - plate.OrderedOn).TotalDays, plate.Caretaker ?? "-",
+                string.Join(" | ", Array.ConvertAll(plate.Steps, st => st.Name + " " + (st.Article ?? "-") + " " + (st.Result ?? "-") + " " + (st.Day == DateTime.MinValue ? "-" : st.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)))),
+                SejmDesk.SnapCampaign(plate.OrderedOn, plate.PollingDay).CampaignStart));
+            SetPrivateField(controller, "_sejmPlateStaged", null);
+            if (tabWas != null) { tabField.SetValue(controller, tabWas); }
+            if (deskWas != null) { deskField.SetValue(controller, deskWas); }
+            ResetScrolls(controller);
+            yield return Settle();
+        }
+
+        private static IEnumerable<string> PlantWords(Dictionary<string, int> plant)
+        {
+            foreach (KeyValuePair<string, int> kv in plant) { yield return kv.Key + " " + kv.Value.ToString(CultureInfo.InvariantCulture); }
+        }
+
+        /// <summary>S11 (board 11d): whether the walk after the night filmed the Docket on the Sejm's first sitting and on the day its steps concluded.</summary>
+        private bool _sejmSittingFilmed, _sejmConcludedFilmed;
+
+        /// <summary>
+        /// S11 (board 11d): THE SEJM'S STEPS ON THE DOCKET, LIVE - on the walk after the night (the day path, as play steps it), the Docket filmed on the new
+        /// Sejm's first sitting (e7s: the first entry, place 4's next step, place 6's Caretaker) and on the day its steps conclude (e7t: every step's entry, newest on
+        /// top, and the government that formed - or the shortened term). The game's own record, nothing staged. The docket is asserted to hold the steps' entries
+        /// before the frame is taken under its name.
+        /// </summary>
+        private IEnumerator FilmSejmDocket(GameController controller, SimulationManager sim, Country poland, string frame)
+        {
+            const BindingFlags Own = BindingFlags.Instance | BindingFlags.NonPublic;
+            FieldInfo tabField = controller.GetType().GetField("_consolidatedTab", Own), deskField = controller.GetType().GetField("_onDesk", Own);
+            object tabWas = tabField?.GetValue(controller), deskWas = deskField?.GetValue(controller);
+            SetPrivateField(controller, "_onDesk", false);
+            SetEnumField(controller, "_consolidatedTab", "Decisions");
+            ResetScrolls(controller);
+            yield return Settle();
+            object slipBook = controller.GetType().GetField("_docketSlipBook", Own)?.GetValue(controller);
+            bool drawn = false;
+            if (slipBook is PeopleSlips.Book book) { foreach (string key in book.Anchors.Keys) { if (key.StartsWith("docket:sejm:", StringComparison.Ordinal)) { drawn = true; break; } } }
+            SejmFormation f = SejmDesk.Record(poland);
+            List<SejmDesk.Entry> entries = SejmDesk.Entries(f);
+            if (!drawn)
+            {
+                Debug.LogError($"SHOT: S11 {frame} - the Docket on {sim.CurrentDate:yyyy-MM-dd} drew NO entry of the Sejm's steps (the record: {(f == null ? "none" : f.Stage + ", " + f.Log.Count + " line(s)")}); NOT filmed.");
+                _failed++;
+            }
+            else
+            {
+                Claim("imgui");
+                yield return Capture(frame);
+                var lines = new List<string>();
+                for (int i = entries.Count - 1; i >= 0; i--) { lines.Add(entries[i].Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " " + entries[i].Label + (entries[i].Line != null ? " / " + entries[i].Line : string.Empty)); }
+                TopStrip.Chip chip = TopStrip.SejmStepChip(poland, sim.CurrentDate), standing = TopStrip.StandingChip(poland, sim.CurrentDate);
+                Debug.Log($"SHOT: S11 {frame} - the Docket on {sim.CurrentDate:yyyy-MM-dd}, the procedure {f?.Stage.ToString() ?? "none"}: {entries.Count} step entr(ies), newest first: {string.Join(" | ", lines)}; place 4 \"{chip?.Words ?? "-"}\", place 6 \"{standing?.Words ?? "-"}\"; the government {string.Join("+", poland.Government?.Cabinet ?? new List<string>())} led by {poland.Government?.PmParty ?? "-"}{(poland.Government != null && poland.Government.Caretaker ? " (caretaker)" : string.Empty)}.");
+            }
+            if (tabWas != null) { tabField.SetValue(controller, tabWas); }
+            if (deskWas != null) { deskField.SetValue(controller, deskWas); }
+            ResetScrolls(controller);
             yield return Settle();
         }
 
@@ -6841,7 +6968,8 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: interrupts done, {_captured} captured, {_failed} failed.");
             Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
             Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
-            Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+            Debug.Log($"SHOT: {_canvasTextViolations} canvas text violation(s) recorded across {_canvasTextAsserts} assert(s).");   // S11: the Canvas guard's count on the summary, and it fails the film
+            Finish(_failed == 0 && _loggedErrors == 0 && _canvasTextViolations == 0 ? 0 : 1);
         }
 
         /// <summary>PL-C: whether the Polish nights' walk filmed the presidential campaign's HQ and the run-off's.</summary>

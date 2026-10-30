@@ -42471,3 +42471,43 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 Energy's slips from before S1 still hold lines over 10 words. They carry no moved words, and no Energy capture pins a slip; filed for the slip-cap pass once K321 reads slips.
 
 **Bars:** cheap bar 148 of 148 (cheaps1en); dry film of the six countries at 1280, 938 measured, 0 failed, 0 overflow (drys1en); filmed width Sweden 1280, 161 captured, 0 failed (reals1en); review skipped (ui tier); doc bar (docs957)
+
+## 958. S11 - POLAND WHEN NO GOVERNMENT CAN BE FORMED, FROM DESIGN'S BOARD (DESIGN'S RETURN OF 2026-10-30, BOARDS 11A-11E; K320'S TEST CASE) (2026-10-30)
+
+**What was owed:** Art. 155 (§955) was built without a board. The Polish night's one-line foot led with the first sitting's date, so the " …" cut fell on the outcome. WHO GOVERNS showed no sign of a deadlock. Design answered §11 of the self-contained request of 2026-10-30 in a new Design project (`fb7d00c1`), and the return is saved byte-checked under `PoliSim-captures/design/RETURN_2026-10-30_S11/`.
+
+**Built** (wave/s11pl, 69c38364..b714fcb2, squash-merged; no engine file changed):
+- `SejmNightSteps` re-reads each formation step through the engine's own public functions, in the projection's order, and cross-checks the projection (the same cabinet and count, the same refused cabinet, the snap day). On any disagreement it draws only the projection's end. A date it cannot confirm is not shown.
+- **The foot, outcome first** (11b): ✓/✗, then outcome, deciding figure, date or caretaker. Clauses drop whole from the end, never cut. The whole sentence is the verdict's slip.
+- **WHO GOVERNS by step** (11a): the chamber row; "Art. 154 · 155" with three cells and "n of 3"; the outcome with its step; the deciding vote's bar with its ticks; the President's stamp (DESIGNATES / APPOINTS AGAIN / SHORTENS TERM); the government's stamp (OUTGOING / CARETAKER); the snap election row; and a † cell holding every line in full.
+- **K320's test case:** the threshold paragraph is now `THE CALLS  PiS 9 · KO 16 …` at rest, folded to "+N" by measured width, plus a THRESHOLD slip. The cartogram's caption is one key line plus a THE MAP slip.
+- **After the night** (11d): one Docket entry per step, read from the engine's dated `SejmFormation.Log`; the strip's place 4 shows the next step and its day.
+- **The announcement** (11e): the snap-election plate. It holds the clock through `CollectHolds`' entry only.
+- **Film:** e7c and e7e2 show the new states, plus staged e7e3-e7e6 and live e7s/e7t.
+- `docs/declutter/moved_s11pl.tsv`, 25 rows.
+
+**At integration:**
+- The first cheap bar failed three checks:
+  - ChamberVerdictCacheCheck's textual guard read the view structs' `Cabinet`/`Support`/`Caretaker` fields as writes of who governs (renamed `CabinetParties`, `SupportParties`, `CaretakerParty`);
+  - MetaTextCheck found a possessive built by hand (now `UiFormat.Possessive`);
+  - TopStripCrisisDiagnostic (f) found a hold kept outside `CollectHolds` (removed; the plate is one of its entries).
+- The integrator's look at the real frame found the calls line clipped at the column's edge ("Konf 3" for 33). The old Canvas ESCAPE rule compared a text with its own rect, held at its words' width, so it passed. K323 adds a CONTAINMENT rule on every Canvas surface, with a both-directions self-test, and the calls line now folds to "+N" until it fits.
+- One cheap-bar launch hung in Unity's assembly reload and was stopped. The re-run is the measurement.
+
+**Measured (this tree):** cheap bar 148 of 148 clean (cheaps11pl3); dry film Poland at 1280 with -shotinterrupts exit 0 (drys11pl, scope row drys11pl); real films Poland -shotinterrupts at 1280 (reals11pl) and 2560 (reals11plw), each 29 captured, 0 failed, 0 canvas text violations across 15 asserts under K323's containment rule; the calls row reads THE CALLS with each party's mark and okreg (the fold logged at none), the minority's stamp set aside to fit; Sweden's real film under the general guard 161 captured, 0 violations (reals11se); SejmFormationDiagnostic's seven (S11) lines ok; review skipped (ui tier); doc bar (docs958)
+
+**Declared:**
+- The foot takes K321's 8 counted words as well as its room.
+- Docket entries are read from the engine's log wording, with a generic fallback; concluded entries stay 30 days.
+- The night's dates carry "BY" (each step at its window's last day, K304). Once the election is ordered, the strip and plate print it plain.
+- The plate's campaign day is re-derived in the UI, because the manager's rule is private.
+
+**K320 deviations from the board** go back to Design in Code's reply:
+- the foot's clauses shortened;
+- "a simple majority" for "more for wins";
+- the Docket's titles;
+- the plate's "Term shortened" and "clock held";
+- the Polish Senate dropped (the game seats none);
+- the engine's own step days (11 Dec / 11 Dec / 22 Jan, against the board's 25 Dec).
+
+**Design's two questions, answered from the code:** PiS is asked at step 3 and is the caretaker, measured on realart155's e7e2. The campaign has no run-up and opens in whole weeks back from polling day (28 Jan for 3 Mar 2024), not on the order's day.

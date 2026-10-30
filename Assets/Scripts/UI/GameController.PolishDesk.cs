@@ -18,7 +18,7 @@ namespace PoliSim.UI
             if (!PolishDeskRecord.Applies(_playerCountry)) { return false; }
             System.DateTime today = _simulationManager.CurrentDate;
             UnityEngine.Color ink = UiPalette.GetAreaColor(UiPalette.SystemArea.Political);
-            bool any = false;
+            bool any = DrawSejmStepItems(today, ink);
             foreach (DivisionRecord vote in PolishDeskRecord.RecentArt158(_playerCountry, today))
             {
                 string key = "art158:" + vote.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture) + ":" + vote.Number.ToString(CultureInfo.InvariantCulture);
@@ -47,6 +47,30 @@ namespace PoliSim.UI
                 any = true;
             }
             return any;
+        }
+
+        /// <summary>
+        /// S11 (Design's return of 2026-10-30, board 11d): THE SEJM'S STEPS ON THE DOCKET - one Information entry per step, newest on top, in the Art. 158 entries'
+        /// grammar (the chamber, the political ink, "Information"): each dated by the engine's own day (<see cref="SejmDesk.Entries"/> reads the procedure's dated
+        /// log), its title the article and the outcome, its line the figure or what follows, its slip the rest. Listed while the procedure runs and for
+        /// <see cref="SejmDesk.ListedDaysAfter"/> days after its last step; information, never holding the clock. True where any was drawn.
+        /// </summary>
+        private bool DrawSejmStepItems(System.DateTime today, UnityEngine.Color ink)
+        {
+            SejmFormation f = SejmDesk.Record(_playerCountry);
+            if (!SejmDesk.Listed(f, today)) { return false; }
+            System.Collections.Generic.List<SejmDesk.Entry> entries = SejmDesk.Entries(f);
+            for (int i = entries.Count - 1; i >= 0; i--)
+            {
+                SejmDesk.Entry e = entries[i];
+                string when = e.Day.Date == today.Date ? "today" : DeskDay(e.Day);
+                var slip = new SlipContent((e.Label + " · " + DeskDay(e.Day)).ToUpperInvariant());
+                foreach (string line in e.Slip) { slip.Add(line); }
+                slip.Add("for information · it does not hold the clock");
+                _docketSlipBook.Anchors["docket:" + e.Key] = slip;
+                DrawDocketItem(e.Key, "chamber", ink, e.Label + " · " + when, e.Line, holdsTime: false, action: null, stampWords: "Information");
+            }
+            return entries.Count > 0;
         }
     }
 }

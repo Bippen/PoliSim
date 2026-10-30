@@ -269,6 +269,36 @@ namespace PoliSim.UI
             return chip;
         }
 
+        /// <summary>
+        /// S11 (Design's return of 2026-10-30, board 11d): place 4 while the Sejm's steps run in the player's Poland - the next step and the day it falls, on the AMB
+        /// ground with the chamber: "First sitting · 13 Nov" before it, "Art. 154 · cabinet by 27 Nov", "Confidence vote · by 11 Dec", "Sejm's vote ·
+        /// by 25 Dec", "Appointment · 13 Dec", "Art. 155 · cabinet by 8 Jan", "Confidence vote · by 22 Jan · last step". "by" because each step may come on any day
+        /// of its window; the engine takes the window's last (K304). Read off the procedure's own stage and day (<see cref="SejmFormation.Stage"/>,
+        /// <see cref="SejmFormation.NextOn"/>); null once it has concluded, or for any other country.
+        /// </summary>
+        public static Chip SejmStepChip(Country country, DateTime today)
+        {
+            SejmFormation f = SejmDesk.Record(country);
+            if (f == null || !f.Open) { return null; }
+            string on = f.NextOn.ToString("d MMM", CultureInfo.InvariantCulture);
+            string words, head, line;
+            switch (f.Stage)
+            {
+                case SejmStage.AwaitingSitting: words = "First sitting · " + on; head = "THE FIRST SITTING"; line = "The cabinet resigns there and serves on · Art. 162.1"; break;
+                case SejmStage.Designated: words = "Art. 154 · cabinet by " + on; head = "THE PRESIDENT'S STEP"; line = "A cabinet appointed within 14 days of the first sitting · Art. 154.1"; break;
+                case SejmStage.AwaitingConfidence: words = "Confidence vote · by " + on; head = "THE SEJM'S CONFIDENCE"; line = "An absolute majority, half the deputies present · Art. 154.2"; break;
+                case SejmStage.SejmElects: words = "Sejm's vote · by " + on; head = "THE SEJM'S STEP"; line = "Its own prime minister by an absolute majority · Art. 154.3"; break;
+                case SejmStage.AwaitingAppointment: words = "Appointment · " + on; head = "THE APPOINTMENT"; line = "The President appoints the cabinet the Sejm elected · Art. 154.3"; break;
+                case SejmStage.PresidentAppoints: words = "Art. 155 · cabinet by " + on; head = "THE PRESIDENT'S SECOND STEP"; line = "The President appoints within 14 days · Art. 155.1"; break;
+                case SejmStage.AwaitingPresidentsConfidence: words = "Confidence vote · by " + on + " · last step"; head = "THE LAST STEP"; line = "More for than against, or the term is shortened · Art. 155"; break;
+                default: return null;
+            }
+            var chip = new Chip { Id = "strip:sejm", Face = Face.Amber, Icon = "chamber", Words = words, SlipHead = head + " · " + Day(f.NextOn).ToUpperInvariant() };
+            chip.Slip.Add(line);
+            chip.Slip.Add("The Docket lists each step as it falls");
+            return chip;
+        }
+
         /// <summary>Board 33a's overflow: what binds first, then what is coming, at most <see cref="TimeChipsMax"/> shown; the rest fold into
         /// <paramref name="more"/> - a paper "+N" chip whose slip lists them (null when nothing folds).</summary>
         public static List<Chip> FoldTimeChips(IList<Chip> binds, IList<Chip> coming, out Chip more)

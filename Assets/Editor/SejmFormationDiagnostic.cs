@@ -6,6 +6,7 @@ using System.Text;
 using PoliSim.Data;
 using PoliSim.Elections;
 using PoliSim.Simulation;
+using PoliSim.UI;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -162,6 +163,7 @@ namespace PoliSim.EditorTools
                 if (done3 != null) { foreach (string line in done3.Log) { sb.Append("    log (e)   ").Append(line).Append('\n'); } }
 
                 Article155(hosts, sb, Check, table23, poll23, poll27, pl1, f1, pl2);
+                S11Readers(hosts, Check, table23, poll23, pl1);
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { foreach (GameObject h in hosts) { UnityEngine.Object.DestroyImmediate(h); } EnergyMarket.ResetTurnState(); }
@@ -194,6 +196,27 @@ namespace PoliSim.EditorTools
             "przeprowadzonych w dniu 21 października 2007 r.",                                                       // the PKW's notice of the vote, poz. 1438
         };
 
+        /// <summary>
+        /// S11 (Design's return of 2026-10-30, boards 11a and 11d): the 2023 count read as the night and the Docket read it - the night's steps on its chamber (the record's
+        /// designee refused, the record's cabinet elected: the Sejm's step, as filmed), and (b)'s day path through the Docket's reading of the engine's log, every
+        /// line recognised and dated by the engine.
+        /// </summary>
+        private static void S11Readers(List<GameObject> hosts, Action<bool, string> Check, Dictionary<string, int> table23, DateTime poll23, Country pl1)
+        {
+            (SimulationManager n1, Country night1) = Open(hosts, "Konf", table23, poll23);
+            SejmNightSteps read1 = SejmNightSteps.Read(night1, poll23, n1.ProjectFormation(night1, poll23));
+            int pis = table23.TryGetValue("PiS", out int p) ? p : -1;
+            Check(read1 != null && !read1.Partial && read1.Expected && read1.OfRecord && read1.EndStep == 2 && read1.FirstSitting == new DateTime(2023, 11, 13)
+                  && read1.Steps[0].Voted && !read1.Steps[0].Carried && read1.Steps[0].Asked == "PiS" && read1.Steps[0].For == pis && read1.Steps[1].Carried && read1.Steps[1].Asked == "KO" && read1.Steps[1].Head != null,
+                F("(S11) the 2023 night's steps: the record's designee {0} refused {1} of {2}, the Sejm elects {3} ({4} of {5}) - step {6} of 3, the Sejm's step as filmed",
+                    read1?.Steps[0].Asked ?? "NONE", read1?.Steps[0].For ?? -1, read1?.Steps[0].Members ?? -1, read1?.Steps[1].Head ?? "NONE", read1?.Steps[1].For ?? -1, read1?.Steps[1].Members ?? -1, read1?.EndStep ?? 0));
+            List<SejmDesk.Entry> entries1 = SejmDesk.Entries(pl1.Government?.Sejm);
+            string shape = string.Join(" | ", entries1.ConvertAll(e => e.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " " + e.Step.ToString(CultureInfo.InvariantCulture)));
+            Check(shape == "2023-11-13 0 | 2023-11-27 1 | 2023-12-11 1 | 2023-12-11 2 | 2023-12-13 2" && entries1.Count == 5 && entries1[2].Refused && entries1[3].Asked == "KO"
+                  && entries1[0].Slip.Exists(l => l.StartsWith("designates ", StringComparison.Ordinal)),
+                F("(S11) the Docket reads (b)'s 2023 path, one entry per step on the engine's day: {0}", string.Join(" | ", entries1.ConvertAll(e => e.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " " + e.Label + (e.Line != null ? " / " + e.Line : string.Empty)))));
+        }
+
         /// <summary>K302: clauses (f) to (k) - see the class.</summary>
         private static void Article155(List<GameObject> hosts, StringBuilder sb, Action<bool, string> Check, Dictionary<string, int> table23, DateTime poll23, DateTime poll27,
             Country pl1, SejmFormation f1, Country pl2)
@@ -220,6 +243,7 @@ namespace PoliSim.EditorTools
             pl4.ElectionHistory.Add(Counted(poll27, hung));   // the count the night seated, as the game's own election adds it
             GovernmentFormation.View view4 = GovernmentFormation.ViewOf(pl4, reading27);
             SejmFormation.PresidentsCabinet named4 = SejmFormation.PresidentAppoints(pl4, reading27);
+            SejmNightSteps read4 = SejmNightSteps.Read(pl4, poll27, s4.ProjectFormation(pl4, poll27));   // S11: the night's steps on this chamber, against the projection the night names
             GovernmentRecord outgoing4 = pl4.Government;
             SejmFormation f4 = s4.OpenSejmFormation(pl4, poll27);
             DateTime polling4 = SejmFormation.ShortenedTermElectionDay(confidence27);
@@ -228,12 +252,14 @@ namespace PoliSim.EditorTools
             // state is read on its own day - read at the loop's end, the outgoing record's procedure has concluded and the President's cabinet is the caretaker.
             bool beforeOk4 = false, atAppointmentOk4 = false; string atAppointmentCabinet4 = null;
             string save4 = null, save4Vote = null;
+            string chip4 = null;   // S11: the strip's place 4 the day before the President's appointment
             while (s4.CurrentDate < confidence27)
             {
                 Days(s4, 1);
                 if (s4.CurrentDate == appointed27.AddDays(-1))
                 {
                     beforeAppointment4 = pl4.Government;
+                    chip4 = TopStrip.SejmStepChip(pl4, s4.CurrentDate)?.Words;
                     beforeOk4 = beforeAppointment4 != null && beforeAppointment4.Caretaker && beforeAppointment4.Sejm != null && beforeAppointment4.Sejm.Stage == SejmStage.PresidentAppoints && beforeAppointment4.Sejm.NextOn == appointed27;
                     save4 = Persistence.SaveGameService.Serialize(Persistence.SaveGameService.CreateSaveGame(s4, s4.World, CountryId.Poland, null));
                 }
@@ -278,6 +304,26 @@ namespace PoliSim.EditorTools
                 F("(g) THE SHORTENED TERM: {0:yyyy-MM-dd} the Sejm refuses its confidence, the President's cabinet resigns and carries on as caretaker; the President shortens the term - the player's next polling day {1:yyyy-MM-dd} ({2}, day {3}), the last Sunday within forty-five days (Art. 155 ust. 2, Art. 98 ust. 5; DECLARED, the 2007 practice) and no earlier than the fortieth (the Kodeks's shortened district notice, art. 195 § 2)",
                     confidence27, nextPolling4, nextPolling4.DayOfWeek, (nextPolling4 - confidence27).Days));
             if (done4 != null) { foreach (string line in done4.Log) { sb.Append("    log (g)   ").Append(line).Append('\n'); } }
+            // S11 (Design's return of 2026-10-30, boards 11a-11e): the night's step reader, the Docket's reading of the engine's log, the plate and place 4 - on this
+            // chamber's real lines
+            {
+                List<SejmDesk.Entry> entries4 = SejmDesk.Entries(done4);
+                int unread4 = entries4.FindAll(e => e.Step < 0).Count;
+                bool shortened4 = SejmDesk.TryShortened(done4, out DateTime ordered4, out DateTime polled4);
+                SejmDesk.Plate plate4 = SejmDesk.PlateOf(pl4, done4, s4.ExtraElectionDate);
+                Check(read4 != null && !read4.Partial && !read4.Expected && read4.EndStep == 3 && !read4.Steps[0].Voted && !read4.Steps[1].Voted && read4.Steps[2].Voted
+                      && read4.Steps[2].For == 230 && read4.Steps[2].Against == 230 && read4.Steps[2].Asked == named4.PmParty && read4.SnapPollingDay == polling4 && read4.ShortenedOn == confidence27 && read4.CaretakerParty == named4.PmParty,
+                    F("(S11) the night's steps on the planted 230/230 chamber agree with its projection: step {0} of 3, none expected, no designee and no Sejm's vote, the President's {1} refused {2} to {3}, the term shortened {4:yyyy-MM-dd} and the snap election by {5:yyyy-MM-dd}, {6} the caretaker",
+                        read4?.EndStep ?? 0, read4?.Steps[2].Asked ?? "NONE", read4?.Steps[2].For ?? -1, read4?.Steps[2].Against ?? -1, read4?.ShortenedOn ?? DateTime.MinValue, read4?.SnapPollingDay ?? DateTime.MinValue, read4?.CaretakerParty ?? "NONE"));
+                Check(unread4 == 0 && shortened4 && ordered4 == confidence27 && polled4 == polling4 && plate4 != null && plate4.OrderedOn == confidence27 && plate4.PollingDay == polling4
+                      && plate4.Steps[2].Result == "230 for · 230 against" && plate4.Steps[1].Result == "no prime minister" && plate4.Steps[0].Result == "no designee"
+                      && entries4.Exists(e => e.Step == 4 && e.Day == confidence27 && e.PollingDay == polling4),
+                    F("(S11) the Docket reads every line of the refused path ({0} entries, {1} not recognised): {2}; the plate: ordered {3:yyyy-MM-dd}, polling day {4:yyyy-MM-dd}, the steps {5}",
+                        entries4.Count, unread4, string.Join(" | ", entries4.ConvertAll(e => e.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " " + e.Label)), ordered4, polled4,
+                        plate4 == null ? "NONE" : string.Join(" / ", Array.ConvertAll(plate4.Steps, s => s.Result ?? "-"))));
+                Check(chip4 == "Art. 155 · cabinet by " + appointed27.ToString("d MMM", CultureInfo.InvariantCulture),
+                    F("(S11) the strip's place 4 the day before the President's appointment: \"{0}\"", chip4 ?? "NONE"));
+            }
             // the Sejm that election chooses: Art. 98 ust. 5's fifteenth day, and a term of its own (ust. 6)
             pl4.ElectionHistory.Add(Counted(polling4, hung));
             DateTime sitting4 = SejmFormation.FirstSittingAfter(pl4, polling4);
@@ -304,6 +350,7 @@ namespace PoliSim.EditorTools
             pl5.ElectionHistory.Add(Counted(poll27, simple));
             GovernmentFormation.View view5 = GovernmentFormation.ViewOf(pl5, reading27);
             SejmFormation.PresidentsCabinet named5 = SejmFormation.PresidentAppoints(pl5, reading27);
+            SejmNightSteps read5 = SejmNightSteps.Read(pl5, poll27, s5.ProjectFormation(pl5, poll27));   // S11
             SejmFormation f5 = s5.OpenSejmFormation(pl5, poll27);
             GovernmentRecord atAppointment5 = null;
             while (s5.CurrentDate < confidence27) { Days(s5, 1); if (s5.CurrentDate == appointed27) { atAppointment5 = pl5.Government; } }
@@ -315,6 +362,17 @@ namespace PoliSim.EditorTools
                 F("(h) {0:yyyy-MM-dd}: the President's {1} governs; {2:yyyy-MM-dd}: it holds the Sejm's confidence by a simple majority - the procedure concluded, no election ordered",
                     appointed27, after5 == null ? "NOTHING" : Sorted(after5.Cabinet), confidence27));
             if (after5?.Sejm != null) { foreach (string line in after5.Sejm.Log) { sb.Append("    log (h)   ").Append(line).Append('\n'); } }
+            {
+                List<SejmDesk.Entry> entries5 = SejmDesk.Entries(after5?.Sejm);
+                int unread5 = entries5.FindAll(e => e.Step < 0).Count;
+                Check(read5 != null && !read5.Partial && read5.Expected && read5.EndStep == 3 && read5.Steps[2].Carried && read5.Steps[2].For == named5.For && read5.Steps[2].Against == named5.Against
+                      && read5.Steps[2].Abstaining == named5.Abstaining,
+                    F("(S11) the night's steps on the simple-majority chamber agree with its projection: step {0} of 3, expected {1}, {2} for, {3} against, {4} abstaining",
+                        read5?.EndStep ?? 0, read5?.Expected ?? false, read5?.Steps[2].For ?? -1, read5?.Steps[2].Against ?? -1, read5?.Steps[2].Abstaining ?? -1));
+                Check(unread5 == 0 && entries5.Exists(e => e.Step == 3 && e.Label.StartsWith("Art. 155 · Carried ", StringComparison.Ordinal)) && !SejmDesk.TryShortened(after5?.Sejm, out _, out _),
+                    F("(S11) the Docket reads every line of the simple-majority path ({0} entries, {1} not recognised): {2}", entries5.Count, unread5,
+                        string.Join(" | ", entries5.ConvertAll(e => e.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " " + e.Label))));
+            }
 
             // (i) the same chambers in an AI Poland, stepped by the day loop (`AdvanceDay`, its `HoldWorldCalendar`): the formation run whole on the first sitting through
             // the calendar's own gate (`FormationDue` -> `FormAsAi`); the 230/230 chamber stepped on through its extra election's count and the new Sejm's first sitting

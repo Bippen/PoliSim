@@ -222,6 +222,8 @@ namespace PoliSim.UI
                 if (differ.Count > 0) { Debug.LogError("ELECTION: the Polish night's own count disagrees with the chamber it seated (" + string.Join("; ", differ) + ") - the chamber's seats stand on the count."); }
                 System.DateTime pollingDay = _simulationManager.CurrentDate;
                 ElectionNightScreen.SejmNight night = PolishSejmNightInputs(_playerCountry, state, pollingDay);
+                night.Steps = _pendingSejmSteps;   // S11: the steps and the foot the verdict resolved (ResolveSejmVerdict)
+                night.Foot = _pendingSejmFoot;
                 PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
                 AudioDirector.Fire(AudioCue.ConstituencyDeclares);   // P4-2: the count is in - built at its final minute, so this fires once
                 _electionNight = ElectionNightScreen.BuildPoland(night, pollingDay.AddHours(21), _pendingElectionVerdict);   // board 28a's clock: the polls close at 21:00

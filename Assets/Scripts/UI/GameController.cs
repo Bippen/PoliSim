@@ -2747,6 +2747,7 @@ namespace PoliSim.UI
             // controls are swallowed under it before the page draws, and the plate draws last (DrawCrisisPlate, after the rail's tongue)
             var crisisPage = new Rect(leftColumnWidth + columnSpacing, foldedBannerHeight, rightColumnWidth, Mathf.Max(1f, areaHeight - foldedBannerHeight));
             CrisisPlateInput(crisisPage);
+            SejmPlateInput(crisisPage);   // S11 (board 11e): the shortened term's plate, the crisis plate's rule
 
             // ⚠ INSTANCE #12, RIGHT COLUMN — same defect, same line of reasoning. Every tab wraps its
             // content in a `_boxStyle` box, and that box's padding and margin come out of `areaHeight`
@@ -2858,6 +2859,7 @@ namespace PoliSim.UI
             // Board 1n-r3: the active tongue's paper over the seam, after the sheet has drawn its own edge.
             DrawRailActiveTongueOverlap();
             DrawCrisisPlate(crisisPage);
+            DrawSejmPlate(crisisPage);
             GUILayout.EndArea();
 
             // CANVAS SEAM, Restore phase: the scrim lifts OVER the just-redrawn IMGUI, so it draws
@@ -5975,6 +5977,7 @@ namespace PoliSim.UI
             var holds = new List<(string Label, HoldCell Cell)>();
             if (_electionNight != null) { holds.Add(("ELECTION NIGHT - CONTINUE IS ON THE BOARD", HoldCell.None)); }
             if (CrisisPlateHolds()) { holds.Add(("MARKET ACCESS LOST - CONTINUE IS ON THE PLATE", HoldCell.None)); }   // MF q33 (D-WORKLIST §1): the debt crisis's moment
+            if (SejmPlateHolds()) { holds.Add(("TERM SHORTENED - CONTINUE IS ON THE PLATE", HoldCell.None)); }   // S11 (board 11e): the Sejm's term shortened (Art. 155 ust. 2) - its one hold, read by ClockHeld like every other
             if (CampaignOpeningHolds()) { holds.Add(("THE CAMPAIGN'S OPENING", HoldCell.Campaign)); }
             if (HasPendingScandalAnswer()) { holds.Add(("A STORY ABOUT YOUR PARTY", HoldCell.Campaign)); }
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0) { holds.Add(($"THE {GetCentralBankHeadTitle(PlayerCountryId).ToUpperInvariant()} TO APPOINT", HoldCell.Docket)); }
