@@ -135,7 +135,7 @@ namespace PoliSim.EditorTools
             },
             {
                 // Design's return of 2026-10-30 (sections 4-11, the self-contained request; Elias archived it under this name): the glyphs are imported
-                // (Resources/Art/UI/S4/, S5/, S9/); what stays in the pack is the boards' own context, each held by the return's own words.
+                // (Resources/Art/UI/CampaignHq/, PartyCreation/, CoalitionVerbs/); what stays in the pack is the boards' own context, each held by the return's own words.
                 "Campaign HQ and Poland Crisis.zip", new (Func<string, bool>, string)[]
                 {
                     (n => n.StartsWith("film_", StringComparison.Ordinal) && n.EndsWith(".png", StringComparison.Ordinal),
