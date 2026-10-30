@@ -126,6 +126,7 @@ namespace PoliSim.EditorTools
             ("PlayerPartyIndexForCampaign", "a read"), ("PreviewFormation", "a read - the verdict before the player submits"), ("ProjectConstructiveVote", "a read"),
             ("ProjectPersonBallot", "a read"), ("QueuedScandalResponse", "a read"), ("RoundOf", "a read"), ("RoundsApply", "a read"), ("SejmStepsApply", "a read"), ("ItalianMandatesApply", "a read"),
             ("SpeakerOrder", "a read"), ("TryPassedCarbonFigure", "a read"), ("TryPlayerPollingDay", "a read"), ("TryUnansweredDocketItem", "a read"),
+            ("LastCalendarFormation", "a read - the AI country's last formation, for the foreign election's card (S6, §962)"),
         };
 
         /// <summary>(4)'s planted source: the classifier must find each kind - an answer, a lever, an answer one call deep, and a write that is neither (its next

@@ -409,6 +409,13 @@ namespace PoliSim.EditorTools
                     Check(horizon <= cap, F("every first election from the {0} start ({1:yyyy-MM-dd}) falls within {2} years - the run stops on {3:yyyy-MM-dd}", start, opened, HorizonYears, horizon));
                     if (horizon > cap) { horizon = cap; }
 
+                    // S6 (Design's return of 2026-10-30): the polling days the Statistics card lists on the start's day are the statute's days written here
+                    int cards = 0, cardWrong = 0;
+                    var cardNotes = new List<string>();
+                    string pollingWhy = PollingDaysRead(s, w, start, opened, firstDay, usDay, plDay);
+                    if (pollingWhy != null) { cardWrong++; cardNotes.Add("the polling days on " + opened.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ": " + pollingWhy); }
+                    cards++;
+
                     var allowedExtra = new Dictionary<CountryId, HashSet<DateTime>>();
                     int counts = 0, offDay = 0, arithmetic = 0, predicted = 0, seatedWrong = 0, formations = 0, formationWrong = 0;
                     var firstHeld = new Dictionary<CountryId, DateTime>();
@@ -485,6 +492,20 @@ namespace PoliSim.EditorTools
                             if (today == playerSitting) { playerConvened = player.Government != null && player.Government.Caretaker && player.Government.CaretakerSince == playerSitting; }   // Art. 69 Abs. 2 at the convening
                             if (today == playerDay.AddDays(1)) { playerRound = player.Government?.Round != null && player.Government.Round.Occasion != null && player.Government.Round.Occasion.Contains("2029-01-28"); }
                         }
+                        // S6: on the eve of each first election written here, the Docket lists it ahead (UPCOMING, "in 1 day")
+                        foreach (KeyValuePair<CountryId, DateTime> kv in firstDay)
+                        {
+                            if (today != kv.Value.AddDays(-1)) { continue; }
+                            cards++;
+                            string why = UpcomingRead(w, start, kv.Key, kv.Value, today);
+                            if (why != null) { cardWrong++; cardNotes.Add(F("{0} on {1:yyyy-MM-dd}: {2}", kv.Key, today, why)); }
+                        }
+                        if (usDay != DateTime.MinValue && today == usDay.AddDays(-1))
+                        {
+                            cards++;
+                            string why = UpcomingRead(w, start, CountryId.USA, usDay, today);
+                            if (why != null) { cardWrong++; cardNotes.Add(F("USA on {0:yyyy-MM-dd}: {1}", today, why)); }
+                        }
                         foreach (Country c in w.Countries)
                         {
                             if (c.Id == start || !WorldCalendar.CountsChamber(c.Id)) { continue; }
@@ -503,6 +524,9 @@ namespace PoliSim.EditorTools
                                 if (why != null) { arithmetic++; notes.Add(F("{0} on {1:yyyy-MM-dd}: {2}", c.Id, r.Date, why)); }
                                 if (!NationalElection.CountsParliament(r.Method) || !SameSeats(c.ParliamentSeats, r.Seats)) { seatedWrong++; notes.Add(F("{0} on {1:yyyy-MM-dd}: the chamber seated is not the count's ({2})", c.Id, r.Date, r.Method)); }
                                 _sb.Append(F("    {0}: held {1:yyyy-MM-dd}{2} by {3} - {4}\n", c.Id, r.Date, extraDay ? " (an extra election)" : string.Empty, r.Method, Seats(r.Seats)));
+                                cards++;
+                                string cardWhy = CountRead(s, w, start, c, r, today);
+                                if (cardWhy != null) { cardWrong++; cardNotes.Add(F("{0} on {1:yyyy-MM-dd}: {2}", c.Id, today, cardWhy)); }
                                 if (start == CountryId.Germany && !replay && savedBetween == null && NationalElection.CountsParliament(r.Method))
                                 {
                                     savedBetween = Persistence.SaveGameService.Serialize(Persistence.SaveGameService.CreateSaveGame(s, w, start, null));
@@ -524,6 +548,9 @@ namespace PoliSim.EditorTools
                                     : roundGoesOn ? F("the first ballot elects no one ({0}) - the fourteen days open (Art. 63 Abs. 3)", p?.Reason ?? "-")
                                     : discharged ? F("no government formed ({0}) - {1} governs on as caretaker", p?.Reason ?? "no procedure", Who(g)) : "NOTHING RECORDED"));
                                 if (c.Id == savedFor && today == savedSitting) { formedThen = GovernmentLine(c.Government); }
+                                cards++;
+                                string sittingWhy = SittingRead(s, w, start, c, latest, today, installed, roundGoesOn);
+                                if (sittingWhy != null) { cardWrong++; cardNotes.Add(F("{0} on {1:yyyy-MM-dd}: {2}", c.Id, today, sittingWhy)); }
                             }
                         }
                     }
@@ -538,6 +565,16 @@ namespace PoliSim.EditorTools
                         Country c = w.GetCountry(kv.Key);
                         bool ended = c.Government?.Round == null || !c.Government.Round.Open;
                         Check(ended && (c.Government.FormedOn > kv.Value || c.Government.Caretaker), F("{0}: the chancellor's election past its first ballot ended by Art. 63 Abs. 3-4 - {1}", kv.Key, Who(c.Government)));
+                        // S6: the card reads the round's own install - its step past the first ballot (Art. 63 Abs. 3 or 4, the basis's words)
+                        WorldCalendar.Result r = WorldCalendar.RecentAbroad(w, start, s.CurrentDate).Find(x => x.Country == kv.Key && x.Day == kv.Value && x.Formation);
+                        UI.ForeignElectionCard card = r != null ? UI.ForeignElectionCard.Read(r, c, s.CurrentDate, s.LastCalendarFormation(kv.Key)) : null;
+                        int step = card?.Cells.FindIndex(x => x.State == GovernmentFormation.RoundCellState.Current) ?? -1;
+                        cards++;
+                        if (ended && c.Government.FormedOn > kv.Value && (card == null || card.Is != UI.ForeignElectionCard.State.Formed || step < 1))
+                        {
+                            cardWrong++;
+                            cardNotes.Add(F("{0}: the round's government read as {1}, step {2} - its basis '{3}'", kv.Key, card?.Stamp ?? "NOT LISTED", step + 1, c.Government.Basis));
+                        }
                     }
                     Check(offDay == 0, F("every count of the run ({0}) on its country's ordinary polling day or an extra election its procedure ordered", counts));
                     Check(predicted == 0, "every count was handed exactly the vote model's prediction of its day - the same call made again on the same state gives the same shares (a purity check, K160)");
@@ -545,6 +582,9 @@ namespace PoliSim.EditorTools
                     Check(seatedWrong == 0, "every count's chamber seated on its day");
                     Check(formationWrong == 0, F("every first sitting ({0}) installed the procedure's government or discharged the outgoing one", formations));
                     foreach (string n in notes.Take(12)) { _sb.Append("      ").Append(n).Append('\n'); }
+                    Check(cardWrong == 0, F("S6: the Docket's card reads the records ({0} read) - the polling days on the start's day the statute's, each first election listed ahead on its eve, each count's rows "
+                        + "its record's seats and FORMING to its first sitting, each first sitting FORMED at the step its government's basis names (or FORMING past a failed first ballot, CARETAKER where none formed)", cards));
+                    foreach (string n in cardNotes.Take(12)) { _sb.Append("      ").Append(n).Append('\n'); }
                     Check(s.LastCalendarCount(start) == null, F("the player's {0} was never counted as an AI country", start));
 
                     if (usDay != DateTime.MinValue)
@@ -609,6 +649,86 @@ namespace PoliSim.EditorTools
                     savedOn, abroad, sitting, formedThen, formedLoaded == formedThen ? string.Empty : "; the loaded world formed " + formedLoaded));
             }
             finally { UnityEngine.Object.DestroyImmediate(host); }
+        }
+
+        // ------------------------------------------------------------------------------------------------------------------------ S6: the card reads the records
+
+        /// <summary>S6: the polling days the Statistics card lists on the start's day - the player's rows first, each AI chamber's day the statute's written here, the
+        /// US Congress's and Poland's president's theirs, France's two rows ABSENT (K162). Null where all hold.</summary>
+        private static string PollingDaysRead(SimulationManager s, World w, CountryId start, DateTime opened, Dictionary<CountryId, DateTime> firstDay, DateTime usDay, DateTime plDay)
+        {
+            List<UI.ForeignElectionCard.PollingRow> rows = UI.ForeignElectionCard.PollingDays(w, start, opened, s.TryPlayerPollingDay(out DateTime own) ? own : DateTime.MinValue);
+            if (rows.Count == 0 || rows[0].Country != start || rows[0].Stamp != "YOURS") { return "the player's row does not lead (" + (rows.Count > 0 ? rows[0].Code + " " + rows[0].Chamber : "no rows") + ")"; }
+            foreach (KeyValuePair<CountryId, DateTime> kv in firstDay)
+            {
+                UI.ForeignElectionCard.PollingRow row = rows.Find(p => p.Country == kv.Key && p.Chamber == WorldCalendar.ChamberWord(kv.Key));
+                if (row == null || row.Day != kv.Value) { return F("{0}'s chamber row reads {1}, the statute's day is {2:yyyy-MM-dd}", kv.Key, row == null ? "NO ROW" : row.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), kv.Value); }
+            }
+            if (usDay != DateTime.MinValue)
+            {
+                UI.ForeignElectionCard.PollingRow us = rows.Find(p => p.Country == CountryId.USA && p.Chamber == "Congress");
+                if (us == null || us.Day != usDay) { return F("the US Congress row reads {0}, the statute's day is {1:yyyy-MM-dd}", us == null ? "NO ROW" : us.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), usDay); }
+            }
+            if (plDay != DateTime.MinValue)
+            {
+                UI.ForeignElectionCard.PollingRow pl = rows.Find(p => p.Country == CountryId.Poland && p.Chamber == "President");
+                if (pl == null || pl.Day != plDay) { return F("Poland's President row reads {0}, the statute's day is {1:yyyy-MM-dd}", pl == null ? "NO ROW" : pl.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), plDay); }
+            }
+            if (start != CountryId.France && rows.FindAll(p => p.Country == CountryId.France && p.Day == DateTime.MinValue).Count != 2) { return "France's two rows are not ABSENT (K162: no French election is modelled)"; }
+            _sb.Append("    S6 polling days: ").Append(string.Join("; ", rows.ConvertAll(p => p.Code + " " + p.Chamber + " " + (p.Day == DateTime.MinValue ? "ABSENT" : p.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)) + " " + (p.Stamp ?? "-")))).Append('\n');
+            return null;
+        }
+
+        /// <summary>S6: on the eve of <paramref name="id"/>'s election of <paramref name="day"/>, the Docket lists it ahead with its card - UPCOMING, "in 1 day", the chamber
+        /// sitting now as its total. Null where all hold.</summary>
+        private static string UpcomingRead(World w, CountryId start, CountryId id, DateTime day, DateTime today)
+        {
+            WorldCalendar.Result r = WorldCalendar.UpcomingAbroad(w, start, today).Find(x => x.Country == id && x.Day == day.Date && x.Rows.Count > 0);
+            if (r == null) { return F("the election of {0:yyyy-MM-dd} is not listed ahead on its eve", day); }
+            Country c = w.GetCountry(id);
+            int sitting = c.ParliamentSeats?.Values.Sum() ?? 0;
+            UI.ForeignElectionCard card = UI.ForeignElectionCard.Read(r, c, today, null);
+            return card.Is == UI.ForeignElectionCard.State.Upcoming && card.When == "in 1 day" && card.Total == sitting && !card.Counted ? null
+                : F("the card ahead reads {0} '{1}', {2} seats, the chamber sitting holds {3}", card.Stamp, card.When, card.Total, sitting);
+        }
+
+        /// <summary>S6: on an AI count's day the Docket lists it with its card - each row the record's seats, the total and majority the chamber's, FORMING while its first
+        /// sitting is ahead. Null where all hold.</summary>
+        private static string CountRead(SimulationManager s, World w, CountryId start, Country c, ElectionRecord counted, DateTime today)
+        {
+            WorldCalendar.Result r = WorldCalendar.RecentAbroad(w, start, today).Find(x => x.Country == c.Id && x.Day == counted.Date.Date && x.Formation);
+            if (r == null) { return "the count is not listed on the Docket on its day"; }
+            foreach (WorldCalendar.Row row in r.Rows)
+            {
+                if (!counted.Seats.TryGetValue(row.Key, out int n) || n != row.Seats) { return F("the card's {0} {1} is not the record's {2}", row.Key, row.Seats, n); }
+            }
+            int total = counted.Seats.Values.Sum();
+            UI.ForeignElectionCard card = UI.ForeignElectionCard.Read(r, c, today, s.LastCalendarFormation(c.Id));
+            if (card.Total != total || card.Majority != total / 2 + 1) { return F("the card's total {0} and majority {1} are not the chamber's {2} and {3}", card.Total, card.Majority, total, total / 2 + 1); }
+            bool sittingAhead = WorldCalendar.FirstSittingAfter(c, counted.Date) > today;
+            return !sittingAhead || card.Is == UI.ForeignElectionCard.State.Forming ? null : F("the card reads {0} on the count's day, its first sitting ahead (FORMING owed)", card.Stamp);
+        }
+
+        /// <summary>S6: on an AI chamber's first sitting the card reads what the procedure did - FORMED at the step its government's own basis names (the cell current, the
+        /// projection's own current cell where it holds one), its cabinet and its day; FORMING where Art. 63 goes on past a failed first ballot; CARETAKER where none
+        /// formed. Null where all hold.</summary>
+        private static string SittingRead(SimulationManager s, World w, CountryId start, Country c, ElectionRecord counted, DateTime today, bool installed, bool roundGoesOn)
+        {
+            WorldCalendar.Result r = WorldCalendar.RecentAbroad(w, start, today).Find(x => x.Country == c.Id && x.Day == counted.Date.Date && x.Formation);
+            if (r == null) { return "the count is not listed on its first sitting"; }
+            FormationProjection p = s.LastCalendarFormation(c.Id);
+            UI.ForeignElectionCard card = UI.ForeignElectionCard.Read(r, c, today, p);
+            if (roundGoesOn) { return card.Is == UI.ForeignElectionCard.State.Forming ? null : F("the card reads {0} with the chancellor's election open (FORMING owed)", card.Stamp); }
+            if (!installed) { return card.Is == UI.ForeignElectionCard.State.Caretaker ? null : F("the card reads {0} where no government formed (CARETAKER owed)", card.Stamp); }
+            GovernmentRecord g = c.Government;
+            int current = card.Cells.FindIndex(x => x.State == GovernmentFormation.RoundCellState.Current);
+            int projected = p?.View != null ? p.View.Round.FindIndex(x => x.State == GovernmentFormation.RoundCellState.Current) : -1;
+            if (card.Is != UI.ForeignElectionCard.State.Formed) { return F("the card reads {0} where the procedure installed {1} (FORMED owed)", card.Stamp, Who(g)); }
+            if (card.StepsAbsent || current < 0) { return F("the step the government formed at is not read off its basis ('{0}')", g.Basis); }
+            if (projected >= 0 && projected != current) { return F("the card's step {0} is not the projection's own {1} ('{2}')", current + 1, projected + 1, g.Basis); }
+            if (!card.Dates.Exists(d => d.Label == "Formed" && d.Value == UI.ForeignElectionCard.Day(today)) || !new HashSet<string>(card.CabinetParties).SetEquals(g.Cabinet)) { return F("the card's cabinet or Formed date is not the government's ({0})", GovernmentLine(g)); }
+            _sb.Append(F("    S6 card: {0} on {1:yyyy-MM-dd} - {2} '{3}', step {4} of {5} ({6}), '{7}'\n", c.Id, today, card.Stamp, card.Standing, current + 1, card.StepLimit, card.StepLabel, card.Ended));
+            return null;
         }
 
         private static string GovernmentLine(GovernmentRecord g) => g == null ? "none" : F("{0} formed {1:yyyy-MM-dd}{2}", Who(g), g.FormedOn, g.Caretaker ? F(", caretaker since {0:yyyy-MM-dd}", g.CaretakerSince) : string.Empty);

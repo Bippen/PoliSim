@@ -297,6 +297,10 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
             StatsSectionGap();
 
+            // ---- S6 (Design's return of 2026-10-30, 6c): every country's next polling day, beside World trade ----
+            DrawPollingDaysCard(contentWidth);
+            StatsSectionGap();
+
             // ---- the trade balance's card beside the credit rating's tile ----
             StatHistory history = _playerCountry.History;
             DrawStatsPagedHead("Trade", "trade:head", "trade:pager", _statsTradeSection, GraphRenderer.PagesFor(history.TradeBalance.Quarterly), contentWidth);

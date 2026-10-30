@@ -3457,7 +3457,15 @@ namespace PoliSim.UI
         {
             public readonly string Label;
             public readonly UiPalette.SystemArea Area;
-            public CalendarMarker(string label, UiPalette.SystemArea area) { Label = label; Area = area; }
+            /// <summary>S6: an election abroad's row on This month - the Docket item it opens, the figure at the row's right (the first list and its seats), its
+            /// slip; null on every other marker.</summary>
+            public readonly string Opens;
+            public readonly string Figure;
+            public readonly SlipContent Slip;
+            public CalendarMarker(string label, UiPalette.SystemArea area, string opens = null, string figure = null, SlipContent slip = null)
+            {
+                Label = label; Area = area; Opens = opens; Figure = figure; Slip = slip;
+            }
         }
 
         /// <summary>
@@ -3476,7 +3484,7 @@ namespace PoliSim.UI
         {
             var byDay = new Dictionary<int, List<CalendarMarker>>();
 
-            void Add(System.DateTime date, string label, UiPalette.SystemArea area)
+            void Add(System.DateTime date, string label, UiPalette.SystemArea area, string opens = null, string figure = null, SlipContent slip = null)
             {
                 if (date.Year != monthStart.Year || date.Month != monthStart.Month)
                 {
@@ -3488,7 +3496,7 @@ namespace PoliSim.UI
                     list = new List<CalendarMarker>();
                     byDay[date.Day] = list;
                 }
-                list.Add(new CalendarMarker(label, area));
+                list.Add(new CalendarMarker(label, area, opens, figure, slip));
             }
 
             // Fiscal year start, the annual budget-process pause, and the sovereign credit rating's
@@ -3585,6 +3593,21 @@ namespace PoliSim.UI
                 {
                     if (contest.RunOffPending()) { Add(contest.RunOffOn, "Presidential run-off", UiPalette.SystemArea.Political); }
                 }
+            }
+
+            // S6 (Design's return of 2026-10-30, 6c): each election abroad the Docket lists that falls in the month - its result, or its polling day ahead - a row that
+            // opens its Docket entry (the figure the first list and its seats), and so a dot in the Global ink on the calendar, the Desk warning without a card
+            foreach (ForeignElectionCard abroad in ForeignElections())
+            {
+                WorldCalendar.Result r = abroad.Result;
+                string where = CountryName(r.Country) + " · " + r.Chamber;
+                bool counted = abroad.Counted && r.Rows.Count > 0;
+                string figure = counted ? r.Rows[0].Name + " " + r.Rows[0].Seats.ToString(CultureInfo.InvariantCulture) : null;
+                var slip = new SlipContent(where)
+                    .Add(counted ? r.Rows[0].Name + " first, " + r.Rows[0].Seats.ToString(CultureInfo.InvariantCulture) + " of " + r.TotalSeats.ToString(CultureInfo.InvariantCulture)
+                        : r.Upcoming ? "Polling day · " + abroad.When : r.Line ?? r.Headline)
+                    .Add("Opens the Docket entry");
+                Add(r.Day, where, UiPalette.SystemArea.Global, "abroad:" + r.Key, figure, slip);
             }
 
             // Resolved divisions (every bill type, up to the 24 most recent) - real, stored dates,
@@ -7218,6 +7241,7 @@ namespace PoliSim.UI
                 FiscalTurnReport closed = _simulationManager.GetLastFiscalReport(PlayerCountryId);
                 PeopleSlips.Book book = StatsSlips.Build(_playerCountry, _world, PairPartner(), _statsSeriesSection.PageFromEnd, _statsTradeSection.PageFromEnd,
                     closed?.TariffPassThroughPp, DerivedStats.DeficitPercentOfGdp(_playerCountry, closed), closed, _simulationManager.CurrentDate);   // PS-6 US-24 (L6): the day, for the live US note
+                if (_statisticsCategory == StatisticsCategory.International) { foreach (KeyValuePair<string, SlipContent> kv in _pollingDaySlips) { book.Anchors[kv.Key] = kv.Value; } }   // S6: the polling days card's slips
                 DrawSlips(book, sheet);
             }
         }

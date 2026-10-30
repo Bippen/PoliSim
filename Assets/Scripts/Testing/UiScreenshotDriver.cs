@@ -3567,6 +3567,12 @@ namespace PoliSim.Testing
         /// and its round has formed a government (or is still running on the day, said in the log) - every country other than the player's holding its own elections on the way, to the day after the AI USA's
         /// first count (3 Nov 2026 from Sweden's start, a midterm). A player's election not held, or no government formed after it, fails the film. Then the Docket: `abroad01_docket` with the USA's item listed (the Information stamp, the
         /// headline under it), `abroad02_docket_results` with its results card open (the field the item's own action writes). A missing item is a FAILURE here.
+        /// S6 (Design's return of 2026-10-30): the card in each state the walk reaches, each frame once on the first day it holds (<see cref="AbroadStateDue"/>) -
+        /// `abroad00_docket_upcoming` (an election ahead, listed from its campaign's start: every walk reaches the AI USA's House), and where a chamber abroad votes
+        /// inside the walk (from Italy's start, Sweden's 11 Sep 2022 Riksdag) `abroad03_docket_forming` (counted, its formation owed) and `abroad04_docket_settled`
+        /// (formed, or a caretaker where none was); then `abroad02p_docket_results_slip` (the count's slip pinned, 6a), `abroad05_desk_month` (the Desk's This month
+        /// with the result's row) and `abroad06_stats_polling_days` (Statistics › International scrolled to the polling days). Nothing is staged: each state is the
+        /// walk's own.
         /// </summary>
         private IEnumerator CaptureAbroad(GameController controller)
         {
@@ -3580,11 +3586,25 @@ namespace PoliSim.Testing
                 yield break;
             }
             Expect("abroad01_docket", "abroad02_docket_results");
+            // S6: the states the walk reaches - an election ahead in every walk; a chamber counted and its formation ended where one votes inside the walk
+            Expect("abroad00_docket_upcoming", "abroad02p_docket_results_slip", "abroad05_desk_month", "abroad06_stats_polling_days");
+            _abroadShotUpcoming = _abroadShotForming = _abroadShotSettled = false;
+            string chamberInWalk = null;
+            foreach (Country other in sim.World.Countries)
+            {
+                if (other.Id == _countryId || !WorldCalendar.TryNextChamberDay(other, sim.CurrentDate, out DateTime chamberDay, out bool _) || chamberDay >= usDay.Date) { continue; }
+                chamberInWalk = $"{other.Id} on {chamberDay:yyyy-MM-dd}, first sitting {WorldCalendar.FirstSittingAfter(other, chamberDay):yyyy-MM-dd}";
+                Expect("abroad03_docket_forming");
+                if (WorldCalendar.FirstSittingAfter(other, chamberDay) < usDay.Date) { Expect("abroad04_docket_settled"); }
+                break;
+            }
+            Debug.Log($"SHOT: ABROAD (S6) - the chamber abroad voting inside this walk: {chamberInWalk ?? "NONE - abroad03 and abroad04 belong to a session whose walk holds one (Italy's start: Sweden's 11 Sep 2022 Riksdag)"}");
             var noDecisions = new Dictionary<CountryId, PolicyDecision>();
             int walked = 0, answered = 0, budgets = 0;
             bool budgetLeftOpen = false;
             DateTime playerPolled = DateTime.MinValue;
             bool playerPollingInWalk = sim.TryPlayerPollingDay(out DateTime playerPolling) && playerPolling <= usDay;
+            if (AbroadStateDue(sim, out string firstFrame, out WorldCalendar.Result firstOf)) { yield return AbroadStateFrame(controller, sim, firstFrame, firstOf); }   // the start's own day: an election ahead may be listed already
             while (sim.CurrentDate.Date <= usDay.Date && walked < MaxStateSearchDays)
             {
                 // N1 (the s938 review): the walk is play's own day - every wait on the player answered first by the AI's rule for the player's party (K49, as GATE-18's
@@ -3624,6 +3644,7 @@ namespace PoliSim.Testing
                 }
                 walked++;
                 if (walked % 30 == 0) { SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds); yield return null; }
+                if (AbroadStateDue(sim, out string stateFrame, out WorldCalendar.Result stateOf)) { yield return AbroadStateFrame(controller, sim, stateFrame, stateOf); }
             }
             Country played = sim.World.GetCountry(_countryId);
             Debug.Log($"SHOT: ABROAD - the walk answered {answered} wait(s) by the AI's rule and {budgets} budget window(s); {_countryId} votes {(playerPollingInWalk ? playerPolling.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "after the walk")}, held {(playerPolled != DateTime.MinValue ? playerPolled.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "NOT")}; "
@@ -3659,8 +3680,114 @@ namespace PoliSim.Testing
             yield return Settle();
             Claim("imgui");
             yield return Capture("abroad02_docket_results");
+            LogAbroadCard("abroad02_docket_results", sim, us);
+
+            // S6 (6a): the count's slip pinned on the open card, then let go
+            MethodInfo pinCount = controller.GetType().GetMethod("PinSlipOnAnchorForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo countPins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (pinCount != null && countPins != null)
+            {
+                pinCount.Invoke(controller, new object[] { "docket:abroadcount:abroad:" + us.Key, new Vector2(UiScreen.Width * 0.45f, UiScreen.Height * 0.40f) });
+                yield return Settle();
+                yield return Settle();
+                Claim("imgui");
+                yield return Capture("abroad02p_docket_results_slip");
+                (countPins.GetValue(controller) as IList)?.Clear();
+                yield return Settle();
+            }
+            else { Debug.LogError("SHOT: S6 - the controller has no PinSlipOnAnchorForFilm / _slipPins; abroad02p_docket_results_slip NOT written."); _failed++; }
             SetPrivateField(controller, "_docketOpenItem", null);
+
+            // S6 (6c, left): the Desk's This month - the result's row (the globe, the country and chamber, the first list and its seats) - scrolled to its card
+            SetPrivateField(controller, "_onDesk", true);
+            ResetScrolls(controller);
+            yield return Settle();
+            ScrollDeskTo(controller, "approval");
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture("abroad05_desk_month");
+            ScrollDeskTo(controller, null);
+
+            // S6 (6c, right): Statistics › International scrolled to the polling days card (its top as the page last drew it)
+            SetPrivateField(controller, "_onDesk", false);
+            SetEnumField(controller, "_consolidatedTab", "Statistics");
+            SetEnumField(controller, "_statisticsCategory", "International");
+            ResetScrolls(controller);
+            yield return Settle();
+            float pollingTop = controller.GetType().GetField("_pollingDaysTop", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) is float t ? t : -1f;
+            FieldInfo statsScroll = controller.GetType().GetField("_statisticsContentScrollPosition", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (pollingTop >= 0f && statsScroll != null)
+            {
+                statsScroll.SetValue(controller, new Vector2(0f, Mathf.Max(0f, pollingTop - 8f)));
+                yield return Settle();
+                Claim("imgui");
+                yield return Capture("abroad06_stats_polling_days");
+                if (controller.GetType().GetField("_pollingRows", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) is List<ForeignElectionCard.PollingRow> rows)
+                {
+                    Debug.Log("SHOT: abroad06_stats_polling_days - the polling days on " + sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ": "
+                        + string.Join("; ", rows.ConvertAll(p => p.Code + " " + p.Chamber + " " + (p.Day == DateTime.MinValue ? "ABSENT" : p.Day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " (" + p.In + ")") + " " + (p.Stamp ?? "-"))));
+                }
+            }
+            else { Debug.LogError($"SHOT: S6 - the polling days card drew no top ({pollingTop}) or the Statistics scroll was not found; abroad06_stats_polling_days NOT written."); _failed++; }
+            SetEnumField(controller, "_statisticsCategory", "Domestic");
+            ResetScrolls(controller);
             EndSweep();
+        }
+
+        /// <summary>S6: the walk's state frames, each once a run (<see cref="CaptureAbroad"/> resets them).</summary>
+        private bool _abroadShotUpcoming, _abroadShotForming, _abroadShotSettled;
+
+        /// <summary>S6: the state frame the walk's day holds, if one is still owed - an election ahead with a card (a chamber whose government a procedure forms first,
+        /// else the US House); else a chamber abroad counted and forming, from the day after its polling day; else one whose formation ended (formed, or a caretaker).
+        /// Read off the same records the Docket reads (`WorldCalendar`, `ForeignElectionCard.Read`); marks the frame taken.</summary>
+        private bool AbroadStateDue(SimulationManager sim, out string frame, out WorldCalendar.Result of)
+        {
+            frame = null;
+            of = null;
+            DateTime today = sim.CurrentDate;
+            if (!_abroadShotUpcoming)
+            {
+                foreach (WorldCalendar.Result r in WorldCalendar.UpcomingAbroad(sim.World, _countryId, today))
+                {
+                    if (r.Rows.Count > 0 && (of == null || (r.Formation && !of.Formation))) { of = r; }
+                }
+                if (of != null) { frame = "abroad00_docket_upcoming"; _abroadShotUpcoming = true; return true; }
+            }
+            if (_abroadShotForming && _abroadShotSettled) { return false; }
+            foreach (WorldCalendar.Result r in WorldCalendar.RecentAbroad(sim.World, _countryId, today))
+            {
+                if (!r.Formation || r.Rows.Count == 0) { continue; }
+                ForeignElectionCard card = ForeignElectionCard.Read(r, sim.World.GetCountry(r.Country), today, sim.LastCalendarFormation(r.Country));
+                if (!_abroadShotForming && card.Is == ForeignElectionCard.State.Forming && today.Date > r.Day.Date) { frame = "abroad03_docket_forming"; _abroadShotForming = true; of = r; return true; }
+                if (!_abroadShotSettled && (card.Is == ForeignElectionCard.State.Formed || card.Is == ForeignElectionCard.State.Caretaker)) { frame = "abroad04_docket_settled"; _abroadShotSettled = true; of = r; return true; }
+            }
+            return false;
+        }
+
+        /// <summary>S6: one state frame - the Docket with the election's card open (the field its own action writes), the clock held, then closed again.</summary>
+        private IEnumerator AbroadStateFrame(GameController controller, SimulationManager sim, string frame, WorldCalendar.Result of)
+        {
+            SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+            SetPrivateField(controller, "_onDesk", false);
+            SetEnumField(controller, "_consolidatedTab", "Decisions");
+            SetPrivateField(controller, "_docketOpenItem", "abroad:" + of.Key);
+            ResetScrolls(controller);
+            UiGuardContext.CurrentScreen = frame;   // §962: the settle frames under their own name - the guard filed Italy's first card under 05t_budget_turn0
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture(frame);
+            LogAbroadCard(frame, sim, of);
+            SetPrivateField(controller, "_docketOpenItem", null);
+        }
+
+        /// <summary>S6: what a card frame shows, as the card reads it - the state, the entry's state words, who governs, the steps, how it ended, the dates.</summary>
+        private void LogAbroadCard(string frame, SimulationManager sim, WorldCalendar.Result of)
+        {
+            ForeignElectionCard card = ForeignElectionCard.Read(of, sim.World.GetCountry(of.Country), sim.CurrentDate, sim.LastCalendarFormation(of.Country));
+            string steps = card.StepLabel == null ? "none (no formation)" : card.StepsAbsent ? "ABSENT" : string.Join(" ", card.Cells.ConvertAll(c => c.State + (c.Asked != null ? ":" + c.Asked : string.Empty)));
+            Debug.Log($"SHOT: {frame} - {of.Country} {of.Chamber} {of.Day:yyyy-MM-dd} read on {sim.CurrentDate:yyyy-MM-dd}: {card.Stamp} ('{card.When}'); {of.Rows.Count} list(s) of {card.Total}, majority {card.Majority}; "
+                + $"who governs '{card.Standing}' {(card.CabinetSeats >= 0 ? card.CabinetSeats.ToString(CultureInfo.InvariantCulture) : "-")} [{string.Join("+", card.CabinetParties)}]; {card.StepLabel ?? "-"} {steps} '{card.StepFigure}'; ended '{card.Ended}'; "
+                + $"dates {string.Join(", ", card.Dates.ConvertAll(d => d.Label + " " + d.Value))}");
         }
 
         private static int ReportContainmentEscapes()

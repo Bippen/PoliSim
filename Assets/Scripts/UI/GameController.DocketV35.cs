@@ -197,11 +197,15 @@ namespace PoliSim.UI
         /// <summary>
         /// One docket item's card: the stripe in <paramref name="stripe"/>, the icon, the name and its muted line, the stamp, the action. Returns
         /// whether the item's body is open (its action toggles it; one item open at a time). An item with no key has no body and no action.
+        /// S6 (Design's return of 2026-10-30): <paramref name="titleRight"/> - the item's state in the muted mono at the right of its name ("held · day 12");
+        /// <paramref name="lineDrawer"/> - a line the caller draws in the line's rect in place of <paramref name="line"/> (an election abroad's seats).
         /// </summary>
-        private bool DrawDocketItem(string key, string icon, Color stripe, string title, string line, bool holdsTime, string action, string stampWords = null)
+        private bool DrawDocketItem(string key, string icon, Color stripe, string title, string line, bool holdsTime, string action, string stampWords = null,
+            string titleRight = null, System.Action<Rect> lineDrawer = null)
         {
             V35.FloorGuarded = true;
-            float h = V35.Px(string.IsNullOrEmpty(line) ? 52f : 64f);
+            bool hasLine = !string.IsNullOrEmpty(line) || lineDrawer != null;
+            float h = V35.Px(hasLine ? 64f : 52f);
             Rect r = GUILayoutUtility.GetRect(10f, h, GUILayout.ExpandWidth(true), GUILayout.Height(h));
             Rect inner = DrawV35Card(r);
             bool open = key != null && _docketOpenItem == key;
@@ -241,13 +245,25 @@ namespace PoliSim.UI
             float tw = Mathf.Max(1f, stampRect.x - V35.Px(12f) - tx);
             GUIStyle titleFace = V35Serif(V35.Name, PoliSimTheme.TextPrimary);
             GUIStyle lineFace = V35Serif(V35.Floor, PoliSimTheme.TextMuted);
-            float th = Mathf.Ceil(titleFace.CalcSize(new GUIContent("Ag")).y), lh = string.IsNullOrEmpty(line) ? 0f : Mathf.Ceil(lineFace.CalcSize(new GUIContent("Ag")).y);
+            float th = Mathf.Ceil(titleFace.CalcSize(new GUIContent("Ag")).y), lh = hasLine ? Mathf.Ceil(lineFace.CalcSize(new GUIContent("Ag")).y) : 0f;
+            if (lineDrawer != null) { lh = Mathf.Max(lh, V35.Px(20f)); }
             float ty = r.y + Mathf.Round((h - th - lh) * 0.5f);
+            float rightW = 0f;
+            GUIStyle rightFace = V35Mono(V35.Floor, PoliSimTheme.TextMuted, bold: false, TextAnchor.MiddleRight);
+            if (!string.IsNullOrEmpty(titleRight)) { rightW = Mathf.Min(tw * 0.4f, Mathf.Ceil(rightFace.CalcSize(new GUIContent(titleRight)).x)); }
+            float titleW = Mathf.Max(1f, tw - (rightW > 0f ? rightW + V35.Px(12f) : 0f));
             if (repaint)
             {
-                PoliSimWidgets.MeasuredLabel(new Rect(tx, ty, tw, th), V35Fit(title, titleFace, tw, out _), titleFace);
-                if (lh > 0f) { PoliSimWidgets.MeasuredLabel(new Rect(tx, ty + th, tw, lh), V35Fit(line, lineFace, tw, out _), lineFace); }
+                PoliSimWidgets.MeasuredLabel(new Rect(tx, ty, titleW, th), V35Fit(title, titleFace, titleW, out _), titleFace);
+                if (rightW > 0f)
+                {
+                    // §962: the state is mono, a taller line than the serif name at 2560 (34.9 against 33) - its rect takes its own line, centred on the name's
+                    float rh = Mathf.Max(th, Mathf.Ceil(rightFace.CalcSize(new GUIContent("Ag")).y));
+                    PoliSimWidgets.MeasuredLabel(new Rect(tx + tw - rightW, ty + Mathf.Round((th - rh) * 0.5f), rightW, rh), titleRight, rightFace);
+                }
+                if (lh > 0f && lineDrawer == null) { PoliSimWidgets.MeasuredLabel(new Rect(tx, ty + th, tw, lh), V35Fit(line, lineFace, tw, out _), lineFace); }
             }
+            lineDrawer?.Invoke(new Rect(tx, ty + th, tw, lh));
             if (key != null && _docketSlipBook.Anchors.ContainsKey("docket:" + key)) { SlipAnchor(new Rect(tx, ty, tw, th + lh), "docket:" + key); }
             V35.FloorGuarded = false;
             GUILayout.Space(V35.Px(V35.Gutter));

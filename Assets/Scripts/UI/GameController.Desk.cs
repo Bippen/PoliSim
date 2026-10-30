@@ -1186,27 +1186,45 @@ namespace PoliSim.UI
             float dateWidth = Mathf.Ceil(dateFace.CalcSize(new GUIContent("31 Jan")).x) + V35.Px(4f);
             float dot = V35.Px(6f);
             float top = body.y;
+            GUIStyle figureFace = V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true, TextAnchor.MiddleRight);
             for (int i = 0; i < shown; i++)
             {
                 var row = new Rect(body.x, top, body.width, rowHeight);
+                CalendarMarker marker = rows[i];
+                bool abroad = marker.Opens != null;   // S6 (6c): an election abroad - the 16 px globe in place of the dot, its figure at the right, the row opens its entry
+                float glyph = abroad ? V35.Px(16f) : dot;
                 float dotX = row.x + dateWidth + V35.Px(6f);
-                float textX = dotX + dot + V35.Px(8f);
-                float textWidth = Mathf.Max(1f, row.xMax - textX);
+                float textX = dotX + glyph + V35.Px(8f);
+                float figureWidth = !string.IsNullOrEmpty(marker.Figure) ? Mathf.Ceil(figureFace.CalcSize(new GUIContent(marker.Figure)).x) + V35.Px(8f) : 0f;
+                float textWidth = Mathf.Max(1f, row.xMax - figureWidth - textX);
                 // §726: a long entry is cut at a word with an ellipsis (the floor forbids shrinking it), and the whole entry is the row's slip
-                string label = V35Fit(rows[i].Label, labelFace, textWidth, out bool cut);
+                string label = V35Fit(marker.Label, labelFace, textWidth, out bool cut);
                 string date = new System.DateTime(monthStart.Year, monthStart.Month, rowDays[i]).ToString("d MMM", CultureInfo.CurrentCulture);
-                if (cut)
+                if (abroad && marker.Slip != null)
                 {
-                    _deskSlipBook.Anchors["month:" + i] = new SlipContent(date.ToUpper(CultureInfo.CurrentCulture)).Add(rows[i].Label.ToUpper(CultureInfo.CurrentCulture));
+                    _deskSlipBook.Anchors["month:" + i] = marker.Slip;
+                    DeskAnchor(row, "month:" + i);
+                }
+                else if (cut)
+                {
+                    _deskSlipBook.Anchors["month:" + i] = new SlipContent(date.ToUpper(CultureInfo.CurrentCulture)).Add(marker.Label.ToUpper(CultureInfo.CurrentCulture));
                     DeskAnchor(row, "month:" + i);
                 }
                 if (repaint)
                 {
                     PoliSimWidgets.MeasuredLabel(new Rect(row.x, row.y, dateWidth, rowHeight), date, dateFace);
-                    PoliSimTheme.Pill(new Rect(dotX, row.y + Mathf.Round((rowHeight - dot) * 0.5f), dot, dot), UiPalette.GetAreaColor(rows[i].Area));
+                    if (abroad) { DrawV35Icon(new Rect(dotX, row.y + Mathf.Round((rowHeight - glyph) * 0.5f), glyph, glyph), "globe", UiPalette.GetAreaColor(marker.Area)); }
+                    else { PoliSimTheme.Pill(new Rect(dotX, row.y + Mathf.Round((rowHeight - dot) * 0.5f), dot, dot), UiPalette.GetAreaColor(marker.Area)); }
                     PoliSimWidgets.MeasuredLabel(new Rect(textX, row.y, textWidth, rowHeight), label, labelFace);
+                    if (figureWidth > 0f) { PoliSimWidgets.MeasuredLabel(new Rect(row.xMax - figureWidth + V35.Px(8f), row.y, figureWidth - V35.Px(8f), rowHeight), marker.Figure, figureFace); }
                     PoliSimTheme.Rule(new Rect(row.x, row.yMax - 1f, row.width, 1f), V35.ListRule);
                     UiContainmentGuard.Check("Desk month row", row, body);
+                }
+                if (abroad && PoliSimWidgets.Button(row, GUIContent.none, GUIStyle.none))
+                {
+                    _onDesk = false;
+                    _consolidatedTab = ConsolidatedTab.Decisions;
+                    _docketOpenItem = marker.Opens;
                 }
                 top += rowHeight;
             }

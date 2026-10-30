@@ -42626,3 +42626,54 @@ Energy's slips from before S1 still hold lines over 10 words. They carry no move
 
 **Declared:**
 - No guard yet catches one label drawn over another on an IMGUI page. K321's judge (wave/decl, queued last) holds labels to the caps, not to each other. A sibling-overlap rule is FILED for the guard family.
+
+## 962. S6 - A FOREIGN ELECTION'S RESULT, FROM DESIGN'S BOARD (DESIGN'S RETURN OF 2026-10-30, §6; K320): THE COMPACT CARD IN ITS STATES, THE DOCKET ENTRY, THIS MONTH'S ROW AND THE POLLING DAYS (2026-10-30)
+
+**What was owed:** §6 of the self-contained request. An election abroad reached the player as a stand-in Docket entry of sentences. Design's return (`S6 Foreign Election.dc.html`, `send/s6_return/RETURN.md`) drew a compact card, a Docket entry, a news-strip row and the polling days, in their states.
+
+**Built** (wave/s6fe a9d83a4d..a9b9e957, applied on main):
+- **The compact card** replaces the stand-in (`GameController.ForeignResultCard.cs`), in three panes:
+  - the count: the chamber and its seats, one bar in the party inks with the majority tick, and the lists two to a row (mark · code · seats · ▲/▼ · share). An election ahead draws a dashed lane and "—" for seats;
+  - who governs: the state stamp, the cabinet's marks, its standing and seats, the night's step cells with the procedure's article and the days figure, and one fragment on how it ended;
+  - the dates: Held or Polling day, Seated, Formed or New poll.
+- **The reader, `ForeignElectionCard.Read`,** is a pure function over records. The count comes from `WorldCalendar.Result`, who governs from `Country.Government`, and the step a government formed at from the words its formation wrote in `GovernmentRecord.Basis` (which survives a save). The earlier cells' parties and the vote come from `SimulationManager.LastCalendarFormation`.
+- **The states:** UPCOMING, FORMING and FORMED as Design drew them, plus HELD (the US House, or a count a later one superseded) and CARETAKER (no government formed, S11's stamp).
+- **The Docket entry:** "Country · Chamber · date" with the state on the right ("in 56 days", "held · day 1", "formed 26 Sep 2022"). Once counted, a seats line follows; a list that does not fit goes whole to the card, never cut. The stand-in's sentence moved to the entry's slip.
+- **This month** lists each election abroad in the month as a row (date, globe, country · chamber, the first list and its seats) that opens its Docket entry.
+- **The polling days** card on Stats › International, under World trade, stamped DERIVED. It reads the engine's statute readers, with the player's rows first and the rest by date.
+- **Listing (pure reads in `WorldCalendar`):** `UpcomingAbroad` lists an election from its campaign's start; `TryNextChamberDay` replaces the ordinary day once an extra election is ordered. `RecentAbroad` keeps the latest chamber count listed while its formation runs and for 30 days after it ends.
+- **`WorldCalendarDiagnostic`** reads the card against the records from every start:
+  - the polling days;
+  - each first election listed ahead on its eve;
+  - each count's rows against the record's seats;
+  - each first sitting FORMED at the step its basis names, FORMING past a failed first ballot, or CARETAKER.
+- `docs/declutter/moved_s6fe.tsv`: the stand-in's at-rest words and the slips that hold them.
+
+**At integration:**
+- `ForeignElectionCard.cs` came without its `.meta`; the one Unity generated in the merged tree is committed with this record.
+- **The first cheap bar failed two checks:**
+  - ChamberVerdictCacheCheck's textual guard read the card's own view list `Cabinet` as a write of who governs, S11's trap again. It is renamed `CabinetParties`.
+  - UiLeverVerbCheck found the UI calling `SimulationManager.LastCalendarFormation`, undeclared. It is a read (a dictionary lookup) and is now declared in `NotAnAnswer`.
+- **The first films overflowed:** the majority tick's figure needs 17.5 px in the board's 16 at 1280, and the Docket entry's state ("held · day 1", mono) needs 34.9 px in the serif name's 33 at 2560. Each rect now takes its own face's line height.
+- The guard filed Italy's first card frame under `05t_budget_turn0`. As in §959, the abroad walk now names each frame before it settles.
+- The first simulation bar (93 of 93, the sentinel unmoved) stands for the item's model files. The fixes touch no model file; the diagnostic only gained the rename.
+
+**Measured (this tree):** cheap bar 148 of 148 clean (cheaps6fe2, the re-run after the integrator's fixes; the first, cheaps6fe, failed ChamberVerdictCacheCheck and UiLeverVerbCheck); simulation bar 93 of 93 clean, the trajectory sentinel the baseline's on both seeds, so no review is due, WorldCalendarDiagnostic's S6 clause ok from every start (sims6fe, on the item's model files, which the fixes do not touch); dry film Sweden and Italy at 1280 with -shotabroad, 37 measured, 0 failed, 0 overflow (drys6fe, scope row drys6fe; the first run's 10 overflows fixed); the filmed width with -shotabroad: Sweden at 1280 (reals6fe2se) 15 declared, 0 missing, Italy at 1280 (reals6fe2it) 12 declared, 0 missing, Sweden at 2560 (reals6fe2sew) 15 declared, 0 missing, each at the asked geometry with 0 HEIGHT MISMATCH and 0 overflow; doc bar (docs962)
+
+**Declared** (each goes back to Design):
+- **Not built, no record holds them:**
+  - FORMING's "Talks · CDU/CSU+SPD": the AI formation runs whole on the first sitting (K204), so before it the card shows "Outgoing · coalition" and dashed cells;
+  - after a load, the earlier cells' parties and the vote are not printed, because the projection is per world and not saved. The step the government formed at still shows;
+  - France has no polling day (K162), so its rows read ABSENT, not Design's Apr/Jun 2032;
+  - the calendar's country-code dot is a dot in the Global ink (5 px cannot hold a code); the This month row names the country;
+  - "the Speaker elected when seated" is not modelled.
+- **Readings:**
+  - an election ahead is listed from its campaign's start, 56 days before;
+  - the latest count stays listed through its formation and 30 days after;
+  - "Open" is the action for an election ahead;
+  - the step labels are Germany "Art. 63", Sweden "RF 6 kap.", Italy "Art. 92, 94" and Poland "Art. 154–155";
+  - the standing word ("coalition" / "single party") is read from the cabinet's size;
+  - the share prints as "31.0%" and moves to the row's slip where its column cannot hold it;
+  - CDU and CSU are two rows, as the record keys them;
+  - an AI formation's days figure counts to its first sitting;
+  - This month also lists foreign polling days in the month, with no figure until counted.
