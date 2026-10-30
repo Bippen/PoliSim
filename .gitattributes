@@ -51,3 +51,5 @@ ElectionsData/usa/raw/pbr_social_security/** -text
 # pbr (K314): the generator's two outputs, byte for byte as Tools/pbr_prep.pl writes them (CRLF); its --check compares them
 Assets/Scripts/Data/Generated/PensionBenefitRatioPath.cs -text
 Assets/Editor/Generated/PensionBenefitRatioAnchors.cs -text
+# SP-8 (2026-10-30): France's 2022 presidential record, byte-exact as fetched (digests in the folder's SHA256SUMS.txt)
+ElectionsData/france/raw/presidential2022/** -text
