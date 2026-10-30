@@ -58,3 +58,15 @@ Also on the retrofit list (built before the slip existed): **the formation sheet
 ## 6. Out of scope
 
 Unity's `productName` and `companyName`; the simulation. A retrofit that would change what the model computes is not a retrofit.
+
+## 7. The declutter caps (ruled by Elias 2026-10-30, K320)
+
+**As of v3.5, text is decluttered and simplified.** The rule covers every screen at rest and the slips. It sharpens §1: words still move to the slip and are never deleted.
+
+- **At rest:** a label is at most **3 words**; a caption is **one line, never cut with "…"**; **no full sentence** stands at rest - a line that needs a verb goes to the slip. Figures do not count as words; a proper name counts as one.
+- **The slip:** level 1 is the glyph's word plus **at most 4 lines of about 8 words**, fragments rather than sentences; level 2 may hold **one plain sentence**, the definition.
+- **Exempt:** opened documents (a Docket item's body, a law's text, a news story, the dense view); the honesty labels (§5); proper names; the setup screens (the start screen, the country selector, party creation).
+- **The test case:** the Polish election night's threshold paragraph becomes the call list at rest (`THE CALLS  PiS 9 · KO 16 · TD 28 · NL 30 · Konf 33`) and a THRESHOLD slip (`5 % party · 8 % coalition` / `MN exempt (okręg 21 only)` / `bar = votes counted`).
+- **Scope in time:** all new work and Design's incoming boards follow it now. Existing screens are decluttered in a **ranked sweep**, most at-rest text first (the §2 baseline's order), each screen its own item.
+- **Enforcement:** a check fails the bar on any breach. Today's breaches are grandfathered in a baseline that may only shrink.
+- **Design's boards:** a board that breaks the caps is built decluttered, its surplus moved to the slip, and every change is listed in Code's reply to Design.

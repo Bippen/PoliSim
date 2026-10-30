@@ -93,6 +93,7 @@ Each is one to three lines with the `§` its story lives under. The long form of
 
 ## What the screens do (the standing UI notes)
 
+- **TEXT IS DECLUTTERED (K320, Elias 2026-10-30, as of v3.5).** At rest: a label is at most 3 words, a caption is one line never cut with "…", and no full sentence stands - prose goes to the slip (the glyph's word plus at most 4 short lines; level 2 one sentence). Exempt: opened documents, the honesty labels, proper names, the setup screens. Words move to the slip, never vanish. A Design board over the caps is built decluttered and every change is listed back to Design. Existing screens follow in a ranked sweep; a check enforces it. Spec: `docs/specs/UI_V33_SPEC.md` §7.
 - **A control that draws as a bare sentence gets the chrome's face** through `CanvasChrome.FacedButton` — brass command, stock neutral (§527).
 - **A glyph in a slot is drawn through the LABEL style, never the tab style**, and `LedgerRow.CellStyle` keys its cache on source **and** size, or two sizes share one style (§534).
 - **A call to action is a sentence and the family's one-width button** (`DrawSentenceAction`, §564): it lays its sentence out WRAPPED on the row's two lines at full size before letting `MeasuredLabel` shrink it — `MeasuredLabel` measures unwrapped and shrinks to one line, so a long sentence handed to it alone goes to the floor.
