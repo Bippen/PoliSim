@@ -51,7 +51,12 @@ namespace PoliSim.EditorTools
                 }
                 Check(StartPoints.For(CountryId.Poland)[1].Kind.StartsWith("PRESIDENTIAL", StringComparison.Ordinal) && StartPoints.For(CountryId.Poland)[1].PollingDay == new DateTime(2025, 5, 18), "Poland's presidential card: 18 May 2025 (the record's first round), after the Sejm's");
                 Check(StartPoints.For(CountryId.France)[0].Kind.StartsWith("PRESIDENTIAL", StringComparison.Ordinal) && StartPoints.For(CountryId.France)[0].DateNote == null && StartPoints.For(CountryId.France)[0].PollingDay == new DateTime(2022, 4, 10) && !StartPoints.For(CountryId.France)[0].Playable, "France's presidential card: first round 10 April 2022 [CC-195] (E-49 closed, §629), locked, before the legislative");
-                Check(StartPoints.For(CountryId.France)[0].Line == "LOCKED · THE PRESIDENTIAL START IS NOT YET BUILT", "France's locked presidential card carries the one reason in the player's words (18b)");
+                // SP-8: the reason is the stop the plan measured (no French vote model); the day it would open is the Conseil's list of candidates, made public
+                // 7 Mar 2022 [CC-187] (K174), read from the generated record - and the card stays locked, so no world opens there
+                Check(StartPoints.For(CountryId.France)[0].Line == "LOCKED · THE FRENCH VOTE IS NOT MODELLED YET" && StartPoints.For(CountryId.France)[0].Opens == new DateTime(2022, 3, 7)
+                      && StartPoints.For(CountryId.France)[0].Opens == PoliSim.Elections.Generated.FrenchPresidentialReturns.CandidatesListed && TwoRoundElection.RuleOf(CountryId.France) == null,
+                    F("France's locked presidential card carries the one reason in the player's words (18b) - \"{0}\"; it would open {1:yyyy-MM-dd}, the Conseil's list of candidates (SP-8, K174); the game holds no French election (RuleOf null)",
+                        StartPoints.For(CountryId.France)[0].Line, StartPoints.For(CountryId.France)[0].Opens));
                 // SP-7b (Elias's ruling I14): Poland's presidential card PLAYABLE - a candidate's start, opening on the Marshal's order (4b: a stated deviation for
                 // presidential starts only - the Sejm start keeps the standard run-up), its card saying the deviation and (PL-C) its run-up; the
                 // default start (TryPlayable, the sheet's pre-selection) stays the Sejm's

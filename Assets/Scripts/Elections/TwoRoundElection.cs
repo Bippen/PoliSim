@@ -59,8 +59,32 @@ namespace PoliSim.Elections
             NominationBasis = "Kodeks wyborczy art. 84 § 3, art. 90 § 1, art. 296-299, art. 303 § 1 (the consolidated text, Dz.U. 2026 poz. 1261); Konstytucja Art. 127 ust. 3",
         };
 
-        /// <summary>The country's two-round rule; null where no presidency is elected in two rounds or its rule is not yet sourced (France until S8).</summary>
+        /// <summary>
+        /// SP-8 (2026-10-30): FRANCE'S RULE, from the Constitution as the Conseil constitutionnel serves it ([CC-CONST], `ElectionsData/france/raw/records/`):
+        /// Art. 6, "élu pour cinq ans ... Nul ne peut exercer plus de deux mandats consécutifs" (consecutive terms, read as <see cref="Rule.MaxTerms"/>); Art. 7,
+        /// "élu à la majorité absolue des suffrages exprimés ... le quatorzième jour suivant, à un second tour. Seuls peuvent s'y présenter les deux candidats qui,
+        /// le cas échéant après retrait de candidats plus favorisés, se trouvent avoir recueilli le plus grand nombre de suffrages" - a withdrawal moves the next
+        /// placed up WITHOUT postponing the run-off, so <see cref="Rule.WithdrawalPostponementDays"/> is 0 - and "vingt jours au moins et trente-cinq jours au plus
+        /// avant l'expiration des pouvoirs du président en exercice". Parties nominate no one: the candidates are presented by elected officials (loi n° 62-1292,
+        /// art. 3, cited by CC-187), whose text Légifrance refuses this machine - the nomination's figures are BILLED and left 0, and the article named.
+        /// </summary>
+        private static readonly Rule France = new Rule
+        {
+            RunOffDay = 14, WithdrawalPostponementDays = 0, TermYears = 5, MaxTerms = 2, CalledEarliestDaysBefore = 35, CalledLatestDaysBefore = 20,
+            Basis = "Constitution Art. 6-7 [CC-CONST]",
+            PartiesNominate = false, CommitteeFounders = 0, RegistrationSignatures = 0, RegistrationLatestDayBefore = 0, NominationSignatures = 0, NominationLatestDayBefore = 0,
+            NominationBasis = "loi n° 62-1292 du 6 novembre 1962, art. 3 (cited by CC-187) - BILLED: Légifrance refuses this machine (france/raw/records/fetch_log.txt)",
+        };
+
+        /// <summary>The two-round rule the GAME HOLDS an election by - the day loop, the Parliament page's President row and every reader that times a round
+        /// read this; null where no presidency is elected in two rounds or the game holds none. France's rule is sourced (<see cref="RecordRuleOf"/>) and its
+        /// election is NOT held here until a French vote model exists (SP-8's stop, `docs/specs/FRANCE_PRESIDENTIAL_START_PLAN.md` §2): the game cannot form
+        /// the poll a French first round would read.</summary>
         public static Rule RuleOf(CountryId id) => id == CountryId.Poland ? Poland : null;
+
+        /// <summary>SP-8: the rule an election OF RECORD is read through - Poland's and France's (the record's brief, the French night); null elsewhere. Never a
+        /// gate on holding an election (that is <see cref="RuleOf"/>).</summary>
+        public static Rule RecordRuleOf(CountryId id) => id == CountryId.Poland ? Poland : id == CountryId.France ? France : null;
 
         /// <summary>What a first vote decides: a president elected outright, or the two who meet in the run-off and its day.</summary>
         public sealed class FirstVote
@@ -133,6 +157,14 @@ namespace PoliSim.Elections
         {
             held = DateTime.MinValue;
             var votes = new List<(string Candidate, long Votes)>();
+            if (id == CountryId.France)
+            {
+                // SP-8: France's 2022 rounds as the Conseil proclaimed them (CC-195, CC-197; `Generated.FrenchPresidentialReturns`), the metropolitan polling day
+                if (year != Generated.FrenchPresidentialReturns.FirstRound.Year || (round != 1 && round != 2)) { return votes; }
+                held = round == 1 ? Generated.FrenchPresidentialReturns.FirstRound : Generated.FrenchPresidentialReturns.RunOff;
+                foreach (var v in Generated.FrenchPresidentialReturns.ProclaimedVotes) { if (v.Round == round) { votes.Add((v.Given + " " + v.DisplaySurname, v.Votes)); } }
+                return votes;
+            }
             if (id != CountryId.Poland) { return votes; }
             foreach (var r in Generated.PolishPresidentialReturns.Rounds) { if (r.Year == year && r.Round == round) { held = new DateTime(r.Year, r.Month, r.Day); } }
             foreach (var v in Generated.PolishPresidentialReturns.Votes) { if (v.Year == year && v.Round == round) { votes.Add((v.Candidate, v.Votes)); } }
@@ -146,7 +178,7 @@ namespace PoliSim.Elections
         /// </summary>
         public static string RecordBrief(CountryId id, int year)
         {
-            Rule rule = RuleOf(id);
+            Rule rule = RecordRuleOf(id);   // SP-8: an election of record is read through its rule whether or not the game holds the next (France's)
             IReadOnlyList<(string Candidate, long Votes)> first = RoundOfRecord(id, year, 1, out DateTime firstHeld);
             if (rule == null || first.Count == 0) { return null; }
             FirstVote counted = CountFirstVote(rule, firstHeld, first);

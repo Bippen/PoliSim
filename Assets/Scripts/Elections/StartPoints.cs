@@ -50,9 +50,10 @@ namespace PoliSim.Elections
 
         /// <summary>18b: the one reason every locked card carries today, in the player's words.</summary>
         public const string LockedPrefix = "LOCKED · ";
-        /// <summary>18b's one reason, its words changed at §770: the presidential START - the player as a candidate - is not built in France (S8, whose
-        /// two-round system is not modelled either). Poland's is built since SP-7b (`PresidentialStart`).</summary>
-        public const string PresidentialStartReason = "THE PRESIDENTIAL START IS NOT YET BUILT";
+        /// <summary>18b's one reason, its words changed at §770 and again at SP-8: France's presidential START - the player as a candidate - stays locked because
+        /// the French vote has no model (`docs/specs/FRANCE_PRESIDENTIAL_START_PLAN.md` §2: no fitted French electorate, so no first round the game could hold);
+        /// the rule, the record and its night are built. Poland's is built since SP-7b (`PresidentialStart`).</summary>
+        public const string PresidentialStartReason = "THE FRENCH VOTE IS NOT MODELLED YET";
         public const string RoundDatesNote = "ROUND DATES NOT IN THE RECORD";
 
         /// <summary>The country's start points in date order (a date the record does not hold sorts by its year).</summary>
@@ -85,9 +86,11 @@ namespace PoliSim.Elections
                     list.Add(Ruled(id, "PRESIDENTIAL ELECTION", "NARA's Electoral College calendar [EC-DATES]; the run-up by the standard window (§618)"));
                     break;
                 case CountryId.France:
-                    list.Add(new StartPoint(id, "PRESIDENTIAL ELECTION", new DateTime(2022, 4, 10), null, DateTime.MinValue, false,
+                    // SP-8 (K174): the card's day is the record's (the Conseil's declaration, as generated) and it would open on the Conseil's list of candidates, made
+                    // public 7 Mar 2022 [CC-187] - K174's "about 7 Mar 2022", sourced; LOCKED while the French vote has no model (the plan's §2), the record read through Art. 6-7
+                    list.Add(new StartPoint(id, "PRESIDENTIAL ELECTION", Generated.FrenchPresidentialReturns.FirstRound, null, Generated.FrenchPresidentialReturns.CandidatesListed, false,
                         LockedPrefix + PresidentialStartReason,
-                        "the rounds of 10 April 2022 [CC-195] and 24 April 2022 [CC-197], the Conseil constitutionnel's own proclamations (E-49 closed, §629); the two-round presidential model is not built (S8)",
+                        TwoRoundElection.RecordBrief(id, 2022) + " (the Conseil constitutionnel's declarations [CC-195] [CC-197]; france/raw/presidential2022/); would open on the list of candidates [CC-187]; locked - no French vote model (SP-8's stop)",
                         year: 2022));
                     list.Add(Ruled(id, "LEGISLATIVE ELECTION (SNAP)", "the Élysée's address of 2024-06-09 [EL-DIS]; governing mode opens at the XVIIe's first sitting 2024-07-18 [AN-S18] (ruled, §618) - the 577-constituency system is not modelled (R-EL10)"));
                     break;

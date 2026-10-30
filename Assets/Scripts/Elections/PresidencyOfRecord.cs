@@ -49,9 +49,29 @@ namespace PoliSim.Elections
                 "PiS", "[SECONDARY] the PiS site's #Nawrocki2025 page (presidential_returns.md: the party's decision to put him forward)"),
         };
 
+        /// <summary>
+        /// SP-8 (2026-10-30): FRANCE'S PRESIDENT OF RECORD BY TERM, every date read from the Conseil constitutionnel's own pages as generated
+        /// (`Generated.FrenchPresidentialReturns`, `ElectionsData/france/raw/presidential2022/`). The first term from the 2017 handover - CC-171's "au plus tard, le
+        /// 14 mai 2017 à 24 heures", read as that day (DECLARED: the latest day the Conseil allows; Art. 6's five years from it end on the second term's start, CC-197's
+        /// "à compter du 14 mai 2022 à 0 heure") - to the second term's start; the second from then, its rounds CC-195's and CC-197's. The backing party ENS is
+        /// DERIVED (france records Table E1: Renaissance by the 2024 nuance). WorldClock's governments carry the same president by name; no game path reads this
+        /// table for France while the game holds no French election (`TwoRoundElection.RuleOf`).
+        /// </summary>
+        private static readonly President[] France =
+        {
+            new President("Emmanuel Macron", Generated.FrenchPresidentialReturns.FirstTermFromLatest, Generated.FrenchPresidentialReturns.SecondTermFrom,
+                Generated.FrenchPresidentialReturns.FirstTermFirstRound, Generated.FrenchPresidentialReturns.FirstTermRunOff,
+                "the 2017 rounds [CC-169] [CC-171]; in office from the handover, \"au plus tard, le 14 mai 2017 à 24 heures\" [CC-171] (DECLARED: that day)",
+                "ENS", "DERIVED - Renaissance by the 2024 nuance (france records Table E1); his 2017 label is on no fetched page"),
+            new President("Emmanuel Macron", Generated.FrenchPresidentialReturns.SecondTermFrom, DateTime.MaxValue,
+                Generated.FrenchPresidentialReturns.FirstRound, Generated.FrenchPresidentialReturns.RunOff,
+                "the rounds of 2022 [CC-195] [CC-197]; \"à compter du 14 mai 2022 à 0 heure\" [CC-197]; invested 2022-05-07 [EL-INV]",
+                "ENS", "DERIVED - Renaissance by the 2024 nuance (france records Table E1)"),
+        };
+
         /// <summary>The country's presidents of record in order; empty where none is directly elected in the record the game holds - and for the USA,
         /// whose presidents of record are its governments of record (`WorldClock.Governments`), held there once (US-6, the plan's "no second copy").</summary>
-        public static IReadOnlyList<President> Of(CountryId id) => id == CountryId.Poland ? Poland : Array.Empty<President>();
+        public static IReadOnlyList<President> Of(CountryId id) => id == CountryId.Poland ? Poland : id == CountryId.France ? France : Array.Empty<President>();
 
         /// <summary>§770 (PS-5 item C4): one candidate of a presidential election of record - the PKW's surname and the roster party whose standing
         /// the candidate inherits in the game's own election (null: none - an independent, a splinter), with the reading. B5: a party cannot

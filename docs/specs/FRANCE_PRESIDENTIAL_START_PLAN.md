@@ -31,3 +31,14 @@ The generator prints every tile's distance before and after, and fails, writing 
 A playable candidate's start needs the game to hold France's two rounds with the player's candidate in the field. The French vote has no model. `PartySystems` returns no fitted electorate for France ("FRANCE HAS NONE": France was never fitted, because the backtest is a share model), so the game cannot form the poll that SP-7's first round multiplies by a candidate's factor. A second gap: the roster is the Ministry's 2024 nuances, so the four candidates of the left in 2022 (Mélenchon, Jadot, Roussel, Hidalgo) have no backing party in it. They would all fall inside UG, which the Ministry does not split.
 
 Until a French vote model is specified (Elias's to rule, as Poland's ask 1 (c2) was) and fitted, the presidential card stays locked and says why. The night is built on the record. The world clock's extension to 7 Mar 2022 (K174) is unreachable while no start opens there, and it waits with the model.
+
+## 3. Built, and what waits (TRACKING; the measurements are the record's)
+
+**Built:** the 2022 record, fetched and generated (`Tools/s8_fr_prep.pl`, `FrenchPresidentialReturns`); France's rule from Art. 6-7 (`TwoRoundElection.RecordRuleOf`, never a gate on holding an election); Macron's two terms of record (`PresidencyOfRecord`); the locked card's opening day (CC-187) and its reason; `FrenchPresidentialRecordCheck` (§963). **Built on wave/s8fr and held there (K332):** the night on the record in board 8a's four states (`FrenchPresidentialNight`, `ElectionNightScreen.BuildFrance`, filmed by a France `-shotinterrupts` session on the merged tree, reals8frfr) and the tiles (`Tools/s8_tiles.pl`, whose `Refined` says whether P5 accepted the pass). No game path opens them while the card is LOCKED, so they land with step 3, the candidate's start.
+
+**Waits, in order:**
+1. **A French vote model** - Elias's to specify: how a first round forms in the game (the poll a candidate's factor multiplies), and which roster party backs each of the 2022 field.
+2. **The world clock to 7 Mar 2022** (K174): France's XVe Assembly by nuance (the Interior's 2017 page, through the Internet Archive as SEAT-1 read 2022's), Castex's government (its appointment decree; its end is held, JD-C16), Italy's 2018 Senato.
+3. **The candidate's start**: the card playable on CC-187's day, the picker, the player's candidate in the contest, the save step (SP-7b's path, `PresidentialStart`).
+4. **Cohabitation** (board 8b; K175, K176): the predicate needs the prime minister's camp, which no official page states for any government of record (GAP G4), and Art. 8's verb. Until then the tab has nothing true to show.
+5. **France's party inks** (a Design proposal): until one is installed, every French draw is in the Neutral.

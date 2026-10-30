@@ -42677,3 +42677,43 @@ Energy's slips from before S1 still hold lines over 10 words. They carry no move
   - CDU and CSU are two rows, as the record keys them;
   - an AI formation's days figure counts to its first sitting;
   - This month also lists foreign polling days in the month, with no figure until counted.
+
+## 963. SP-8 PART ONE - FRANCE'S 2022 PRESIDENTIAL RECORD SOURCED AND GENERATED, FRANCE'S RULE, THE CARD LOCKED ON ITS SOURCED DAY; THE RECORD NIGHT HELD FOR SP-8B (K174-K177, K325, K332) (2026-10-30)
+
+**What was owed:** K174-K177, the French presidential start, and Design's §8 return (boards 8a-8c, `S8 France Presidential.dc.html`, the tile JSON `fr_departements.json`).
+
+**Order on main:** the sources (aececb9e) and the prereg's decision rules P1-P6 (3ec0b7c4) were committed alone before anything was generated or measured, as on the branch (43ec16f1, 27eac596). The rest of wave/s8fr (cdcd5d9d..43cef4ec) was applied on top, less the night (K332).
+
+**Built:**
+- **The sources**, fetched byte-exact into `ElectionsData/france/raw/presidential2022/` with `SHA256SUMS.txt` and a fetch log (a `.gitattributes -text` line keeps their bytes). The four Interior files' sha1s equal the publisher's own in data.gouv.fr's API records. `sha256sum -c` on main: every file OK.
+  - the Conseil's list of candidates (CC-187, 7 Mar 2022) and its 2017 declarations (CC-169, CC-171);
+  - the Interior's count by département and for France entière, both rounds;
+  - the investiture (Élysée, 7 May 2022);
+  - Ipsos's run-off estimate at 20:00.
+- **The record as data:** `Tools/s8_fr_prep.pl` generates `FrenchPresidentialReturns.cs` and writes nothing if P1 (a) fails.
+  - Measured: P1 (a) holds on both rounds (the 107 units sum exactly to France entière); P1 (b) finds 0 fields differing between the Conseil and the Interior.
+  - The first round's two: Macron 27.85 and Le Pen 23.15; Mélenchon third, 1.20 points short.
+- **France's rule** from Constitution Art. 6-7, as `TwoRoundElection.RecordRuleOf`: 5 years, two consecutive terms, the run-off on the 14th day, the first round 35 to 20 days before the term ends. `RuleOf(France)` stays null, so the game holds no French election, and `RecordBrief` reads the record rule (Poland's result unchanged). Macron's two terms of record are in `PresidencyOfRecord`.
+- **The start card** carries its sourced day (7 Mar 2022, CC-187) and stays LOCKED: "THE FRENCH VOTE IS NOT MODELLED YET" (K325 (2)). `StartPointsDiagnostic` is re-pinned.
+- **`FrenchPresidentialRecordCheck`** (cheap group, registered with this record) re-reads every page:
+  - (a) the digests;
+  - (b) the catalog against the Interior's and the Conseil's figures, P1 (a) enforced and P1 (b) printed;
+  - (c) every date and the estimate;
+  - (d) Art. 6-7 and the record's brief.
+
+**Held on wave/s8fr (K332):** the record night in board 8a's four states (`FrenchPresidentialNight`, `ElectionNightScreen.France`), its 96 + 11 tiles (`Tools/s8_tiles.pl`), its film hook, and the check's sections (e) and (f).
+- The first cheap bar on the merged tree failed UnwiredSubsystemCheck: the night's file had no game caller (2 unwired against a ceiling of 1), and the ceiling never rises for a grown backlog.
+- No game path opens the night while the card is LOCKED, so it lands with SP-8b's candidate's start, which opens it.
+- The same bar's MetaTextCheck found PROVISIONAL, SOURCED and one possessive written by hand in the night's file. The night's real films (reals8frfr, reals8frfrw) found the WHO GOVERNS run-off row short by 1 unit at 1280 and 9 at 2560. Both are owed when the night lands.
+- Its frames, taken on the merged tree before the carve, go to Design as the board's build check.
+- **P5:** the geography pass was refused on (iv), tile 62 alone (0.310 cells from its point in Design's pass, 1.139 after). The held table is Design's first pass unrefined, and the refined layout goes to Design (K325 (1)).
+
+**Not built** (each waits on a French vote model, FILED as SP-8b by K325 (2)): the playable candidate's start; cohabitation and Art. 8 and 10 as verbs (K325 (4), GAP G4); Art. 12 locked on screen; the world clock to 7 Mar 2022 (K174).
+
+**Measured (this tree):** dump diff on the merged tree before the carve: traj_s8fr against traj_pre8 (main before SP-8, itself byte-identical to the baseline pbr) BYTE-IDENTICAL on seeds 777 and 424242 (dumps8fr, dumppre8); simulation bar 93 of 93 clean, the trajectory sentinel the baseline's on both seeds, so no review is due (sims8fr; the carve removes only files no game file names, as UnwiredSubsystemCheck measured); cheap bar 149 of 149 clean (cheaps8fr2, the carved tree; the first, cheaps8fr, failed UnwiredSubsystemCheck and MetaTextCheck on the night's file), FrenchPresidentialRecordCheck ok on (a)-(d) with P1 (b) 0 differences on both rounds; dry film France at 1280, 147 measured, 0 failed, 0 overflow (drys8fr, scope row drys8fr); the filmed width: France at 1280 (reals8fr2fr), 4 declared, 0 missing, 0 overflow, 0 canvas text violations across 6 asserts, the selector's card LOCKED on its sourced day; doc bar (docs963)
+
+**Declared:**
+- The start's day is the Conseil's list of candidates; the first term runs from 14 May 2017 (CC-171's latest handover day).
+- **BILLED:** the first round's 20:00 estimate (no institute's own page reached), and loi n° 62-1292 art. 3's 500 presentations (Légifrance refuses this machine).
+- France holds no installed inks; they are asked of Design (K325 (3)).
+- No words moved from an existing screen: the locked reason sits on the country selector, an exempt setup screen (K320).
