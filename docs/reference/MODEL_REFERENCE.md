@@ -3604,7 +3604,7 @@ compass, and demographic pie charts - all reading data this game already tracks,
   projected-value already use - a reference line stays visible even on a page where the data sits far
   from it, the whole point of "how far from target are we." Wired into the two graphs with an obvious
   single reference point: Unemployment -> `Country.NaturalUnemploymentRate` ("NAIRU"), Debt-to-GDP ->
-  `Country.ComfortableDebtToGdpPercent` ("Comfortable"). Every other graph left without one - GDP/
+  `Country.ComfortableDebtToGdpPercent` ("Comfortable") - since K269 (d) (fisc2, 2026-10-29) the country's own fiscal framework's figure instead, `FiscalRules.DebtReferencePercent` (Sweden's 35 % debt anchor, the Treaty's 60 %, no line for the USA). Every other graph left without one - GDP/
   Approval/Trade Balance/etc. have no single natural target value the way NAIRU or a comfortable debt
   level do.
 - **"Last N changes" pagination**: `StatHistory.MaxEntries` raised 50 -> 250 (5 pages of

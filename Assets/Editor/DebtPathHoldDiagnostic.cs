@@ -19,9 +19,9 @@ namespace PoliSim.EditorTools
     ///
     /// <para><b>K218 (2026-10-28): THE PATH IS THE SOURCES' PREMISE.</b> CBO projects current law and the DSM holds the structural primary balance
     /// unchanged with the cost of ageing on top; neither projects a government correcting its deficit. The shared no-policy century
-    /// (<see cref="NoPolicyCentury.For"/>) is the player's own idle book - its lines hold the real provision the player set, and its revenue carries the fiscal
-    /// reaction, which raises collection as the debt rises above the country's seeded comfort level - so the hold reads the NO-POLICY-CHANGE run instead
-    /// (<see cref="NoPolicyCentury.Unchanged"/>: the AI's indexation, no ministry, no Finance partner, no fiscal reaction),
+    /// (<see cref="NoPolicyCentury.For"/>) is the player's own idle book - its income tax keeps the statute's creep (K271) and its revenue carries the fiscal
+    /// reaction, which raises collection as the debt rises above the country's seeded comfort level (until K269 (a) its lines also held the real provision the player
+    /// set) - so the hold reads the NO-POLICY-CHANGE run instead (<see cref="NoPolicyCentury.Unchanged"/>: the AI's book, no ministry, no Finance partner, no fiscal reaction),
     /// and prints the shared century's change beside it for reference, unjudged.</para>
     ///
     /// <para><b>K252 (2026-10-28): THE STOCK OPENS AT WHAT IT PAID.</b> The stock's effective rate is seeded at the national accounts' implied rate
@@ -65,17 +65,14 @@ namespace PoliSim.EditorTools
         private const float CboShortBand = 10f, CboLongBand = 25f;
 
         /// <summary>
-        /// K218: THE BANDS K218 DOES NOT CLOSE (K252 closed France (h1) and Italy (h1), the stock's rate seeded at the national accounts' implied rate) - each prints a REGISTERED MISS line with its reason and does not fail (the K211 / K217 pattern), until the item
+        /// K218: THE BANDS K218 DOES NOT CLOSE (K252 closed France (h1) and Italy (h1), the stock's rate seeded at the national accounts' implied rate; fisc2 lifted Sweden, France,
+        /// Italy and Poland (h2) - the income-security residual on the population, not the unemployment rate, `SpendingDrivers.Of`, under its prereg's rule, `Reviews/2026-10-29_fisc2_prereg.md`) - each prints a REGISTERED MISS line with its reason and does not fail (the K211 / K217 pattern), until the item
         /// its reason names lands. The reason names the decomposition's terms; the figures are the run's own, printed above the line. Keyed "Country (hN)" for
         /// the EU five and "USA (h3) N years" for CBO's two. A key that is not here is a band K218 closes or one that held already: a miss there FAILS.
         /// </summary>
         private static readonly Dictionary<string, string> Registered = new Dictionary<string, string>
         {
-            { "Sweden (h2)", "the primary balance - the model's surplus widens where the DSM's stays near balance; interest, growth and inflation follow the DSM's (the caseload lines' cycle and the real wage against GDP: a calibration item)" },
-            { "Germany (h2)", "the primary balance (the caseload lines' cycle after 2029), then the interest on the stock (K252's seed at the national accounts' rate, converging on the issuance rate) - a calibration item" },
-            { "France (h2)", "the interest on the stock - K252 seeds it at the national accounts' rate, and over the stock's maturity it converges on the issuance rate and the convex spread at the higher debt, above the DSM's implied path - and the primary balance (the opening years' stagnation) - a calibration item" },
-            { "Italy (h2)", "the interest on the stock (K252's seed, converging on the issuance rate and the convex spread at the higher debt) and the real growth effect - K276 put Italy's labour input on the Ageing Report's rates by age, but past 2028 the game carries the statute's 67 y 3 m where the Ageing Report keeps indexing it (K276 review 1, M1) - a programme follows" },
-            { "Poland (h2)", "the primary balance - larger than the DSM's since K271: the no-policy book re-indexes its thresholds, and the bracket creep that offset the caseload lines' growth is gone (a calibration item); the DSM's stock-flow adjustments to 2026 are not modelled, and the inflation effect is smaller than the DSM's, so it adds to the miss" },
+            { "Germany (h2)", "the primary balance - the model opens in a deeper primary deficit than the DSM's balance before ageing, and its revenue share slips at re-indexed thresholds, while the pension line's ageing runs near the DSM's cost of ageing - then the interest on the larger stock (K252's seed converging on the issuance rate): a calibration item (fisc2 removed the income-security cycle that led it)" },
         };
 
         public static void Run()

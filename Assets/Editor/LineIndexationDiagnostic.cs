@@ -10,8 +10,9 @@ namespace PoliSim.EditorTools
     /// RF-2 re-formed (2026-09-07, §384; the driver-only form of §370 reverted). Sweden the player, twenty years at seed policy, every country read: (1) for an
     /// AI country, a line WITH a driver reads real amount ÷ (seed × driver ratio) = the country's compounded REAL WAGE growth (the real wage index at the last
     /// indexation over its seed) to 2 % - a caseload at the going wage, the income index's rule; (2) a line WITHOUT a driver reads the compounded real potential
-    /// growth, Π(1 + g), the same for every driverless line of that country; (3) the player's lines read 1 on both classes (prices × driver only); (4) both
-    /// directions on the driverless class: a country whose potential shrank reads below 1. Proves the split; the fiscal path is the trajectory suite's.
+    /// growth, Π(1 + g), the same for every driverless line of that country; (3) K269 (a) (2026-10-29): the PLAYER'S lines read the same two factors - one rule
+    /// in every book, the sources' unchanged policy (`SimulationManager.IndexSpendingLines`) - where until then they read 1 on both classes (prices × driver only);
+    /// (4) both directions on the driverless class: a country whose potential shrank reads below 1. Proves the split; the fiscal path is the trajectory suite's.
     /// <para>K210 (s937): the shrinking direction is PLANTED in a world of its own - Italy's no-policy potential used to shrink and exercise it, and the
     /// productivity pull made it grow. In the planted run an AI country's PotentialGrowthRate is set to <see cref="PlantedGrowth"/> at each boundary's
     /// labour point (SimulationManager.BoundaryLedger), just before its lines are indexed, and the boundary's own finalizer (MacroSystem.ApplySectorGrowthEffect)
@@ -35,7 +36,7 @@ namespace PoliSim.EditorTools
             ok &= Measure(PlantedYears, PlantedCountry, out float plantedFactor);
             if (!(plantedFactor < 1f)) { Debug.LogError($"LINE INDEXATION: the planted run's {PlantedCountry} driverless factor {plantedFactor:F4} does not sit below 1 under a potential growth of {PlantedGrowth:F1} % a year - the shrinking direction failed."); ok = false; }
             else { Debug.Log($"LINE INDEXATION: the shrinking direction - {PlantedCountry}'s driverless factor {plantedFactor:F4} after {PlantedYears} indexations at a planted {PlantedGrowth:F1} % a year."); }
-            Debug.Log(ok ? "LINE INDEXATION: PASS - caseload lines at the going real wage, driverless lines at potential growth, the player unchanged, both directions (the shrinking one planted)." : "LINE INDEXATION: FAILED (see above).");
+            Debug.Log(ok ? "LINE INDEXATION: PASS - caseload lines at the going real wage, driverless lines at potential growth, in the player's book as in the AI's (K269 (a)), both directions (the shrinking one planted)." : "LINE INDEXATION: FAILED (see above).");
             CheckExit.Finish(ok ? 0 : 1);
         }
 
@@ -106,21 +107,16 @@ namespace PoliSim.EditorTools
                             withDriver++;
                         }
                     }
-                    if (player)
-                    {
-                        if (!float.IsNaN(driverlessRatio) && Mathf.Abs(driverlessRatio - 1f) > 1e-3f) { Debug.LogError($"LINE INDEXATION: the player's driverless lines read {driverlessRatio:F4}, not 1 - the player's rule moved."); ok = false; }
-                        if (!float.IsNaN(caseloadRatio) && Mathf.Abs(caseloadRatio - 1f) > 1e-3f) { Debug.LogError($"LINE INDEXATION: the player's caseload lines read {caseloadRatio:F4}, not 1 - the player's rule moved."); ok = false; }
-                    }
-                    else
-                    {
-                        // the rule's own figures: potential growth compounded over the twenty indexations, and the real wage index at the last indexation over its seed
-                        if (!float.IsNaN(driverlessRatio) && Mathf.Abs(driverlessRatio - growth[c.Id]) > 0.02f * growth[c.Id]) { Debug.LogError($"LINE INDEXATION: {c.Id} driverless factor {driverlessRatio:F4} is not the compounded potential growth {growth[c.Id]:F4}."); ok = false; }
-                        if (!float.IsNaN(caseloadRatio) && Mathf.Abs(caseloadRatio - wage[c.Id]) > 0.02f * wage[c.Id]) { Debug.LogError($"LINE INDEXATION: {c.Id} caseload factor {caseloadRatio:F4} is not the real wage growth {wage[c.Id]:F4} - the caseload is not at the going wage."); ok = false; }
-                        if (planted.HasValue && c.Id == planted.Value) { plantedFactor = driverlessRatio; }
-                    }
+                    // the rule's own figures, in every book since K269 (a) - the player's included: potential growth compounded over the indexations, and the real wage
+                    // index at the last indexation over its seed
+                    string who = player ? $"{c.Id} (the player's book)" : c.Id.ToString();
+                    if (!float.IsNaN(driverlessRatio) && Mathf.Abs(driverlessRatio - growth[c.Id]) > 0.02f * growth[c.Id]) { Debug.LogError($"LINE INDEXATION: {who} driverless factor {driverlessRatio:F4} is not the compounded potential growth {growth[c.Id]:F4}."); ok = false; }
+                    if (!float.IsNaN(caseloadRatio) && Mathf.Abs(caseloadRatio - wage[c.Id]) > 0.02f * wage[c.Id]) { Debug.LogError($"LINE INDEXATION: {who} caseload factor {caseloadRatio:F4} is not the real wage growth {wage[c.Id]:F4} - the caseload is not at the going wage."); ok = false; }
+                    if (player && (float.IsNaN(driverlessRatio) || Mathf.Abs(driverlessRatio - 1f) <= 1e-3f || float.IsNaN(caseloadRatio) || Mathf.Abs(caseloadRatio - 1f) <= 1e-3f)) { Debug.LogError($"LINE INDEXATION: the player's lines read {driverlessRatio:F4} driverless and {caseloadRatio:F4} caseload - a factor of 1 is the driver-only rule K269 (a) retired."); ok = false; }
+                    if (planted.HasValue && c.Id == planted.Value) { plantedFactor = driverlessRatio; }
                     report.Add($"{c.Id}{(player ? " (player)" : "")}: {withDriver} caseload line(s) at {(float.IsNaN(caseloadRatio) ? 1f : caseloadRatio):F3} (real wage {wage[c.Id]:F3}), {without} driverless at {(float.IsNaN(driverlessRatio) ? 1f : driverlessRatio):F3}");
                 }
-                Debug.Log($"LINE INDEXATION: {(planted.HasValue ? $"the planted run ({planted.Value} at {PlantedGrowth:F1} % a year), " : "")}after {years} years - {string.Join("; ", report)}. A caseload line carries the country's real wage growth on top of prices and its driver (the income index's rule); a driverless line carries the compounded potential growth; the player's lines read 1 on both.");
+                Debug.Log($"LINE INDEXATION: {(planted.HasValue ? $"the planted run ({planted.Value} at {PlantedGrowth:F1} % a year), " : "")}after {years} years - {string.Join("; ", report)}. A caseload line carries the country's real wage growth on top of prices and its driver (the income index's rule); a driverless line carries the compounded potential growth; in the player's book as in the AI's (K269 (a)).");
             }
             finally
             {

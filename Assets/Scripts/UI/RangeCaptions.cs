@@ -307,7 +307,7 @@ namespace PoliSim.UI
             }) },
             // ---- P6-F2b (2026-09-21, §542): THE ENERGY TAB'S FOUR INSTRUMENTS - the Energy sector's own dials under the names the spec-let's S9 maps them to,
             // each speaking to what the instrument reaches in the energy layer. Same ranges, same drafts, same save keys as the sector's rows above.
-            // Retail intervention = the Subsidy dial's money side: the budget's energy line rises with it and the levy is cut one for one (EnergyLedger.Compute's
+            // Retail intervention = the Subsidy dial's money side: the budget's energy line rises with it and the levy is cut by the pass-through K297 states (one for one unless an AI government indexed a boundary: EnergyLedger.LevyPassThrough; EnergyLedger.Compute's
             // LevyScale falls as the line rises) - the stat is the levy on the bill, and it FALLS as the dial rises. Drawn only where the stack carries a levy.
             // PF-4 (2026-09-21, §554): THE LINES PROMISE A DIRECTION, NEVER A FLOOR. The dial's whole cost is a fixed share of GDP and the four seeded levies differ by two orders of
             // magnitude: the full dial leaves most of Italy's and Poland's levy standing and takes Sweden's and France's whole levy a few points above neutral. One catalog serves

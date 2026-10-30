@@ -40,7 +40,8 @@ namespace PoliSim.EditorTools
     /// year is the pyramid's own (K299's amendment r2, the review's M2: NoPolicyCentury.Year.SubstrateYear, as (d) reads it).
     /// K290: a (c) line in <see cref="RegisteredLabourForce"/> prints a named REGISTERED MISS and does not fail while its attribution holds (the K218
     /// pattern); the rule and the band are unchanged, a registered line that holds says the registration can be lifted, and a miss whose attribution no
-    /// longer holds FAILS.</item>
+    /// longer holds FAILS. K313 (fisc2, 2026-10-30): Poland 2050 is registered on K290's mechanism with its own attribution - the line with the health and
+    /// education participation terms removed inside the band, and their part at most a point (<see cref="RegisteredHealthEducationPartBound"/>).</item>
     /// <item><b>(d) K299 (K290's follow-up): the USA's population against CBO's 2025 demographics</b> (UsDemographicOutlook, Tools/uspop_prep.pl), the
     /// no-policy run, by the pyramid's own year, an index on 2025, at 2030, 2040 and 2055 (the path is CBO's by-age table, band by band - K299's
     /// amendment r3): (d1) each of the four Figure 2 age groups and the sum from 25 within UsGroupBand of CBO's index, the whole population printed
@@ -87,11 +88,27 @@ namespace PoliSim.EditorTools
         /// its 15+ population, against CBO's all-people rate) is inside the band. Review 3 (L1): the registration has a ceiling as well as a floor, so a
         /// later regression in the population - a miss growing past what was measured and attributed - FAILS instead of printing as the registered miss.
         /// A registered line whose attribution stops holding is asserted and FAILS; one that holds says so, so the registration can be lifted.
-        /// <para>K299 (K290's follow-up): EMPTY. K290's one line, USA 2040, was lifted when the US population was recalibrated on CBO's 2025
-        /// demographics and the line printed that its registration could be lifted (the record names the run); the mechanism stays for a later
-        /// registration, which a ruling names.</para>
+        /// <para>K299 (K290's follow-up): K290's one line, USA 2040, was lifted when the US population was recalibrated on CBO's 2025 demographics and
+        /// the line printed that its registration could be lifted (the record names the run); the mechanism stayed for a later registration, which a ruling
+        /// names.</para>
+        /// <para>K313 (fisc2, 2026-10-30; the prereg's amendment 2, written after the measurement): POLAND 2050, attributed to the health and education terms -
+        /// K222's declared M1 drift (the health and education lines at the going wage read as capacity), which K269 (a)'s R1 brings into the player's book. It
+        /// stays registered only while the line with those two terms removed from the state's rate (at the year and at the base year) is inside the band AND
+        /// their part - the line less that line - is at most <see cref="RegisteredHealthEducationPartBound"/>. The mortality route through the 15+ population
+        /// cannot be separated from the run's own pyramid, so it stays inside the line without the terms and is not bounded by the second test.</para>
         /// </summary>
-        private static readonly Dictionary<string, (string Reason, double MeasuredPopulationPart)> RegisteredLabourForce = new Dictionary<string, (string, double)>();
+        private static readonly Dictionary<string, (string Tag, string Reason, Attribution Kind, double MeasuredPopulationPart)> RegisteredLabourForce = new Dictionary<string, (string, string, Attribution, double)>
+        {
+            { "Poland 2050", ("K313", "the health and education participation terms of K222's declared M1 drift, in the player's book since K269 (a)", Attribution.HealthEducationPart, double.NaN) },
+        };
+
+        /// <summary>K290 / K313: what a registered (c) line's attribution reads - K290's population part against CBO's (the USA), or K313's health and education
+        /// terms (an EU country).</summary>
+        private enum Attribution { PopulationPart, HealthEducationPart }
+
+        /// <summary>K313: [AUTHORED-DRAFT] the most of a registered line's miss the health and education terms may carry, a share (one point; measured at the
+        /// ruling about a third of it).</summary>
+        private const double RegisteredHealthEducationPartBound = 0.01;
 
         /// <summary>[AUTHORED] review 3 (L1): how far a registered line's population part may lie from the part measured at its registration, a share (one
         /// point either way) - wide enough for the run-to-run and runtime rounding of the printed tenth, narrow enough that a population regression of
@@ -116,9 +133,9 @@ namespace PoliSim.EditorTools
             }
             catch (Exception e) { Check(false, "the run threw " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace); }
             Debug.Log(_sb.ToString());
-            if (_registered > 0) { Debug.Log(F("PARTICIPATION COHORTS: {0} REGISTERED MISS line(s) (K290: printed, not failed, each with its attribution holding)", _registered)); }
+            if (_registered > 0) { Debug.Log(F("PARTICIPATION COHORTS: {0} REGISTERED MISS line(s) (K290's mechanism - K313: Poland 2050 - printed, not failed, each with its attribution holding)", _registered)); }
             Debug.Log(_failures == 0
-                ? "PARTICIPATION COHORTS: PASS - every band's rate is its seed plus its source's projected change at the stated years, the response measures from the age the projection was made under (zero on the statute's own path, the carried statute's shortfall past an indexed horizon), a bill's age moves the older cohorts by the sourced response, the labour force holds the sources' index within the band, and the USA's population holds CBO's 2025 demographics within K299's bands"
+                ? "PARTICIPATION COHORTS: PASS - every band's rate is its seed plus its source's projected change at the stated years, the response measures from the age the projection was made under (zero on the statute's own path, the carried statute's shortfall past an indexed horizon), a bill's age moves the older cohorts by the sourced response, the labour force holds the sources' index within the band but the line K313 registers (printed above), and the USA's population holds CBO's 2025 demographics within K299's bands"
                 : F("PARTICIPATION COHORTS: FAIL - {0} check(s) failed.", _failures));
             CheckExit.Finish(_failures == 0 ? 0 : 1);
         }
@@ -409,9 +426,20 @@ namespace PoliSim.EditorTools
                     }
                     _sb.Append(F("        info (c) {0,-8} {1}: the 15+ population x{2:F4}; the anchor (structural, with the response) x{3:F4}, {4:F2} % against {5:F2} %; the state's rate over the anchor {6:F4} against {7:F4} at {8}{9}\n",
                         id, y, popIx, anchorIx, structural[y], structural[baseYear], kNow, kBase, baseYear, cbo));
+                    // K313: the line with the health and education terms taken off the state's rate, at the year and at the base year (the participation route; the
+                    // mortality route through the 15+ population stays in it), and their part - the line less that line. The EU lines only (the USA's split is K290's).
+                    double withoutHe = double.NaN, hePart = double.NaN;
+                    if (!usa && part[y] > 0.0 && part[baseYear] > 0.0)
+                    {
+                        double heNow = terms[y].HealthTerm + terms[y].EducationTerm, heBase = terms[baseYear].HealthTerm + terms[baseYear].EducationTerm;
+                        withoutHe = (lf2074[y] * (part[y] - heNow) / part[y]) / (lf2074[baseYear] * (part[baseYear] - heBase) / part[baseYear]) / source - 1.0;
+                        hePart = (model / source - 1.0) - withoutHe;
+                        _sb.Append(F("        info (c) {0,-8} {1}: without the health and education terms (their {2:+0.00;-0.00} pts at the year, {3:+0.00;-0.00} at {4}) the line reads {5:+0.00%;-0.00%}; their part {6:+0.00%;-0.00%} (K313)\n",
+                            id, y, heNow, heBase, baseYear, withoutHe, hePart));
+                    }
                     _sb.Append(F("        info (c) {0,-8} {1}: what holds the state's rate off the anchor - unemployment {2:+0.00;-0.00} pts off the effective natural rate (the discouraged-worker term), the labour tax's term {3:+0.00;-0.00}, the health's {4:+0.00;-0.00}, the education's {5:+0.00;-0.00} pts\n",
                         id, y, terms[y].UnemploymentGap, terms[y].LabourTaxTerm, terms[y].HealthTerm, terms[y].EducationTerm));
-                    Band(F("{0} {1}", id, y), popPart, ratePart, Math.Abs(model / source - 1.0) <= LabourForceBand,
+                    Band(F("{0} {1}", id, y), popPart, ratePart, withoutHe, hePart, Math.Abs(model / source - 1.0) <= LabourForceBand,
                         F("(c) {0,-8} {1}: the labour force {2} at {3:F4} of {4} against {5}'s {6:F4} ({7:+0.00%;-0.00%}); participation {8:F2} % (15+, the state's), the 15+ labour force x{9:F4}",
                             id, y, usa ? "(15+, the state's rate)" : "aged 20-74 (the state's, on the source's law)", model, baseYear, usa ? "CBO's potential labor force" : "the Ageing Report's 20-74 (II.1.53 / (1 - II.1.51))", source, model / source - 1.0, part[y], lf[y] / lf[baseYear]));
                 }
@@ -519,17 +547,29 @@ namespace PoliSim.EditorTools
 
         /// <summary>K290: a (c) line is asserted (<see cref="Check"/>) unless it is in <see cref="RegisteredLabourForce"/> AND its attribution holds, where a
         /// miss prints a named REGISTERED MISS with its attribution and does not fail; a registered line that holds says so, so the registration can be lifted.</summary>
-        private static void Band(string key, double popPart, double ratePart, bool ok, string what)
+        private static void Band(string key, double popPart, double ratePart, double withoutHe, double hePart, bool ok, string what)
         {
-            if (!RegisteredLabourForce.TryGetValue(key, out (string Reason, double MeasuredPopulationPart) reg)) { Check(ok, what); return; }
+            if (!RegisteredLabourForce.TryGetValue(key, out (string Tag, string Reason, Attribution Kind, double MeasuredPopulationPart) reg)) { Check(ok, what); return; }
             string reason = reg.Reason;
-            // review 3 (L1): the population part within the tolerance of the part measured at registration (a ceiling and a floor), the rate part inside the band
-            bool attributionHolds = Math.Abs(popPart - reg.MeasuredPopulationPart) <= RegisteredPopulationTolerance && Math.Abs(ratePart) <= LabourForceBand;
-            if (ok) { _sb.Append("        ok   ").Append(what).Append(" - REGISTERED under K290 and holding: the registration can be lifted\n"); return; }
-            if (!attributionHolds) { Check(false, what + F(" - REGISTERED under K290, but its attribution no longer holds: the population part {0:+0.00%;-0.00%} against the {1:+0.00%;-0.00%} measured at registration (+/-{2:P0}), the rate part {3:+0.00%;-0.00%} (band +/-{4:P0})", popPart, reg.MeasuredPopulationPart, RegisteredPopulationTolerance, ratePart, LabourForceBand)); return; }
-            _sb.Append("        REGISTERED MISS (K290) ").Append(what).Append(" - ").Append(reason).Append('\n');
+            bool attributionHolds;
+            string attribution;
+            if (reg.Kind == Attribution.PopulationPart)
+            {
+                // review 3 (L1): the population part within the tolerance of the part measured at registration (a ceiling and a floor), the rate part inside the band
+                attributionHolds = Math.Abs(popPart - reg.MeasuredPopulationPart) <= RegisteredPopulationTolerance && Math.Abs(ratePart) <= LabourForceBand;
+                attribution = F("the population part {0:+0.00%;-0.00%} against the {1:+0.00%;-0.00%} measured at registration (+/-{2:P0}), the rate part {3:+0.00%;-0.00%} (band +/-{4:P0})", popPart, reg.MeasuredPopulationPart, RegisteredPopulationTolerance, ratePart, LabourForceBand);
+            }
+            else
+            {
+                // K313: the line without the health and education terms inside the band, and their part at most the bound
+                attributionHolds = !double.IsNaN(withoutHe) && Math.Abs(withoutHe) <= LabourForceBand && Math.Abs(hePart) <= RegisteredHealthEducationPartBound;
+                attribution = F("without the health and education terms the line reads {0:+0.00%;-0.00%} (band +/-{1:P0}), their part {2:+0.00%;-0.00%} (at most {3:P0}); the mortality route through the 15+ population is not separable and stays in the line without them", withoutHe, LabourForceBand, hePart, RegisteredHealthEducationPartBound);
+            }
+            if (ok) { _sb.Append("        ok   ").Append(what).Append(" - REGISTERED under ").Append(reg.Tag).Append(" and holding: the registration can be lifted\n"); return; }
+            if (!attributionHolds) { Check(false, what + " - REGISTERED under " + reg.Tag + ", but its attribution no longer holds: " + attribution); return; }
+            _sb.Append("        REGISTERED MISS (").Append(reg.Tag).Append(") ").Append(what).Append(" - ").Append(reason).Append(" - ").Append(attribution).Append('\n');
             _registered++;
-            Debug.Log("PARTICIPATION COHORTS: REGISTERED MISS - " + what + " - " + reason);
+            Debug.Log("PARTICIPATION COHORTS: REGISTERED MISS (" + reg.Tag + ") - " + what + " - " + reason + " - " + attribution);
         }
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);

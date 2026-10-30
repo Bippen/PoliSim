@@ -14,11 +14,12 @@ namespace PoliSim.EditorTools
     /// (the expected figure computed HERE from the state and the cohorts, not from the recompute). The turn reads a
     /// driver either as it stands when the turn opens or as this turn committed it (the cohorts: CohortDemographics
     /// commits at the top of AdvanceTurn); the diagnostic computes both, accepts either, and REPORTS which one each
-    /// driver takes. A line with no driver must not move at all for the player. Then a pinned line (pinned on turn 1
+    /// driver takes. K269 (a) (2026-10-29): every line also carries its REAL term - the real wage index at the last index over its seed on a caseload,
+    /// the compounded real potential growth on a line with no driver - in the player's book as in the AI's. Then a pinned line (pinned on turn 1
     /// through PolicyDecision.SpendingPinChanges) must read, at year five, exactly what it read at year one; and a
     /// line set to a nominal target on turn 1 must read that target (clamped) at year one and index from it after.
-    /// The AI rule is asserted on one country that is NOT the player: its lines carry the real-growth factor as well.
-    /// There is no price term to assert - the book is in constant prices (IndexSpendingLines' doc says why).
+    /// The AI rule is asserted on one country that is NOT the player: its lines carry the same real-growth factor. Every line carries the year's prices
+    /// (P5-B6: the price level at the last index over 1 at the seed).
     ///
     /// Sits on the simulation bar: it builds and advances worlds.
     /// </summary>
@@ -26,6 +27,10 @@ namespace PoliSim.EditorTools
     {
         private const int Years = 5;
         private const float Tolerance = 1e-4f;   // relative; float compounding over five factors
+        /// <summary>K269 (a) (the review's L4): the relative tolerance on a line with no driver - the same as every other line's. Its expected real term compounds potential
+        /// growth as read before each turn, which is the figure the boundary indexes with: measured out of the engine, the widest driverless miss over the six is 2.4e-7, so a
+        /// dropped year of the slowest growth (Italy's) fails by an order of magnitude more than the tolerance.</summary>
+        private const float GrowthTolerance = Tolerance;
 
         public static void Run()
         {
@@ -68,13 +73,15 @@ namespace PoliSim.EditorTools
 
                     float pinnedAtOne = float.NaN, targetedAtOne = float.NaN;
                     var levelStanding = new Dictionary<SpendingCategory, float>();   // each driver as it stood when the last turn opened
-                    var projected = new Dictionary<SpendingCategory, float>();   // P5-B5: each line's ProjectNextYear() read before the last turn
+                    var projected = new Dictionary<SpendingCategory, float>();   // P5-B5: each line's projection read before the last turn
+                    float seedWage = Mathf.Max(0.0001f, country.State.RealWageIndex), growth = 1f;   // K269 (a): the real terms' references - the seed's real wage, and potential growth compounded over the turns
                     for (int year = 1; year <= Years; year++)
                     {
                         for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                        growth *= 1f + country.PotentialGrowthRate / 100f;   // K269 (a): the rule reads PotentialGrowthRate as it stands when the lines are indexed at the top of the turn (LineIndexationDiagnostic's reading)
                         if (year == Years)
                         {
-                            foreach (SpendingLine l in country.SpendingLines) { levelStanding[l.Category] = SpendingDrivers.Level(SpendingDrivers.Of(l.Category), country); projected[l.Category] = l.ProjectNextYear(country.State.Inflation); }
+                            foreach (SpendingLine l in country.SpendingLines) { levelStanding[l.Category] = SpendingDrivers.Level(SpendingDrivers.Of(l.Category), country); projected[l.Category] = SimulationManager.ProjectLineNextYear(country, l, country.State.Inflation); }
                         }
                         sim.AdvanceTurn(decisions);
                         decisions[player] = PolicyDecision.None();
@@ -95,23 +102,26 @@ namespace PoliSim.EditorTools
                         float ratioStanding = seedLevel[l.Category] > 0f ? levelStanding[l.Category] / seedLevel[l.Category] : 1f;
                         // P5-B6: the lines carry the year's prices as well - the price level at the last index (the end of the turn's days) over 1 at the seed.
                         float prices = country.State.PriceLevel;
-                        float expectedCommitted = seedAmount[l.Category] * ratioCommitted * prices;
-                        float expectedStanding = seedAmount[l.Category] * ratioStanding * prices;
+                        // K269 (a): and its real term - the real wage index at the last index over the seed's on a caseload, the compounded potential growth with no driver
+                        float real = driver == SpendingDriver.None ? growth : country.RealWageIndexAtLastIndex / seedWage;
+                        float expectedCommitted = seedAmount[l.Category] * ratioCommitted * prices * real;
+                        float expectedStanding = seedAmount[l.Category] * ratioStanding * prices * real;
                         linesChecked++;
-                        bool matchesCommitted = Mathf.Abs(l.Amount / expectedCommitted - 1f) <= Tolerance;
-                        bool matchesStanding = Mathf.Abs(l.Amount / expectedStanding - 1f) <= Tolerance;
+                        float tolerance = driver == SpendingDriver.None ? GrowthTolerance : Tolerance;   // K269 (a): potential growth compounded as read before each turn, against the boundary's own reading
+                        bool matchesCommitted = Mathf.Abs(l.Amount / expectedCommitted - 1f) <= tolerance;
+                        bool matchesStanding = Mathf.Abs(l.Amount / expectedStanding - 1f) <= tolerance;
                         if (!matchesCommitted && !matchesStanding)
                         {
-                            Debug.LogError($"INDEXATION: {player} {l.Category} ({driverName}) reads {l.Amount:F4} after {Years} years; seed {seedAmount[l.Category]:F4} x driver {ratioCommitted:F5} (as committed this turn) = {expectedCommitted:F4}, or x {ratioStanding:F5} (as it stood when the turn opened) = {expectedStanding:F4}.");
+                            Debug.LogError($"INDEXATION: {player} {l.Category} ({driverName}) reads {l.Amount:F4} after {Years} years; seed {seedAmount[l.Category]:F4} x driver {ratioCommitted:F5} (as committed this turn) x prices {prices:F5} x the real term {real:F5} = {expectedCommitted:F4}, or x {ratioStanding:F5} (as it stood when the turn opened) = {expectedStanding:F4}.");
                             ok = false;
                             continue;
                         }
                         if (driver == SpendingDriver.None)
                         {
-                            // No driver: the player's line is the seed at today's prices and nothing else (P5-B6: bit-for-bit until the book carried prices).
-                            if (Mathf.Abs(l.Amount / (seedAmount[l.Category] * prices) - 1f) > Tolerance)
+                            // No driver: the player's line is the seed at today's prices and the economy's real growth (K269 (a); P5-B6 the prices)
+                            if (Mathf.Abs(l.Amount / (seedAmount[l.Category] * prices * growth) - 1f) > GrowthTolerance)
                             {
-                                Debug.LogError($"INDEXATION: {player} {l.Category} has no driver and reads {l.Amount:F4} against its seed {seedAmount[l.Category]:F4} at the price level {prices:F5}.");
+                                Debug.LogError($"INDEXATION: {player} {l.Category} has no driver and reads {l.Amount:F4} against its seed {seedAmount[l.Category]:F4} at the price level {prices:F5} and the compounded potential growth {growth:F5}.");
                                 ok = false;
                             }
                             else { held++; }
@@ -193,7 +203,7 @@ namespace PoliSim.EditorTools
                             }
                             else
                             {
-                                Debug.Log($"INDEXATION: the AI rule - {ai.Id} {aiLine.Category} carries its driver x{aiRatioCommitted:F4} and real growth x{aiGrowth:F4} as the player's lines do not.");
+                                Debug.Log($"INDEXATION: the AI rule - {ai.Id} {aiLine.Category} carries its driver x{aiRatioCommitted:F4} and real growth x{aiGrowth:F4}, as the player's lines do since K269 (a).");
                             }
                         }
                         finally { UnityEngine.Object.DestroyImmediate(go2); }
@@ -208,7 +218,7 @@ namespace PoliSim.EditorTools
             {
                 Debug.Log($"INDEXATION: {kv.Key} - the index reads it {string.Join(" / ", kv.Value.OrderBy(s => s, StringComparer.Ordinal))}.");
             }
-            Debug.Log(ok ? $"=== SpendingIndexationDiagnostic: ALL ASSERTIONS PASS ({linesChecked} lines across the six, each at seed x driver x prices; {held} with no driver at the seed x prices) ===" : "=== SpendingIndexationDiagnostic: FAILED ===");
+            Debug.Log(ok ? $"=== SpendingIndexationDiagnostic: ALL ASSERTIONS PASS ({linesChecked} lines across the six, each at seed x driver x prices x its real term; {held} with no driver at the seed x prices x the compounded potential growth) ===" : "=== SpendingIndexationDiagnostic: FAILED ===");
             CheckExit.Finish(ok ? 0 : 1);
         }
     }

@@ -42357,3 +42357,30 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Bars:** nuspop 8 of 8; dumpuspop (first) the family uspop, France, Germany and Italy identical; nuspopl 3 of 3; cheapuspop 147 of 148 (UsMidtermCheck: m -0.01 -> -0.03, re-registered) and simuspop 91 of 92 (TaxScheduleDiagnostic: the USA's income row, re-derived); nuspop3 TaxScheduleDiagnostic and RevenueBaseDiagnostic clean; dumpuspop (second, on the re-derived row) re-pinned; writeus, nuspop4 3 of 3; cheapuspop2 147 of 148 (ReviewLedgerCheck: TaxBaseTable's stale grandfathered row, removed, the ceiling 9 -> 8); simuspop2 92 of 92; nuspop5 ReviewLedgerCheck clean; docuspop document group clean
 
 **Commit:** this one.
+
+## 954. FISC2 - K269 (a) AND (d): ONE SPENDING-LINE RULE IN EVERY BOOK, INCOME SECURITY ON THE POPULATION, K218'S BANDS RE-READ, THE PLAYER'S ENERGY LEVY RULE AND THE DEBT CHART'S FRAMEWORK LINE (K292-K298, K310, K313) (2026-10-30)
+
+**What was owed:** K269 (Elias). (a) The player's book ran a driver-only spending rule that the AI books did not, and an idle player book drifted to −255 % of GDP. (d) The debt chart should draw the country's own fiscal-framework figure.
+
+**Built** (wave/fisc2; its prereg and amendments 1 and 2 committed alone before the code each governs; reviews: round 1 NOT READY (H1, M1-M3), round 2 READY on conditions; R2-M1 resolved under option (a); rebased onto 54c23ca9, where K313 was ruled):
+- **R1 (K292):** one line rule in every book. A caseload line carries prices × its driver × real wage growth; a driverless line carries prices × real potential growth. The NEXT YEAR projection carries the real term.
+- **F4 (K294):** IncomeSecurity is driven by the population, not the unemployment rate, in every book. The rate double-counted the cycle that the benefit term and the labour-market lines already carry. Save format 70 refuses v69.
+- **K218's bands (K295):** the Sweden, France, Italy and Poland (h2) registrations are lifted; Germany (h2) stays registered, re-attributed.
+- **The fiscal reaction stays in the player's book (K293).** Retired, Italy's and Poland's idle books pass 300 % of GDP. FILED: the pension benefit ratio (item pbr, in progress).
+- **The debt chart (K296):** Sweden's 35 % anchor, the Treaty's 60 % for the other four, no line for the USA.
+- **The player's energy levy rule (K297):** it carries the real growth the player indexed, frozen through an AI spell. The page prints the pass-through the rule computes, ONE FOR ONE only within 0.005 of one.
+- **Registrations after measurement:** K298 (the USA's (d3) marks at years 50-70, bounded) and K313 (ParticipationCohort (c) Poland 2050, bounded). K310: R1 lands with the prereg's (A1) missed, its band unchanged.
+
+**Measured** (`Reviews/2026-10-30_fisc2_integrator.md`):
+- DebtPathHold PASS (Sweden (h2) holds at −11.2 against the band; USA (h3) 2026-2036 +13.3 against +19.6). LongRunAnchors, ParticipationCohort, EnergyLedger (3b's four mixed histories), SpendingIndexation, LineIndexation, HospitalWaits, UnemploymentFloorPhillips and PreviewParity all clean.
+- The dry film: 4 sessions, 0 failed. The play saves re-staged at format 70; the round-trip 12 of 12.
+- **The movers by name:** F4 alone moves the all-AI world (R1 leaves it byte-identical). Every country moves from turn 1 (the USA from turn 2). Debt at turn 100 on seed 777: Poland +223.6 %, Germany +212.6 %, Sweden +37.0 %, Italy +6.7 %, France +6.5 %, the USA +5.4 %, with GDP within 0.5 %. As a share of GDP, Germany goes 76 → 236 % and Poland 99 → 321 %; France and Italy already stood past 230 % on main.
+- The family `fisc2`; the sentinel re-pinned (4e5611c4 / d3aaee0a). FT-10's slack ceilings are lowered by the check's own rule (France household 6.5 → 5.5, Poland household and industry 3.0 → 2.5). SpendingLine's grandfathered row is removed and `GrandfatheredCeiling` lowered 8 → 7.
+
+**Evidence:** `Reviews/2026-10-29_fisc2_prereg.md` (with amendments 1 and 2), `_fisc2_review.md` (rounds 1-2), `Reviews/2026-10-30_fisc2_integrator.md`.
+
+**Declared:** K292-K298, K310, K313 (recorded). **Filed:** a hold on the all-AI world's century debt (no acceptance bounds it past the DSM's 2035); the driverless IncomeSecurity alternative (K294); re-pointing the fiscal-framework laws (K296).
+
+**Bars:** nfisc2 15 of 15; dryfisc2 4 sessions, 0 failed; dumpfisc2 the family fisc2; stagefisc2 exit 0; slrtfisc2 12 of 12; nfisc2l 0 of 2 (FT-10's slack ceilings; SpendingLine's stale grandfathered row - both answered by their checks' own rules); cheapfisc2 147 of 148 (ReviewLedgerCheck, answered); simfisc2 91 of 92 (TrajectorySentinelCheck's FT-10 slack, answered); nfisc2l2 (TrajectorySentinelCheck, ReviewLedgerCheck) 2 of 2; docfisc2 document group clean
+
+**Commit:** this one.

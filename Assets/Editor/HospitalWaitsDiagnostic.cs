@@ -21,8 +21,8 @@ namespace PoliSim.EditorTools
     /// seed x |1 - q^-e| x (1 - (1 - k)^years), q the run's spending ratio over the untouched run's - so a fifth of the elasticity fails it (the q28 review's L1).
     /// Every year's step on every run equals the stated arithmetic - wait + (seed x factor - wait) x the reversion, the factor read from
     /// <see cref="HealthFamily.TargetsFor"/>.
-    /// (c) THE IDLE PATHS: (c1) the shared no-policy century's first ten years (<see cref="NoPolicyCentury"/>, the player's own book, where the lines carry
-    /// prices and their driver only) keep both waits within <see cref="IdleBand"/> of their sourced seeds; (c2) THE AI BOOK (the q28 review's M1): Germany the
+    /// (c) THE IDLE PATHS: (c1) the shared no-policy century's first ten years (<see cref="NoPolicyCentury"/>, the player's own book, whose caseload lines carry
+    /// prices, their driver and the real wage since K269 (a) - until then prices and their driver only) keep both waits within <see cref="IdleBand"/> of their sourced seeds; (c2) THE AI BOOK (the q28 review's M1): Germany the
     /// player, so Sweden, Poland and Italy run the AI's book for ten years and their health lines also carry the real wage index (RF-2, §384), and the AI
     /// finance ministry's uniform line moves under its fiscal rule (AiFinanceMinistry) besides. (i) Every year each wait sits at the step identity with the
     /// factor the model computes from the MEASURED spending ratio and effectiveness, to the tolerance. (ii) The drift is decomposed and printed: the wage

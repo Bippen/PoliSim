@@ -32,7 +32,7 @@ namespace PoliSim.EditorTools
     /// mean real GDP growth over the WEO's years inside the run within WeoBandPp of the WEO's mean over the same years; beyond the WEO's horizon, each
     /// ten-year window's mean potential growth within PotentialBandPp of the Ageing Report's (the EU five) or CBO's (the USA, K139) mean over that
     /// window, to the sourced path's last year; and the run's life-expectancy gain since its opening inside the sourced gain's band, widened by
-    /// LifeExpectancyBandYears, at every tenth year the band covers.</item>
+    /// LifeExpectancyBandYears, at every tenth year the band covers. K298 (fisc2): the USA's marks at years 50, 60 and 70 are REGISTERED, not failed, only while the gain without the health family's treatable excess is inside the band and the treatable part is at most half a year (K222's declared M1 drift, in the player's book since K269 (a)); any other mark outside fails.</item>
     /// <item><b>(e) The productivity pull (K210, ProductivityPull).</b> (e1) Through the WEO's horizon the ledger's anchor is the seed's trend, the
     /// same float; (e2) after it the anchor equals this file's own recomputation from the generated path - the path's year plus the seed's distance
     /// from it at the horizon, closing at the pull rate; (e3) a planted infrastructure adjustment moves the trend by the same amount around the
@@ -104,6 +104,15 @@ namespace PoliSim.EditorTools
 
         /// <summary>The REGISTERED MISS tag under K210's prereg. K276 ended K245's tag on (d1): a (d1) miss fails.</summary>
         private const string LabourTag = "REGISTERED MISS (K210 prereg; the labour input - not K210's to close)";
+        /// <summary>K298 (fisc2, 2026-10-29; the prereg's amendment 1, written after the measurement): the (d3) marks the health family's treatable excess takes out of the
+        /// band - K222's DECLARED M1 drift (a caseload's health line at the going wage read as capacity), which reaches the player's idle book since K269 (a). Keyed: the USA at
+        /// years 50, 60 and 70 alone (<see cref="TreatableKeyed"/>), and bounded: registered only while the gain WITHOUT the treatable excess is inside the band AND the
+        /// treatable part of the gain is at most <see cref="TreatablePartBoundYears"/>. Any other (d3) mark outside its band fails.</summary>
+        private const string TreatableTag = "REGISTERED MISS (K298; K222's M1 - the health line at the going wage read as capacity, in the player's book since K269 (a))";
+        /// <summary>K298: the marks the registration may cover - (country, the record's year).</summary>
+        private static readonly HashSet<(CountryId, int)> TreatableKeyed = new HashSet<(CountryId, int)> { (CountryId.USA, 50), (CountryId.USA, 60), (CountryId.USA, 70) };
+        /// <summary>K298: [AUTHORED-DRAFT] the most of a registered mark's gain the treatable excess may carry, years (measured at the ruling: 0.22 / 0.24 / 0.24).</summary>
+        private const double TreatablePartBoundYears = 0.5;
 
         private static readonly CountryId[] Six = { CountryId.Sweden, CountryId.Germany, CountryId.France, CountryId.Italy, CountryId.Poland, CountryId.USA };
 
@@ -128,9 +137,9 @@ namespace PoliSim.EditorTools
             }
             catch (Exception e) { Check(false, "the run threw " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace); }
             Debug.Log(_sb.ToString());
-            Debug.Log(F("LONG-RUN ANCHORS: {0} REGISTERED MISS line(s) under K210's prereg ((d2) windows whose labour part alone misses the band; K276 ended (d1)'s)", _registered));
+            Debug.Log(F("LONG-RUN ANCHORS: {0} REGISTERED MISS line(s) under K210's prereg ((d2) windows whose labour part alone misses the band; K276 ended (d1)'s) and K298 ((d3): the USA's marks at years 50, 60 and 70, the treatable part within half a year and the rest inside the band)", _registered));
             Debug.Log(_failures == 0
-                ? "LONG-RUN ANCHORS: PASS - life expectancy equals its derivation from the sourced schedules every day, the multipliers' directions hold, the gap keeps the HLW persistence a turn in both forms with kappa on D-13 (b)'s basis, the no-policy gap inside its bound at years 10, 30 and 100, every country's life-expectancy gain inside its band, every country's (d1) WEO window inside its band (K276), every (d2) window inside the Ageing Report / CBO band or missing it on its labour part alone, and the productivity pull built as K210 rules it (K210's prereg)"
+                ? "LONG-RUN ANCHORS: PASS - life expectancy equals its derivation from the sourced schedules every day, the multipliers' directions hold, the gap keeps the HLW persistence a turn in both forms with kappa on D-13 (b)'s basis, the no-policy gap inside its bound at years 10, 30 and 100, every country's life-expectancy gain inside its band but the marks K298 registers (printed above), every country's (d1) WEO window inside its band (K276), every (d2) window inside the Ageing Report / CBO band or missing it on its labour part alone, and the productivity pull built as K210 rules it (K210's prereg)"
                 : F("LONG-RUN ANCHORS: FAIL - {0} check(s) failed.", _failures));
             CheckExit.Finish(_failures == 0 ? 0 : 1);
         }
@@ -422,9 +431,15 @@ namespace PoliSim.EditorTools
                     double gainHigh = At(high, leFirst, r.CalendarYear) - At(high, leFirst, open.CalendarYear);
                     double lo = Math.Min(gainLow, gainHigh) - LifeExpectancyBandYears, hi = Math.Max(gainLow, gainHigh) + LifeExpectancyBandYears;
                     double gain = r.LifeExpectancy - open.LifeExpectancy;
-                    Check(gain >= lo && gain <= hi,
-                        F("(d3) {0,-8} year {1} ({2:F1}): life expectancy {3:F2}, a gain of {4:+0.00;-0.00} since the opening against the sourced [{5:+0.00;-0.00}, {6:+0.00;-0.00}] (multiplier {7:F4})",
-                          id, i + 1, r.CalendarYear, r.LifeExpectancy, gain, lo + LifeExpectancyBandYears, hi - LifeExpectancyBandYears, r.MortalityMultiplier));
+                    string mark = F("(d3) {0,-8} year {1} ({2:F1}): life expectancy {3:F2}, a gain of {4:+0.00;-0.00} since the opening against the sourced [{5:+0.00;-0.00}, {6:+0.00;-0.00}] (multiplier {7:F4})",
+                          id, i + 1, r.CalendarYear, r.LifeExpectancy, gain, lo + LifeExpectancyBandYears, hi - LifeExpectancyBandYears, r.MortalityMultiplier);
+                    double plain = r.LifeExpectancyWithoutTreatable - open.LifeExpectancyWithoutTreatable;   // fisc2: the gain without the treatable excess
+                    if (gain >= lo && gain <= hi) { Check(true, mark); }
+                    else if (TreatableKeyed.Contains((id, i + 1)) && !double.IsNaN(plain) && plain >= lo && plain <= hi && Math.Abs(gain - plain) <= TreatablePartBoundYears)
+                    {
+                        Registered(false, TreatableTag, F("{0} - without the treatable excess the gain is {1:+0.00;-0.00}, inside the band, and the treatable part {2:+0.00;-0.00} is within {3:0.0} year", mark, plain, gain - plain, TreatablePartBoundYears));
+                    }
+                    else { Check(false, F("{0} - without the treatable excess the gain is {1:+0.00;-0.00} (the treatable part {2:+0.00;-0.00}): not a mark K298 registers", mark, plain, gain - plain)); }
                 }
                 Check(marks > 0, F("(d3) {0,-8} {1} life-expectancy mark(s) held - none is a check that did not run", id, marks));
             }

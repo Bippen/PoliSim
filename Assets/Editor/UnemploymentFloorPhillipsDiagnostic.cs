@@ -399,12 +399,12 @@ namespace PoliSim.EditorTools
                 System.Reflection.MethodInfo index = typeof(SimulationManager).GetMethod("IndexSpendingLines", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                 if (index == null) { Check(false, "SimulationManager.IndexSpendingLines found by reflection - the wiring is UNVERIFIED, not clean"); return; }
                 var ratios = new Dictionary<string, double>();
-                var projected = new Dictionary<string, (double Projection, double Amount)>();
+                var projected = new Dictionary<string, (double Projection, double Amount, double Real)>();   // K269 (a): with the real term the projection carries (SimulationManager.ProjectedRealTerm)
                 foreach (CountryId id in new[] { CountryId.USA, CountryId.Germany, CountryId.France })
                 {
                     Country c = world.GetCountry(id);
                     // the NEXT YEAR projection first, on the seeded lines; then one index step: the price level down 2 % since the last index, nothing else moved
-                    foreach (SpendingLine l in c.SpendingLines) { projected[id + " " + l.Category] = (SimulationManager.ProjectLineNextYear(c, l, -2f), l.Amount * (l.LastDriverRatio > 0f ? l.LastDriverRatio : 1f)); }
+                    foreach (SpendingLine l in c.SpendingLines) { projected[id + " " + l.Category] = (SimulationManager.ProjectLineNextYear(c, l, -2f), l.Amount * (l.LastDriverRatio > 0f ? l.LastDriverRatio : 1f), SimulationManager.ProjectedRealTerm(c, l)); }
                     var seeds = c.SpendingLines.ToDictionary(l => l, l => (double)l.SeedAmount);
                     c.State.PriceLevel *= 0.98f;
                     index.Invoke(sim, new object[] { c });
@@ -415,12 +415,16 @@ namespace PoliSim.EditorTools
                       && Math.Abs(R("France SocialSecurity") - 0.98) < 1e-3 && Math.Abs(R("USA Medicare") - 0.98) < 1e-3,
                     F("the boundary's index step: the USA's pension line x{0:0.0000} and Germany's x{1:0.0000} (held), France's x{2:0.0000} and the USA's Medicare x{3:0.0000} (down with prices)",
                         R("USA SocialSecurity"), R("Germany SocialSecurity"), R("France SocialSecurity"), R("USA Medicare")));
-                (double Projection, double Amount) P(string key) => projected.TryGetValue(key, out var v) ? v : (double.NaN, double.NaN);
+                (double Projection, double Amount, double Real) P(string key) => projected.TryGetValue(key, out var v) ? v : (double.NaN, double.NaN, double.NaN);
                 var us = P("USA SocialSecurity"); var de = P("Germany SocialSecurity"); var fr = P("France SocialSecurity"); var med = P("USA Medicare");
-                Check(Math.Abs(us.Projection - us.Amount) < 1e-3 * us.Amount && Math.Abs(de.Projection - de.Amount) < 1e-3 * de.Amount
-                      && Math.Abs(fr.Projection - 0.98 * fr.Amount) < 1e-3 * fr.Amount && Math.Abs(med.Projection - 0.98 * med.Amount) < 1e-3 * med.Amount,
-                    F("NEXT YEAR at -2 %: the USA's pension line projects {0:0.000} of {1:0.000} and Germany's {2:0.000} of {3:0.000} (flat), France's {4:0.000} of {5:0.000} and the USA's Medicare {6:0.000} of {7:0.000} (down)",
-                        us.Projection, us.Amount, de.Projection, de.Amount, fr.Projection, fr.Amount, med.Projection, med.Amount));
+                // K269 (a): every projection carries its line's real term (the standing real wage growth on these caseloads). The USA's guarantee floors the PRICE term
+                // at 1 (the real term still moves); Germany's floors the per-pensioner term, prices x the real term, at 1 where it would fall; France's and Medicare's
+                // follow prices down by the -2 % with the real term on top
+                double deExpected = 0.98 * de.Real < 1.0 ? de.Amount : 0.98 * de.Real * de.Amount;
+                Check(Math.Abs(us.Projection - us.Real * us.Amount) < 1e-3 * us.Amount && Math.Abs(de.Projection - deExpected) < 1e-3 * de.Amount
+                      && Math.Abs(fr.Projection - 0.98 * fr.Real * fr.Amount) < 1e-3 * fr.Amount && Math.Abs(med.Projection - 0.98 * med.Real * med.Amount) < 1e-3 * med.Amount,
+                    F("NEXT YEAR at -2 %: the USA's pension line projects {0:0.000} of {1:0.000} (no price fall; the real term x{8:0.0000} on top) and Germany's {2:0.000} of {3:0.000} (floored where prices x the real term x{9:0.0000} fall), France's {4:0.000} of {5:0.000} and the USA's Medicare {6:0.000} of {7:0.000} (down with prices, the real term on top)",
+                        us.Projection, us.Amount, de.Projection, de.Amount, fr.Projection, fr.Amount, med.Projection, med.Amount, us.Real, de.Real));
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
 

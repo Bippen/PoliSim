@@ -698,9 +698,15 @@ namespace PoliSim.Simulation
         /// before it was built (the record's K251 section): in the all-AI world the reaction fought the treaty rule - the rule takes the debt down, the
         /// reaction cut revenue as the ratio fell below its seed until it pinned at its floor - and its slope moved revenue with no rate moved, an order of
         /// magnitude above the empirical fiscal-reaction estimates. The treaty rule it leaves in charge was given its stop in the same item (the release above
-        /// and below 60 %, rates before lines - `AiFinanceMinistry.EuRequiredAdjustmentPercentOfGdp`). It STANDS in the book the player governs: there it
-        /// DELAYS, and does not prevent, the net-creditor runaway of the player's driver-only lines (IndexSpendingLines) - pinned at its floor it slows the
-        /// runaway, and retired there the runaway binds the guard. Its retirement there waits on that premise, filed as K269 (a). Filed with it: K269 (b) revenue's
+        /// and below 60 %, rates before lines - `AiFinanceMinistry.EuRequiredAdjustmentPercentOfGdp`). It STANDS in the book the player governs. Until K269 (a)
+        /// it delayed there the net-creditor runaway of the player's driver-only lines, pinned at its floor; since then the player's lines follow the one rule
+        /// (IndexSpendingLines) and the idle player book holds near its opening ratio with the reaction inside its bounds - held by revenue the economy does not feel,
+        /// the multiplier scaling the taxes alone (K213), and with the prereg's (A1) MISSED in Sweden and Poland (note 1, K310: the creep's smaller economy carries the
+        /// caseload lines above the no-policy book's) - but retired there it does not hold:
+        /// the fisc2 prereg's Part 2 (`Reviews/2026-10-29_fisc2_prereg.md`) measured Italy's and Poland's idle books past 300 % of GDP within the century on
+        /// both seeds - the pension line, the statutory headcount at the going wage, outgrows the revenue as their populations age (no benefit ratio is
+        /// modelled), and the creep the player's statute keeps (K271, K275) does not offset it. It stays, and its retirement there waits on the pension
+        /// line's benefit ratio (filed with K269 (a)). Filed with it at K251: K269 (b) revenue's
         /// drift at unchanged rates; K269 (c) a US fiscal reaction through the budget (the AI USA's debt-limit rule runs a recurring default cycle); K269 (d) the
         /// three fiscal-framework laws and the debt chart's "comfortable" line, which read the anchor this method alone consumes. The role is read on the REAL
         /// country: a preview's clone carries no government.</para>
@@ -899,9 +905,9 @@ namespace PoliSim.Simulation
         /// <summary>K218 (2026-10-28; Code's recommendation under Elias's standing instruction of 2026-10-27): THE NO-POLICY-CHANGE BOOK - an Editor instrument's
         /// switch, never set by play (default false). CBO's extended baseline projects current law and the EC Debt Sustainability Monitor holds the structural primary
         /// balance unchanged with the cost of ageing on top; neither projects a government correcting its deficit. With it set, the PLAYER'S country (the
-        /// instrument's hand, no party seated - the ministry and the Finance partner already keep off it) runs the AI's indexation instead of the player's own
-        /// (<see cref="IndexSpendingLines"/>: a driverless line at the economy's real growth, a caseload at the going real wage - the law's reading, §384, where the
-        /// player's book holds real provision where the player set it), collects its revenue with no fiscal reaction (<see cref="GetFiscalReactionMultiplier"/>
+        /// instrument's hand, no party seated - the ministry and the Finance partner already keep off it) runs the AI's book (<see cref="IndexSpendingLines"/>: its
+        /// lines on the one rule every book runs since K269 (a) - a driverless line at the economy's real growth, a caseload at the going real wage - and its income-tax
+        /// thresholds re-indexed to incomes as an AI government's are, K271, where the player's book keeps the statute), collects its revenue with no fiscal reaction (<see cref="GetFiscalReactionMultiplier"/>
         /// at 1: the reaction is a government tightening against its own debt, which neither source projects). Every other country is untouched. Read by
         /// `NoPolicyCentury.Unchanged` for `DebtPathHoldDiagnostic`.</summary>
         public bool NoPolicyChangeBook;
@@ -7876,6 +7882,7 @@ namespace PoliSim.Simulation
                 DebtRatioSeed = country.DebtRatioSeed,
                 DebtRatioLastReport = country.DebtRatioLastReport,
                 IncomeTaxThresholdLift = country.IncomeTaxThresholdLift,   // K271: the AI government's re-indexation the preview's income tax reads
+                EnergyLevyRealGrowth = country.EnergyLevyRealGrowth,   // K297: the real growth the player's energy levy rule carries
                 EuReleasedShareOfLines = country.EuReleasedShareOfLines,   // K271: the release the ministry's excess leaves out
                 DebtRatioReportBefore = country.DebtRatioReportBefore,
                 BaselineYouthUnemploymentRate = country.BaselineYouthUnemploymentRate,
@@ -8452,11 +8459,20 @@ namespace PoliSim.Simulation
         /// DRIVERLESS line only - a line with a B2 driver follows prices × its driver for the AI as for the player): a country the player
         /// does not govern has nobody to raise its lines, so its DRIVERLESS lines grow at the country's real PotentialGrowthRate each year - the annual budget its
         /// finance ministry would pass - which is what every line did before this pass (§312 measured it: potential
-        /// growth exactly, nothing else). The player's own lines take their drivers ONLY: the budget the player set
-        /// is still there next year, grown by what its drivers did, and real provision grows only when the player
-        /// raises it. [AUTHORED-DRAFT] as a rule; the alternative (drivers alone for the AI too) drifts every AI
-        /// budget below its economy at the real growth rate and re-opens the "debt to zero" path CLAUDE.md records
-        /// for a G that stopped tracking GDP.</para>
+        /// growth exactly, nothing else). Until K269 (a) the player's own lines took their drivers ONLY - real provision grew only when the
+        /// player raised it - and every idle player book's lines fell from about 40 % of GDP to 12-17 % in a century, the fiscal reaction pinned
+        /// at its floor against the net-creditor runaway (the fisc2 prereg's before figures, `Reviews/2026-10-29_fisc2_prereg.md`).</para>
+        ///
+        /// <para><b>K269 (a) (2026-10-29): ONE RULE IN EVERY BOOK.</b> The player's lines follow the rule above as the AI's do - a caseload at prices × its
+        /// driver × the real wage's growth, a driverless line at prices × the real potential growth - because that is how the sources read UNCHANGED
+        /// policy: the Ageing Report 2024 carries education per student with labour productivity and health care per head with GDP per head (wages
+        /// with productivity), the DSM 2024 holds the structural primary balance before ageing costs at its share of GDP, and CBO's extended baseline
+        /// holds discretionary outlays at a constant share of GDP beyond its window (LTBO 2026, Table 4: 4.641 % from 2040 to 2056). IN DIRECTION, not exactly (the
+        /// review's L2): CBO's discretionary follows inflation alone inside its window (5.894 % of GDP in 2026 to 4.641 % in 2040); the Ageing Report's health baseline
+        /// is GDP per head, the going wage its labour-intensity scenario; and a non-ageing caseload line at the going wage (population, the working age, family, income
+        /// security) drifts from the DSM's constant share as employment per head falls. A player's change
+        /// sets a line's level and the rule carries it from there; a pinned line stays pinned. The income-tax thresholds still read the role
+        /// (K271: the player keeps the statute). DECLARED: the pension line is the statutory headcount at the going wage in all six (no benefit ratio).</para>
         ///
         /// <para>Replaced here: ApplyDiscretionarySpendingGrowth and ApplyMandatorySpendingGrowth (both potential-rate
         /// growth on every line, the AI rule's ancestor) and the two bounded demographic pressures on the pension and
@@ -8466,8 +8482,8 @@ namespace PoliSim.Simulation
         /// </summary>
         private void IndexSpendingLines(Country country)
         {
-            bool aiBudget = !PlayerGoverns(country) || HoldsNoPolicyChange(country);   // PS-3a (§628): the AI's book wherever the player's party does not lead the government; K218: and in the no-policy-change book
-            float realGrowth = aiBudget ? 1f + country.PotentialGrowthRate / 100f : 1f;
+            bool aiBudget = !PlayerGoverns(country) || HoldsNoPolicyChange(country);   // PS-3a (§628): the AI's book wherever the player's party does not lead the government; K218: and in the no-policy-change book - since K269 (a) it decides the income-tax thresholds alone
+            float realGrowth = 1f + country.PotentialGrowthRate / 100f;   // K269 (a): in every book, the player's included - a driverless line at the economy's real growth
             // P5-B6 (2026-09-05): THE PRICE TERM RETURNS - the book is in current prices now, so a nominal line carries the
             // year's prices as the ratio of the price level now to the level at the last index (0 = a save from before: a
             // factor of 1 once). §314 withdrew this term because the book did not carry prices; B6 gave the book its prices
@@ -8481,9 +8497,12 @@ namespace PoliSim.Simulation
             // (health, education, family, justice) are staff costs that move with wages - Baumol's finding, the reason stated, its paper billed (§384).
             // The driver-only form (§370) froze a caseload's real cost per head at the seed for a century and made five AI states net creditors; the
             // pre-RF-2 form grew every line with potential growth, a policy nobody took (§367). This form is the law's: a caseload, at the going wage.
-            float wages = aiBudget && country.RealWageIndexAtLastIndex > 0f ? country.State.RealWageIndex / country.RealWageIndexAtLastIndex : 1f;
+            // K269 (a) (2026-10-29): in every book, the player's included - a caseload at the going wage is how unchanged policy carries a programme; the
+            // thresholds below still read the AI flag (K271: the book the player governs keeps the statute, creep included).
+            float wages = country.RealWageIndexAtLastIndex > 0f ? country.State.RealWageIndex / country.RealWageIndexAtLastIndex : 1f;
             country.RealWageIndexAtLastIndex = country.State.RealWageIndex;
             TaxSchedule.LiftThresholds(country, aiBudget, prices, wages);   // K271: an AI government re-indexes its income-tax thresholds to nominal incomes (not the USA's; the player keeps the statute)
+            if (!aiBudget) { country.EnergyLevyRealGrowth = (country.EnergyLevyRealGrowth > 0f ? country.EnergyLevyRealGrowth : 1f) * realGrowth; }   // K297: the player's energy line's real growth, which its levy rule carries (EnergyLedger)
             foreach (SpendingLine line in country.SpendingLines)
             {
                 SpendingDriver driver = SpendingDrivers.Of(line.Category);
@@ -8496,7 +8515,7 @@ namespace PoliSim.Simulation
                 // pensions on the 65+ cohort, health on the age-cost index, education on the youth cohort - and its real cost per head is the policy,
                 // not a thing that grows with output on its own; the rule that grew it (§314) raised real provision per head with potential growth on
                 // every line, which §367 measured at ×4.55 for the USA in a century against output ×4.29. A line with no driver is the discretionary
-                // block a finance ministry sizes against the economy, and follows real potential growth as before. The player's lines are unchanged.
+                // block a finance ministry sizes against the economy, and follows real potential growth as before. Since K269 (a) the player's lines take the same factor.
                 bool driverless = driver == SpendingDriver.None;
                 float factor = prices * driverRatio * (driverless ? realGrowth : wages);   // RF-2 re-formed (§384): a caseload at the going real wage, a discretionary line at the economy's growth
                 factor = PensionNominalGuarantee(country.Id, line.Category, prices, driverRatio, driverless ? realGrowth : wages, factor);   // MF-14 (K201): no nominal pension cut in the USA and Germany
@@ -8531,17 +8550,27 @@ namespace PoliSim.Simulation
 
         /// <summary>MF-14 (K201; the q14 review 2's N-2): a line's NEXT YEAR projection (`SpendingLine.ProjectNextYear`) under the same guarantee the boundary
         /// applies - the USA's and Germany's pension line projects no nominal fall per pensioner at a negative print (the projection carries no real term,
-        /// so the per-pensioner term is the price term for both). Every other line, and these where the guarantee does not bind, project exactly as before.</summary>
+        /// so the per-pensioner term is the price term for both). Every other line, and these where the guarantee does not bind, project exactly as before.
+        /// <para>K269 (a) (2026-10-29): the projection carries the line's REAL term as the boundary will, in every book (<see cref="ProjectedRealTerm"/>), and the
+        /// guarantee reads it as the index does - the per-pensioner term is prices × the real term.</para></summary>
         public static float ProjectLineNextYear(Country country, SpendingLine line, float inflationPercent)
         {
             float plain = line.ProjectNextYear(inflationPercent);
             if (country == null || line.Pinned) { return plain; }
             float prices = 1f + Mathf.Max(-50f, inflationPercent) / 100f;
             float driverRatio = line.LastDriverRatio > 0f ? line.LastDriverRatio : 1f;
-            float factor = prices * driverRatio;
-            float guaranteed = PensionNominalGuarantee(country.Id, line.Category, prices, driverRatio, 1f, factor);
-            return guaranteed == factor ? plain : line.Amount * guaranteed;
+            float realTerm = ProjectedRealTerm(country, line);
+            float factor = prices * driverRatio * realTerm;
+            return line.Amount * PensionNominalGuarantee(country.Id, line.Category, prices, driverRatio, realTerm, factor);
         }
+
+        /// <summary>K269 (a) (2026-10-29): the real term the next boundary is projected to carry on <paramref name="line"/> - <see cref="IndexSpendingLines"/>' own split:
+        /// a driverless line the economy's real potential growth, a caseload the STANDING real wage growth (`MacroSystem.RealWageGrowthPerTurnPercent` with no
+        /// productivity cycle - the wage equation's own rate, as the price term reads the standing inflation). An estimate, as the price term is.</summary>
+        public static float ProjectedRealTerm(Country country, SpendingLine line) =>
+            SpendingDrivers.Of(line.Category) == SpendingDriver.None
+                ? 1f + country.PotentialGrowthRate / 100f
+                : 1f + MacroSystem.RealWageGrowthPerTurnPercent(country, 0f) / 100f;
 
         /// <summary>SC-1: one line's index step - its dial costs ride the factor, then the line is written from its indexed own path (<see cref="ComposeLine"/>).</summary>
         private static void IndexComposedLine(Country country, SpendingLine line, float indexedOwnPath, float factor)
@@ -8724,7 +8753,7 @@ namespace PoliSim.Simulation
         /// EN-7a (2026-09-14): the Energy sector's SUBSIDY as retail intervention's money side - its cost (`SectorCouplings.EnergySupportCostTarget`)
         /// composed onto the book's energy line through <see cref="Country.AppliedEnergySupportCost"/>, the idiom the other dial costs use (§497's form:
         /// the tracker rides the line's index). EN-4's levy rule reads this cost IN FULL and the line's own move at its sourced support share (`EnergyLedger.Compute`; FT-10 · P-A′, §553), so the
-        /// subsidy takes the policy levy down one for one (the player's path rides prices alone, so FT-10 · P-A's share-of-path form is the same arithmetic here) and past the whole levy is taxpayers' support with no retail effect. Zero at the neutral 50;
+        /// subsidy takes the policy levy down in proportion (FT-10 · P-A's share-of-path form - one for one at the seed, over the path's real growth after it, in every book since K269 (a)) and past the whole levy is taxpayers' support with no retail effect. Zero at the neutral 50;
         /// no line (Germany), nothing here - the subsidy's cost stays in the other sectors' target (`SectorCouplings.SupportCostTarget`).
         /// </summary>
         private void ApplyEnergySupportCostPressure(Country country)

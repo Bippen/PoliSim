@@ -407,8 +407,8 @@ namespace PoliSim.UI
             {
                 StatsChart c = chart;
                 projections.TryGetValue(c.Id, out float? projected);
-                float? threshold = c.Id == "unemployment" ? _playerCountry.EffectiveNaturalUnemploymentRate : c.Id == "debt" ? _playerCountry.ComfortableDebtToGdpPercent : (float?)null;
-                string thresholdLabel = c.Id == "unemployment" ? "NAIRU" : c.Id == "debt" ? "comfortable" : null;
+                float? threshold = c.Id == "unemployment" ? _playerCountry.EffectiveNaturalUnemploymentRate : c.Id == "debt" ? FiscalRules.DebtReferencePercent(_playerCountry.Id) : (float?)null;   // K269 (d): the debt line is the country's own fiscal framework's figure, sourced - none for the USA
+                string thresholdLabel = c.Id == "unemployment" ? "NAIRU" : c.Id == "debt" ? FiscalRules.DebtReferenceLabel(_playerCountry.Id) : null;
                 // C-C9: each chart's own counterfactual series - the debt chart had been handed the shadow's GDP (billions on a ratio's axis, pinned to
                 // its top edge); it reads the shadow's debt ratio now
                 IReadOnlyList<float> shadow = shadowHistory == null ? null : c.Series(shadowHistory).Quarterly;
@@ -457,7 +457,7 @@ namespace PoliSim.UI
             if (c.Id == "gdp") { StatsAnchor(graph.HeadTitleRect, id + "/name"); }
             // §733: the threshold line's label opens the slip the book has always held for it (NAIRU, comfortable) - no anchor had registered it
             if (c.Id == "unemployment") { StatsAnchor(graph.ThresholdLabelRect, id + "/nairu"); }
-            if (c.Id == "debt") { StatsAnchor(graph.ThresholdLabelRect, id + "/comfortable"); }
+            if (c.Id == "debt" && FiscalRules.DebtReferencePercent(PlayerCountryId).HasValue) { StatsAnchor(graph.ThresholdLabelRect, id + "/comfortable"); }   // K269 (d): no line, no slip - the USA's framework names no ratio
             if (c.HeldSeed.HasValue && graph.PlotAreaRect.width > 0f)
             {
                 // 23a ⑭: the empty paper before the first live point opens the held seed's slip

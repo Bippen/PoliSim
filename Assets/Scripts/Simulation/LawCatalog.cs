@@ -2048,6 +2048,10 @@ namespace PoliSim.Simulation
             // reaction reads, the debt stock's average maturity, the market's risk-premium sensitivity, tax-collection
             // coverage, the baseline spending share). Ten laws, each a structural delta in the parameter's own unit
             // (StructuralParameters carries the tier-grid scale) and its own reading on the economic axis.
+            // K269 (d) (fisc2, 2026-10-29), DECLARED: the three laws on the debt-comfort anchor (the debt brake, the debt anchor, the brake's suspension) act
+            // through the fiscal reaction, which stands in the book the player governs alone (K251; fisc2 kept it there) - so they move the player's book
+            // only, an AI book's rule being the treaty's. Each citation is CONFIRMED-DIRECTION and each size [AUTHORED-DRAFT]. Re-pointing them at the
+            // country's own framework waits on the reaction's retirement there (filed with K269 (a)); the debt chart already draws the framework's figure.
             // ================================================================================================
 
             // CONFIRMED-DIRECTION: Germany's Schuldenbremse (Grundgesetz Art. 109/115, 2009; binding on the Bund from

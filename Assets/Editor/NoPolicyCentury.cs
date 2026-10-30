@@ -67,6 +67,10 @@ namespace PoliSim.EditorTools
             /// <summary>MF q29: the output gap at the record, GDP / potential - 1, and the mortality multiplier.</summary>
             public double OutputGap;
             public float MortalityMultiplier;
+            /// <summary>fisc2 (2026-10-29): the period life expectancy the schedule gives at the record WITHOUT the health family's treatable excess - the multiplier
+            /// and the projection's improvement alone (`MortalitySchedule.LifeExpectancyAtBirth` with a zero excess); NaN without a schedule. `LongRunAnchorsDiagnostic` (d3)
+            /// reads it to tell the treatable term's part of a gain from the rest.</summary>
+            public double LifeExpectancyWithoutTreatable = double.NaN;
             /// <summary>MF q28: the two waits after the year's turn (-1 where absent) and the real health spending per age-cost unit against its seed that they
             /// read (`HospitalWaitsDiagnostic`).</summary>
             public float WaitCataractDays;
@@ -244,6 +248,13 @@ namespace PoliSim.EditorTools
             return sum * c.State.LaborForceParticipationRate / structural;
         }
 
+        /// <summary>fisc2: <see cref="Year.LifeExpectancyWithoutTreatable"/> - the schedule's life expectancy at <paramref name="year"/> with the state's multiplier and no treatable excess. Read only.</summary>
+        public static double WithoutTreatable(Country c, double year)
+        {
+            if (!MortalitySchedule.Has(c.Id)) { return double.NaN; }
+            return MortalitySchedule.LifeExpectancyAtBirth(MortalitySchedule.TrendSchedule(c.Id, year), MortalitySchedule.Calibration(c.Id, c.BaselineLifeExpectancy) * c.State.MortalityMultiplier, 0.0);
+        }
+
         /// <summary>The loop the two diagnostics ran for an untouched country, recording every year - the shared century, the player's own book for <see cref="Years"/>.</summary>
         private static Year[] Advance(CountryId player) => Advance(player, Years, noPolicyChange: false);
 
@@ -283,7 +294,7 @@ namespace PoliSim.EditorTools
                 SimulationManager.BoundaryLedger += ledger;
                 try
                 {
-                    if (!noPolicyChange) Openings[player] = new Year { LifeExpectancy = c.State.LifeExpectancy, CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate), OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0, MortalityMultiplier = c.State.MortalityMultiplier };
+                    if (!noPolicyChange) Openings[player] = new Year { LifeExpectancy = c.State.LifeExpectancy, CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate), OutputGap = c.State.GDP / System.Math.Max(1e-6, (double)c.State.PotentialGDP) - 1.0, MortalityMultiplier = c.State.MortalityMultiplier, LifeExpectancyWithoutTreatable = WithoutTreatable(c, MortalitySchedule.YearOf(sim.CurrentDate)) };
                     double nominalBefore = c.State.NominalGdp;   // K218
                     double gdpBefore = c.State.GDP, potentialBefore = c.State.PotentialGDP, productivityBefore = c.PotentialProductivityIndex, yearBefore = MortalitySchedule.YearOf(sim.CurrentDate);
                     for (int year = 1; year <= horizon; year++)
@@ -307,6 +318,7 @@ namespace PoliSim.EditorTools
                             Population = c.State.Population,
                             NetMigrationRate = c.State.NetMigrationRate,
                             LifeExpectancy = c.State.LifeExpectancy,
+                            LifeExpectancyWithoutTreatable = WithoutTreatable(c, MortalitySchedule.YearOf(sim.CurrentDate)),
                             ApprovalRating = c.State.ApprovalRating,
                             CalendarYear = MortalitySchedule.YearOf(sim.CurrentDate),
                             SpanMidYear = 0.5 * (yearBefore + MortalitySchedule.YearOf(sim.CurrentDate)),

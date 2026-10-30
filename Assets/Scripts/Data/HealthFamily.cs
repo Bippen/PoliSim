@@ -93,9 +93,9 @@ namespace PoliSim.Data
         /// DECLARED (the q28 review's L3): the column is a choice - the pooled cross-section IV pair gives the SMALLEST response the paper's tables allow (0.82);
         /// its first-difference IV pair (0.627 and -0.238) gives 1 / 0.865 = 1.16. And the demand side of the premise is weakly supported: the paper's own demand
         /// equation finds the over-60 share's effect on utilisation insignificant (0.021, s.e. 0.035).
-        /// DECLARED (the q28 review's M1, shared with treatable mortality, which reads the same ratio): where the player's party does not lead the government
-        /// (an AI book, SimulationManager.IndexSpendingLines), a caseload line grows with the REAL WAGE index on top of prices and its driver (RF-2, §384 - the
-        /// service lines are staff costs), while this ratio deflates by the price level. So under an AI book the ratio climbs with the real wage index and the
+        /// DECLARED (the q28 review's M1, shared with treatable mortality, which reads the same ratio): in every book since K269 (a) - until then where the player's
+        /// party did not lead the government - a caseload line grows with the REAL WAGE index on top of prices and its driver (SimulationManager.IndexSpendingLines; RF-2,
+        /// §384 - the service lines are staff costs), while this ratio deflates by the price level. So the ratio climbs with the real wage index and the
         /// waits shorten by (real wage index ÷ its seed)^-0.821 with no policy - the wage bill read as capacity, against this premise. Deflating the capacity
         /// term by a wage index would remove it from both families and is a ruling, not this item's. HospitalWaitsDiagnostic (c2) decomposes it, and holds it where the AI moves no line.</remarks>
         public static readonly float WaitSpendingElasticity = 1f / (WaitSupplyElasticity - WaitDemandElasticity);

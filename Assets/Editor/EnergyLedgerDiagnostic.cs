@@ -123,17 +123,46 @@ namespace PoliSim.EditorTools
             }
 
             // (3b) FT-10 · P-A (§545, its second reader's finding): the page says ONE FOR ONE, and (3) proves that AT THE SEED only, where the old form and the share-of-path form are one by
-            // construction. The claim that matters is about a PLAYED book ten years on: its driverless path rides prices alone, so K × (line ⁄ path − 1) must still be (line − path) ⁄ (seedLevy × P).
-            // And the probe must discriminate: the same country under its AI ministry, whose path also rides real growth, must read the two forms APART - or the equality proves nothing.
-            sb.Append("\n    3b. THE PLAYER'S ARITHMETIC, AWAY FROM THE SEED: France played for ten years with six per cent more on its energy line, the levy's two forms read together; France under its ministry, read apart (France since P-A′: Poland's line carries no support, so its levy no longer answers it)\n");
+            // construction. The claim that matters is about a PLAYED book ten years on. Since K269 (a) its driverless path rides real growth as the ministry's does, and K297 (fisc2) carries
+            // the growth the path took while the player governed (Country.EnergyLevyRealGrowth) in the rule, so K × G × (line ⁄ path − 1) must still be (line − path) ⁄ (seedLevy × P), and a
+            // billion more support must take a billion off the levy. The probe must discriminate: under its ministry the same country's path rides real growth with nothing carried,
+            // so its two forms read APART by exactly the path's real growth - (1 − scale) × G = (1 − one-for-one) - and a billion moves a billion over G.
+            sb.Append("\n    3b. THE PLAYER'S ARITHMETIC, AWAY FROM THE SEED: France played for ten years with six per cent more on its energy line - the levy's two forms read together and a billion more support takes a billion off the levy (K297); France under its ministry - the forms apart by the path's real growth, a billion over G (France since P-A′: Poland's line carries no support, so its levy no longer answers it)\n");
             {
-                (double Scale, double OldForm, double LineOverPath, double P) played = LevyFormsAfter(CountryId.France, true, 10, 6f);
-                (double Scale, double OldForm, double LineOverPath, double P) ministry = LevyFormsAfter(CountryId.France, false, 10, 0f);
+                (double Scale, double OldForm, double LineOverPath, double P, double G, double Carried, double PassThrough) played = LevyFormsAfter(CountryId.France, true, 10, 6f);
+                (double Scale, double OldForm, double LineOverPath, double P, double G, double Carried, double PassThrough) ministry = LevyFormsAfter(CountryId.France, false, 10, 0f);
                 if (!(played.LineOverPath > 1.05) || !(played.Scale < 0.999) || !(played.Scale > 0.0)) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): the played probe did not move the line where the levy could answer - line ⁄ path {played.LineOverPath:F4}, scale {played.Scale:F5}."); }
-                if (Math.Abs(played.Scale - played.OldForm) > 1e-5) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): in a PLAYED book the share-of-path form reads {played.Scale:F6} and one-for-one reads {played.OldForm:F6} ten years from the seed - the page's sentence is no longer the arithmetic (has the player's driverless path gained a growth term?)."); }
+                if (!(played.G > 1.001)) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): the PLAYED path's real growth reads x{played.G:F5} ten years from the seed - K269 (a)'s rule (the player's driverless line at the economy's real growth) is not on the path."); }
+                if (Math.Abs(played.Carried / played.G - 1.0) > 1e-5) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): the played book carries x{played.Carried:F6} in its levy rule against its path's real growth x{played.G:F6} - K297's carried growth is not the path's."); }
+                if (Math.Abs(played.Scale - played.OldForm) > 1e-5) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): in a PLAYED book the share-of-path form reads {played.Scale:F6} and one-for-one reads {played.OldForm:F6} ten years from the seed - the page's sentence is no longer the arithmetic."); }
+                if (Math.Abs(played.PassThrough - 1.0) > 1e-4) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): in the played book a billion more support took {played.PassThrough:F6} of a billion off the levy ten years from the seed - not one for one."); }
+                if (ministry.Carried != 1.0 || Math.Abs((1.0 - ministry.Scale) * ministry.G - (1.0 - ministry.OldForm)) > 1e-5) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): under its ministry France carries x{ministry.Carried:F6} and its share-of-path form {ministry.Scale:F6} times the path's real growth x{ministry.G:F5} is not the one-for-one form {ministry.OldForm:F6} - an AI book's rule moved."); }
                 if (!(Math.Abs(ministry.Scale - ministry.OldForm) > 1e-4)) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): under its ministry France's two forms read {ministry.Scale:F6} and {ministry.OldForm:F6} - the probe does not discriminate, so the played equality proves nothing."); }
-                sb.Append(F("    played: line ⁄ path {0:F4}, P {1:F4} - share-of-path {2:F6}, one-for-one {3:F6} (apart by {4:E1}); under its ministry: line ⁄ path {5:F4} - share-of-path {6:F6}, the old form {7:F6} (apart by {8:F4}: the path's real growth, which P-A took out of the ratio)\n",
-                    played.LineOverPath, played.P, played.Scale, played.OldForm, Math.Abs(played.Scale - played.OldForm), ministry.LineOverPath, ministry.Scale, ministry.OldForm, Math.Abs(ministry.Scale - ministry.OldForm)));
+                sb.Append(F("    played: line ⁄ path {0:F4}, P {1:F4}, the path's real growth x{2:F4} carried x{3:F4} - share-of-path {4:F6}, one-for-one {5:F6} (apart by {6:E1}); a billion more support takes {7:F4} of a billion off the levy\n",
+                    played.LineOverPath, played.P, played.G, played.Carried, played.Scale, played.OldForm, Math.Abs(played.Scale - played.OldForm), played.PassThrough));
+                sb.Append(F("    under its ministry: line ⁄ path {0:F4}, real growth x{1:F4} carried x{2:F4} - share-of-path {3:F6}, the old form {4:F6} (apart by {5:F4}: the path's real growth, which P-A took out of the ratio); a billion more support takes {6:F4} of a billion off the levy (1 ⁄ G = {7:F4})\n",
+                    ministry.LineOverPath, ministry.G, ministry.Carried, ministry.Scale, ministry.OldForm, Math.Abs(ministry.Scale - ministry.OldForm), ministry.PassThrough, 1.0 / ministry.G));
+                // K297 (the review's R2-M1): THE MIXED HISTORIES - France for twenty years in five-year spells, the government switched by who the player country is at each
+                // boundary. The levy rule carries only the player's boundaries' growth, so a billion moves 1 / G_AI of a billion in either book, G_AI the real growth the AI's
+                // boundaries put on the path (each year's factor read before its turn, the figure the index takes). Each history is asserted three ways: the measured
+                // pass-through against the closed form, EnergyLedger.LevyPassThrough (the figure the page prints) against the closed form, and the page's words against the figure.
+                sb.Append("    the mixed histories (K297, R2-M1) - France, twenty years in five-year spells, a billion of support against 1 / G_AI:\n");
+                foreach ((string name, bool[] spells) in new[] { ("the player throughout", new[] { true, true, true, true }), ("an AI decade, then the player's", new[] { false, false, true, true }),
+                    ("the player's decade, then an AI's", new[] { true, true, false, false }), ("AI, player, AI, player", new[] { false, true, false, true }) })
+                {
+                    (double measured, double figure, double gAi, string plate, string note) = MixedHistory(CountryId.France, spells, 5);
+                    double closed = 1.0 / gAi;
+                    if (double.IsNaN(measured) || Math.Abs(measured - closed) > 1e-4) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): {name} - a billion of support moved {measured:F6} of a billion of levy at year 20, against the closed form 1 / G_AI = {closed:F6}."); }
+                    if (Math.Abs(figure - closed) > 1e-4) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): {name} - EnergyLedger.LevyPassThrough reads {figure:F6} at year 20, against the closed form {closed:F6}: the page's figure is not the rule's."); }
+                    bool one = Math.Abs(figure - 1.0) < EnergyLedger.PassThroughOneForOneTolerance;
+                    string printed = figure.ToString("0.00", CultureInfo.InvariantCulture);
+                    bool words = one ? plate == "ONE FOR ONE" && note == null : plate == printed + " FOR ONE" && note != null && note.Contains("A BILLION MOVES " + printed + " OF A BILLION");
+                    if (!words) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): {name} - the page prints \"{plate}\" and \"{note}\" for a pass-through of {figure:F4}."); }
+                    if (System.Array.TrueForAll(spells, s => s) && Math.Abs(measured - 1.0) > 1e-4) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): the player throughout - a billion moved {measured:F6}, not one for one."); }
+                    if (!System.Array.TrueForAll(spells, s => s) && one) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): {name} - the pass-through {figure:F6} reads one for one after an AI spell of growth: the probe does not discriminate."); }
+                    sb.Append(F("      {0}: G_AI x{1:F4} - a billion moves {2:F4} (the closed form {3:F4}, the page's figure {4:F4}); the plate \"CUT {5} BY THE SUBSIDY\"{6}\n",
+                        name, gAi, measured, closed, figure, plate, note == null ? string.Empty : ", the slip \"" + note + "\""));
+                }
             }
 
             // (3c) FT-10 · P-A′ (§553): THE SHARE IS LIVE, THE DIAL IS WHOLE, SUPPORT MEETS ZERO. For each levied country at the seed, a thousandth of the line three ways: on the line's OWN
@@ -544,9 +573,9 @@ namespace PoliSim.EditorTools
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }
 
-        /// <summary>(3b): the country stepped <paramref name="years"/> boundaries from the seed - played (its own lines ride prices alone) or under its AI ministry - with a percent change on its
+        /// <summary>(3b): the country stepped <paramref name="years"/> boundaries from the seed - played or under its AI ministry (since K269 (a) both paths ride real growth; K297 carries it in the played rule) - with a percent change on its
         /// energy line in year 1, and the levy's two forms read off the book at the last boundary's price level: the rule's (K × the share of the path) and the old one (billions over the levy's path).</summary>
-        private static (double Scale, double OldForm, double LineOverPath, double P) LevyFormsAfter(CountryId id, bool played, int years, float firstYearPercent)
+        private static (double Scale, double OldForm, double LineOverPath, double P, double G, double Carried, double PassThrough) LevyFormsAfter(CountryId id, bool played, int years, float firstYearPercent)
         {
             SimulationRandom.Seed(777);
             EnergyMarket.ResetCalibration();
@@ -558,6 +587,7 @@ namespace PoliSim.EditorTools
                 sim.SetWorld(world);
                 if (played) { sim.PlayerCountryId = id; }
                 Country c = world.GetCountry(id);
+                double seedPath = 0.0; foreach (SpendingLine l in c.SpendingLines) { if (l.Category == SpendingCategory.Energy) { seedPath = l.SeedAmount; } }   // K269 (a): the path at the seed, for its real growth
                 for (int year = 1; year <= years; year++)
                 {
                     var decisions = new Dictionary<CountryId, PolicyDecision>();
@@ -571,7 +601,66 @@ namespace PoliSim.EditorTools
                 SpendingLine line = null; foreach (SpendingLine l in c.SpendingLines) { if (l.Category == SpendingCategory.Energy) { line = l; } }
                 double seedLevy = EnergyLedger.SeedLevyBillions(id);
                 double oldForm = seedLevy > 0.0 ? Math.Max(0.0, 1.0 - b.SupportDeviation / (seedLevy * p)) : 0.0;
-                return (b.LevyScale, oldForm, line != null && line.SeedAmount > 0f ? (double)line.Amount / line.SeedAmount : 0.0, p);
+                double g = line != null && seedPath > 0.0 ? line.SeedAmount / (seedPath * p) : double.NaN;   // the path's real growth: the indexed seed anchor over the seed's at today's prices
+                double carried = c.EnergyLevyRealGrowth > 0f ? c.EnergyLevyRealGrowth : 1.0;   // K297: what the levy rule carries
+                // K297: the pass-through, measured - more on the line, the levy's revenue against the support's move, the line put back
+                double passThrough = double.NaN;
+                if (line != null)
+                {
+                    float kept = line.Amount;
+                    line.Amount = kept + (float)(0.1 * seedLevy * p);   // a tenth of the levy's path: small enough to leave the scale above its floor, large enough for a float line
+                    EnergyLedger.Book more = EnergyLedger.Compute(c, EnergyMarket.Clear(c), p, 0.0);
+                    line.Amount = kept;
+                    double moved = more.BudgetSupport - b.BudgetSupport;
+                    passThrough = moved > 0.0 ? (b.LevyRevenue - more.LevyRevenue) / moved : double.NaN;
+                }
+                return (b.LevyScale, oldForm, line != null && line.SeedAmount > 0f ? (double)line.Amount / line.SeedAmount : 0.0, p, g, carried, passThrough);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); EnergyMarket.ResetTurnState(); }
+        }
+
+        /// <summary>K297 (R2-M1): <paramref name="id"/> stepped spell by spell from the seed - the player's where <paramref name="spells"/> says so (the player country set for
+        /// the spell's boundaries), an AI government's where not - and read at the end: the measured pass-through (a tenth of the levy's path more on the line, the levy's
+        /// revenue against the support's move, the line put back), the page's figure, G_AI (each AI-indexed boundary's real-growth factor, read before its turn) and the
+        /// page's two texts.</summary>
+        private static (double Measured, double Figure, double GAi, string Plate, string Note) MixedHistory(CountryId id, bool[] spells, int spellYears)
+        {
+            SimulationRandom.Seed(777);
+            EnergyMarket.ResetCalibration();
+            World world = WorldFactory.CreateDefault();
+            var go = new GameObject("ENERGYLEDGER3B-MIXED");
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(world);
+                Country c = world.GetCountry(id);
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
+                double gAi = 1.0;
+                foreach (bool player in spells)
+                {
+                    for (int year = 0; year < spellYears; year++)
+                    {
+                        if (player) { sim.PlayerCountryId = id; } else { sim.PlayerCountryId = null; }
+                        for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                        if (!player) { gAi *= 1f + c.PotentialGrowthRate / 100f; }   // the driverless factor the AI's boundary is about to put on the path
+                        sim.AdvanceTurn(decisions);
+                    }
+                }
+                double p = Math.Max(0.0001f, c.State.PriceLevel);   // the boundary's own: no day has stepped since the index read it
+                EnergyLedger.Book b = EnergyLedger.Compute(c, EnergyMarket.Clear(c), p, 0.0);
+                SpendingLine line = null; foreach (SpendingLine l in c.SpendingLines) { if (l.Category == SpendingCategory.Energy) { line = l; } }
+                double measured = double.NaN;
+                if (line != null)
+                {
+                    float kept = line.Amount;
+                    line.Amount = kept + (float)(0.1 * EnergyLedger.SeedLevyBillions(id) * p);   // a tenth of the levy's path: the scale stays above its floor
+                    EnergyLedger.Book more = EnergyLedger.Compute(c, EnergyMarket.Clear(c), p, 0.0);
+                    line.Amount = kept;
+                    double moved = more.BudgetSupport - b.BudgetSupport;
+                    measured = moved > 0.0 ? (b.LevyRevenue - more.LevyRevenue) / moved : double.NaN;
+                }
+                return (measured, EnergyLedger.LevyPassThrough(c), gAi, EnergyLedger.PassThroughShort(c), EnergyLedger.PassThroughNote(c));
             }
             finally { UnityEngine.Object.DestroyImmediate(go); EnergyMarket.ResetTurnState(); }
         }

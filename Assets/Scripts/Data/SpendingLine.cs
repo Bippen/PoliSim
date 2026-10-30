@@ -50,7 +50,7 @@ namespace PoliSim.Data
         /// <summary>P5-B5: the driver ratio the last index applied (1 = the driver did not move); 0 until the first index. The row's projection carries it one year forward.</summary>
         public float LastDriverRatio;
 
-        /// <summary>P5-B5/B6: the figure this line reads next year if the player leaves it - the amount times the driver's last ratio times the year's prices at the standing inflation, the same arithmetic IndexSpendingLines runs for the player now that the book is in current prices (P5-B6); a pinned line reads itself.</summary>
+        /// <summary>P5-B5/B6: the NOMINAL part of the figure this line reads next year if the player leaves it - the amount times the driver's last ratio times the year's prices at the standing inflation; a pinned line reads itself. K269 (a): the real term IndexSpendingLines also carries in every book is added by SimulationManager.ProjectLineNextYear, which every surface reads.</summary>
         public float ProjectNextYear(float inflationPercent) => Pinned ? Amount : Amount * (LastDriverRatio > 0f ? LastDriverRatio : 1f) * (1f + Math.Max(-50f, inflationPercent) / 100f);
 
         public SpendingLine() { }

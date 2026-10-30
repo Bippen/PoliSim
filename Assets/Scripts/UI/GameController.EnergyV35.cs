@@ -392,8 +392,8 @@ namespace PoliSim.UI
             string lands = !energyLine ? "NO ENERGY LINE IN THIS BUDGET: THE SUBSIDY'S COST LANDS WITH THE OTHER SECTORS' SUPPORT, AND IT REACHES NO LEVY"
                 : EnergyLedger.HasPolicyLevy(c.Id)
                     ? (c.AppliedEnergySupportCost < 0f
-                        ? "THE ENERGY LINE CARRIES " + UiFormat.Money(c.AppliedEnergySupportCost, MoneyUnit.Billions) + " A YEAR OF IT - SUPPORT GIVEN BACK, WHICH THE POLICY LEVY TAKES UP ONE FOR ONE"
-                        : "THE ENERGY LINE CARRIES " + UiFormat.Money(c.AppliedEnergySupportCost, MoneyUnit.Billions) + " A YEAR OF IT, DISPLACING THE POLICY LEVY ONE FOR ONE UNTIL NONE IS LEFT")
+                        ? "THE ENERGY LINE CARRIES " + UiFormat.Money(c.AppliedEnergySupportCost, MoneyUnit.Billions) + " A YEAR OF IT - SUPPORT GIVEN BACK, WHICH THE POLICY LEVY TAKES UP " + (EnergyLedger.PassThroughNote(c) == null ? "ONE FOR ONE" : "· " + EnergyLedger.PassThroughNote(c))
+                        : "THE ENERGY LINE CARRIES " + UiFormat.Money(c.AppliedEnergySupportCost, MoneyUnit.Billions) + " A YEAR OF IT, DISPLACING THE POLICY LEVY " + (EnergyLedger.PassThroughNote(c) == null ? "ONE FOR ONE UNTIL NONE IS LEFT" : "UNTIL NONE IS LEFT · " + EnergyLedger.PassThroughNote(c)))
                     : "THE ENERGY LINE CARRIES " + UiFormat.Money(c.AppliedEnergySupportCost, MoneyUnit.Billions) + " A YEAR OF IT - NO POLICY LEVY IN THE RETAIL PRICE TO DISPLACE, SO NO RETAIL EFFECT";
             var retail = new V35DialFace
             {

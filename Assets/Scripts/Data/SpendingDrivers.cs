@@ -6,8 +6,8 @@ namespace PoliSim.Data
     /// P5-B2 (2026-09-05): what a spending line follows between the player's own changes. A line with a
     /// demographic or cyclical driver indexes to that driver's level - pensions to the 65+ cohort, unemployment benefits to the unemployment rate,
     /// education to the 0–19 cohort, health to the age structure - all read off F2's cohort substrate and the
-    /// state, never authored. A line with no driver holds its figure - there is NO price term, because the model keeps its book in
-    /// constant prices (SimulationManager.IndexSpendingLines says why, with the measurement). (Before P5-B2 every line grew at the
+    /// state, never authored. What a line carries besides its driver - the year's prices, and the real wage or the economy's real growth - is
+    /// SimulationManager.IndexSpendingLines' rule, one rule in every book since K269 (a). (Before P5-B2 every line grew at the
     /// seed's PotentialGrowthRate and nothing else - §312 measured it: no line indexed to prices, none followed
     /// the actual economy; the pension and health "pressures" were bounded nudges of at most 0.5 % a year.)
     /// </summary>
@@ -35,7 +35,7 @@ namespace PoliSim.Data
         /// benefits and labour-market programmes to the unemployment rate (the caseload); education and student aid to the
         /// cohorts in school and in study; health and social care to the age-cost index (OECD age-cost profiles: spending per
         /// head rises steeply past 65); sickness and disability to the working-age cohort (the insured population); family
-        /// and children to the 0–19 cohort; municipal grants and justice to the population. Defence, aid, culture, the EU fee,
+        /// and children to the 0–19 cohort; municipal grants, justice and (since fisc2) income security to the population. Defence, aid, culture, the EU fee,
         /// administration: no driver.</summary>
         public static SpendingDriver Of(SpendingCategory category)
         {
@@ -53,7 +53,6 @@ namespace PoliSim.Data
                 case SpendingCategory.HHSDiscretionary:
                 case SpendingCategory.HealthcareAndSocialCare:
                     return SpendingDriver.AgeCostIndex;
-                case SpendingCategory.IncomeSecurity:
                 case SpendingCategory.Labor:
                 case SpendingCategory.LaborMarket:
                 case SpendingCategory.SocialPrograms:
@@ -69,6 +68,17 @@ namespace PoliSim.Data
                 case SpendingCategory.Justice:
                 case SpendingCategory.PublicServices:
                 case SpendingCategory.Housing:
+                // K218's bands (fisc2, 2026-10-29): IncomeSecurity is, in the EU five, the RESIDUAL of general-government cash transfers WorldFactory solves to
+                // land the year-1 primary balance (9.6-13.4 % of GDP), and the USA's budget function 600 - neither a caseload of the unemployed. On the
+                // unemployment rate the whole residual moved one for one with the rate's ratio (Sweden's 9.58 -> 6.47 % of GDP in five years as its rate fell
+                // 8.0 -> 5.7, Germany's riding a two-year cycle to 13.8 %), and that is the leading term of the hold's Sweden and Germany (h2) misses; the cycle
+                // is the unemployment benefit term's (SimulationManager.GetUnemploymentBenefitCost) and the labour-market lines'. Dropping the rate is the defect's fix.
+                // The POPULATION in its place is [AUTHORED-DRAFT] (K294; the review's M2): a caseload of residents at the going wage, which is NOT the DSM's non-ageing
+                // convention - that holds the share constant, which a driverless line gives exactly - because the model's real wage follows productivity per worker,
+                // so the line grows with population over employment as a population ages: in the no-policy-change book Poland's 13.35 % of GDP reads 15.77 % at year
+                // 100, Germany's 11.80 reads 12.81 and Sweden's 9.58 reads 9.90 (fisc2's measurement, seed 777). Not re-chosen after the measurement; the driverless
+                // alternative is filed with K294.
+                case SpendingCategory.IncomeSecurity:
                     return SpendingDriver.Population;
                 default:
                     return SpendingDriver.None;

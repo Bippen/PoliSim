@@ -47,6 +47,53 @@ namespace PoliSim.UI
         /// <summary>SOURCED - Sweden's debt anchor, % of GDP: "Skuldankaret är satt till 35 procent av BNP och gäller tills vidare" (Regeringens skrivelse
         /// 2025/26:76, <c>ElectionsData/rules/sweden_fiscal_framework.md</c>).</summary>
         public const float SwedenDebtAnchorPercent = 35f;
+
+        /// <summary>
+        /// K269 (d) (fisc2, 2026-10-29): THE DEBT CHART'S LINE - the debt level the country's own fiscal framework names, [SOURCED] in
+        /// <c>ElectionsData/rules/fiscal_rules.md</c>: Sweden its debt anchor (<see cref="SwedenDebtAnchorPercent"/>, skr. 2025/26:76 3.2 - its own framework's
+        /// figure, a benchmark); Germany, France, Italy and Poland the Treaty's reference value (<see cref="AiFinanceMinistry.EuDebtReferencePercent"/>, Protocol
+        /// No 12 Art. 1) - Germany's brake and Italy's balance are structural-balance rules and France has no national limit, and Poland's constitutional 3/5
+        /// (art. 216 ust. 5) is the same figure on the national definition; the USA none (<see cref="NationalNote(CountryId)"/>: its debt limit is a dollar ceiling),
+        /// so no line. Until K269 (d) the chart drew `Country.ComfortableDebtToGdpPercent`, the fiscal reaction's neutral point (the opening debt ratio), as
+        /// "comfortable". Null where the framework names no ratio.
+        /// </summary>
+        public static float? DebtReferencePercent(CountryId country)
+        {
+            if (country == CountryId.Sweden) { return SwedenDebtAnchorPercent; }
+            return AiFinanceMinistry.IsEuMember(country) ? AiFinanceMinistry.EuDebtReferencePercent : (float?)null;
+        }
+
+        /// <summary>K269 (d): the debt chart line's label - the rule it draws, in the chart's few characters; null where no line is drawn.</summary>
+        public static string DebtReferenceLabel(CountryId country)
+        {
+            float? reference = DebtReferencePercent(country);
+            if (!reference.HasValue) { return null; }
+            string figure = reference.Value.ToString("0", CultureInfo.InvariantCulture) + " %";
+            return country == CountryId.Sweden ? "anchor " + figure : "EU " + figure;
+        }
+
+        /// <summary>K269 (d): the debt chart line's slip - its title and its instrument, line by line; no title and no lines where no line is drawn.</summary>
+        public static System.Collections.Generic.List<string> DebtReferenceLines(CountryId country, out string title)
+        {
+            var lines = new System.Collections.Generic.List<string>();
+            float? reference = DebtReferencePercent(country);
+            title = null;
+            if (!reference.HasValue) { return lines; }
+            string figure = reference.Value.ToString("0", CultureInfo.InvariantCulture) + " %";
+            string eu = AiFinanceMinistry.EuDebtReferencePercent.ToString("0", CultureInfo.InvariantCulture) + " %";
+            if (country == CountryId.Sweden)
+            {
+                title = "DEBT ANCHOR";
+                lines.Add("SWEDEN'S DEBT ANCHOR: " + figure + " OF GDP, A BENCHMARK, NOT A TARGET (SKR. 2025/26:76)");
+                lines.Add("MORE THAN " + SwedenDebtAnchorBandPoints.ToString("0", CultureInfo.InvariantCulture) + " POINTS AWAY, THE GOVERNMENT EXPLAINS WHY TO THE RIKSDAG");
+                lines.Add("THE EU'S REFERENCE VALUE IS " + eu + " (TFEU ART. 126(2), PROTOCOL NO 12)");
+                return lines;
+            }
+            title = "EU REFERENCE VALUE";
+            lines.Add("GROSS DEBT ABOVE " + figure + " OF GDP IS ABOVE THE TREATY'S REFERENCE VALUE (TFEU ART. 126(2), PROTOCOL NO 12)");
+            lines.Add(country == CountryId.Poland ? "THE CONSTITUTION'S 3/5 CEILING (ART. 216) IS THE SAME FIGURE ON THE NATIONAL DEFINITION" : "NO NATIONAL RULE NAMES A DEBT RATIO HERE");
+            return lines;
+        }
         /// <summary>SOURCED - the deviation that obliges an explanation, points of GDP: "Om skuldkvoten avviker, uppåt eller nedåt, från skuldankaret med mer
         /// än 5 procent av BNP ..." (skr. 2025/26:76).</summary>
         public const float SwedenDebtAnchorBandPoints = 5f;

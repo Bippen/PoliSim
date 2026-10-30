@@ -21,13 +21,18 @@ namespace PoliSim.Simulation
     /// line's own path at its SOURCED support share (SupportShareOfEnergyLine: France's two thirds; Sweden, Italy and Poland none) plus the subsidy dial's cost in full, where until
     /// then the whole line was read as support; the line indexes like any
     /// other line (P5-B2). The bill-financed support is the policy levy - revenue following its base (P5-B3): the levy per kWh times the consumption.
-    /// The scheme's cost is one sum; the split is the policy: support moved above its indexed path takes the levy down one for one, support
-    /// cut takes it up (the EEG's own history - levy until July 2022, the federal budget since), spread over every kWh in proportion to the seed's
-    /// levies by class; a levy cannot fall below zero, and support above the whole levy is taxpayer-funded support with no retail effect.
-    /// THE RULE'S FORM since FT-10 · P-A (§545): the line's move is read as a SHARE of its own path times K, the seed's line over the seed's levy. For the country the
-    /// PLAYER governs that is the same arithmetic as *one for one*: the player's driverless lines ride prices alone (SimulationManager.IndexSpendingLines: real growth is the AI
-    /// ministry's), so the path is the seed's line times the price level and a billion on the line is a billion off the levy, at the year's prices, as the page says. An
-    /// AI-governed book's path also rides REAL GROWTH, which the levy's static base does not, and there the share-of-path form is what keeps the ratio indexed with indexed. Germany's
+    /// The scheme's cost is one sum; the split is the policy: support moved above its indexed path takes the levy down and support cut takes it up (the EEG's
+    /// own history - levy until July 2022, the federal budget since), spread over every kWh in proportion to the seed's levies by class; a levy cannot fall
+    /// below zero, and support above the whole levy is taxpayer-funded support with no retail effect.
+    /// THE RULE'S FORM since FT-10 · P-A (§545): the line's move is read as a SHARE of its own path times K, the seed's line over the seed's levy. Every book's path
+    /// rides prices and REAL GROWTH (SimulationManager.IndexSpendingLines - the player's too since K269 (a)), which the levy's static base does not, and P-A's form
+    /// keeps the ratio indexed with indexed. K297 (fisc2; the review's M3 and R2-M1): the share is also multiplied by the real growth the path took over the
+    /// boundaries the PLAYER indexed (`Country.EnergyLevyRealGrowth`, frozen while an AI government indexes, so the levy never jumps at a change of government).
+    /// So, at the boundary's prices and in EITHER book, a billion of support moves 1 ⁄ G_AI of a billion of levy, G_AI the real growth over the boundaries an
+    /// AI government indexed: ONE FOR ONE where the player has indexed every boundary since the seed (or the AI's spells grew nothing), less after an AI spell
+    /// of growth (France at year 20: 0.92 after an AI decade then a player's; 0.87 after a player's decade then an AI's). `LevyPassThrough` computes the figure
+    /// from the same factors and the page prints it (`PassThroughShort`, `PassThroughNote`). A held deviation moves the levy's scale by K times its share of the
+    /// seed's line times G ⁄ G_AI, bounded by the run's real growth. Germany's
     /// book carries no energy line (the KTF is a Sondervermögen outside the Bundeshaushalt), so its budget-financed support reads 0, stated.</para>
     ///
     /// <para><b>Congestion rent and its redistribution rule.</b> Where a zonal link binds (Sweden's snitt), the rent the dispatch computes is
@@ -336,7 +341,10 @@ namespace PoliSim.Simulation
             support = line != null ? Math.Max(0.0, share * own + dialCost) : 0.0;
             deviation = line != null ? support - share * line.SeedAmount : 0.0;   // the SUPPORT's deviation from the support's path
             double pathShare = line != null && line.SeedAmount > 0f ? deviation / line.SeedAmount : 0.0;   // over the LINE's path: K is the seed's line over the seed's levy, so the line's path is its unit
-            return SeedLevyBillions(country.Id) > 0 ? Math.Max(0.0, 1.0 - country.Environment.EnergySupportLineToLevySeed * pathShare) : 0.0;
+            // K297 (fisc2): times the real growth the path carried while the player governed (Country.EnergyLevyRealGrowth; 1 where no player ever governed), so in the
+            // player's book the share of the path is a share of the seed's line at the index's prices and a billion of support moves a billion of levy - one for one
+            double carried = country.EnergyLevyRealGrowth > 0f ? country.EnergyLevyRealGrowth : 1.0;
+            return SeedLevyBillions(country.Id) > 0 ? Math.Max(0.0, 1.0 - country.Environment.EnergySupportLineToLevySeed * (pathShare * carried)) : 0.0;
         }
 
         /// <summary>
@@ -382,9 +390,10 @@ namespace PoliSim.Simulation
             // load being static): the price level cancelled, the growth index did not, and a cut line's scale compounded at the path's real growth for ever (Poland's past 10⁶ at t361).
             // Exactly 1 with the line on its path (support and its path are one product), below 1 where raised, above where cut, 0 at the floor. Bounded: at most 1 + K × share (support
             // cannot go below zero), and 1 + 0.8 K × share on the own path alone, which is all an AI book moves - so where the share is NONE an AI book's scale is 1 for ever.
-            // THE PLAYER'S BOOK KEEPS ONE FOR ONE: its path rides prices alone, so K × (the support's move ⁄ path) is (the support's move) ⁄ (seedLevy × P), billions over the levy's path, to float rounding - AT THE BOUNDARY,
-            // where the index and this book read one price level. Between boundaries the page recomputes with the day's price level: the old form drifted with it through the year (a scale of
-            // 0.50 read 0.51 by December at three per cent inflation), this one holds the boundary's figure. EnergyLedgerDiagnostic (3b) asserts the equality ten years from the seed.
+            // K297 (R2-M1): K × G_player × (the support's move ⁄ path), the path riding G = G_player × G_AI, is (the support's move) ⁄ (seedLevy × P × G_AI) - a billion moves
+            // 1 ⁄ G_AI of a billion of levy in either book, AT THE BOUNDARY, where the index and this book read one price level: one for one where no AI government has indexed a
+            // boundary since the seed (LevyPassThrough). Between boundaries the page recomputes with the day's price level: the old form drifted with it through the year (a scale of
+            // 0.50 read 0.51 by December at three per cent inflation), this one holds the boundary's figure. EnergyLedgerDiagnostic (3b) asserts one for one ten years from the seed in the played book, the 1 ⁄ G identity under the ministry, and 1 ⁄ G_AI over four mixed histories (K297).
             // (the arithmetic itself: LevyScaleWith, below)
 
             // EN-7a: market liberalisation - the Energy sector's regulation gap below its seeded anchor; exactly zero at the seed (the level is the anchor)
@@ -493,6 +502,40 @@ namespace PoliSim.Simulation
         /// component's coverage of the statute (EnergyLayer.ElectricityTaxCoverage, capped at 1), at the book's dollars per euro and this year's prices (nominal with nominal).</summary>
         public static double ElectricityTaxShiftPerKwh(CountryId id, int c, double deltaEurPerMwh, double usd, double priceIndex)
             => deltaEurPerMwh / 1000.0 * EnergyLayer.ElectricityTaxCoverage(id, c) * usd * priceIndex;
+
+        /// <summary>K297 (R2-M1): CONVENTION - how near one the pass-through must be for the page to say ONE FOR ONE: its printed two decimals then read 1.00.</summary>
+        public const double PassThroughOneForOneTolerance = 0.005;
+
+        /// <summary>K297 (fisc2, the review's R2-M1): the levy's billions one more billion of support moves, at the last boundary's prices - the rule's own factors,
+        /// K × the seed's levy × the price level at the last index × the growth the player's boundaries carried, over the line's indexed path; that is 1 ⁄ G_AI, the real
+        /// growth the AI's boundaries put on the path, in either book. 1 at the seed and wherever the player indexed every boundary. NaN where the country has no energy
+        /// line or no policy levy. Inside the levy's range: past its floor more support moves none.</summary>
+        public static double LevyPassThrough(Country country)
+        {
+            SpendingLine line = null;
+            foreach (SpendingLine l in country.SpendingLines) { if (l.Category == SpendingCategory.Energy) { line = l; break; } }
+            double seedLevy = SeedLevyBillions(country.Id);
+            if (line == null || !(seedLevy > 0.0) || !(line.SeedAmount > 0f)) { return double.NaN; }
+            double carried = country.EnergyLevyRealGrowth > 0f ? country.EnergyLevyRealGrowth : 1.0;
+            double level = country.PriceLevelAtLastIndex > 0f ? country.PriceLevelAtLastIndex : country.State.PriceLevel;
+            return country.Environment.EnergySupportLineToLevySeed * seedLevy * level * carried / line.SeedAmount;
+        }
+
+        /// <summary>K297 (R2-M1): whether the page may say ONE FOR ONE - the pass-through within <see cref="PassThroughOneForOneTolerance"/> of one (or no figure to state).</summary>
+        public static bool PassesOneForOne(Country country)
+        {
+            double p = LevyPassThrough(country);
+            return double.IsNaN(p) || Math.Abs(p - 1.0) < PassThroughOneForOneTolerance;
+        }
+
+        /// <summary>K297 (R2-M1): the pass-through in the plate's few words - "ONE FOR ONE", or the figure for one ("0.92 FOR ONE").</summary>
+        public static string PassThroughShort(Country country) =>
+            PassesOneForOne(country) ? "ONE FOR ONE" : LevyPassThrough(country).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + " FOR ONE";
+
+        /// <summary>K297 (R2-M1): the slip's sentence where the pass-through is not one for one ("A BILLION MOVES 0.92 OF A BILLION · AN AI SPELL'S GROWTH STANDS IN THE
+        /// PATH"); null where it is.</summary>
+        public static string PassThroughNote(Country country) =>
+            PassesOneForOne(country) ? null : "A BILLION MOVES " + LevyPassThrough(country).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + " OF A BILLION · AN AI SPELL'S GROWTH STANDS IN THE PATH";
 
         /// <summary>EN-7a: whether the country's retail stack carries a policy levy for the Energy subsidy to displace (the USA's components are billed - none).</summary>
         public static bool HasPolicyLevy(CountryId id)

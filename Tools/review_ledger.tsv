@@ -20,7 +20,6 @@ file	Assets/Scripts/Simulation/EnergyLedger.cs	89d2cde964420e222190a1cfcaa484143
 baseline	777	57f1e5cc73f1721c6b69290ad20702ed3dab7f8677777907812687da739fb28d	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
 baseline	424242	cd39dfbe1c8927937db2a0fe9cf58f6b35331310039b2c66d53c4f0bc7915014	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
 file	Assets/Scripts/Data/SpendingCategory.cs	19c7df9fcc6486acb7ca440902462b5567f69a6375c62f82a763bcec6c8cab8c	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Data/SpendingLine.cs	614f93a446de40cde1b5ab2692577ec220546507effdcd8811a807c488e38175	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxType.cs	a15b9d2fbd85f753c6d423f05257c357c75f768055a6e0b545c047c05ad4cfa3	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/WelfareProgram.cs	be37cfb4a401da95c9175c0b9f2ddc9811a9fa0accabff25699bad4da8619911	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/WelfareProgramType.cs	88112313e1cebd35c116e0ad7a8d394b46a52e9c58f1d5f04d76592d8e18c2e8	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
@@ -412,3 +411,9 @@ file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	67d1a3f527a88
 baseline	777	4dbae24d2d8df3052f114c71031a989cc3502d30041c52c6af51385f0294996d	reviewed	2026-10-29	s953	Reviews/2026-10-29_uspop_integrator.md	-
 baseline	424242	6f367ce364454ec78f4f3cad7798850251723e3192423a20e8550dfeed74f370	reviewed	2026-10-29	s953	Reviews/2026-10-29_uspop_integrator.md	-
 file	Assets/Scripts/Data/TaxBaseTable.cs	61dde835666a5301f38ad8d07d01c6465b7114f2f1a7296aeb02dec06522cedf	reviewed	2026-10-29	s953	Reviews/2026-10-29_uspop_taxbase_review.md	-
+file	Assets/Scripts/Data/SpendingDrivers.cs	8e571326800c4d934499eeb0e34b814c5ba46933573101f147ad4a4da0a38b0e	reviewed	2026-10-30	s954	Reviews/2026-10-29_fisc2_review.md	-
+file	Assets/Scripts/Data/SpendingLine.cs	d8fb0885f96d6e3ceb9ae46acd8c3d3adf8e8e0b5e72bd862f7ec16bdc12c4f3	reviewed	2026-10-30	s954	Reviews/2026-10-29_fisc2_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	c6a6ee4976f5f00835baa246a6ca33d7c984ff2bd3699623c1be06b43afd26f9	reviewed	2026-10-30	s954	Reviews/2026-10-29_fisc2_review.md	-
+file	Assets/Scripts/Simulation/EnergyLedger.cs	56e24aef8b4a2bf7e2e14f75426278fc42cd6197944bb13e7bd494dd04b561ee	reviewed	2026-10-30	s954	Reviews/2026-10-30_fisc2_integrator.md	-
+baseline	777	4e5611c454ba4a7e204b480620ede9e632f0d502c0528c769a926b01a89f7bb1	reviewed	2026-10-30	s954	Reviews/2026-10-30_fisc2_integrator.md	-
+baseline	424242	d3aaee0a3e9e02a8bcf6b6bbd9d9e0f315cb21f2ac8e425ed6690a0fdeacceb5	reviewed	2026-10-30	s954	Reviews/2026-10-30_fisc2_integrator.md	-

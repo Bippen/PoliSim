@@ -186,6 +186,13 @@ namespace PoliSim.Data
         /// governs leaves it where it stands - the statute as written, its bracket creep included - and so does the USA's (CPI indexing; CBO's current law
         /// documents the creep). 0 = a save from before K271: read as 1, the statute's reading of the build before. The preview's clone carries it (§506).</summary>
         public float IncomeTaxThresholdLift;
+        /// <summary>K297 (fisc2, 2026-10-29; the review's M3 and R2-M1): the real growth the energy line's path took over the boundaries the PLAYER indexed - each
+        /// boundary the player governs, `SimulationManager.IndexSpendingLines` multiplies it by the driverless real-growth factor it puts on that line; while an AI
+        /// government indexes it stands FROZEN (so the levy never jumps at a change of government). `EnergyLedger`'s levy rule carries it in the support's share of the
+        /// path, so in either book a billion of support moves 1 ⁄ G_AI of a billion of levy, G_AI the growth over the AI's boundaries: one for one where the player has
+        /// indexed every boundary since the seed, less after an AI spell (`EnergyLedger.LevyPassThrough`, which the page prints). 0 = none, read as 1 (a world never
+        /// played, and a save from before fisc2). The preview's clone carries it (§506).</summary>
+        public float EnergyLevyRealGrowth;
         /// <summary>K271 (2026-10-29): what the AI finance ministry's release restored last boundary, as a share of the lines then
         /// (`AiFinanceMinistry.Written.ReleasedShareOfLines`) - left out of next year's net-expenditure excess (`AiFinanceMinistry.EuExpenditureExcess`), so a
         /// release is not clawed back as overspending. 0 where nothing was released, where the player governs, and in a save from before K271.</summary>
@@ -497,6 +504,10 @@ namespace PoliSim.Data
         /// loosens. A structural per-country constant, seeded in WorldFactory to match each country's
         /// own real-approximate starting debt-to-GDP ratio - reusing that already-researched figure,
         /// not a separately-tuned new one. See "Fiscal Reaction Function" in CLAUDE.md.
+        /// <para>K269 (d) (fisc2, 2026-10-29), what it is: the fiscal reaction's NEUTRAL POINT, [AUTHORED-DRAFT] with the reaction's slope (the opening ratio is a
+        /// proxy, no source names it a comfortable level). Since K251 the reaction - and so this anchor - acts in the book the player governs alone (an AI book's
+        /// rule is the treaty's or the debt limit's), and the three fiscal-framework laws (LawCatalog's P4-C3 block) move it there. It is no longer drawn: the debt
+        /// chart's line is the country's own fiscal framework's sourced figure (`FiscalRules.DebtReferencePercent`, the UI's rule table).</para>
         /// </summary>
         public float ComfortableDebtToGdpPercent = 60f;
 

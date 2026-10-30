@@ -149,7 +149,14 @@ namespace PoliSim.UI
             foreach (StatsChart c in Domestic) { AddChart(book, c, history == null ? null : c.Series(history), seriesPage, home, today); }
             book.Anchors["chart:gdp/name"] = new SlipContent("REAL GDP").Add("AT THE PRICES THE GAME OPENED ON").Add("THE CARD ABOVE IS NOMINAL - IN TODAY'S PRICES");
             book.Anchors["chart:unemployment/nairu"] = new SlipContent("NAIRU").Add("THE RATE UNEMPLOYMENT SETTLES AT WITH INFLATION STEADY").Add("THE MODEL'S OWN, READ ON THE LABOUR FORCE TODAY");
-            book.Anchors["chart:debt/comfortable"] = new SlipContent("COMFORTABLE").Add("THE DEBT RATIO THIS COUNTRY CARRIES WITHOUT A RATING'S PRESSURE");
+            // K269 (d): the debt line is the country's own fiscal framework's figure (FiscalRules.DebtReferencePercent), named with its instrument; the anchor's key is kept
+            List<string> debtReference = FiscalRules.DebtReferenceLines(home.Id, out string debtReferenceTitle);
+            if (debtReferenceTitle != null)
+            {
+                var debtSlip = new SlipContent(debtReferenceTitle);
+                foreach (string line in debtReference) { debtSlip.Add(line); }
+                book.Anchors["chart:debt/comfortable"] = debtSlip;
+            }
 
             // ---- your policies (23a ⑯) ------------------------------------------------------------------------------------------------------
             book.Anchors["policies:head"] = new SlipContent("YOUR POLICIES").Add("THE GAP FROM THE NO-POLICY COUNTERFACTUAL, AND WHAT OPENED IT");
