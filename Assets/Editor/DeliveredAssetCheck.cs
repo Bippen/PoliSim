@@ -133,6 +133,19 @@ namespace PoliSim.EditorTools
                         "the composition's rendered rail cells - the build draws its rail from the imported icons (the manifest's rows marked Rail:), tinted at draw"),
                 }
             },
+            {
+                // Design's return of 2026-10-30 (sections 4-11, the self-contained request; Elias archived it under this name): the glyphs are imported
+                // (Resources/Art/UI/S4/, S5/, S9/); what stays in the pack is the boards' own context, each held by the return's own words.
+                "Campaign HQ and Poland Crisis.zip", new (Func<string, bool>, string)[]
+                {
+                    (n => n.StartsWith("film_", StringComparison.Ordinal) && n.EndsWith(".png", StringComparison.Ordinal),
+                        "our own films the boards lay over - the return's INDEX.md: \"The film_*.png files there are the screenshots each board lays over; they are context, not deliverables\""),
+                    (n => n.StartsWith("mark_se_", StringComparison.Ordinal),
+                        "the v3.5 Swedish marks copied beside the S4 board - its RETURN.md: \"Sweden's marks, as v3.5 (copied for the board)\" (the game's marks are mark_party_se_*, tinted at draw)"),
+                    (n => n == "s5_glyphs.svg" || n == "s9_verbs.svg",
+                        "the vector sources of the imported PNG cuts - the RETURNs: \"all eleven as <symbol>s, 24 x 24, 2 px round strokes\" (S5) and \"the six as <symbol>s\" (S9); the build loads the PNGs"),
+                }
+            },
         };
 
         /// <summary>
