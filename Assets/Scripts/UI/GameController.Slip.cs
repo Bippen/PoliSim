@@ -82,6 +82,8 @@ namespace PoliSim.UI
             if (e.type != EventType.Repaint && e.type != EventType.MouseDown) { return; }
             Vector2 mouse = e.mousePosition;
             float now = Time.realtimeSinceStartup;
+            // K321 (g): a film's capture records the book the page draws from, and the masthead's, so the words a sweep moves are judged against them
+            if (e.type == EventType.Repaint) { PoliSim.Testing.DryGuiPass.NoteSlipBook(book); PoliSim.Testing.DryGuiPass.NoteSlipBook(_mastheadSlipBook); }
 
             // The pins' badges on their anchors, then the pinned chains: a click on a pinned head lets it go.
             if (e.type == EventType.Repaint)
@@ -254,18 +256,25 @@ namespace PoliSim.UI
                 }
                 var pinCell = new Rect(box.xMax - V35.Px(6f) - cell, box.y + Mathf.Round((headHeight - cell) * 0.5f), cell, cell);
                 float headRight = pinCell.x - gap - (numberText != null ? numberWidth + gap : 0f);
-                PoliSimWidgets.MeasuredLabel(new Rect(hx, box.y, Mathf.Max(1f, headRight - hx), headHeight), V35Fit(headText, headFace, Mathf.Max(1f, headRight - hx), out _), headFace);
+                UiGuardContext.DrawRole = beside.HasValue ? "SLIPHEAD2" : "SLIPHEAD";   // K321 (f): the label table reads the slip's caps by the slip's own word
+                try { PoliSimWidgets.MeasuredLabel(new Rect(hx, box.y, Mathf.Max(1f, headRight - hx), headHeight), V35Fit(headText, headFace, Mathf.Max(1f, headRight - hx), out _), headFace); }
+                finally { UiGuardContext.DrawRole = null; }
                 if (numberText != null) { PoliSimWidgets.MeasuredLabel(new Rect(pinCell.x - gap - numberWidth, box.y, numberWidth, headHeight), numberText, numberFace); }
                 float pinSide = V35.Px(14f);
                 SymbolRegistry.Draw(new Rect(pinCell.x + (cell - pinSide) * 0.5f, pinCell.y + (cell - pinSide) * 0.5f, pinSide, pinSide), Symbol.Pin,
                     pin > 0 ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted, V35Serif(V35.Floor, PoliSimTheme.TextMuted));
             }
             float ly = box.y + headHeight + V35.Px(5f);
-            for (int i = 0; i < c.Lines.Count; i++)
+            UiGuardContext.DrawRole = beside.HasValue ? "SLIPLINE2" : "SLIPLINE";   // K321 (f): each line one draw, read as the slip's line
+            try
             {
-                DrawSlipLine(new Rect(box.x + padX, ly, textWidth, lineHeights[i]), c.Lines[i], lineFace, oneLine, terms, paint);
-                ly += lineHeights[i];
+                for (int i = 0; i < c.Lines.Count; i++)
+                {
+                    DrawSlipLine(new Rect(box.x + padX, ly, textWidth, lineHeights[i]), c.Lines[i], lineFace, oneLine, terms, paint);
+                    ly += lineHeights[i];
+                }
             }
+            finally { UiGuardContext.DrawRole = null; }
             return box;
         }
 

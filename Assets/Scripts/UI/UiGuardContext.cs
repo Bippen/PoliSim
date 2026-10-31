@@ -1,8 +1,8 @@
 namespace PoliSim.UI
 {
     /// <summary>
-    /// What the UI guards need to know about the run they are guarding. One field today: which screen
-    /// is being drawn.
+    /// What the UI guards need to know about the run they are guarding: which screen is being drawn, and
+    /// (K321) what a run of draws is where its style cannot say.
     ///
     /// **Its own type because two guards need it.** <see cref="UiOverflowGuard"/> owned this while it
     /// was the only one; <see cref="UiContainmentGuard"/> needs the same label, and the alternative was
@@ -25,5 +25,13 @@ namespace PoliSim.UI
         /// captured, so naming the screen afterwards files its findings under the next one.
         /// </summary>
         public static string CurrentScreen { get; set; } = "(unlabelled)";
+
+        /// <summary>
+        /// K321 (f): what the draws between this assignment and the next reset ARE, where the label table cannot tell it from their style -
+        /// the slip names its head and its lines (SLIPHEAD / SLIPLINE, and SLIPHEAD2 / SLIPLINE2 for a level-2 slip) while it draws them,
+        /// and sets it back to null. The table writes it into a draw's flags, so the declutter check reads a slip's caps by the slip's own
+        /// word, not by a guess at its fonts. Null between draws; nothing in the game reads it.
+        /// </summary>
+        public static string DrawRole { get; set; }
     }
 }

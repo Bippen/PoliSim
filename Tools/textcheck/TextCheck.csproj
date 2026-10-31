@@ -26,6 +26,8 @@
     <Compile Include="../../Assets/Editor/PlaySheetCheck.cs" />
     <Compile Include="../../Assets/Editor/MojibakeCheck.cs" />
     <Compile Include="../../Assets/Editor/ResidueCheck.cs" />
+    <!-- K321: the film's declutter rules out of the engine - `textcheck declutter` is what `perl Tools/declutter_scan.pl parity` compares with. -->
+    <Compile Include="../../Assets/Scripts/Testing/DeclutterRules.cs" />
   </ItemGroup>
   <!-- RL-1 (ruled 2026-09-23, s588): the review ledger's comment-only test parses both versions with the compiler's own parser. -->
   <ItemGroup>

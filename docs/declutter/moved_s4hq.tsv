@@ -1,3 +1,4 @@
+# format: prose (pre-K321) - K334: now_in describes the slip in words; DeclutterReachabilityCheck counts these rows UNJUDGED until the file converts to slip:/dense: rows
 # S4 (Design's return of 2026-10-30, the Campaign HQ re-laid; K320 (5) and K321 (g)): every at-rest string the old HQ drew that the re-lay no longer draws as it was, and where it is reachable now.
 # capture_stem: a capture of the old HQ that drew it. text_before: the old string, figures folded to '#'. now_in: the slip anchor (GameController.CampaignHq*.cs / CampaignRace.cs, the HQ's book) or "at rest:" where it is re-worded on the page. slip_text: the slip's words that hold it.
 # The one string removed outright is the "Open to you today" panel: Design removed it because it repeated the verb cells (RETURN.md, "The re-lay"); its list is kept on the verbs' caption's slip all the same (hq:open).

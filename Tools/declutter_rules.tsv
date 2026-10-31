@@ -1,0 +1,32 @@
+# THE DECLUTTER CHECK'S EXEMPTIONS AND CAPS - K321 (b), (e), (f), Code's recommendation on Elias's K320 (docs/RULINGS_2026-10-23.md, UI_V33_SPEC s7).
+# ONE PLACE: read by Tools/declutter_scan.pl and by PoliSim.Testing.DeclutterRules (the film's judge) alike, so the two can never disagree about
+# which capture is exempt or where a cap falls. INSTRUCTION, edited by hand when a ruling moves - never generated. A change here moves every
+# film's verdict: regenerate docs/generated/DECLUTTER_BASELINE.tsv in the same commit.
+#
+# Columns, tab-separated: kind, pattern or name, scope or value, reason
+#   exempt  a capture-stem GLOB (* any run, ? one character, [..] a class), matched against the whole stem; the first match decides
+#           scope all  - no cap is read on the capture (setup, dense and dagger views: K320 (4), K321 (e))
+#           scope rest - the at-rest caps are not read; the slip caps are (the pinned slips: K321 (e) and (f))
+#   cap     a named cap and its value; the reason is the ruling's words
+#
+kind	pattern	scope	reason
+exempt	00*	all	setup: the start screen (00_main_menu) and the settings the menu opens (00a_settings) - K320 (4), K321 (e)
+exempt	01_country*	all	setup: the country selector - K320 (4), K321 (e)
+exempt	01a_*	all	setup: the selector yielding (its exit, mid-scrim); the Desk under the scrim is read on its own frames, 01b on - K321 (e)
+exempt	01f2_*	all	setup: the start points (the selector's start panel, SP-1) - K321 (e); 01f_desk_gameover is NOT setup and is read
+exempt	01f3_*	all	setup: Poland's presidential start card (SP-7b) - K321 (e)
+exempt	01g_party*	all	setup: the party picker - K321 (e); the 01g crisis frames are read
+exempt	01g3_candidate*	all	setup: the candidate picker (SP-7b) - K321 (e); 01g3_crisis_desk_withheld is read
+exempt	01k?_create_*	all	setup: party creation, its five steps (SP-4) - K320 (4), K321 (e); 01k6_created_seated is the Desk after START and is read
+exempt	01n[1-4]_*	all	setup: the US nominee's creation, its four steps (US-33) - K321 (e); 01n5 (the Desk after START) and 01n6 (Parliament) are read
+exempt	*_dense*	all	the dense views (19c), opened on purpose: every number and source - K320 (4), K321 (e)
+exempt	*_provenance*	all	the dagger views: the global dagger (DeskProvenance) opened on the energy page, and on the policy web's node pane (06l, the same dagger) - K321 (e)
+exempt	*pinned*	rest	the pinned slips: the page under them is read on its own frame; the slip caps are read here - K321 (e), (f)
+exempt	*_slips*	rest	the pinned slips (Statistics' frames) - K321 (e), (f)
+cap	label_words	3	K320 (2): a label is at most 3 words - a CONTROL draw over this many counted words is LABEL
+cap	long_words	8	K321 (b): more than this many counted words is LONG
+cap	wrap_words	4	K321 (b): WRAP is a draw past one line with at least this many counted words
+cap	stop_words	4	K321 (b): STOP is a draw ending in a sentence stop with at least this many counted words
+cap	slip_lines	4	K320 (3), K321 (f): a level-1 slip holds at most this many lines under its head
+cap	slip_line_words	10	K321 (f): a level-1 slip line over this many counted words is SLIP
+cap	slip2_lines	1	K320 (3): level 2 holds one plain sentence, the definition - more lines than this under its head is SLIP (DECLARED reading)

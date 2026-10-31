@@ -42876,3 +42876,44 @@ Energy's slips from before S1 still hold lines over 10 words. They carry no move
 - K331's mapping also governs the player's own re-declaration (the second review's D2), in K331's own reasoning.
 - The save fields are additive; there is no format step (the first review's L2, the integrator's call).
 - Left Low, from the first review: L1 (a re-declaration outranks a later dated side of record: latent until the 2030 declarations are sourced), L3 (enforcement reads tracked item state during a caretaker), L4 (`LeaveAsThePlayer` copies `LeaveGovernmentNow`), and L5 (the preview clone shares the motion objects).
+
+## 967. K321 - THE DECLUTTER CHECK: K320'S CAPS JUDGED BY EVERY FILM AGAINST A GENERATED BASELINE THAT ONLY SHRINKS (K320, K321) (2026-10-31)
+
+**What was owed:** K321 (a)-(g), K320's caps enforced by the films: labels at most 3 words, captions on one line and never cut, no sentence at rest, and slips with a head and at most 4 short lines. It lands last in the queue, so its baseline is taken on the finished screens.
+
+**Built** (wave/decl 94e7633b..17fa0d6b, applied on main as a binary patch; every file but the driver equals the branch's):
+- **(a) The label table's flags,** in its flags column (the 12 columns unchanged, so `text_baseline.pl` and the audit driver keep working):
+  - MULTILINE, measured: a needed height over 1.5x the style's one-line height, or more than one generator line on Canvas;
+  - CONTROL: a text drawn with a control id above 0, the one text inside a worded-less click target, or the one Canvas Text under a Selectable;
+  - CANVAS: each real-film capture walks every visible Text under live root canvases;
+  - the slip's own tags (SLIPHEAD/SLIPLINE, level 2 as well);
+  - plus `<label>_slipbooks.tsv` and `<label>_film.tsv` (country, width, real or dry, mode).
+- **(b) `Tools/declutter_scan.pl`** (scan, baseline, judge, keys, selftest, parity), each mode printing a `DECLUTTER:` line and exiting non-zero on failure.
+- **(c) The baseline,** `docs/generated/DECLUTTER_BASELINE.tsv`: generated, sorted, and scoped by country, width, film mode and source (imgui or canvas). It refuses to grow without `--grow`.
+- **(d) The judge in the film's `Finish`,** for films and dry films: a breach the baseline does not hold fails the film as an OVERFLOW does, and a frame the baseline never took is told apart from a new breach.
+- **(e) The exemptions** in one place, `Tools/declutter_rules.tsv`, each with its reason; perl and C# both read it.
+- **(f) The slip caps,** read through the slip's own tags.
+- **(g) The moved words:** `docs/declutter/moved_<item>.tsv` and `DeclutterReachabilityCheck`.
+- **`DeclutterJudgeCheck`** (cheap and document groups) and **`DeclutterReachabilityCheck`** (cheap), registered with this record.
+- Perl and C# were shown equal on one hand-written fixture, and over the 761 tables that existed then (420,826 keys, 0 differences, the legacy reading).
+
+**At integration:**
+- **The first cheap bar failed DeclutterReachabilityCheck with 439 failures, and every film counted 439 malformed moved rows.** The eight moved files written by §957-§966 before this reader existed describe each slip in prose, where the reader wants `slip:<stem>` or `dense:<stem>`.
+- **K334:** each file carries a prose marker above its header. Both readers check its rows for shape and count them UNJUDGED, printed and never reached, under a ceiling of 439 that only falls. Each file converts to machine rows when its screen's K322 sweep touches it.
+- Every other guard on the first films was unchanged: the six dry sessions measured 979 with 0 failed and 0 overflow, and the two real films had 0 overflow and 0 Canvas violations. Each failed only on "no baseline", by design.
+
+**The baseline's generation** (the main tree, from the first run's tables: dryk321 for Sweden, Germany, France, the USA, Poland and Italy at 1280, realk321pl and realk321se):
+- `baseline`: 1,623 breach rows written, the first generation, every breach grandfathered.
+- `judge`: every table 0 new, 0 stale, PASS. At rest: Sweden 250, Germany 258, France 224, the USA 290, Poland 245, Italy 238 (dry); Poland 36 (real, interrupts); Sweden 251 (real, sweep). Slip breaches range from 0 to 25 per table.
+- `parity`: 1,885 keys from perl and 1,885 from `DeclutterRules.cs`, equal. `selftest`: PASS.
+
+**Measured (this tree):** cheap bar 154 of 154 clean on the final tree (cheapk321b; the first, cheapk321, failed DeclutterReachabilityCheck on the 439 prose rows), DECLUTTER JUDGE CHECK: PASS and DECLUTTER REACH: PASS with K334's 439 prose rows unjudged within the ceiling; the first dry film of the six countries at 1280, 979 measured, 0 failed, 0 overflow, each failing only on the missing baseline (dryk321, scope row dryk321); real films Poland -shotinterrupts (realk321pl, 1,170 Canvas draws read) and Sweden's sweep (realk321se, 374 Canvas draws read), 0 overflow and 0 canvas text violations; after the baseline: the dry film Sweden at 1280 (dryk321, the re-run) 178 measured, declutter 0 new 0 stale, exit 0, and the real film Poland -shotinterrupts at 1280 (realk321bpl) DECLUTTER 36 at rest, 0 new, 0 stale, 439 unjudged - PASS, 0 overflow, 0 canvas text violations across 15 asserts; no simulation file changed (UI tier; GameController.Slip's role tags do nothing outside a film); doc bar (docs967)
+
+**Declared** (the implementer's readings, where K321 was silent or too broad):
+- The baseline is scoped by country, width, mode and source, not by capture stem and text alone: the same stem shows other words in another country, width or mode.
+- Every run of digits folds to one `#`. WRAP is the measured MULTILINE flag, explicit line breaks included.
+- K321's exemption patterns were narrowed. `01f*` caught the game-over desk, `01k*` the seated created party, and `01n*` the Desk and Parliament after START; they are now `01f2_*`, `01f3_*`, `01k?_create_*` and `01n[1-4]_*`. `*_sources` is not exempt: its one capture is the crisis plate's slip, judged at rest. `*_provenance*` also covers `06l`.
+- Slip draws are never read at rest. Level 2 is one sentence with no word cap, and K321 (f)'s two caps apply to level 1.
+- Moved files are written by hand under `docs/declutter/`. "Only shrinks" is the GROW refusal: a frame never measured before is added once with `--grow`, recorded.
+- A Canvas rect a RectMask2D clips partly is read whole.
+- **What this means for every later film:** a new film mode or geometry (2560, the election nights, the campaign HQ) fails once with "holds nothing of <country> at <width> px in the film mode '<mode>'" until its rows are added with `baseline --grow` and recorded. The K322 sweeps (S2-S6) each write their moved file and shrink the baseline.

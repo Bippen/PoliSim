@@ -1,3 +1,4 @@
+# format: prose (pre-K321) - K334: now_in describes the slip in words; DeclutterReachabilityCheck counts these rows UNJUDGED until the file converts to slip:/dense: rows
 capture_stem	text_before	now_in	slip_text
 08_energy	27.3 = Σ PRICE × ENERGY ⁄ Σ ENERGY, THREE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	en:why:derivation	27.3 = Σ PRICE × ENERGY ⁄ Σ ENERGY, THREE BLOCKS | ENERGY = SEED MW × HOURS PER BLOCK | THE PEAK BLOCK FILLS ITS LANE
 08_energy	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	en:why:derivation	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS | ENERGY = SEED MW × HOURS PER BLOCK | THE PEAK BLOCK FILLS ITS LANE

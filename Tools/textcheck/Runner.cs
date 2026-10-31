@@ -22,6 +22,7 @@ public static class Runner
     public static int Main(string[] args)
     {
         if (args.Length > 0 && args[0] == "commentonly") { return CommentOnlyMode(args); }
+        if (args.Length > 0 && args[0] == "declutter") { return DeclutterMode(args); }
         string root = args.Length > 0 ? args[0] : Directory.GetCurrentDirectory();
         Application.dataPath = Path.Combine(root, "Assets");
         if (!Directory.Exists(Application.dataPath))
@@ -92,6 +93,52 @@ public static class Runner
             Console.WriteLine(refusal == null ? $"VERDICT\t{name}\tACCEPT" : $"VERDICT\t{name}\tOWED\t{refusal.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", " ")}");
         }
         Console.WriteLine($"COMMENTONLY: {pairs} pair(s).");
+        return 0;
+    }
+
+    /// <summary>K321: `textcheck declutter &lt;root&gt; [--legacy] &lt;table&gt;...` - every breach key the film's own rules (`DeclutterRules`, the very file the
+    /// film compiles) find in each label table, one line each (country, width, source, capture, kind, key), sorted. A table is a dry film's path (its
+    /// name carries the country) or `Country=path` for a real film's. `perl Tools/declutter_scan.pl parity` runs this and compares every key with its
+    /// own, so the perl tool and the film are proved to read the tables alike.</summary>
+    private static int DeclutterMode(string[] args)
+    {
+        if (args.Length < 3 || !Directory.Exists(args[1])) { Console.Error.WriteLine("DECLUTTER: textcheck declutter <root> [--legacy] <table>..."); return 2; }
+        var errors = new List<string>();
+        PoliSim.Testing.DeclutterRules.RuleSet rules = PoliSim.Testing.DeclutterRules.Load(args[1], errors);
+        if (errors.Count > 0) { Console.Error.WriteLine("DECLUTTER: " + string.Join("; ", errors)); return 2; }
+        bool legacy = Array.IndexOf(args, "--legacy") >= 0;
+        var keys = new List<string>();
+        var dry = new System.Text.RegularExpressions.Regex(@"_([a-z]+)_\d+_labels\.tsv$");
+        int tables = 0;
+        var named = new List<string>();
+        for (int i = 2; i < args.Length; i++)
+        {
+            if (args[i] == "--legacy") { continue; }
+            if (args[i].StartsWith("@", StringComparison.Ordinal)) { foreach (string l in File.ReadAllLines(args[i].Substring(1))) { if (l.Trim().Length > 0) { named.Add(l.Trim()); } } }   // a list file, one table a line
+            else { named.Add(args[i]); }
+        }
+        foreach (string arg in named)
+        {
+            string path = arg, country = null;
+            int eq = path.IndexOf('=');
+            if (eq > 0 && !File.Exists(path) && System.Text.RegularExpressions.Regex.IsMatch(path.Substring(0, eq), "^[A-Za-z]+(:[A-Za-z0-9+_.-]+)?$")) { country = path.Substring(0, eq).Split(':')[0].ToLowerInvariant(); path = path.Substring(eq + 1); }
+            PoliSim.Testing.DeclutterRules.FilmFacts facts = PoliSim.Testing.DeclutterRules.ReadFacts(path);   // a film since K321 names itself beside its table
+            if (facts != null) { country = facts.Country.ToLowerInvariant(); }
+            else if (country == null)
+            {
+                System.Text.RegularExpressions.Match m = dry.Match(path);
+                if (!m.Success) { Console.Error.WriteLine($"DECLUTTER: '{path}' has no facts beside it and is not a dry film's table - name a real film's country: Country=path"); return 2; }
+                country = m.Groups[1].Value;
+            }
+            List<PoliSim.Testing.DeclutterRules.Row> rows = PoliSim.Testing.DeclutterRules.ReadTable(path);
+            PoliSim.Testing.DeclutterRules.Reading reading = PoliSim.Testing.DeclutterRules.Read(rows, rules, legacy);
+            keys.AddRange(PoliSim.Testing.DeclutterRules.KeyLines(country, rows.Count > 0 ? rows[0].Width : 0, reading));
+            tables++;
+        }
+        keys.Sort(StringComparer.Ordinal);
+        Console.OutputEncoding = new System.Text.UTF8Encoding(false);
+        foreach (string k in keys) { Console.WriteLine(k); }
+        Console.Error.WriteLine($"DECLUTTER: {keys.Count} key(s) from {tables} table(s), by DeclutterRules.cs");
         return 0;
     }
 }

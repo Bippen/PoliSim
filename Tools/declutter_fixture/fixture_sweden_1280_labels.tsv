@@ -1,0 +1,54 @@
+capture	screen	x	y	width	height	font	mode	needs_width	needs_height	flags	text
+05a_budget_tax	1280x699	100.0	10.0	400.0	14.1	14	line	200.0	14.1		Revenue
+05a_budget_tax	1280x699	100.0	30.0	400.0	16.1	16	line	200.0	16.1		Fiscal year starts - budget process opens; credit…
+05a_budget_tax	1280x699	100.0	50.0	400.0	14.1	14	line	200.0	14.1	WIDE	A market lurch has torn a hole in pension balance sheets; savers are alarmed and the regulator is on the phone.
+05a_budget_tax	1280x699	100.0	70.0	400.0	14.1	14	line	200.0	14.1		THE CALLS  PiS 9 · KO 16 · TD 28 · NL 30 · Konf 33
+05a_budget_tax	1280x699	100.0	90.0	400.0	28.2	14	wrap	0.0	28.2	MULTILINE	at the zone's rate, without the market's premium
+05a_budget_tax	1280x699	100.0	110.0	400.0	28.2	14	wrap	0.0	28.2	MULTILINE	Old age pension
+05a_budget_tax	1280x699	100.0	130.0	400.0	28.2	14	wrap	0.0	28.2		the EU's balance-of-payments facility today
+05a_budget_tax	1280x699	100.0	150.0	400.0	16.1	16	line	200.0	16.1	CONTROL	Table an Alternative Budget
+05a_budget_tax	1280x699	100.0	170.0	400.0	16.1	16	line	200.0	16.1	CONTROL	Introduce Budget Bill
+05a_budget_tax	1280x699	100.0	190.0	400.0	14.1	14	line	200.0	14.1	OUTSIDE	This sentence is outside the clip and is never read at rest.
+05a_budget_tax	1280x699	100.0	210.0	400.0	14.1	14	line	200.0	14.1	STRADDLES	one two three four five six seven eight nine
+05a_budget_tax	1280x699	100.0	230.0	400.0	14.1	14	line	200.0	14.1		The clock waits here.
+05a_budget_tax	1280x699	100.0	250.0	400.0	14.1	14	line	200.0	14.1		Not enough here.
+05a_budget_tax	1280x699	100.0	270.0	400.0	14.1	14	line	200.0	14.1		He said stop now.”
+05a_budget_tax	1280x699	100.0	290.0	400.0	14.1	14	line	200.0	14.1		Market access lost...
+05a_budget_tax	1280x699	100.0	310.0	400.0	15.1	15	wrap	0.0	15.1		Interest US$1.37T. At the last closed year's book.
+05a_budget_tax	1280x699	100.0	330.0	400.0	28.2	14	line	200.0	28.2	MULTILINE	Two lines\nof a caption here
+05a_budget_tax	1280x699	100.0	350.0	400.0	14.1	14	line	200.0	14.1	CONTROL	EUR/t·kWh
+05a_budget_tax	1280x699	100.0	370.0	400.0	14.1	14	line	200.0	14.1	CONTROL	EUR/t·kWh·MWh
+e7c_election_night_takeover	1280x699	100.0	390.0	400.0	15.2	9	line	200.0	15.2		TIME PAUSED
+e7c_election_night_takeover	1280x699	100.0	410.0	400.0	34.0	16	wrap	0.0	34.0	MULTILINE CANVAS	Parties need 5 % and coalitions 8 % of the vote to enter the Sejm.
+01k1_create_profile	1280x699	100.0	430.0	400.0	14.1	14	line	200.0	14.1		Choose the party's origin and say what it stands for in one line.
+01k1_create_profile	1280x699	100.0	450.0	400.0	15.1	15	line	200.0	15.1	SLIPHEAD	GRASSROOTS
+01k1_create_profile	1280x699	100.0	470.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	ONE
+01k1_create_profile	1280x699	100.0	490.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	TWO
+01k1_create_profile	1280x699	100.0	510.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	THREE
+01k1_create_profile	1280x699	100.0	530.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	FOUR
+01k1_create_profile	1280x699	100.0	550.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	FIVE
+04h_people_dense	1280x699	100.0	570.0	400.0	14.1	14	line	200.0	14.1		Every number and source of the page stands on the dense view by design.
+08_energy_instruments_provenance	1280x699	100.0	590.0	400.0	14.1	14	line	200.0	14.1		The provenance view prints where every figure on the plate comes from.
+01f_desk_gameover	1280x699	100.0	610.0	400.0	14.1	14	line	200.0	14.1		The government has fallen and the game is over for you.
+01k6_created_seated	1280x699	100.0	630.0	400.0	14.1	14	line	200.0	14.1		Framtidspartiet takes its seats in the chamber today.
+01g1_crisis_moment_sources	1280x699	100.0	650.0	400.0	28.2	28	line	200.0	28.2		Market access lost
+01g1_crisis_moment_sources	1280x699	100.0	670.0	400.0	15.1	15	line	200.0	15.1	SLIPHEAD	MARKET ACCESS LOST · 1 MAY 2026
+01g1_crisis_moment_sources	1280x699	100.0	690.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	The scheduled review left the rating at CCC
+01g1_crisis_moment_sources	1280x699	100.0	710.0	400.0	28.2	14	wrap	0.0	28.2	SLIPLINE MULTILINE	Sources: Cruces and Trebesch 2012, the 55 % haircut, and Gelos, Sahay and Sandleris 2011
+04i_people_slips_pinned	1280x699	100.0	730.0	400.0	14.1	14	line	200.0	14.1		This at-rest sentence under the pinned slip is never read here at all.
+04i_people_slips_pinned	1280x699	100.0	750.0	400.0	15.1	15	line	200.0	15.1	SLIPHEAD	TURNOUT BY AGE · DATED
+04i_people_slips_pinned	1280x699	100.0	770.0	400.0	20.4	15	line	200.0	20.4		②
+04i_people_slips_pinned	1280x699	100.0	790.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	SOURCED SCB 2014
+04i_people_slips_pinned	1280x699	100.0	810.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	DRAWN WHERE ELIGIBLE
+04i_people_slips_pinned	1280x699	100.0	830.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	NO LANE WHERE NOT
+04i_people_slips_pinned	1280x699	100.0	850.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	VOTING AGE 18
+04i_people_slips_pinned	1280x699	100.0	870.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	SPLIT PRO RATA
+04i_people_slips_pinned	1280x699	100.0	890.0	400.0	15.1	15	line	200.0	15.1	SLIPHEAD	35-39 · PEAK BAND
+04i_people_slips_pinned	1280x699	100.0	910.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE	35-39 · 800k · 7.4% OF ALL
+04i_people_slips_pinned	1280x699	100.0	930.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE2	ORPHAN LINE OF LEVEL TWO UNDER A LEVEL ONE HEAD AND NEVER COUNTED AT ALL
+04i_people_slips_pinned	1280x699	100.0	950.0	400.0	28.2	14	wrap	0.0	28.2	SLIPLINE MULTILINE	THE LARGEST OF 21 BANDS AND THE AXIS ENDS AT IT TODAY
+04i_people_slips_pinned	1280x699	100.0	970.0	400.0	15.1	15	line	200.0	15.1	SLIPHEAD2	WORKING AGE
+04i_people_slips_pinned	1280x699	100.0	990.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE2	FROM 15 TO 64
+04i_people_slips_pinned	1280x699	100.0	1010.0	400.0	14.1	14	wrap	0.0	14.1	SLIPLINE2	THE MODEL DIVIDES BY IT
+04i_people_slips_pinned	1280x699	100.0	1030.0	400.0	15.1	15	line	200.0	15.1	SLIPHEAD2	DEPENDENCY
+04i_people_slips_pinned	1280x699	100.0	1050.0	400.0	28.2	14	wrap	0.0	28.2	SLIPLINE2 MULTILINE	The ratio of the people outside working age to the people inside it, as the model counts them.

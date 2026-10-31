@@ -1,0 +1,25 @@
+# K321: the keys fixture_sweden_1280_labels.tsv must give when read as a table written before K321's flags (--legacy): WRAP by the old height rule
+# (a wrapped draw whose needed height over 1.25 type sizes exceeds 1.6), so the line-mode draw with a break is not WRAP and the wrapped draw without
+# MULTILINE is. Written by hand; reproduced by perl Tools/declutter_scan.pl selftest and DeclutterJudgeCheck.
+sweden	1280	imgui	05a_budget_tax	CUT	Fiscal year starts - budget process opens; credit…
+sweden	1280	imgui	05a_budget_tax	LONG	A market lurch has torn a hole in pension balance sheets; savers are alarmed and the regulator is on the phone.
+sweden	1280	imgui	05a_budget_tax	STOP	A market lurch has torn a hole in pension balance sheets; savers are alarmed and the regulator is on the phone.
+sweden	1280	imgui	05a_budget_tax	WRAP	at the zone's rate, without the market's premium
+sweden	1280	imgui	05a_budget_tax	WRAP	the EU's balance-of-payments facility today
+sweden	1280	imgui	05a_budget_tax	LABEL	Table an Alternative Budget
+sweden	1280	imgui	05a_budget_tax	LONG	one two three four five six seven eight nine
+sweden	1280	imgui	05a_budget_tax	STOP	The clock waits here.
+sweden	1280	imgui	05a_budget_tax	STOP	He said stop now.”
+sweden	1280	imgui	05a_budget_tax	CUT	Market access lost...
+sweden	1280	imgui	05a_budget_tax	STOP	Interest US$#T. At the last closed year's book.
+sweden	1280	imgui	05a_budget_tax	LABEL	EUR/t·kWh·MWh
+sweden	1280	canvas	e7c_election_night_takeover	WRAP	Parties need # % and coalitions # % of the vote to enter the Sejm.
+sweden	1280	canvas	e7c_election_night_takeover	LONG	Parties need # % and coalitions # % of the vote to enter the Sejm.
+sweden	1280	canvas	e7c_election_night_takeover	STOP	Parties need # % and coalitions # % of the vote to enter the Sejm.
+sweden	1280	imgui	01f_desk_gameover	LONG	The government has fallen and the game is over for you.
+sweden	1280	imgui	01f_desk_gameover	STOP	The government has fallen and the game is over for you.
+sweden	1280	imgui	01k6_created_seated	STOP	Framtidspartiet takes its seats in the chamber today.
+sweden	1280	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # MAY # » Sources: Cruces and Trebesch #, the # % haircut, and Gelos, Sahay and Sandleris #
+sweden	1280	imgui	04i_people_slips_pinned	SLIP	TURNOUT BY AGE · DATED
+sweden	1280	imgui	04i_people_slips_pinned	SLIP	#-# · PEAK BAND » THE LARGEST OF # BANDS AND THE AXIS ENDS AT IT TODAY
+sweden	1280	imgui	04i_people_slips_pinned	SLIP	WORKING AGE

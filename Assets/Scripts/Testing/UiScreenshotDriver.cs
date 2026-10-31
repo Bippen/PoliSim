@@ -3363,6 +3363,8 @@ namespace PoliSim.Testing
                 Debug.Log($"SHOT: WaitForEndOfFrame resumed for {name}.");
             }
 #if UNITY_EDITOR
+            // K321 (a): the frame has rendered - a real film's Canvas text joins the label table (a dry film's Canvas is laid out at no geometry it claims, §578)
+            if (!Dry) { DryGuiPass.RecordCanvas(); }
             DryGuiPass.EndCapture();
             ChamberVerdicts.VerifyHits = false;
 #endif
@@ -4039,12 +4041,15 @@ namespace PoliSim.Testing
             Debug.Log(table == null
                 ? "SHOT: label table - nothing recorded (no captured frame drew text through a style)."
                 : $"SHOT: label table - {DryGuiPass.Summary}; written to {table}.");
+            // K321 (d): the film judges its own table against the declutter baseline, as it judges its overflows - after the table is on disk
+            string slipBooks = DryGuiPass.WriteSlipBooks(Path.Combine(OutputDirectory, "labels"), Label);
+            exitCode = System.Math.Max(exitCode, JudgeDeclutter(table, slipBooks));
 #endif
 
             if (Dry)
             {
                 Debug.Log("SHOT: DRY - the edge guard, the identity token and the frame-size traps read pixels, and the canvas-text guard reads a Canvas scaled by the real backbuffer (640x480 with no window, whatever geometry this run names); they stay the film's, and this run claims none of them.");
-                LastSweepSummary = $"{LastSweepSummary}exit {exitCode}";
+                LastSweepSummary = $"{LastSweepSummary}{_declutterSummary}exit {exitCode}";
                 if (DryExit != null)
                 {
                     // The sweep is over for this session: nothing after the stop frame may run while play mode winds down.
@@ -4081,7 +4086,74 @@ namespace PoliSim.Testing
 #endif
         }
 
+        /// <summary>K321 (d): the declutter judge's counts for the dry session's summary line ("declutter N new M stale, "), empty until it judged.</summary>
+        private string _declutterSummary = string.Empty;
+
 #if UNITY_EDITOR
+        /// <summary>
+        /// K321 (d): **THE FILM JUDGES ITS OWN LABEL TABLE** against `docs/generated/DECLUTTER_BASELINE.tsv` (`DeclutterRules.Judge`, the rules
+        /// `Tools/declutter_scan.pl` reads the same tables by): a breach the baseline does not hold is NEW, a baseline row of a frame this film took
+        /// that no longer breaches is STALE, a moved word no slip or dense view of this film reaches is UNREACHABLE - each fails the run, as an
+        /// overflow does, and so does a missing baseline (the first run after K321 writes nothing; the integrator generates it). Every geometry
+        /// is judged by the same rules against its own rows. An exception in the judge is a failure, never a pass.
+        /// </summary>
+        private int JudgeDeclutter(string table, string slipBooks)
+        {
+            if (table == null)
+            {
+                Debug.Log("DECLUTTER: no label table was written - no captured frame drew text through a style, so nothing is judged.");
+                return 0;
+            }
+
+            try
+            {
+                string root = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+                string mode = FilmMode();
+                List<DeclutterRules.Row> written = DeclutterRules.ReadTable(table);
+                DeclutterRules.WriteFacts(table, new DeclutterRules.FilmFacts { Country = Country, Width = written.Count > 0 ? written[0].Width : 0, Real = !Dry, Mode = mode });
+                DeclutterRules.Verdict verdict = DeclutterRules.Judge(root, table, slipBooks, Country, real: !Dry, mode);
+                foreach (string line in verdict.Notes) { Debug.Log(line); }
+                foreach (string line in verdict.Failures) { Debug.LogError(line); }
+                if (verdict.Code == 0) { Debug.Log(verdict.Summary); }
+                else { Debug.LogError(verdict.Summary); }
+                _declutterSummary = $"declutter {verdict.New.Count} new {verdict.Stale.Count} stale{(verdict.Fatal != null ? " (no verdict)" : string.Empty)}, ";
+                return verdict.Code;
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"DECLUTTER: the judge threw and is counted as a FAILURE - {e.GetType().Name}: {e.Message}");
+                _declutterSummary = "declutter threw, ";
+                return 1;
+            }
+        }
+
+        /// <summary>
+        /// K321 (d): the film's MODE for the declutter baseline - every argument that changes what a frame shows (the choreography, the staged
+        /// state, the seated party, a loaded save, the locale), "sweep" when none does. A capture stem one mode shares with another can show other
+        /// words (the Desk in the sweep and in the interrupts film are months apart), so each mode is judged against its own rows. A stop frame
+        /// (-shotstop=) cuts a film short without changing what its frames show, and is not part of it.
+        /// </summary>
+        private string FilmMode()
+        {
+            var parts = new List<string>();
+            if (Interrupts) { parts.Add("interrupts"); }
+            if (Formation) { parts.Add("formation"); }
+            if (CampaignHq) { parts.Add("campaign"); }
+            if (ElectionNightBoard) { parts.Add("electionnight"); }
+            if (UsJourney) { parts.Add("usjourney-" + (string.IsNullOrEmpty(UsJourneyWinner) ? "none" : UsJourneyWinner.ToLowerInvariant())); }
+            if (Abroad) { parts.Add("abroad"); }
+            if (Ladder) { parts.Add("ladder"); }
+            if (StageSaves) { parts.Add("saves"); }
+            if (ImpactLedger) { parts.Add("ledger"); }
+            if (CueSweep) { parts.Add("cuesweep"); }
+            if (PinStates) { parts.Add("states"); }
+            if (CreateAndStart) { parts.Add("createstart"); }
+            if (!string.IsNullOrEmpty(LoadSave)) { parts.Add("load-" + Path.GetFileNameWithoutExtension(LoadSave).ToLowerInvariant()); }
+            if (!string.IsNullOrEmpty(Party)) { parts.Add("party-" + Party.ToLowerInvariant()); }
+            if (!string.IsNullOrEmpty(Locale)) { parts.Add("locale-" + Locale.ToLowerInvariant()); }
+            return parts.Count == 0 ? DeclutterRules.SweepMode : string.Join("+", parts);
+        }
+
         /// <summary>The dry pass's own machinery failed: named once, and the run ends failed - never a frame-by-frame repeat.</summary>
         private void DryStop()
         {

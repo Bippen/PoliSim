@@ -406,6 +406,8 @@ namespace PoliSim.EditorTools
             ("PortfolioDisplayNameCheck", PortfolioDisplayNameCheck.Run),   // §946 (2026-10-29, the pldesk film's Low): no player-visible text prints a portfolio's raw identifier ("A leak from InteriorJustice")
             ("EnumDisplayNameCheck", EnumDisplayNameCheck.Run),   // §952 (2026-10-29, the portfolio-name review's M4): no player-visible text prints a tax's, programme's, spending line's, formation outcome's, area's or portfolio's raw identifier ("IncomeTax at 25.0 %", "Implement NegativeIncomeTax", "(NewElection)") nor a party's raw key; the programme titles byte-identical as draw keys; K312's join
             ("CardTradeOffCheck", CardTradeOffCheck.Run),   // AF-31 (q31, 2026-10-18): every card's options trade off on a lasting count - no option on a cabinet or meeting card wins on every count
+            ("DeclutterJudgeCheck", DeclutterJudgeCheck.Run),   // K321 (b)-(f), §967: the film's declutter judge reproduces the fixture the perl tool reproduces (Tools/declutter_fixture), its planted NEW/STALE/no-baseline/uncovered teeth bite, and the generated baseline reads as one
+            ("DeclutterReachabilityCheck", DeclutterReachabilityCheck.Run),   // K321 (g), §967: every word a sweep moved (docs/declutter/moved_*.tsv) on a slip within two levels or the dense view - People's and Statistics' books read here, page-built books left to the film's judge; planted teeth every run
 
             // The coherence audit's EIGHTH sweep (2026-09-01): a ratchet whose ceiling has stopped
             // discriminating. ⚠ REGISTERED LAST AND THAT IS LOAD-BEARING: it reads what the ratchets above
@@ -825,6 +827,7 @@ namespace PoliSim.EditorTools
             ("DesignNotificationCheck", DesignNotificationCheck.Run),   // a cut screen told to the person drawing it
             ("PlaySheetCheck", PlaySheetCheck.Run),                     // docs/play/PLAY_SHEET.md against the code and its source record
             ("MojibakeCheck", MojibakeCheck.Run),                       // text decoded once too few times
+            ("DeclutterJudgeCheck", DeclutterJudgeCheck.Run),           // K321, §967: the generated DECLUTTER_BASELINE.tsv and the fixture - a regenerated baseline (a document-only commit) still runs it
             ("ResidueCheck", ResidueCheck.Run),                         // the residue, read off the live documents
             ("UsStateSwingCheck", UsStateSwingCheck.Run),               // §787: the US model card's readings against the measurement - a card-only commit still runs it
             ("UsNationalVoteCheck", UsNationalVoteCheck.Run),           // §789: the card's US-5 readings against the measurement - two eve worlds, so a card-only commit pays for them

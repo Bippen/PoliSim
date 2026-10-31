@@ -1,0 +1,7 @@
+# K321 (d): what the judge must find when fixture_sweden_1280_labels.tsv (a dry table) is judged against fixture_baseline.tsv - the one breach the
+# planted baseline leaves out is NEW; the planted row of a frame the fixture took that no longer breaches is STALE; the planted row of a frame it
+# never took, the planted Canvas row (a dry film cannot see Canvas text) and the planted row of another film mode (a mode is judged by its
+# own rows) are neither. Then the exit code.
+DECLUTTER NEW 05a_budget_tax LABEL
+DECLUTTER STALE 05a_budget_tax LONG
+exit 1

@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace PoliSim.Testing
 {
@@ -35,6 +36,21 @@ namespace PoliSim.Testing
     /// judge.** The film's verdict stays the guards' (their populations are defined and their false
     /// positives were cleared); the table is how a layout iteration reads what moved, row by row, and a
     /// film and a dry film of one tree write the same table.</para>
+    ///
+    /// <para><b>K321 (2026-10-30): what the declutter check reads, in the flags column</b> (the columns are unchanged; a reader that only
+    /// asks for OUTSIDE reads every table as before). <c>MULTILINE</c> - the draw runs past one line: its needed height (wrapped at its
+    /// width, or with its own line breaks) is over one and a half times its style's one-line height. <c>CONTROL</c> - the draw is a
+    /// control's label: drawn by Unity's own control machinery (`GUIStyle.onDraw` hands it a control id above zero - a button or a
+    /// toggle's own words; a label draws with none), or the ONE visible text draw inside a click target - a control drawn with no words
+    /// through the empty style (`GUIStyle.none`) over a face: the chip idiom, where `DrawRowChip`, `DrawStripChip`, the desk's chips and
+    /// the rail's tabs paint a label, then lay an invisible button over the same rect. A target holding two or more draws is a row or a
+    /// card, and its words are not a label; a styled layout group draws its face as a box with a control id as well, and is never a
+    /// target. The face's style cannot tell a control: every face here is a copy of the skin's label, and a copy keeps the label's name
+    /// (so a style named button or toggle is the rare case, not the rule). <c>SLIPHEAD</c> /
+    /// <c>SLIPLINE</c> (level 1) and <c>SLIPHEAD2</c> / <c>SLIPLINE2</c> (level 2) - the slip's own draws, named by the slip as it draws
+    /// them (`UiGuardContext.DrawRole`). <c>CANVAS</c> - a real film's uGUI `Text`, walked at the capture (<see cref="RecordCanvas"/>):
+    /// the election nights and the selector are Canvas, and the IMGUI hook never sees them. Beside the table a film writes the slip books
+    /// its pages drew (<see cref="WriteSlipBooks"/>), which K321 (g)'s moved words are judged against.</para>
     /// </summary>
     public static class DryGuiPass
     {
@@ -58,15 +74,39 @@ namespace PoliSim.Testing
 
         private static bool _recording;
         private static string _capture;
-        private static readonly List<string> Rows = new List<string>();
+
+        /// <summary>One row of the table: its first ten columns as written, its flags (K321's are added after the draw where a capture's whole
+        /// frame decides them - CONTROL), its text, and where it drew on the screen.</summary>
+        private sealed class TableRow
+        {
+            public string Head;
+            public List<string> Flags;
+            public string Text;
+            public Rect Screen;
+            public bool Visible;
+            public bool Slip;
+            public bool Canvas;
+        }
+
+        private static readonly List<TableRow> Rows = new List<TableRow>();
         private static readonly HashSet<string> RowKeys = new HashSet<string>();
         private static int _texts, _wide, _tall, _straddle, _hidden;
+
+        /// <summary>K321 (a): the capture's click targets - controls drawn with no words of their own, in screen space - and where its rows begin.</summary>
+        private static readonly HashSet<Rect> Targets = new HashSet<Rect>();
+        private static int _captureFrom;
+        private static FieldInfo _statesControlId, _statesTextInput;
+        private static readonly GUIContent OneLineProbe = new GUIContent("Ag");
+
+        /// <summary>K321 (g): the slip books the captured frames drew, a row a head or a line (capture, level, key, role, text).</summary>
+        private static readonly List<string> SlipRows = new List<string>();
+        private static readonly HashSet<string> SlipRowKeys = new HashSet<string>();
 
         /// <summary>Text draws recorded, and how many exceed their rect or their clip. Report figures, never a verdict.</summary>
         public static string Summary =>
             string.Format(CultureInfo.InvariantCulture,
-                "{0} text draw(s) measured; {1} need more width than their rect (unwrapped), {2} more height (wrapped); {3} straddle their clip, {4} outside it",
-                _texts, _wide, _tall, _straddle, _hidden);
+                "{0} text draw(s) measured; {1} need more width than their rect (unwrapped), {2} more height (wrapped); {3} straddle their clip, {4} outside it; {5} of them a real film's Canvas text (K321)",
+                _texts, _wide, _tall, _straddle, _hidden, _canvasTexts);
 
         /// <summary>Installs the draw hook (films and dry films) - idempotent, and harmless when it fails: the table is then empty and says so.</summary>
         public static void InstallHook()
@@ -84,7 +124,16 @@ namespace PoliSim.Testing
                     return;
                 }
 
-                Expression call = Expression.Call(typeof(DryGuiPass).GetMethod(nameof(OnDraw), All), ps[0], ps[1], ps[2]);
+                // K321 (a): the draw's states (a DrawStates struct, internal) reach OnDraw boxed, and its control id is read by reflection there -
+                // inside OnDraw's own guard, so a Unity that renamed the field loses the CONTROL flag, never the draw.
+                Expression states = ps.Length > 3 && ps[3].Type.IsValueType ? (Expression)Expression.Convert(ps[3], typeof(object)) : Expression.Constant(null, typeof(object));
+                if (ps.Length > 3)
+                {
+                    _statesControlId = ps[3].Type.GetField("controlId", All);
+                    _statesTextInput = ps[3].Type.GetField("hasTextInput", All);
+                }
+                if (_statesControlId == null) { Debug.LogWarning("SHOT: GUIStyle.onDraw carries no control id on this Unity - the label table's CONTROL flag (K321) cannot be read, and the declutter check's LABEL cap reads nothing."); }
+                Expression call = Expression.Call(typeof(DryGuiPass).GetMethod(nameof(OnDraw), All), ps[0], ps[1], ps[2], states);
                 Delegate previous = onDraw.GetValue(null) as Delegate;
                 Delegate ours = Expression.Lambda(onDraw.FieldType, call, ps).Compile();
                 onDraw.SetValue(null, previous == null ? ours : Delegate.Combine(previous, ours));
@@ -218,37 +267,82 @@ namespace PoliSim.Testing
         {
             _capture = capture;
             _recording = true;
+            _captureFrom = Rows.Count;
+            Targets.Clear();
         }
 
-        /// <summary>Stops recording.</summary>
+        /// <summary>Stops recording. K321 (a): a click target the frame drew holding exactly ONE visible text draw makes that draw its label -
+        /// CONTROL - decided here, once the whole frame has drawn (the chip paints its words before its button).</summary>
         public static void EndCapture()
         {
             _recording = false;
+            foreach (Rect target in Targets)
+            {
+                int found = -1, count = 0;
+                for (int i = _captureFrom; i < Rows.Count && count < 2; i++)
+                {
+                    TableRow r = Rows[i];
+                    if (r.Canvas || r.Slip || !r.Visible || !target.Contains(r.Screen.center)) { continue; }
+                    count++;
+                    found = i;
+                }
+                if (count == 1 && !Rows[found].Flags.Contains("CONTROL")) { Rows[found].Flags.Add("CONTROL"); }
+            }
+            Targets.Clear();
         }
 
-        private static bool OnDraw(GUIStyle style, Rect rect, GUIContent content)
+        private static bool OnDraw(GUIStyle style, Rect rect, GUIContent content, object states)
         {
             if (!_recording || Event.current == null || Event.current.type != EventType.Repaint) { return false; }
 
             // The game draws with the game skin (mode 0). While a film records, the Editor's own windows - the Game View's
             // toolbar, the Hierarchy - draw through the same hook with the Editor skin, and they are not the game.
             if (_skinMode != null && _skinMode.GetValue(null) is int mode && mode != 0) { return false; }
+            if (style == null) { return false; }
             string text = content?.text;
-            if (string.IsNullOrEmpty(text) || style == null) { return false; }
+
+            // K321 (a): Unity's control machinery (GUI.DoControl, the box) draws with the control's id; a label draws with none (-1). A text
+            // field's draw is the player's own words, never a label.
+            int controlId = -1;
+            bool textInput = false;
+            try
+            {
+                if (states != null && _statesControlId != null) { controlId = (int)_statesControlId.GetValue(states); }
+                if (states != null && _statesTextInput != null) { textInput = (bool)_statesTextInput.GetValue(states); }
+            }
+            catch (Exception)
+            {
+                controlId = -1;
+            }
+
+            if (string.IsNullOrEmpty(text))
+            {
+                // A control with no words and no face of its own - the invisible button over a chip, a tab or a row, drawn through the empty
+                // style - is a click target (EndCapture). ⚠ Only the empty style: a styled layout group (GUILayout.BeginVertical with a style,
+                // GUI.BeginGroup) draws its face as a box with a control id too, and a card holding one caption is not a button.
+                if (controlId > 0 && !textInput && ReferenceEquals(style, GUIStyle.none))
+                {
+                    try { Targets.Add(GUIUtility.GUIToScreenRect(rect)); }
+                    catch (Exception) { }
+                }
+                return false;
+            }
 
             try
             {
-                float neededWidth, neededHeight;
+                float neededWidth, neededHeight, oneLine;
                 if (style.wordWrap)
                 {
                     neededWidth = 0f;
                     neededHeight = style.CalcHeight(content, rect.width);
+                    oneLine = style.CalcHeight(OneLineProbe, 100000f);
                 }
                 else
                 {
                     Vector2 size = style.CalcSize(content);
                     neededWidth = size.x;
                     neededHeight = size.y;
+                    oneLine = style.CalcSize(OneLineProbe).y;
                 }
 
                 string clip = "in";
@@ -263,15 +357,22 @@ namespace PoliSim.Testing
                 bool wide = !style.wordWrap && neededWidth > rect.width + 1f;
                 bool tall = style.wordWrap && neededHeight > rect.height + 1f;
                 Rect screen = GUIUtility.GUIToScreenRect(rect);
-                string flags = (wide ? "WIDE " : string.Empty) + (tall ? "TALL " : string.Empty) + (clip == "in" ? string.Empty : clip.ToUpperInvariant());
-                string row = string.Format(CultureInfo.InvariantCulture,
-                    "{0}\t{1}x{2}\t{3:F1}\t{4:F1}\t{5:F1}\t{6:F1}\t{7}\t{8}\t{9:F1}\t{10:F1}\t{11}\t{12}",
+                var flags = new List<string>();
+                if (wide) { flags.Add("WIDE"); }
+                if (tall) { flags.Add("TALL"); }
+                if (clip != "in") { flags.Add(clip.ToUpperInvariant()); }
+                if (oneLine > 0f && neededHeight > oneLine * 1.5f) { flags.Add("MULTILINE"); }
+                string role = PoliSim.UI.UiGuardContext.DrawRole;
+                if (!string.IsNullOrEmpty(role)) { flags.Add(role); }
+                if (controlId > 0 && !textInput) { flags.Add("CONTROL"); }
+                string head = string.Format(CultureInfo.InvariantCulture,
+                    "{0}\t{1}x{2}\t{3:F1}\t{4:F1}\t{5:F1}\t{6:F1}\t{7}\t{8}\t{9:F1}\t{10:F1}",
                     _capture, PoliSim.UI.UiScreen.Width, PoliSim.UI.UiScreen.Height, screen.x, screen.y, rect.width, rect.height,
-                    style.fontSize, style.wordWrap ? "wrap" : "line", neededWidth, neededHeight, flags.Trim(), Escape(text));
+                    style.fontSize, style.wordWrap ? "wrap" : "line", neededWidth, neededHeight);
 
                 // Once per capture: the Game View can deliver more than one Repaint to a frame.
-                if (!RowKeys.Add(row)) { return false; }
-                Rows.Add(row);
+                if (!RowKeys.Add(head + "\t" + string.Join(" ", flags) + "\t" + Escape(text))) { return false; }
+                Rows.Add(new TableRow { Head = head, Flags = flags, Text = text, Screen = screen, Visible = clip != "outside", Slip = role != null && role.StartsWith("SLIP", StringComparison.Ordinal) });
                 _texts++;
                 if (wide) { _wide++; }
                 if (tall) { _tall++; }
@@ -286,6 +387,96 @@ namespace PoliSim.Testing
             return false;
         }
 
+        /// <summary>
+        /// K321 (a): **A REAL FILM'S CANVAS TEXT, AT THE CAPTURE.** The election nights, the selector, the signing screen are uGUI, which the
+        /// IMGUI hook never sees, so a night's frame held only the strip's few draws. Called by a real film after the frame has rendered and
+        /// before the capture ends: every active, visible `Text` under every live root Canvas is a row flagged CANVAS - its rect on the screen
+        /// in pixels, its type size in pixels (the authored size times the canvas's scale), its preferred size in pixels, wrapped or one line,
+        /// MULTILINE when the generator lays it on more than one line (the rect's width, every line counted: a truncating rect drops lines it
+        /// still lays out), OUTSIDE or STRADDLES against the screen, CONTROL when it is the one visible Text under a `Selectable` (a faced
+        /// button's word; the flag is added once the frame's Texts are all read, as an IMGUI target's is). Visible: enabled, not culled, an inherited
+        /// alpha above a hundredth.
+        /// ⚠ A dry film never calls this: with no window a Canvas is scaled by a 640x480 backbuffer, whatever geometry the run names (§578).
+        /// A rect a RectMask2D cuts partly is read whole (DECLARED).
+        /// </summary>
+        public static void RecordCanvas()
+        {
+            if (!_recording) { return; }
+            try
+            {
+                int width = PoliSim.UI.UiScreen.Width, height = PoliSim.UI.UiScreen.Height;
+                var corners = new Vector3[4];
+                var byControl = new Dictionary<Selectable, List<TableRow>>();
+                foreach (Canvas canvas in UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+                {
+                    if (canvas == null || !canvas.isRootCanvas || !canvas.isActiveAndEnabled) { continue; }
+                    Camera camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+                    foreach (Text t in canvas.GetComponentsInChildren<Text>(false))
+                    {
+                        if (t == null || !t.isActiveAndEnabled || string.IsNullOrEmpty(t.text)) { continue; }
+                        Canvas own = t.canvas;
+                        CanvasRenderer renderer = t.canvasRenderer;
+                        if (own == null || !own.isActiveAndEnabled || renderer == null || renderer.cull || t.color.a * renderer.GetInheritedAlpha() <= 0.01f) { continue; }
+                        t.rectTransform.GetWorldCorners(corners);
+                        float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
+                        for (int i = 0; i < 4; i++)
+                        {
+                            Vector2 p = RectTransformUtility.WorldToScreenPoint(camera, corners[i]);
+                            minX = Mathf.Min(minX, p.x); maxX = Mathf.Max(maxX, p.x); minY = Mathf.Min(minY, p.y); maxY = Mathf.Max(maxY, p.y);
+                        }
+                        var screen = new Rect(minX, height - maxY, maxX - minX, maxY - minY);
+                        Rect local = t.rectTransform.rect;
+                        float scale = local.height > 0.01f ? screen.height / local.height : own.scaleFactor;
+                        bool wrap = t.horizontalOverflow == HorizontalWrapMode.Wrap;
+                        float neededWidth = wrap ? 0f : t.preferredWidth * scale;
+                        float neededHeight = t.preferredHeight * scale;
+                        bool overlaps = screen.xMax > 0f && screen.xMin < width && screen.yMax > 0f && screen.yMin < height;
+                        bool inside = screen.xMin >= -0.5f && screen.xMax <= width + 0.5f && screen.yMin >= -0.5f && screen.yMax <= height + 0.5f;
+                        var flags = new List<string>();
+                        if (!wrap && t.preferredWidth > local.width + 0.5f) { flags.Add("WIDE"); }
+                        if (wrap && t.preferredHeight > local.height + 0.5f) { flags.Add("TALL"); }
+                        if (!overlaps) { flags.Add("OUTSIDE"); } else if (!inside) { flags.Add("STRADDLES"); }
+                        if (CanvasLines(t) > 1) { flags.Add("MULTILINE"); }
+                        flags.Add("CANVAS");
+                        string head = string.Format(CultureInfo.InvariantCulture,
+                            "{0}\t{1}x{2}\t{3:F1}\t{4:F1}\t{5:F1}\t{6:F1}\t{7}\t{8}\t{9:F1}\t{10:F1}",
+                            _capture, width, height, screen.x, screen.y, screen.width, screen.height,
+                            Mathf.RoundToInt(t.fontSize * scale), wrap ? "wrap" : "line", neededWidth, neededHeight);
+                        if (!RowKeys.Add(head + "\t" + string.Join(" ", flags) + "\t" + Escape(t.text))) { continue; }
+                        var row = new TableRow { Head = head, Flags = flags, Text = t.text, Screen = screen, Visible = overlaps, Canvas = true };
+                        Rows.Add(row);
+                        _texts++;
+                        _canvasTexts++;
+                        // K321 (a), the Canvas's controls: a Text under a Selectable (the chrome's faced buttons, a toggle) is its label when it is
+                        // the Selectable's ONE visible Text - a clickable card holding several is not a label, as with the IMGUI click targets
+                        Selectable control = t.GetComponentInParent<Selectable>();
+                        if (control != null)
+                        {
+                            if (!byControl.TryGetValue(control, out List<TableRow> under)) { byControl[control] = under = new List<TableRow>(); }
+                            under.Add(row);
+                        }
+                    }
+                }
+                foreach (List<TableRow> under in byControl.Values) { if (under.Count == 1) { under[0].Flags.Add("CONTROL"); } }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"SHOT: the label table's Canvas pass failed on {_capture} ({e.GetType().Name}: {e.Message}) - its Canvas rows are missing, and the declutter judge reads the frame without them.");
+            }
+        }
+
+        private static int _canvasTexts;
+
+        /// <summary>The lines the generator lays <paramref name="t"/> on at its rect's width, every one counted (vertical overflow opened).</summary>
+        private static int CanvasLines(Text t)
+        {
+            TextGenerationSettings settings = t.GetGenerationSettings(t.rectTransform.rect.size);
+            settings.verticalOverflow = VerticalWrapMode.Overflow;
+            var generator = new TextGenerator();
+            generator.Populate(t.text, settings);
+            return generator.lineCount;
+        }
+
         private static string Escape(string text)
         {
             return text.Replace("\\", "\\\\").Replace("\t", "\\t").Replace("\r", "\\r").Replace("\n", "\\n");
@@ -298,10 +489,60 @@ namespace PoliSim.Testing
             Directory.CreateDirectory(directory);
             string path = Path.Combine(directory, label + "_labels.tsv");
             var sb = new StringBuilder("capture\tscreen\tx\ty\twidth\theight\tfont\tmode\tneeds_width\tneeds_height\tflags\ttext\n");
-            foreach (string row in Rows) { sb.Append(row).Append('\n'); }
+            foreach (TableRow row in Rows) { sb.Append(row.Head).Append('\t').Append(string.Join(" ", row.Flags)).Append('\t').Append(Escape(row.Text)).Append('\n'); }
             File.WriteAllText(path, sb.ToString(), new UTF8Encoding(false));
             return path;
         }
+
+        /// <summary>K321 (g): writes the slip books the captured frames drew beside the label table, as `&lt;label&gt;_slipbooks.tsv` (capture, level,
+        /// key, role, text) - always, a header alone when no page drew one, so the declutter judge can tell "no book drawn" from "none recorded".</summary>
+        public static string WriteSlipBooks(string directory, string label)
+        {
+            Directory.CreateDirectory(directory);
+            string path = Path.Combine(directory, label + "_slipbooks.tsv");
+            var sb = new StringBuilder("capture\tlevel\tkey\trole\ttext\n");
+            foreach (string row in SlipRows) { sb.Append(row).Append('\n'); }
+            File.WriteAllText(path, sb.ToString(), new UTF8Encoding(false));
+            return path;
+        }
+
+        private static void NoteSlip(int level, string key, PoliSim.UI.SlipContent slip)
+        {
+            void Add(string role, string text)
+            {
+                string row = string.Join("\t", _capture, level.ToString(CultureInfo.InvariantCulture), Escape(key), role, Escape(text));
+                if (SlipRowKeys.Add(row)) { SlipRows.Add(row); }
+            }
+            Add("head", PoliSim.UI.SlipContent.Plain(slip.Head));
+            foreach (string line in slip.Lines) { Add("line", PoliSim.UI.SlipContent.Plain(line)); }
+        }
 #endif
+
+        /// <summary>
+        /// K321 (g): the page's slip book as the captured frame draws it (`GameController.DrawSlips` hands it here on the repaint) - every anchor's
+        /// slip, level 1, and the slip of every term a level-1 slip marks, level 2 (nothing deeper: UI v3.3's two levels). The moved words are
+        /// judged against these. Inert outside a capture, and outside the Editor.
+        /// </summary>
+        public static void NoteSlipBook(PoliSim.UI.PeopleSlips.Book book)
+        {
+#if UNITY_EDITOR
+            if (!_recording || book == null || Event.current == null || Event.current.type != EventType.Repaint) { return; }
+            try
+            {
+                var marked = new List<string>();
+                foreach (KeyValuePair<string, PoliSim.UI.SlipContent> anchor in book.Anchors)
+                {
+                    NoteSlip(1, anchor.Key, anchor.Value);
+                    foreach (string term in PoliSim.UI.SlipContent.TermsIn(anchor.Value.Head)) { if (!marked.Contains(term)) { marked.Add(term); } }
+                    foreach (string line in anchor.Value.Lines) { foreach (string term in PoliSim.UI.SlipContent.TermsIn(line)) { if (!marked.Contains(term)) { marked.Add(term); } } }
+                }
+                foreach (string term in marked) { if (book.Terms.TryGetValue(term, out PoliSim.UI.SlipContent slip)) { NoteSlip(2, term, slip); } }
+            }
+            catch (Exception)
+            {
+                // A record must never break the draw it watches.
+            }
+#endif
+        }
     }
 }

@@ -1,3 +1,4 @@
+# format: prose (pre-K321) - K334: now_in describes the slip in words; DeclutterReachabilityCheck counts these rows UNJUDGED until the file converts to slip:/dense: rows
 # COAL-2 with §9 (Design's return of 2026-10-30, `S9 Coalition Verbs`; K320 (5) and K321 (g)): every at-rest string the Parliament page drew for the coalition verbs that moved to Politics › Cabinet ("The coalition", "In the Sejm") in the one grammar, and where it is reachable now.
 # capture_stem: a capture that drew it (K197's frames, Poland). text_before: the old string, figures folded to '#'. now_in: the slip anchor on the Politics page's book (GameController.CoalitionVerbs.cs) or "at rest:" where it is re-worded on the page. slip_text: the slip's words that hold it.
 # Nothing is removed: every word of the Parliament page's LEAVE THE GOVERNMENT row and of Poland's Art. 158 row is on a slip or re-worded at rest.
