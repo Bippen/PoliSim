@@ -389,6 +389,7 @@ namespace PoliSim.Simulation
             AdvanceLawBillsDay(countryId);
             TryOpenBudgetProcess(countryId, CurrentDate);
             AdvanceConfidenceDay(countryId);   // PS-3i (§636): a carried motion's week, the discharge and the Speaker's round
+            AdvanceCoalitionVerbsDay(countryId);   // COAL-2: the open threats and enforcements settle, and K137's re-declaration after a count (the player's country only)
         }
 
         public bool AdvanceDay()
@@ -4347,13 +4348,19 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>FORK-2: <see cref="LeaveGovernment"/>'s act.</summary>
-        private bool LeaveGovernmentNow(CountryId countryId, out string refusedBecause)
+        private bool LeaveGovernmentNow(CountryId countryId, out string refusedBecause, string basis = null)
         {
+            // COAL-2 (the review's L4): also the act a threat carried out on its day calls, basis its record's words - never a copy of it
             if (!CanLeaveGovernment(countryId, out refusedBecause)) { return false; }   // K197: the gates, read by the desk too (SimulationManager.PolishDesk.cs)
             Country country = _world.GetCountry(countryId);
+            string head = country.Government.PmParty;
             country.Government.LeaveCabinet(country.PlayerPartyAbbrev, country);   // the portfolios re-apportioned among those who stay
             country.Government.Breaks.Add(LeftTheGovernmentLine(CurrentDate, country.PlayerPartyAbbrev));
-            Debug.Log($"CONFIDENCE: {countryId} - {country.PlayerPartyAbbrev} left the government");
+            // COAL-2: the leaving on the country's record of verbs; a threat of the party's still standing is carried out by it, before its day
+            Elections.CoalitionMotion threat = Elections.CoalitionVerbs.OpenOf(country, Elections.CoalitionVerb.Threaten, country.PlayerPartyAbbrev);
+            if (threat != null) { Settle(threat, Elections.MotionState.Carried, "carried out before its day: " + threat.Actor + " left"); }
+            RecordLeaving(country, country.PlayerPartyAbbrev, head, true, basis ?? "K197: the player's verb");
+            if (!IsCounterfactual) { Debug.Log($"CONFIDENCE: {countryId} - {country.PlayerPartyAbbrev} left the government" + (basis != null ? " (" + basis + ")" : string.Empty)); }   // the review's L4: a ticking fork logs nothing
             ExitOpensConfidenceProcedure(country, country.PlayerPartyAbbrev);   // COAL-1 (q21, K131; GA-4-1): the exit opens the country's confidence procedure
             return true;
         }
@@ -7886,6 +7893,8 @@ namespace PoliSim.Simulation
                 RealWageIndexAtLastIndex = country.RealWageIndexAtLastIndex,
                 CalendarYear = country.CalendarYear,   // PN-1's driver (§520): the year the pension line's driver reads - the clone audit names it the day it is dropped
                 CalendarDay = country.CalendarDay,   // K80: the day the dated sides are read on
+                CoalitionMotions = country.CoalitionMotions == null ? new List<Elections.CoalitionMotion>() : country.CoalitionMotions.ConvertAll(m => m.Copy()),   // COAL-2 (K137): the re-declared sides the clone's blocs read - its own list of its own copies (the review's L5), never the country's
+                RedeclaredAfterCount = country.RedeclaredAfterCount,   // COAL-2 (N1): the count whose re-declaration has run
                 PensionAgeOverride = country.PensionAgeOverride,   // PN-1's dial (§590): a passed bill's pension age - the preview's line reads it as the turn's does
                 PensionParticipationApplied = country.PensionParticipationApplied,   // §596 review D1: the response the state's rate already carries
                 DebtRatioSeed = country.DebtRatioSeed,

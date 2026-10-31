@@ -440,6 +440,7 @@ namespace PoliSim.UI
         {
             Country c = _playerCountry;
             V35.FloorGuarded = true;
+            DrawCoalitionV35(width);   // COAL-2 with §9 (board 9a): "The coalition", its verbs and, in Poland, "In the Sejm" - above the portfolios
             int count = System.Enum.GetValues(typeof(CabinetPortfolio)).Length;
             DrawPoliticsSectionHead("Cabinet · " + UiFormat.CountWord(count).ToLowerInvariant() + " portfolios", "cab:head", width);
             _politicsSlipBook.Anchors["cab:head"] = new SlipContent("CABINET")
@@ -928,7 +929,7 @@ namespace PoliSim.UI
                 PoliSimWidgets.MeasuredLabel(new Rect(x, y + figureH + 2f, nameW, nameH), fitted, nameFace);
             }
             SlipAnchor(r, "parl:party:" + party.Abbrev);
-            int bloc = NationalElection.BlocOf(PlayerCountryId, party.Abbrev);
+            int bloc = NationalElection.BlocOf(_playerCountry, party.Abbrev);   // COAL-2 (K137): the side re-declared after a count, where one stands
             _politicsSlipBook.Anchors["parl:party:" + party.Abbrev] = new SlipContent(party.ShortName.ToUpperInvariant() + " · " + UiFormat.Seats(partySeats).ToUpperInvariant())
                 .Add(party.Name.ToUpperInvariant())
                 .Add(UiFormat.Number(share, 1) + " % OF THE CHAMBER'S " + total + " SEATS")

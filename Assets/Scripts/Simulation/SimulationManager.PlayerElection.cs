@@ -141,7 +141,7 @@ namespace PoliSim.Simulation
                 // D-10 (a): the tactical layer (§23) over the campaign's shares, believing the PUBLISHED
                 // polls - what the electorate saw - about who clears the threshold; GATE-18 q25: their mean, not the last tracker alone
                 shareByParty = NationalElection.SharesOnPublishedPolls(id, keys, campaign.FinalShares, PlayerCampaign, CurrentDate,
-                    out TacticalResult tactical, out belief, out beliefPolls);   // §707: the Länder derived on the polling day
+                    out TacticalResult tactical, out belief, out beliefPolls, played: country);   // §707: the Länder derived on the polling day; COAL-2 (K137): the sides re-declared after the last count
                 if (!IsCounterfactual)
                 {
                     Debug.Log($"ELECTION: counted the campaign's shares for {id} - " + string.Join(" ", System.Array.ConvertAll(campaign.FinalShares, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));

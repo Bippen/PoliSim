@@ -148,6 +148,9 @@ namespace PoliSim.UI
             // ---- K197: what the Polish desk verbs left on the record this month - an Art. 158 vote, the player's leaving - information, never holding the clock ----
             DrawPolishDeskItems();
 
+            // ---- COAL-2 (§9, "For Code" 3-4): the coalition verbs of the month - a threat, a leaving, a dismissal, an enforcement, the sides re-declared - information ----
+            DrawCoalitionDocketItems();
+
             // ---- PS-8 (K163): the elections abroad of the last month, each with its results card - information, never holding the clock ----
             DrawForeignElectionItems();
 

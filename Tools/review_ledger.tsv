@@ -429,3 +429,8 @@ file	Assets/Scripts/Data/SpendingLine.cs	b02c2440b8a5e0948d1076e904ff5ba1e519ac1
 file	Assets/Scripts/Simulation/SimulationManager.cs	98d360f522ac3552b530a0688b5730393090d12f0a690fe0051da00030b17b7a	reviewed	2026-10-30	s956	Reviews/2026-10-30_pbr_review.md	-
 baseline	777	a7c54cbe9bf72b2cdd86d0d6bd92a8c68735bcc35e57f5375fba0aa4bd531730	reviewed	2026-10-30	s956	Reviews/2026-10-30_pbr_integrator.md	-
 baseline	424242	7b70bc3eab2037df8aebd11a33f05039474d930e8830bc05da02b43b0d924bd8	reviewed	2026-10-30	s956	Reviews/2026-10-30_pbr_integrator.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	4399d6c7a1ab5703fe0dff67da95102aa8b4927252159465cea34cab175761ca	reviewed	2026-10-31	s966	Reviews/2026-10-30_coal2_review2.md	-
+file	Assets/Scripts/Simulation/SimulationManager.CoalitionVerbs.cs	7af0ac46a8a4c7a7d2d101ffc30d2a37c878de5fe74e6e8d1fcd6aedc3be8818	reviewed	2026-10-31	s966	Reviews/2026-10-30_coal2_review2.md	-
+file	Assets/Scripts/Simulation/SimulationManager.CoalitionExit.cs	7a02cf81c2afdb096011311e7d7cae888abbe5aef67d2941793ba8d360ac01dc	reviewed	2026-10-31	s966	Reviews/2026-10-30_coal2_review2.md	-
+file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	71d6c571b4482ab57ef29acc37630eb80a1e8c54d3775d9596829efe4cddbb73	reviewed	2026-10-31	s966	Reviews/2026-10-30_coal2_review2.md	-
+file	Assets/Scripts/Simulation/SimulationManager.CoalitionVerbs.cs	dd5adfa581785a28add503be06f3c1c87efa60e6d2732e3df60db08405f4fa96	reviewed	2026-10-31	s966	Reviews/2026-10-31_coal2_review3.md	-

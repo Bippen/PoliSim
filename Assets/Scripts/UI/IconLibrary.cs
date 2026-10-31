@@ -50,6 +50,22 @@ namespace PoliSim.UI
             return t;
         }
 
+        /// <summary>The S9 verb glyph stems that did not load this session - named in the film's log (the slot draws nothing, as a missing v3.5 icon does).</summary>
+        public static readonly System.Collections.Generic.HashSet<string> S9Fallbacks = new System.Collections.Generic.HashSet<string>();
+
+        /// <summary>
+        /// COAL-2 with §9 (Design's return of 2026-10-30, `assets/s9/glyphs`): a coalition verb's glyph - `Resources/Art/UI/CoalitionVerbs/verb_&lt;verb&gt;_16` or `_32`
+        /// (<paramref name="large"/>), the verb one of threat, leave, dismiss, enforce, redeclare, c158; white on transparent, tinted at draw (ink, or paper on a
+        /// filled chip). Null where the file is not held, the stem named in <see cref="S9Fallbacks"/>. Installed from Design's delivery as files (§424).
+        /// </summary>
+        public static Texture2D S9Verb(string verb, bool large)
+        {
+            string stem = "verb_" + verb + (large ? "_32" : "_16");
+            Texture2D t = Load("Art/UI/CoalitionVerbs/" + stem);
+            if (t == null) { S9Fallbacks.Add(stem); }
+            return t;
+        }
+
         /// <summary>
         /// The area icon for a <see cref="UiPalette.SystemArea"/> - `icon_area_&lt;area&gt;`, the
         /// filename derived from the enum like every other art category here. Omnibus 2026-08-28

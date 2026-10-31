@@ -5,8 +5,8 @@ using PoliSim.Elections;
 namespace PoliSim.UI
 {
     /// <summary>
-    /// K197: THE POLISH DESK VERBS' OUTCOMES ON THE DOCKET - the verbs themselves are the Parliament page's (`DrawConfidence`: LEAVE THE GOVERNMENT for a
-    /// junior partner, MOVE ART. 158 for the opposition); what they leave on the record is listed here for the month (<see cref="PolishDeskRecord"/>), in
+    /// K197: THE POLISH DESK VERBS' OUTCOMES ON THE DOCKET - the verbs themselves are the Cabinet tab's since COAL-2 with §9 (`DrawCoalitionV35`: LEAVE for a
+    /// junior partner, MOVE ART. 158 for the opposition under "In the Sejm"); what they leave on the record is listed here for the month (<see cref="PolishDeskRecord"/>), in
     /// K163's idiom of information that never holds the clock: each Art. 158 vote the Sejm took with its count and who governs now, and the day the
     /// player's party left the cabinet with the standing the government kept. The day's vote is also the strip's place 4 (`TopStrip.Art158Chip`).
     /// </summary>
@@ -31,21 +31,12 @@ namespace PoliSim.UI
                     .Add(vote.Title.ToUpperInvariant())
                     .Add(PolishDeskRecord.StandingWords(_playerCountry).ToUpperInvariant())
                     .Add("FOR INFORMATION · IT DOES NOT HOLD THE CLOCK · LISTED FOR A MONTH");
-                DrawDocketItem(key, "chamber", ink, PolishDeskRecord.Art158Words(_playerCountry, vote) + " · " + when, count + " · " + PolishDeskRecord.StandingWords(_playerCountry),
+                DrawDocketItem(key, "verb:c158", ink, PolishDeskRecord.Art158Words(_playerCountry, vote) + " · " + when, count + " · " + PolishDeskRecord.StandingWords(_playerCountry),
                     holdsTime: false, action: null, stampWords: "Information");
                 any = true;
             }
-            if (PolishDeskRecord.TryLeftOn(_playerCountry, today, out System.DateTime left))
-            {
-                string key = "left:" + left.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
-                string when = left.Date == today.Date ? "today" : DeskDay(left);
-                _docketSlipBook.Anchors["docket:" + key] = new SlipContent(("You left the government · " + DeskDay(left)).ToUpperInvariant())
-                    .Add(PolishDeskRecord.StandingWords(_playerCountry).ToUpperInvariant())
-                    .Add("FOR INFORMATION · IT DOES NOT HOLD THE CLOCK · LISTED FOR A MONTH");
-                DrawDocketItem(key, "chamber", ink, "You left the government · " + when, PolishDeskRecord.StandingWords(_playerCountry),
-                    holdsTime: false, action: null, stampWords: "Information");
-                any = true;
-            }
+            // COAL-2 with §9: the player's leaving is the coalition verbs' Information entry now, in every country (`DrawCoalitionDocketItems`, led by the leave
+            // glyph, the standing as the leaving left it) - PolishDeskRecord.TryLeftOn stays the record's reader
             return any;
         }
 

@@ -308,10 +308,10 @@ namespace PoliSim.Elections
         /// `TacticalBelief` of <paramref name="campaign"/> on <paramref name="pollingDay"/>, the regional readout derived on that day. The one path the
         /// player's chamber election takes (`TacticalBeliefDiagnostic` holds it to the mean and reads the call site).</summary>
         public static Dictionary<string, double> SharesOnPublishedPolls(CountryId country, string[] keys, double[] finalShares, CampaignRun.State campaign, System.DateTime pollingDay,
-            out TacticalResult tactical, out Poll? belief, out int beliefPolls)
+            out TacticalResult tactical, out Poll? belief, out int beliefPolls, Country played = null)
         {
             belief = TacticalBelief(campaign, pollingDay, out beliefPolls);
-            return SharesFromCampaign(country, keys, finalShares, belief, out tactical, on: pollingDay);
+            return SharesFromCampaign(country, keys, finalShares, belief, out tactical, on: pollingDay, played: played);
         }
 
         /// <summary>
@@ -331,9 +331,17 @@ namespace PoliSim.Elections
         public static int BlocOf(CountryId country, string abbrev) =>
             BlocOf(country, abbrev, Simulation.SimulationManager.PlayedDay != System.DateTime.MinValue ? Simulation.SimulationManager.PlayedDay : Simulation.SimulationManager.EpochDate);
 
-        /// <summary>K80: the same for a country of a world - on that world's own day (a counterfactual's day, not the played world's).</summary>
-        public static int BlocOf(Country country, string abbrev) =>
-            country == null ? -1 : country.CalendarDay != System.DateTime.MinValue ? BlocOf(country.Id, abbrev, country.CalendarDay) : BlocOf(country.Id, abbrev);
+        /// <summary>K80: the same for a country of a world - on that world's own day (a counterfactual's day, not the played world's). COAL-2 (K137): a side
+        /// the party re-declared after a count in that world, standing on the day, answers first (`CoalitionVerbs.TryRedeclaredBloc`, Sweden's alone); where
+        /// none stands the dated sides of record answer, as before.</summary>
+        public static int BlocOf(Country country, string abbrev)
+        {
+            if (country == null) { return -1; }
+            System.DateTime on = country.CalendarDay != System.DateTime.MinValue ? country.CalendarDay
+                : Simulation.SimulationManager.PlayedDay != System.DateTime.MinValue ? Simulation.SimulationManager.PlayedDay : Simulation.SimulationManager.EpochDate;
+            if (CoalitionVerbs.TryRedeclaredBloc(country, abbrev, on, out int redeclared)) { return redeclared; }
+            return BlocOf(country.Id, abbrev, on);
+        }
 
         /// <summary>K79: the same, on a given date - the sides standing that day.</summary>
         public static int BlocOf(CountryId country, string abbrev, System.DateTime on)
@@ -432,6 +440,16 @@ namespace PoliSim.Elections
             return bloc;
         }
 
+        /// <summary>COAL-2 (K137): the sides standing on <paramref name="on"/> in <paramref name="played"/>'s world - a side a party re-declared after a count
+        /// there (`CoalitionVerbs.TryRedeclaredBloc`) over the dated side of record; with no country, or none re-declared, exactly <see cref="SwedenBlocsOn(IReadOnlyList{string}, System.DateTime)"/>.</summary>
+        public static int[] SwedenBlocsOn(IReadOnlyList<string> keys, System.DateTime on, Country played)
+        {
+            int[] bloc = SwedenBlocsOn(keys, on);
+            if (played == null) { return bloc; }
+            for (int i = 0; i < keys.Count; i++) { if (CoalitionVerbs.TryRedeclaredBloc(played, keys[i], on, out int redeclared)) { bloc[i] = redeclared; } }
+            return bloc;
+        }
+
         /// <summary>
         /// D-10 (a): election night with the TACTICAL layer (§23) over the campaign's shares. The belief
         /// each aware voter holds about a party clearing the threshold comes from the last PUBLISHED
@@ -441,7 +459,7 @@ namespace PoliSim.Elections
         /// regional breakdown is derived from the shifted shares, so the constituencies add up to the
         /// headline the layer produced.
         /// </summary>
-        public static Dictionary<string, double> SharesFromCampaign(CountryId country, string[] keys, double[] finalShares, Poll? tracker, out TacticalResult tactical, System.DateTime? on = null)
+        public static Dictionary<string, double> SharesFromCampaign(CountryId country, string[] keys, double[] finalShares, Poll? tracker, out TacticalResult tactical, System.DateTime? on = null, Country played = null)
         {
             tactical = null;
             double[] counted = finalShares;
@@ -457,8 +475,9 @@ namespace PoliSim.Elections
                     position[i] = 5.0;   // no published lrgen: the bloc's centre, so affinity neither favours nor shuns the party
                     foreach (PoliticalParty party in parties) { if (party.Abbrev == keys[i] && !float.IsNaN(party.LrGen)) { position[i] = party.LrGen; break; } }
                 }
-                // K53: the sides standing on the polling day (an undated call reads 2022's, as before)
-                var spec = new TacticalSpec(SeatConversion.NationalThreshold, TacticalAwareness, on.HasValue ? SwedenBlocsOn(keys, on.Value) : SwedenBlocs2022(keys), position);
+                // K53: the sides standing on the polling day (an undated call reads 2022's, as before); COAL-2 (K137): a side re-declared after the last count in
+                // the played world over the side of record
+                var spec = new TacticalSpec(SeatConversion.NationalThreshold, TacticalAwareness, on.HasValue ? SwedenBlocsOn(keys, on.Value, played) : SwedenBlocs2022(keys), position);
                 tactical = TacticalVoting.Apply(finalShares, polled, moe, spec);
                 counted = tactical.Preference;
             }

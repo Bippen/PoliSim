@@ -1257,6 +1257,22 @@ namespace PoliSim.Data
         /// <summary>PS-3a (§628): WHO GOVERNS, stored - the government of record at the start, the formation's after the game's own election; the player's role is read from it. Null before a country's world seats one.</summary>
         public PoliSim.Elections.GovernmentRecord Government;
 
+        /// <summary>COAL-2 (K136, K137): the coalition verbs made in this country, oldest first - threats, leavings, dismissals, enforcements and
+        /// re-declarations (`Elections.CoalitionMotion`); the open ones settle by the day loop, a re-declaration is Sweden's bloc from its day
+        /// (`Elections.CoalitionVerbs.TryRedeclaredBloc`). On the country, not the government, because a re-declaration outlives the government it was made
+        /// toward and the Docket lists a verb for its month whatever government follows. Saved with the world; additive under ruling A - a save from before
+        /// holds none. DIVERGENCE STATED (the COAL-2 review's L2; the format step is the integrator's call): a save cut before COAL-2 after an in-game count's
+        /// government formed holds no K137 sides, and loaded it re-declares on its first day toward the government standing then - which differs from the
+        /// continuous run's where a partner left, a supporter withdrew or a successor formed in between. Copied into the preview's clone (its own copies),
+        /// whose blocs read it.</summary>
+        public List<PoliSim.Elections.CoalitionMotion> CoalitionMotions = new List<PoliSim.Elections.CoalitionMotion>();
+
+        /// <summary>COAL-2 (K137, K330; the second review's N1): the count whose re-declaration has run in this country - saved, so a load or the impact
+        /// ledger's fork (a save round trip into a fresh manager) never runs it again toward a successor formed after it, as the continuous game does not.
+        /// MinValue in a save from before; the record of verbs is then read for the count's sides (`SimulationManager.RedeclareAfterCount`). Copied into the
+        /// preview's clone (the parity audit reads it).</summary>
+        public System.DateTime RedeclaredAfterCount = System.DateTime.MinValue;
+
         /// <summary>
         /// C-R3: **the player's PARTY approval, a NEW ADDITIVE STOCK.**
         ///

@@ -264,10 +264,49 @@ namespace PoliSim.UI
             List<DivisionRecord> votes = PolishDeskRecord.RecentArt158(country, today);
             if (votes.Count == 0 || votes[0].Date.Date != today.Date) { return null; }
             DivisionRecord vote = votes[0];
-            var chip = new Chip { Id = "strip:art158", Face = Face.Amber, Icon = "chamber", Words = PolishDeskRecord.Art158Words(country, vote) + " today", SlipHead = "ART. 158 · " + Day(today).ToUpperInvariant() };
+            var chip = new Chip { Id = "strip:art158", Face = Face.Amber, Icon = "verb:c158", Words = PolishDeskRecord.Art158Words(country, vote) + " today", SlipHead = "ART. 158 · " + Day(today).ToUpperInvariant() };
             chip.Slip.Add(vote.Title);
             chip.Slip.Add("Moved and voted on the same day - the Sejm does not wait the seven days");
             return chip;
+        }
+
+        /// <summary>
+        /// COAL-2 with §9 (Design's grammar table): the coalition verbs on the strip - place 3 (BAD) for its one day, a leaving ("NL has left") and a dismissal
+        /// ("TD dismissed"); place 4 (AMB) while it stands, a threat ("NL threatens · 12 Nov") and an enforcement ("NL enforces · 1 Dec"), each led by its verb's
+        /// glyph. A re-declaration takes no chip. Place 6 changes with the standing on its own (`GovernmentRecord.LeaveCabinet` relabels it).
+        /// </summary>
+        public static void CoalitionChips(Country country, DateTime today, List<Chip> binds, List<Chip> coming)
+        {
+            if (country?.CoalitionMotions == null || !CoalitionVerbs.Applies(country.Id)) { return; }
+            string Short(string key) => string.IsNullOrEmpty(key) ? string.Empty : PartySystems.ShortName(country.Id, key);
+            foreach (CoalitionMotion m in CoalitionVerbs.SettledOn(country, today))
+            {
+                if (m.Verb != CoalitionVerb.Leave && m.Verb != CoalitionVerb.Dismiss) { continue; }
+                bool leave = m.Verb == CoalitionVerb.Leave;
+                var chip = new Chip
+                {
+                    Id = "strip:coal:" + m.Verb + ":" + m.Actor, Face = Face.Bad, Icon = leave ? "verb:leave" : "verb:dismiss",
+                    Words = leave ? Short(m.Actor) + " has left" : Short(m.Target) + " dismissed",
+                    SlipHead = (leave ? "LEFT THE GOVERNMENT · " : "DISMISSED · ") + Day(today).ToUpperInvariant(),
+                };
+                if (!string.IsNullOrEmpty(m.Outcome)) { chip.Slip.Add(m.Outcome); }
+                chip.Slip.Add("For its one day · the Docket keeps it");
+                binds?.Add(chip);
+            }
+            foreach (CoalitionMotion m in country.CoalitionMotions)
+            {
+                if (!m.IsOpen || (m.Verb != CoalitionVerb.Threaten && m.Verb != CoalitionVerb.Enforce)) { continue; }
+                bool threat = m.Verb == CoalitionVerb.Threaten;
+                var chip = new Chip
+                {
+                    Id = "strip:coal:" + m.Verb + ":" + m.Actor, Face = Face.Amber, Icon = threat ? "verb:threat" : "verb:enforce",
+                    Words = Short(m.Actor) + (threat ? " threatens · " : " enforces · ") + CoalitionVerbs.ShortDay(m.Deadline),
+                    SlipHead = (threat ? "A THREAT · BY " : "A DEMAND · DUE ") + Day(m.Deadline).ToUpperInvariant(),
+                };
+                chip.Slip.Add((threat ? "Demand: " : "Point: ") + m.DemandName);
+                chip.Slip.Add("The Docket keeps it");
+                coming?.Add(chip);
+            }
         }
 
         /// <summary>

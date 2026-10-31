@@ -223,6 +223,7 @@ namespace PoliSim.UI
             if (art158 != null) { coming.Add(art158); }
             TopStrip.Chip sejm = TopStrip.SejmStepChip(_playerCountry, today);   // S11 (11d): the Sejm's next step while its formation runs
             if (sejm != null) { coming.Add(sejm); }
+            TopStrip.CoalitionChips(_playerCountry, today, binds, coming);   // COAL-2 with §9: a leaving or a dismissal for its day (place 3), a threat or an enforcement while it stands (place 4)
             if (lapse != null && !lapseBinds) { coming.Add(lapse); }
             TopStrip.Chip ballot = BallotStripChip(today, out bool ballotBinds);   // SP-5 (S5, board 5c): a created party's ballot access - refused binds, collecting is coming
             if (ballot != null) { (ballotBinds ? binds : coming).Add(ballot); }

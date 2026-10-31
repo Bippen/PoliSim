@@ -87,6 +87,9 @@ namespace PoliSim.Elections
         /// <summary>PS-3i (§636): discharged, serving on as a caretaker until the next government (RF 6 kap. 9 §) - no motion is taken up against it, and it cannot itself decide an extra election (RF 3 kap. 11 §); a Speaker's round that breaks off can order one (6 kap. 5 §, §640, §646).</summary>
         public bool Caretaker;
         public DateTime CaretakerSince = DateTime.MinValue;
+        /// <summary>COAL-2 (the second review's N2): the day <see cref="Reappoint"/> last appointed this record again (MinValue: never) - a new appointment of the
+        /// same record, which the coalition verbs' government identity reads (`CoalitionVerbs.GovernmentKey`). Additive in the save: an older one carries none.</summary>
+        public DateTime ReappointedOn = DateTime.MinValue;
         /// <summary>PS-3i ruling (3) (2026-09-25), §646: the polling day of the last election after which a Speaker's round opened on this government's watch
         /// (RF 6 kap. 5 §) - so each election opens one round. MinValue: none yet.</summary>
         public DateTime ProcedureResumedAfter = DateTime.MinValue;
@@ -170,6 +173,7 @@ namespace PoliSim.Elections
         {
             Caretaker = false;
             CaretakerSince = DateTime.MinValue;
+            ReappointedOn = on;
             Version++;
         }
 

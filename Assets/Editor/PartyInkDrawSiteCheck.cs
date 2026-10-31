@@ -120,6 +120,11 @@ namespace PoliSim.EditorTools
              + "laddered ink - a filed Land's tile, a completed row's square and bar, the legend's 'filed' square (a refused list's bar draws in the BAD "
              + "ink) - whose lists are filed where is party identity as the whole subject, the race's argument above. The ink is the chamber's accessor, "
              + "and the file draws NO area accent (clause 2 by construction)."),
+            ("GameController.CoalitionVerbs.cs",
+             "COAL-2 (§966, Design's return of 2026-10-30, section 9): \"The coalition\" draws who governs as one seat bar - the head, its partners and "
+             + "its supporters each in its laddered ink by its seats, every other party in the neutral - with each segment named by its short name and "
+             + "seats where it fits, so colour never carries the meaning alone; who governs on what seats is party identity as the whole subject, the "
+             + "chamber's argument. The ink is the chamber's accessor, and the file draws NO area accent (clause 2 by construction)."),
             ("GameController.ForeignResultCard.cs",
              "PS-8 (K163, 2026-10-28): the results card of an election abroad draws each list as a bar in its party's laddered ink by the seats it won - who "
              + "won the chamber is party identity as the whole subject, the chamber's own argument. The card is its own file of the partial class and draws "

@@ -30,7 +30,7 @@ namespace PoliSim.Testing
     /// <para><b>Captures happen after `WaitForEndOfFrame`, which is the only point IMGUI has actually
     /// composited</b> - and is why the runner cannot use `-batchmode`. See <c>Capture</c>.</para>
     /// </summary>
-    public class UiScreenshotDriver : MonoBehaviour
+    public partial class UiScreenshotDriver : MonoBehaviour
     {
         /// <summary>
         /// Where captures land when `-shotdir=` is not given: a SIBLING of the project, outside the
@@ -1790,6 +1790,7 @@ namespace PoliSim.Testing
             }
             yield return CaptureDeskByRole(controller);   // §694: last, because it tables bills - no frame before it moves
             if (_countryId == CountryId.Poland) { yield return CapturePolishDeskVerbs(controller); }   // K197: after it - the verbs change who governs
+            if (_countryId == CountryId.Sweden || _countryId == CountryId.Germany) { yield return CaptureCoalitionVerbs(controller); }   // COAL-2 (K136): after it too - the verbs change who governs
 
             EndSweep();
             }
@@ -2659,9 +2660,9 @@ namespace PoliSim.Testing
         /// K197: THE PLAYER'S POLISH DESK VERBS, filmed on Poland's main sweep after every other frame. STAGED (the review's H2: Poland's default start is
         /// Morawiecki's PiS cabinet alone, with no partner to stage), said in the log: the chamber planted as `PolishDeskVerbsDiagnostic` plants it (PiS 200,
         /// KO 165, TD 65, NL 10, Konf 20 - KO+TD+NL holding 240, KO+TD 230, no opposition candidate able to reach 231) and the KO+TD+NL cabinet named through
-        /// the record's own method (`GovernmentRecord.OfNamedCabinet`); the player NL, the smallest partner, for pl1 the Parliament page's rows with LEAVE THE
+        /// the record's own method (`GovernmentRecord.OfNamedCabinet`); the player NL, the smallest partner, for pl1 the Cabinet tab's coalition rows (COAL-2 with §9; the Parliament page's until then) with LEAVE THE
         /// GOVERNMENT and - the verb taken through the manager (`SimulationManager.LeaveGovernment`) - pl2 the Docket with the leaving and the standing KO+TD
-        /// kept; then the player PiS, in opposition, for pl3 the Parliament page's rows with MOVE ART. 158 and - the motion moved through the manager - pl4 the
+        /// kept; then the player PiS, in opposition, for pl3 the Cabinet tab's "In the Sejm" with MOVE ART. 158 and - the motion moved through the manager - pl4 the
         /// Docket with the vote and the strip's place 4 on its day. The clock is held for the frames. The four frames are expected: a refusal fails the film.
         /// The review's L3: the impact ledger does not watch the staged verbs (K51's precedent - the parties are borrowed), and the government, the seats, the
         /// division log, the player's party and the presidency flag are put back after, so nothing staged reaches a later frame or a forked world.
@@ -2681,6 +2682,7 @@ namespace PoliSim.Testing
             string own = player.PlayerPartyAbbrev;
             bool president0 = player.PlayerHoldsPresidency;
             Dictionary<string, int> seats0 = player.ParliamentSeats;
+            var motions0 = new List<CoalitionMotion>(player.CoalitionMotions);   // COAL-2: the leaving is on the record of verbs now - put back with the rest
             var divisions0 = new List<DivisionRecord>(player.Divisions.Entries);
             PolicyImpactLedger ledger0 = sim.ImpactLedger;
             void Fail(string what) { Debug.LogError("SHOT: K197 - " + what + "; the remaining pl frames are MISSING, not clean."); _failed++; }
@@ -2704,9 +2706,8 @@ namespace PoliSim.Testing
                     SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
                     SetPrivateField(controller, "_onDesk", false);
                     SetEnumField(controller, "_consolidatedTab", tab);
-                    if (tab == "Politics") { SetEnumField(controller, "_politicsCategory", "Parliament"); }
+                    if (tab == "Politics") { SetEnumField(controller, "_politicsCategory", "Cabinet"); }   // COAL-2 with §9: LEAVE and Art. 158 are the Cabinet tab's ("The coalition", "In the Sejm"), at its top
                     ResetScrolls(controller);
-                    if (tab == "Politics") { ScrollBy(controller, 900f); }
                     yield return Settle();
                     Claim("imgui");
                     yield return Capture(stem);
@@ -2733,6 +2734,8 @@ namespace PoliSim.Testing
                 player.Government = government0;
                 player.ParliamentSeats = seats0;
                 player.Divisions.Entries.Clear();
+                player.CoalitionMotions.Clear();
+                player.CoalitionMotions.AddRange(motions0);
                 player.Divisions.Entries.AddRange(divisions0);
                 player.PlayerPartyAbbrev = own;
                 player.PlayerHoldsPresidency = president0;

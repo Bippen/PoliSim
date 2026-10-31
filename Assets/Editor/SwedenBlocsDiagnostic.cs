@@ -109,10 +109,12 @@ namespace PoliSim.EditorTools
                 // ---- (d) the election reads them ----
                 string election = SourceText.ReadWithoutComments(Path.Combine("Assets", "Scripts", "Elections", "NationalElection.cs"));
                 string night = SourceText.ReadWithoutComments(Path.Combine("Assets", "Scripts", "Simulation", "SimulationManager.PlayerElection.cs"));
-                // GATE-18 q25 (L-3 of its review): the night reaches the layer through SharesOnPublishedPolls, which hands SharesFromCampaign the day it is given
-                Check(election.Contains("SwedenBlocsOn(keys, on.Value)") && Regex.IsMatch(night, @"SharesOnPublishedPolls\([^;]*CurrentDate")
-                        && election.Contains("SharesFromCampaign(country, keys, finalShares, belief, out tactical, on: pollingDay)"),
-                    "(d) SharesFromCampaign's tactical spec reads the sides standing on its polling day (SwedenBlocsOn on the day passed in), and the live night passes its own day (SharesOnPublishedPolls on CurrentDate, which hands SharesFromCampaign on: pollingDay)");
+                // GATE-18 q25 (L-3 of its review): the night reaches the layer through SharesOnPublishedPolls, which hands SharesFromCampaign the day it is given.
+                // COAL-2 (K137, K330; the COAL-2 review's H1): and the played world - the sides a party re-declared after a count there - which the count's call
+                // passes as played: country
+                Check(election.Contains("SwedenBlocsOn(keys, on.Value, played)") && Regex.IsMatch(night, @"SharesOnPublishedPolls\([^;]*CurrentDate[^;]*played: country\)")
+                        && election.Contains("SharesFromCampaign(country, keys, finalShares, belief, out tactical, on: pollingDay, played: played)"),
+                    "(d) SharesFromCampaign's tactical spec reads the sides standing on its polling day in the played world (SwedenBlocsOn on the day passed in, with the country), and the live night passes its own day and its own country (SharesOnPublishedPolls on CurrentDate with played: country, which hands SharesFromCampaign on: pollingDay and played)");
                 double[] planted = { 0.33, 0.19, 0.20, 0.08, 0.04, 0.055, 0.06, 0.045 };   // PLANTED: C at the threshold, so its fate is in play
                 var moe = new double[Keys.Length];
                 for (int i = 0; i < moe.Length; i++) { moe[i] = 1.0; }

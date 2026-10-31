@@ -42825,3 +42825,54 @@ Energy's slips from before S1 still hold lines over 10 words. They carry no move
 - The funding tile's list votes are the party's share × the 2025 valid Zweitstimmen; later years' rates are BILLED until fetched.
 - S4's Länder grid is kept for the ballot states. The refused frame s5f4 is STAGED (filings withdrawn, and the log says so). The strip and slip use the real 2025 dates (day 47, 20 Jan), not the board's illustrative day 97.
 - The task's saved fields are additive, so there is no save-format step (K328 (4)).
+
+## 966. COAL-2 - THE COALITION VERBS: THREAT, DISMISSAL, ENFORCEMENT AND RE-DECLARING, THROUGH THE MANAGER'S VERBS AND THE DAY TICK; K137 AS K330 AND K331 READ IT (K136, K137, K327; DESIGN'S §9 GLYPHS) (2026-10-31)
+
+**What was owed:** COAL-2 (K136, K137): a partner's threat, a head's dismissal, a supporter's enforcement and the parties re-declaring after a count. K136's done-condition is "each played once in a filmed Swedish and a filmed German game". Design's §9 return drew the verbs' glyphs (installed under `Resources/Art/UI/CoalitionVerbs/`, 663b40ed, 7fbd678a).
+
+**Order on main:** K137's rule as K330 and K331 read it was committed alone in `POLITICAL_SYSTEM_SPEC.md` §5.5 (0a104182) before anything was measured. The branch (wave/s9coal, 15 commits to 6243ae23) was applied on top as a binary patch, less its old glyph folder, whose blobs main already holds under `CoalitionVerbs/`.
+
+**Built:**
+- **`CoalitionVerbs`** (pure) and **`SimulationManager.CoalitionVerbs`** (the verbs, with their gates the UI reads: `CanThreaten`, `CanDismiss`, `CanEnforce`, `CanRedeclare`, …):
+  - **a threat:** a partner names a demand and a 30/60/90-day deadline ([AUTHORED-DRAFT], K327 (5)). It is met, withdrawn, or carried out as the partner's exit (COAL-1's path);
+  - **a dismissal:** the head drops a partner, and the confidence procedure runs as COAL-1 runs it;
+  - **an enforcement:** a supporter holds the government to an agreement's item, or it is refused;
+  - **re-declaring** (K137 as K330 and K331 read it, the prereg): in the player's country only, once per count (`Country.RedeclaredAfterCount`, saved), the parties' sides are read from the count.
+- **Motions lapse with their government:** a threat or demand carries the government's identity (`GovernmentRecord.ReappointedOn`, written only by `Reappoint`) and lapses when the government is a different record (the first review's M1).
+- **The day step:** `AdvanceCoalitionVerbsDay` runs from `AdvanceCountryDayTick`, and the count passes `played: country`. `SwedenBlocsDiagnostic` (d) pins both calls.
+- **The surfaces (Design's §9 glyphs):** "The coalition" on Politics › Cabinet; the Docket's entries; the strip's chip; the Polish desk's Cabinet-tab rows. `docs/declutter/moved_s9coal.tsv` holds the words moved to slips.
+- **`CoalitionVerbsDiagnostic`** (cheap group, registered with this record) runs each verb through the manager and the real day tick. Its cases: the minority government, K331's no-bloc head, the lapses, the saved guard, and a mutation each for the two wirings the first review found unguarded.
+- **Film:** `co01`-`co15` on Sweden's and Germany's main sweeps after every other frame, each verb in its states, staged and put back (the guard included).
+
+**The reviews:**
+- **The first** (`Reviews/2026-10-30_coal2_review.md`) found the branch NOT READY:
+  - H1: `SwedenBlocsDiagnostic` (d) failed on the changed calls;
+  - H2: K137 put V, MP and C on the Tidö side after an "S alone" count, in 8 of 10 played Swedish runs;
+  - M1-M3: motions surviving a change of government, the diagnostic unregistered and blind to two wirings, the played-world effect undeclared.
+- **The rulings** K330 (AGAINST only from a party's own red lines) and K331 (never onto the rival bloc; a no-bloc head keeps standing blocs) answered H2.
+- **The second review and its delta check** (`…_review2.md`) found it READY, with N1-N3 fixed and K331 implemented exactly. Its Lows D1 and D3 were then done (6243ae23).
+- **Review-ledger rows** (s966, evidence the second review, which names each state): `SimulationManager.cs` 4399d6c7, `SimulationManager.CoalitionVerbs.cs` 7af0ac46, `SimulationManager.CoalitionExit.cs` 7a02cf81, `SimulationManager.PlayerElection.cs` 71d6c571.
+
+**At integration** (the branch had never run in Unity):
+- **The first cheap bar failed three checks:**
+  - **MetaTextCheck:** three possessives built by hand in the manager's verbs now go through `EnglishText.Possessive(key, false, true)`, the lower-case abbreviation form.
+  - **UnwiredSubsystemCheck:** the manager's partial file declared one public static, `DismissedLine`, called on the game path inside the file but named outside it only by the diagnostic. It moved, body unchanged, into the pure `CoalitionVerbs` class.
+  - **PartyInkDrawSiteCheck:** "The coalition" seat bar draws the government's parties in their inks and had no row; its row gives the chamber's argument.
+- **The money-path file's new state** (dd5adfa5…) was reviewed a third time (`Reviews/2026-10-31_coal2_review3.md`) and its ledger row cites that review. The other three rows cite the second review's states, which the merge left unchanged.
+- **The German films:** co10-co15 were missing, because under a CDU formateur the model's own scoring gives the Grüne no agreement item ("0 OWED"), so there was nothing to enforce. The German film now STAGES the one item the enforcement needs, in the model's own form (police funding one dial step up), and the log says so. Sweden's film needed nothing staged: its agreement is the record's.
+
+**K330 and K331's played-world effect:** in the second review's 13 out-of-engine probe runs (the no-player world and twelve played: Sweden on seeds 777 and 424242 as several parties, Poland, Germany), every boundary, election and government line is byte-identical to the base. That includes a Polish run that re-appoints a cabinet in 2031. Nothing moved.
+
+**K136's three parts:**
+- each verb is played once in the filmed Swedish and German sweeps, staged (the film sets the clock and runs the day's own step);
+- the diagnostic plays each through the real day tick;
+- the audit harness's re-run with the verbs is OWED.
+
+**Measured (this tree):** dump diff on the final tree: traj_s9coal3 against traj_precoal (main before COAL-2, itself byte-identical to the baseline pbr) BYTE-IDENTICAL on seeds 777 and 424242, as on the first merged tree (dumps9coal3, dumps9coal, dumpprecoal); cheap bar 152 of 152 clean on the final tree (cheaps9coal3; the first, cheaps9coal, failed MetaTextCheck, UnwiredSubsystemCheck and PartyInkDrawSiteCheck), CoalitionVerbsDiagnostic ok on every case; simulation bar 93 of 93 clean, the trajectory sentinel the baseline's on both seeds (sims9coal, on the merged tree; the later money-path change is string wording and a moved formatter, reviewed READY in the third review) - the review rows s966 cite the second and third reviews; dry film Sweden, Germany and Poland at 1280, 510 measured, 0 failed, 0 overflow (drys9coal, scope row drys9coal, the re-run on the staged German item); the filmed width: Sweden at 1280 (reals9coalse), 30 declared, 0 missing, the 14 co frames; Germany at 1280 (reals9coal2de), 28 declared, 0 missing, the 15 co frames with co15's CSU refused - each 0 HEIGHT MISMATCH, 0 overflow, 0 canvas text violations; doc bar (docs966)
+
+**Declared:**
+- AI countries do not re-declare (K327 (1)), so the no-player world stays still. German and Polish sides are recorded and read by nothing until those countries have a bloc model (K327 (2)).
+- An AI partner's threat and an AI head's dismissal are FILED (K327 (3), (4)).
+- K331's mapping also governs the player's own re-declaration (the second review's D2), in K331's own reasoning.
+- The save fields are additive; there is no format step (the first review's L2, the integrator's call).
+- Left Low, from the first review: L1 (a re-declaration outranks a later dated side of record: latent until the 2030 declarations are sourced), L3 (enforcement reads tracked item state during a caretaker), L4 (`LeaveAsThePlayer` copies `LeaveGovernmentNow`), and L5 (the preview clone shares the motion objects).

@@ -159,11 +159,12 @@ namespace PoliSim.UI
             return new Rect(r.x + padX, r.y + padY, Mathf.Max(1f, r.width - padX * 2f), Mathf.Max(1f, r.height - padY * 2f));
         }
 
-        /// <summary>A card's icon, tinted, in <paramref name="r"/>.</summary>
+        /// <summary>A card's icon, tinted, in <paramref name="r"/>. COAL-2 (§9): "verb:&lt;verb&gt;" names a coalition verb's glyph (`IconLibrary.S9Verb`), its 32 px
+        /// cut where the slot is taller than 20 px - so the Docket and the strip lead with the verb's glyph through the same call.</summary>
         private static void DrawV35Icon(Rect r, string icon, Color ink)
         {
             if (Event.current.type != EventType.Repaint) { return; }
-            Texture2D tex = IconLibrary.V35(icon);
+            Texture2D tex = icon != null && icon.StartsWith("verb:", System.StringComparison.Ordinal) ? IconLibrary.S9Verb(icon.Substring(5), r.height > 20f) : IconLibrary.V35(icon);
             if (tex == null) { return; }
             Color before = GUI.color;
             GUI.color = ink;

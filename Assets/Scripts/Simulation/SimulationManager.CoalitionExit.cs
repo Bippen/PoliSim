@@ -60,6 +60,7 @@ namespace PoliSim.Simulation
             HashSet<CabinetPortfolio> chairsBefore = CabinetSystem.PlayersChairs(country);   // K59 (the review's L4): the departed partner's posts may fall to a junior-partner player
             g.LeaveCabinet(leaving, country);   // the portfolios re-apportioned among those who stay, the record relabelled by its seats (GA-3-4)
             CabinetSystem.SeatOnEntry(country, chairsBefore);   // K59: a chair the exit hands the player is seated at the average, as every install path seats one
+            RecordLeaving(country, leaving, g.PmParty, false, "K130: its projected share outside beat its share inside by more than one sigma_v at the budget vote");   // COAL-2: the leaving on the country's record of verbs
             g.Breaks.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture,
                 "{0:yyyy-MM-dd}: {1} left the government at the budget vote - its projected share outside {2:0.0} % against {3:0.0} % inside, more than one sigma_v ({4:0.0} points; COAL-1, K130)",
                 CurrentDate, leaving, leavingOutside * 100.0, leavingInside * 100.0, Elections.CoalitionExit.Threshold * 100.0));
