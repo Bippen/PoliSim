@@ -102,6 +102,23 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>
+        /// K322 S2 (K320, Elias 2026-10-30): the dashed empty state's caption AT REST - what stands, in at most eight words, one line, no sentence; <see cref="Line"/>
+        /// (the whole note, the margin's and the method's clauses with it) is the card's slip. Names no lever, so <see cref="UnheldLeversNamed"/> reads it clean
+        /// for every role. Only the empty states draw a caption under the arrows; any other subject returns its head's words.
+        /// </summary>
+        public static string Rest(DeskEffectsSubject subject, int daysRemaining)
+        {
+            string days = daysRemaining == 1 ? "1 DAY" : daysRemaining + " DAYS";
+            switch (subject)
+            {
+                case DeskEffectsSubject.NothingDrafted: return "NO DRAFT PENDING";
+                case DeskEffectsSubject.StandingBook: return "NO BUDGET BEFORE THE CHAMBER";
+                case DeskEffectsSubject.ContinuingResolution: return "A CONTINUING RESOLUTION · CONGRESS DECIDES IN " + days;
+                default: return Head(subject).ToUpperInvariant();
+            }
+        }
+
         /// <summary>The methodology caption under a subject line (a subject that is not the player's own draft carries the margin's clause here).</summary>
         public static string Method(DeskEffectsSubject subject, int daysPerTurn)
         {

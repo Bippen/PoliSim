@@ -405,7 +405,7 @@ namespace PoliSim.UI
 
         // Phase 4's per-tab graph rollout - one GraphRenderer per newly-homed stat, same "never
         // shared across stats" reasoning as the three headline instances above.
-        private readonly GraphRenderer _interestRateGraph = new GraphRenderer();
+        private readonly GraphRenderer _interestRateGraph = new GraphRenderer { ShortFootDelta = true };   // K322 S3: the Δ's window and unit on the bank page's slip
         private readonly GraphRenderer _tradeBalanceGraph = new GraphRenderer();
         private readonly GraphRenderer _povertyRateGraph = new GraphRenderer();
 
@@ -3516,10 +3516,12 @@ namespace PoliSim.UI
             if (requestApart) { Add(requestDay, "The president's budget request due - budget process opens", UiPalette.SystemArea.Fiscal); }
             if (UsBudgetProcedure.Applies(_playerCountry) && _playerCountry.LapseSince != System.DateTime.MinValue)
             {
-                // PS-6 US-22; US-35 (board 30c, answer 7): the month's line names the cause in words - who withheld, or that no measure became law by the horizon
-                string cause = string.IsNullOrEmpty(_playerCountry.ContinuingResolutionWithheldBy) ? "no funding measure law by the horizon"
-                    : PartySystems.ShortName(_playerCountry.Id, _playerCountry.ContinuingResolutionWithheldBy) + " withholds a continuing resolution";
-                Add(today, "Funding lapse · day " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, today).ToString(CultureInfo.InvariantCulture) + " · " + cause + " · non-excepted outlays stopped until it returns", UiPalette.SystemArea.Fiscal);
+                // PS-6 US-22; US-35 (board 30c, answer 7): the month's line names the cause in words - who withheld, or that no measure became law by the horizon. K322 S2
+                // (K320): the line at rest is the lapse, its day and who withholds - the cut sentence (no measure law by the horizon, the outlays stopped) is the
+                // masthead lapse chip's slip, drawn on every frame the lapse is
+                string cause = string.IsNullOrEmpty(_playerCountry.ContinuingResolutionWithheldBy) ? string.Empty
+                    : " · " + PartySystems.ShortName(_playerCountry.Id, _playerCountry.ContinuingResolutionWithheldBy) + " withholds";
+                Add(today, "Funding lapse · day " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, today).ToString(CultureInfo.InvariantCulture) + cause, UiPalette.SystemArea.Fiscal);
             }
             // AF-36 (Elias's ruling q36, 2026-10-18): the day a passed carbon figure yields to its statute - the boundary the statute's step meets it at
             if (_simulationManager.TryPassedCarbonFigure(PlayerCountryId, out TaxLine passedCarbon, out System.DateTime carbonYields))
@@ -4043,6 +4045,7 @@ namespace PoliSim.UI
             // idiom's vertical paper scrollbar draws always (never on hover), and the first section caption below the fold peeks
             // 14 px above the sheet's lower edge on a strip of paper (drawn after the scroll view, below). Nothing is re-composed at 1280+.
             bool atTheFloor = UiScreen.Height <= 800;
+            int scrolledFrom = _slipAnchors.Count;   // K322 S3: the shared currency's anchors, moved by the scroll below
             _federalReserveScrollPosition = GUILayout.BeginScrollView(_federalReserveScrollPosition, false, atTheFloor, GUILayout.Height(scrollHeight));
             _riksbankCaptions.Clear();
 
@@ -4079,26 +4082,56 @@ namespace PoliSim.UI
                     // narrower range - a national governor's real but limited sway, not unilateral
                     // control). Superseded the original country-selection Part 1 framing, which
                     // described this as fully read-only before this mechanic existed.
-                    GUILayout.Label(
-                        $"{_playerCountry.Name} shares the Eurozone's single currency and interest rate with {GetOtherEurozoneMemberNames()}. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate), weighted by its share of the three countries' household spending at current prices - the basis Eurostat weights the euro area's inflation index on. As {UiFormat.Possessive(_playerCountry.Name)} governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.",
-                        _labelStyle);
+                    // K322 S3 (K320: no sentence at rest): the paragraph became one line at rest - the members it is shared with - and the slip THE SHARED
+                    // RATE, its three mechanics defined at level 2 (the rule's pull, the spending weights, the governor's push)
+                    string others = GetOtherEurozoneMemberNames();
+                    GUILayout.Label("One rate with " + others, _labelStyle);
+                    if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "bank:shared"); }
+                    _politicsSlipBook.Anchors["bank:shared"] = new SlipContent("THE SHARED RATE")
+                        .Add("One currency and rate with " + others)
+                        .Add("Each member's [[Taylor Rule]] reading pulls it")
+                        .Add("Weighted by [[household spending]]")
+                        .Add("Your [[push]]: modest, bounded, not control");
+                    _politicsSlipBook.Terms["Taylor Rule"] = new SlipContent("THE PULL").Add("Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate).");
+                    _politicsSlipBook.Terms["household spending"] = new SlipContent("THE WEIGHTS").Add("Each member is weighted by its share of the three countries' household spending at current prices - the basis Eurostat weights the euro area's inflation index on.");
+                    _politicsSlipBook.Terms["push"] = new SlipContent("THE PUSH").Add("As " + UiFormat.Possessive(_playerCountry.Name) + " governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.");
                     // Pass 4 (2026-08-26): the blend and this member's own reading, so the push has a
                     // visible reference. Omnibus 2026-08-28: three rows of the row family (blend, own
                     // reading, the shared rate), same fixed ordinals ahead of and after the slider.
-                    DrawDerivedStatRow("Blended rule reading this year", -1f,
-                        $"{EurozoneRateSystem.GetBlendedSuggestedRate(_world, _playerCountry):F2}%", "weighted by household spending", politicalInk);
+                    float blended = EurozoneRateSystem.GetBlendedSuggestedRate(_world, _playerCountry);
+                    DrawDerivedStatRow("Blended reading", -1f, $"{blended:F2}%", "weighted by household spending", politicalInk);   // K322 S3: three words, one line (it wrapped)
+                    if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "bank:blend"); }
+                    _politicsSlipBook.Anchors["bank:blend"] = new SlipContent("BLENDED READING · " + blended.ToString("F2", CultureInfo.InvariantCulture) + " %")
+                        .Add("Blended rule reading this year")
+                        .Add("Weighted by household spending");
                     DrawDerivedStatRow($"{UiFormat.Possessive(_playerCountry.Name)} own reading", -1f,
                         $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
                         $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.EffectiveNaturalUnemploymentRate:F1}%", politicalInk);
-                    // P5-1 (board 6a): the rate push as a ledger row of the family.
-                    if (!DrawLeverLock()) _interestRateChangeInput = DrawDialRow("National rate push", 0f, _interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
+                    // P5-1 (board 6a): the rate push as a ledger row of the family. K322 S3 (K320's caps): a locked push says LOCKED at rest, the role and
+                    // whose the bills are on its slip (the lock's own sentence ran eleven words across the row)
+                    if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, (CabinetPortfolio?)null, out string pushLocked))
+                    {
+                        GUILayout.Label("National rate push · LOCKED", DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft));
+                        if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "bank:push"); }
+                        var lockSlip = new SlipContent("LOCKED · THE NATIONAL RATE PUSH");
+                        foreach (string part in (pushLocked ?? string.Empty).Split(new[] { " · " }, System.StringSplitOptions.RemoveEmptyEntries)) { lockSlip.Add(part); }
+                        _politicsSlipBook.Anchors["bank:push"] = lockSlip;
+                    }
+                    else { _interestRateChangeInput = DrawDialRow("National rate push", 0f, _interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f); }
                     DrawDerivedStatRow("Eurozone interest rate", -1f, $"{_playerCountry.CurrencyZone.InterestRate:F2}%", "shared by all three members", politicalInk);
                     // AF-7 (q7): the ECB's own head and term - the European Council's appointment, never a member government's.
                     FedChair ecbHead = _playerCountry.CurrencyZone.Head;
                     if (ecbHead != null)
                     {
+                        // K322 S3 (K320's caps): the philosophy, the lean and the term's last day at rest; the appointer and the statute on the slip
+                        string lean = ecbHead.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture);
                         DrawDerivedStatRow("ECB President", -1f, ecbHead.Name,
-                            $"{ecbHead.Philosophy} · lean {ecbHead.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)} · appointed by {CentralBankTerms.Ecb.Appointer} · {CentralBankTermWords(ecbHead, PlayerCountryId)}", politicalInk);
+                            $"{ecbHead.Philosophy} · lean {lean}" + (ecbHead.HasTerm() ? " · to " + ecbHead.TermEnds.ToString("d MMM yyyy", CultureInfo.InvariantCulture) : string.Empty), politicalInk);
+                        if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "bank:ecb"); }
+                        _politicsSlipBook.Anchors["bank:ecb"] = new SlipContent("ECB PRESIDENT · " + ecbHead.Name.ToUpperInvariant())
+                            .Add(ecbHead.Philosophy.ToString().ToUpperInvariant() + " · LEAN " + lean)
+                            .Add("APPOINTED BY " + CentralBankTerms.Ecb.Appointer.ToUpperInvariant())
+                            .Add(CentralBankTermWords(ecbHead, PlayerCountryId).ToUpperInvariant());
                     }
                 }
             }
@@ -4106,12 +4139,27 @@ namespace PoliSim.UI
             GUILayout.Space(10f);
             // Neutral (no green/red judgment) - which direction of rate change is "good" depends
             // entirely on the current inflation/growth situation, not a fixed convention.
-            if (_playerCountry.CurrentFedChair == null) { _interestRateGraph.DrawNeutral("", _playerCountry.History.InterestRate.Quarterly, null, _labelStyle, moneyUnit: null, deltaInPoints: true); }   // board 5f: the chair's page draws its own graph above
+            if (_playerCountry.CurrentFedChair == null)
+            {
+                GUILayout.BeginVertical();
+                _interestRateGraph.DrawNeutral("", _playerCountry.History.InterestRate.Quarterly, null, _labelStyle, moneyUnit: null, deltaInPoints: true);   // board 5f: the chair's page draws its own graph above
+                GUILayout.EndVertical();
+                if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "bank:graph"); }
+                _politicsSlipBook.Anchors["bank:graph"] = RateGraphSlip();
+            }
 
             GUILayout.EndScrollView();
+            MoveScrolledAnchors(scrolledFrom, GUILayoutUtility.GetLastRect(), _federalReserveScrollPosition);   // K322 S3: the anchors as the scroll shows them
             DrawRiksbankFoldPeek(GUILayoutUtility.GetLastRect());   // P5-7: the fold shown as paper
             GUILayout.EndVertical();
         }
+
+        /// <summary>K322 S3 (K320's caps): the rate graph's slip - what its foot's "Δ = LAST − FIRST" stands for, moved off the foot at rest (the window and
+        /// the unit), on every bank page that draws the graph.</summary>
+        private static SlipContent RateGraphSlip() => new SlipContent("THE RATE'S GRAPH")
+            .Add("Δ = LAST − FIRST IN WINDOW")
+            .Add("IN THE READING'S OWN UNIT · NEVER %")
+            .Add("OLDER ◀ ▶ NEWER PAGES THE WINDOW");
 
         /// <summary>
         /// Board 5f (D11 row 6, 2026-09-02): **the Riksbank page** - one graph, the inputs as
@@ -4164,10 +4212,20 @@ namespace PoliSim.UI
             {
                 foreach (RatePathProjection.Step step in ratePath) { if (step.YearsAhead > 0) { projected.Add(step.Rate); } }
             }
+            GUILayout.BeginVertical();
             _interestRateGraph.DrawRatePath("", _playerCountry.History.InterestRate.Quarterly, projected,
                 suggested, "THE RULE'S READING TODAY · " + suggested.ToString("F2", CultureInfo.InvariantCulture), _labelStyle);
-            // §5.4: the key is the plot's, not the page header's - it belongs at the foot of the thing it describes.
-            GUILayout.Label("HISTORY 3 px SOLID · PROJECTION 2 px DASHED · THE RULE DOTTED", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+            GUILayout.EndVertical();
+            if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "bank:graph"); }
+            _politicsSlipBook.Anchors["bank:graph"] = RateGraphSlip();
+            // §5.4: the key is the plot's, not the page header's - it belongs at the foot of the thing it describes. K322 S3 (K320's caps): the three
+            // inks in six words at rest; the line weights on its slip
+            GUILayout.Label("HISTORY SOLID · PROJECTION DASHED · RULE DOTTED", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+            if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "bank:key"); }
+            _politicsSlipBook.Anchors["bank:key"] = new SlipContent("THE PATH'S KEY")
+                .Add("HISTORY 3 PX SOLID · PROJECTION 2 PX DASHED")
+                .Add("THE RULE DOTTED · ITS READING TODAY")
+                .Add("THE BAND: THE PREVIEW'S YEAR");
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
 
@@ -4196,7 +4254,7 @@ namespace PoliSim.UI
             // the terms always in the same order, the negatives a cut taken out of the right end, and the solid ink that remains is the answer.
             GUILayout.Label("HOW THE RULE GETS TO " + suggested.ToString("F2", CultureInfo.InvariantCulture) + "   ·   1 PT = 130 PX · FIXED", DeskCaption(7.5f, PoliSimTheme.TextMuted));
             DrawRuleWaterfall(TaylorRule.NeutralRealRate(_playerCountry), inflation, inflationGapTerm, unemploymentGapTerm, sum < 0f ? 0f : sum, StatsUnit(700f));
-            if (sum < 0f) { GUILayout.Label("THE RULE IS CLAMPED AT 0 · THE TERMS SUM TO " + sum.ToString("F2", CultureInfo.InvariantCulture), DeskCaption(7.5f, PoliSimTheme.Caution)); }
+            if (sum < 0f) { GUILayout.Label("RULE CLAMPED AT 0 · TERMS SUM " + sum.ToString("F2", CultureInfo.InvariantCulture), DeskCaption(7.5f, PoliSimTheme.Caution)); }   // K322 S3: six words; the rule's slip says it whole
 
             // The rule's inputs as readings on centred lanes.
             GUILayout.Space(StatsUnit(8f));
@@ -4212,8 +4270,15 @@ namespace PoliSim.UI
             GUILayout.Space(StatsUnit(3f));
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
-            GUILayout.Label(UsFedConsent.ActingWords(_playerCountry, _simulationManager.CurrentDate) ?? $"{GetCentralBankHeadTitle(PlayerCountryId)} · {chair.Name}", DeskNumeral(14f, PoliSimTheme.TextPrimary));
-            GUILayout.Label(leads.Description, _labelStyle);
+            string leadsLine = UsFedConsent.ActingWords(_playerCountry, _simulationManager.CurrentDate) ?? $"{GetCentralBankHeadTitle(PlayerCountryId)} · {chair.Name}";
+            GUILayout.Label(leadsLine, DeskNumeral(14f, PoliSimTheme.TextPrimary));
+            // K322 S3 (K320: no sentence at rest): who leads the rate, in a sentence, is the name's slip - the philosophy's level 2 - not a paragraph under it
+            if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "bank:leads"); }
+            string philosophy = leads.Philosophy.ToString().ToUpperInvariant();
+            _politicsSlipBook.Anchors["bank:leads"] = new SlipContent(leadsLine.ToUpperInvariant())
+                .Add("[[" + philosophy + "]] · LEAN " + leads.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + " ON THE RULE'S RATE")
+                .Add("TARGET " + chairTarget.ToString("F2", CultureInfo.InvariantCulture) + " % · SPEED " + FederalReserveSystem.RateAdjustmentSpeed.ToString("0.##", CultureInfo.InvariantCulture) + " ⁄ YR");
+            _politicsSlipBook.Terms[philosophy] = new SlipContent(philosophy).Add(leads.Description);
             GUILayout.Label("THE GOVERNOR'S — NOT THE RULE'S", DeskCaption(7f, PoliSimTheme.TextMuted));   // §5.4: the paragraph became this label, over the three figures it describes
             GUILayout.BeginHorizontal();
             DrawRuleTerm("LEAN", leads.Philosophy.ToString().ToUpperInvariant() + " " + leads.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
@@ -4231,8 +4296,16 @@ namespace PoliSim.UI
             string heldOver = pending ? null : UsFedConsent.HoldoverWords(_playerCountry, chair, _simulationManager.CurrentDate);   // PS-6 US-29: no successor confirmed - the chair serves on
             string beforeSenate = FedNominationStateWords();   // K16: the nominee before the Senate, or the Senate's standing refusal
             GUIStyle termFace = DeskCaption(8f, PoliSimTheme.TextMuted);
-            termFace.wordWrap = heldOver != null;   // the holdover runs long: it wraps in the lever's column
-            GUILayout.Label(heldOver ?? $"{CentralBankTermWords(chair, PlayerCountryId).ToUpperInvariant()} · {FederalReserveSystem.PoolSize} IN THE POOL", termFace);   // AF-7: the statute's date, where the turn cadence's label stood (US-29: the turn label goes)
+            // AF-7: the statute's date, where the turn cadence's label stood (US-29: the turn label goes). K322 S3 (K320: a caption is one line): the day and the
+            // pool at rest; the term's length and its statute, and a holdover's whole sentence, on the lever's slip
+            string termDay = chair.HasTerm() ? chair.TermEnds.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() : "NO DATE";
+            GUILayout.Label(heldOver != null ? "TERM ENDED " + termDay + " · NONE CONFIRMED" : "TERM ENDS " + termDay + " · POOL OF " + FederalReserveSystem.PoolSize, termFace);
+            if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "bank:lever"); }
+            var leverSlip = new SlipContent("THE APPOINTMENT LEVER")
+                .Add(CentralBankTermWords(chair, PlayerCountryId).ToUpperInvariant())
+                .Add(FederalReserveSystem.PoolSize + " IN THE POOL · A SHORTLIST IS DRAWN THEN");
+            if (heldOver != null) { leverSlip.Add(heldOver); }
+            _politicsSlipBook.Anchors["bank:lever"] = leverSlip;
             GUI.enabled = pending;
             if (PoliSimWidgets.Button("NOMINATE ›", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(140f))))
             {
@@ -4622,7 +4695,7 @@ namespace PoliSim.UI
         /// ink, and the reason line the model gives (P3-A2's terms, verbatim), wrapped to the column. The rows are the
         /// same enumeration the seat map above coloured from, in the party system's order.
         /// </summary>
-        private void DrawStanceBreakdown(BillConcern concern, float width)
+        private void DrawStanceBreakdown(BillConcern concern, float width, string billKey)
         {
             // P5-6 (board 6b row 5, 2026-09-03): THE GRAMMAR - a row per seated party in the seat map's own order (bloc, then
             // mandates) so the eye walks the arc and the list together: the mark 14 px in its own ink, the mandates in caption
@@ -4659,8 +4732,50 @@ namespace PoliSim.UI
                 GUIStyle sideStyle = DeskCaption(8f, ink, true, TextAnchor.MiddleRight);
                 LedgerRow.Cell(new Rect(row.xMax - sideWidth, row.y, sideWidth, row.height), string.Format(CultureInfo.InvariantCulture, "{0} {1:+0.00;-0.00}", side, stance.Alignment), sideStyle, ink, TextAnchor.MiddleRight);
                 string reason = StanceModel.ReasonShort(stance);   // the short form on the sheet (P3-C1: the full lines pushed the arrows out of the 720 frame)
-                if (!string.IsNullOrEmpty(reason)) { GUILayout.Label(reason, reasonStyle, GUILayout.Width(width)); }
+                // K322 S3 (K320: a caption is one line of at most eight words): the reason's terms at rest as far as they fit whole, the rest counted "+N";
+                // the model's string, verbatim and whole, is the row's slip
+                if (!string.IsNullOrEmpty(reason)) { GUILayout.Label(StanceReasonAtRest(reason, reasonStyle, width), reasonStyle, GUILayout.Width(width)); }
+                string stanceAnchor = "parl:stance:" + billKey + ":" + party.Abbrev;
+                if (Event.current.type == EventType.Repaint) { SlipAnchor(new Rect(row.x, row.y, row.width, GUILayoutUtility.GetLastRect().yMax - row.y), stanceAnchor); }
+                var stanceSlip = new SlipContent(party.ShortName.ToUpperInvariant() + " · " + string.Format(CultureInfo.InvariantCulture, "{0} {1:+0.00;-0.00}", side, stance.Alignment));
+                foreach (string line in StanceReasonLines(reason)) { stanceSlip.Add(line); }
+                _politicsSlipBook.Anchors[stanceAnchor] = stanceSlip;
             }
+        }
+
+        /// <summary>K322 S3 (K320's caps): a stance's reason at rest - its terms (split at the model's " · ") taken in order while the line stays within eight
+        /// counted words and its width, the terms left over counted as "+N". Whole terms only: never a term cut.</summary>
+        private static string StanceReasonAtRest(string reason, GUIStyle face, float width)
+        {
+            string[] terms = reason.Split(new[] { " · " }, System.StringSplitOptions.None);
+            if (CountedWords(reason) <= 8 && face.CalcSize(new GUIContent(reason)).x <= width) { return reason; }
+            string shown = terms[0];
+            int taken = 1;
+            for (int i = 1; i < terms.Length; i++)
+            {
+                string next = shown + " · " + terms[i];
+                string withTail = next + (i < terms.Length - 1 ? " · +" + (terms.Length - i - 1).ToString(CultureInfo.InvariantCulture) : string.Empty);
+                if (CountedWords(next) > 8 || face.CalcSize(new GUIContent(withTail)).x > width) { break; }
+                shown = next;
+                taken++;
+            }
+            return taken < terms.Length ? shown + " · +" + (terms.Length - taken).ToString(CultureInfo.InvariantCulture) : shown;
+        }
+
+        /// <summary>K322 S3: a stance's reason on its slip - the model's terms verbatim, packed a line at a time within eight counted words, at most four lines
+        /// (the rest joined onto the fourth).</summary>
+        private static List<string> StanceReasonLines(string reason)
+        {
+            var lines = new List<string>();
+            if (string.IsNullOrEmpty(reason)) { return lines; }
+            string line = null;
+            foreach (string term in reason.Split(new[] { " · " }, System.StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (line != null && CountedWords(line + " · " + term) > 8 && lines.Count < 3) { lines.Add(line); line = term; }
+                else { line = line == null ? term : line + " · " + term; }
+            }
+            if (line != null) { lines.Add(line); }
+            return lines;
         }
 
         /// <summary>See BuildCrimeJusticeBillFromDrafts's own doc comment - identical pattern.
@@ -7810,11 +7925,13 @@ namespace PoliSim.UI
             // happens to clip whatever they overflow into.
             float detailPaneWidth = Mathf.Max(0f, lawsInnerWidth - listWidth - 10f);
             GUILayout.BeginVertical(GUILayout.Width(detailPaneWidth));
+            int paneAnchorsFrom = _slipAnchors.Count;   // K322 S4: the pane's slip anchors, moved out of its scroll into the sheet (the v3.5 tabs' rule)
             _lawDetailScrollPosition = GUILayout.BeginScrollView(_lawDetailScrollPosition,
                 GUILayout.Width(detailPaneWidth), GUILayout.Height(scrollHeight));
             DrawLawDetailPane(selectedIndex >= 0 ? _lawVisibleRows[selectedIndex] : (LawRowEntry?)null,
                 Mathf.Max(0f, detailPaneWidth - GUI.skin.verticalScrollbar.fixedWidth - 12f));
             GUILayout.EndScrollView();
+            MoveScrolledAnchors(paneAnchorsFrom, GUILayoutUtility.GetLastRect(), _lawDetailScrollPosition);
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
@@ -8226,28 +8343,58 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawLawNameLadder(string name, float width)
         {
-            if (_lawNameStyle == null || _lawNameStyle.font != _headerStyle.font)
-            {
-                _lawNameStyle = new GUIStyle(_headerStyle) { wordWrap = true };
-            }
-
+            EnsureLawNameStyle();
             var content = new GUIContent(name);
-            int size = _headerStyle.fontSize;
-            while (size > 8)
+            // K322 S4 (K320: a caption is one line): one line first - the largest size down to four fifths of the header's at which the whole name fits;
+            // the two-line ladder below only where none does
+            int size = LawNameOneLineSize(name, width);
+            if (size <= 0)
             {
-                _lawNameStyle.fontSize = size;
-                float twoLines = _lawNameStyle.lineHeight * 2f + _lawNameStyle.padding.vertical + 0.5f;
-                bool wordsFit = WidestWordWidth(name, _lawNameStyle) <= width;
-                if (wordsFit && _lawNameStyle.CalcHeight(content, width) <= twoLines)
+                size = _headerStyle.fontSize;
+                while (size > 8)
                 {
-                    break;
+                    _lawNameStyle.fontSize = size;
+                    float twoLines = _lawNameStyle.lineHeight * 2f + _lawNameStyle.padding.vertical + 0.5f;
+                    bool wordsFit = WidestWordWidth(name, _lawNameStyle) <= width;
+                    if (wordsFit && _lawNameStyle.CalcHeight(content, width) <= twoLines)
+                    {
+                        break;
+                    }
+                    size--;
                 }
-                size--;
             }
             _lawNameStyle.fontSize = size;
 
             Rect rect = GUILayoutUtility.GetRect(content, _lawNameStyle, GUILayout.Width(width));
             GUI.Label(rect, content, _lawNameStyle);
+        }
+
+        private void EnsureLawNameStyle()
+        {
+            if (_lawNameStyle == null || _lawNameStyle.font != _headerStyle.font)
+            {
+                _lawNameStyle = new GUIStyle(_headerStyle) { wordWrap = true };
+            }
+        }
+
+        /// <summary>K322 S4: the largest size, from the header face's down to four fifths of it, at which the whole name fits ONE line in
+        /// <paramref name="width"/> (a pixel spare, so the wrapping draw cannot break it); 0 where none does. Leaves the style as it found it.</summary>
+        private int LawNameOneLineSize(string name, float width)
+        {
+            EnsureLawNameStyle();
+            int previous = _lawNameStyle.fontSize;
+            bool wrap = _lawNameStyle.wordWrap;
+            _lawNameStyle.wordWrap = false;
+            var content = new GUIContent(name);
+            int floor = Mathf.Max(8, Mathf.RoundToInt(_headerStyle.fontSize * 0.8f)), found = 0;
+            for (int s = _headerStyle.fontSize; s >= floor; s--)
+            {
+                _lawNameStyle.fontSize = s;
+                if (_lawNameStyle.CalcSize(content).x <= width - 1f) { found = s; break; }
+            }
+            _lawNameStyle.wordWrap = wrap;
+            _lawNameStyle.fontSize = previous;
+            return found;
         }
 
         /// <summary>The narrowest line word-wrapping can produce for <paramref name="text"/> in
@@ -8439,7 +8586,10 @@ namespace PoliSim.UI
         {
             if (row == null)
             {
-                GUILayout.Label("Select a law from the list to see its detail.", _labelStyle, GUILayout.Width(contentWidth));
+                // K322 S4 (K320): no sentence at rest - the state in three words, the instruction on its slip
+                GUILayout.Label(DeskProvenance.On ? LawsSlips.NoneSelectedBefore : LawsSlips.NoneSelected, _labelStyle, GUILayout.Width(contentWidth));
+                SlipAnchor(GUILayoutUtility.GetLastRect(), LawsSlips.PaneNone);
+                _lawsSlipBook.Anchors[LawsSlips.PaneNone] = new SlipContent(LawsSlips.NoneSelected.ToUpperInvariant()).Add("A LAW FROM THE LIST OPENS HERE").Add("ITS COST, ITS COUNT AND WHAT IT MOVES");
                 return;
             }
 
@@ -8492,10 +8642,21 @@ namespace PoliSim.UI
             // which alone set the scroll content 1.6px wider than its 225.4px viewport.
             float innerGap = Mathf.Max(_headerStyle.margin.right, _labelStyle.margin.left);
             float nameWidth = Mathf.Max(0f, contentWidth - statusWidth - innerGap);
-            GUILayout.BeginHorizontal();
-            DrawLawNameLadder(string.IsNullOrEmpty(law.PlainName) ? law.Name : law.PlainName, nameWidth);   // §415: the plain name at reading size
-            DrawColoredLabel(statusLabel, _labelStyle, statusColor, GUILayout.Width(statusWidth));
-            GUILayout.EndHorizontal();
+            string paneName = string.IsNullOrEmpty(law.PlainName) ? law.Name : law.PlainName;   // §415: the plain name at reading size
+            // K322 S4 (K320: a caption is one line, never cut): the name on one line beside the status where it fits there at no less than four fifths of
+            // the header's size; else alone across the pane on one line and the status under it - the two-line ladder only where neither holds it
+            if (LawNameOneLineSize(paneName, nameWidth) > 0)
+            {
+                GUILayout.BeginHorizontal();
+                DrawLawNameLadder(paneName, nameWidth);
+                DrawColoredLabel(statusLabel, _labelStyle, statusColor, GUILayout.Width(statusWidth));
+                GUILayout.EndHorizontal();
+            }
+            else
+            {
+                DrawLawNameLadder(paneName, contentWidth);
+                DrawColoredLabel(statusLabel, _labelStyle, statusColor, GUILayout.Width(contentWidth));
+            }
 
             // D16 §4.3 (board 10b, §411): the decision block first - what it costs, whether it passes, and the button, boxed together.
             BillConcern paneConcern = pendingBill != null
@@ -8556,16 +8717,28 @@ namespace PoliSim.UI
             {
                 // P4-C3: no coupling table between a structural law and its parameter - the delta IS the effect, stated in the parameter's own unit.
                 GUILayout.Label("EXPECTED EFFECTS", _labelStyle, GUILayout.Width(contentWidth));
+                int effectIndex = 0;
                 foreach (StructuralDelta d in law.Structural)
                 {
                     StructuralParameters.Spec spec = StructuralParameters.Of(d.Parameter);
                     // MF-14 (K199, the q14 review 2's N-1): the natural rate every reader sees never sits below the country's unemployment floor, so the
                     // effect is the change THAT rate takes here; where the floor caps it, the law's own figure and the floor follow.
                     float effect = d.Parameter == StructuralParameter.NaturalUnemploymentRate && _playerCountry != null ? MacroSystem.EffectiveNaturalRateChange(_playerCountry, d.Delta) : d.Delta;
-                    string capped = Mathf.Abs(effect - d.Delta) > 0.005f
-                        ? $" (law {d.Delta.ToString("+0.00;-0.00", CultureInfo.InvariantCulture)}; the floor {_playerCountry.UnemploymentFloorPercent.ToString("0.00", CultureInfo.InvariantCulture)} caps it)"
-                        : "";
-                    GUILayout.Label($"{spec.Name}: {effect:+0.00;-0.00} {spec.Unit}{capped}", _labelStyle, GUILayout.Width(contentWidth));
+                    bool isCapped = Mathf.Abs(effect - d.Delta) > 0.005f;
+                    string lawFigure = d.Delta.ToString("+0.00;-0.00", CultureInfo.InvariantCulture);
+                    string floorFigure = isCapped ? _playerCountry.UnemploymentFloorPercent.ToString("0.00", CultureInfo.InvariantCulture) : null;
+                    string capped = isCapped ? $" (law {lawFigure}; the floor {floorFigure} caps it)" : "";
+                    string figure = $"{effect:+0.00;-0.00} {spec.Unit}";
+                    // K322 S4 (K320): one line at rest - the effect and, where the floor caps it, that word; the law's own figure and the floor on the line's slip
+                    GUILayout.Label(DeskProvenance.On || !isCapped ? $"{spec.Name}: {figure}{capped}" : $"{spec.Name}: {figure} (capped)", _labelStyle, GUILayout.Width(contentWidth));
+                    if (isCapped)
+                    {
+                        string anchor = LawsSlips.PaneEffect + effectIndex;
+                        SlipAnchor(GUILayoutUtility.GetLastRect(), anchor);
+                        _lawsSlipBook.Anchors[anchor] = new SlipContent(spec.Name.ToUpperInvariant() + " · " + figure.ToUpperInvariant())
+                            .Add("LAW " + lawFigure + " " + spec.Unit.ToUpperInvariant() + " · THE FLOOR " + floorFigure + " CAPS IT");
+                    }
+                    effectIndex++;
                 }
                 GUILayout.Space(4f);
             }
@@ -8603,6 +8776,7 @@ namespace PoliSim.UI
             }
 
             // §4.3 item 4: the description sits below the estimate now - a player who has decided does not read past it to act.
+            // K322 S4: the law's own text - an opened document's, which K320 (4) exempts - stands as written; the pane's other lines follow K320's caps
             GUILayout.Label(law.Description, _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(4f);
             // §4.3 item 7: the citation is the record and returns behind the desk's †.
@@ -8619,7 +8793,14 @@ namespace PoliSim.UI
             // the per-party stance rows beneath it.
             // §4.3 item 6: the party split, in seat-map order, beneath everything it justifies - the verdict itself is in the decision block.
             GUILayout.Label("HOW THE HOUSE SPLITS", _labelStyle, GUILayout.Width(contentWidth));
-            if (pendingBill != null) { GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before {Legislature} - {ResolvesIn(pendingBill.DaysRemaining, pendingBill.Docket)}.", _labelStyle, GUILayout.Width(contentWidth)); }
+            if (pendingBill != null)
+            {
+                // K322 S4 (K320): what is before the legislature at rest; when it resolves on the line's slip and behind the †
+                LawsSlips.Moved bill = LawsSlips.PaneBill(pendingBill.IsRepeal, Legislature, ResolvesIn(pendingBill.DaysRemaining, pendingBill.Docket));
+                GUILayout.Label(bill.Drawn(DeskProvenance.On), _labelStyle, GUILayout.Width(contentWidth));
+                SlipAnchor(GUILayoutUtility.GetLastRect(), LawsSlips.PanePending);
+                bill.Into(_lawsSlipBook, LawsSlips.PanePending);
+            }
             DrawLawPartyStances(paneConcern, contentWidth);
 
             // §4.3: the CTA travels with the decision, so it is drawn in the decision block above - see DrawLawPaneAction.
@@ -8632,14 +8813,20 @@ namespace PoliSim.UI
         {
             // P4-C3 third category, ruling (a) (2026-09-05): a law outside this House's competence - a monetary-regime law where the
             // country shares its currency zone - is not offered; the card says why, in the caption face, and IntroduceLawBill agrees.
+            // K322 S4 (K320): the action's three states share one anchor, whose slip leads with the action's whole words - the button's label at three words,
+            // the lock's role word and the competence note's head at rest, every clause on the slip and the whole text behind the †
+            string actionWords = enacted ? LawsSlips.RepealWords : LawsSlips.IntroduceWords;
             if (!LawCatalog.IsWithinCompetence(_simulationManager.World, _playerCountry, law))
             {
-                GUILayout.Label(LawCatalog.OutsideCompetenceReasonFor(law), _labelStyle, GUILayout.Width(contentWidth));   // EN-7b: the law's own reason - the treaty's, or no statute
+                LawsSlips.Moved competence = LawsSlips.Competence(LawCatalog.OutsideCompetenceReasonFor(law), actionWords);   // EN-7b: the law's own reason - the treaty's, or no statute
+                GUILayout.Label(competence.Drawn(DeskProvenance.On), _labelStyle, GUILayout.Width(contentWidth));
+                SlipAnchor(GUILayoutUtility.GetLastRect(), LawsSlips.PaneAction);
+                competence.Into(_lawsSlipBook, LawsSlips.PaneAction);
                 return;
             }
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && !_isGameOver;
-            string actionLabel = enacted ? "REPEAL THIS LAW ›" : "INTRODUCE AS A BILL ›";   // D16 §4.3 (§415): the button says what pressing it does - the pane's title is already the name
+            string actionLabel = enacted ? LawsSlips.RepealLabel : LawsSlips.IntroduceLabel;   // D16 §4.3 (§415): the button says what pressing it does - the pane's title is already the name
             // Closing gate (2026-08-28): the button takes the labels' own extent and wraps its text -
             // un-widthed, "Enact Cash Bail Abolition Act" asked for its single-line width and was the
             // pane's other over-wide child (see the MAGNITUDE row). The wrapping copy follows its
@@ -8650,11 +8837,37 @@ namespace PoliSim.UI
                 _lawActionButtonSource = _neutralActionButtonStyle;
             }
             float actionWidth = Mathf.Max(0f, contentWidth + _labelStyle.margin.horizontal - _lawActionButtonStyle.margin.horizontal);
-            if (DrawLeverLock(null, actionWidth, SimulationManager.PortfolioOfLaw(new LawBill { LawId = law.Id }), Congress.Kind.Law)) { } else if (PoliSimWidgets.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
+            if (DrawLawPaneLock(actionWidth, SimulationManager.PortfolioOfLaw(new LawBill { LawId = law.Id }), actionWords)) { }
+            else
             {
-                _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = enacted });
+                if (PoliSimWidgets.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
+                {
+                    _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = enacted });
+                }
+                SlipAnchor(GUILayoutUtility.GetLastRect(), LawsSlips.PaneAction);
+                _lawsSlipBook.Anchors[LawsSlips.PaneAction] = new SlipContent(actionWords)
+                    .Add((enacted ? "A BILL TO REPEAL IT · BEFORE " : "A BILL TO ENACT IT · BEFORE ") + LegislatureCaps)
+                    .Add(pendingBill != null ? "ONE IS PENDING" : "ITS COST AND ITS COUNT · THE BLOCK ABOVE");
             }
             GUI.enabled = ambientEnabled;
+        }
+
+        /// <summary>
+        /// K322 S4 (K320): the law pane's lock - the lever lock's rule (<see cref="DrawLeverLock"/>: where the role cannot introduce the bill, no control is
+        /// drawn and the role gate's reason stands in its place), its role word at rest (<see cref="EnergySlips.LockHead"/>) and its clauses one a line on the
+        /// action's slip, under the action's whole words; the whole reason behind the †.
+        /// </summary>
+        private bool DrawLawPaneLock(float width, CabinetPortfolio? portfolio, string actionWords)
+        {
+            if (_playerCountry == null) { return false; }
+            if (_simulationManager.PlayerMayIntroduce(PlayerCountryId, Congress.Kind.Law, portfolio, out string lockedBecause)) { return false; }
+            bool ambient = GUI.enabled; GUI.enabled = true;   // the reason is read at full ink, as the lever lock reads it
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            GUILayout.Label(DeskProvenance.On ? lockedBecause : EnergySlips.LockHead(lockedBecause), caption, GUILayout.Width(width));
+            SlipAnchor(GUILayoutUtility.GetLastRect(), LawsSlips.PaneAction);
+            _lawsSlipBook.Anchors[LawsSlips.PaneAction] = EnergySlips.Fragments(actionWords + " · LOCKED", (lockedBecause ?? string.Empty).ToUpperInvariant());
+            GUI.enabled = ambient;
+            return true;
         }
 
         /// <summary>Code-review pass (2026-08-25): the status label and its color, computed together
@@ -8706,7 +8919,13 @@ namespace PoliSim.UI
 
             // Explicit width (the free-aspect pass's lesson): the label wraps at the row's measured
             // width rather than requesting natural width and widening the whole box.
-            GUILayout.Label($"Affordable now: {affordable} of {visibleLaws.Count} shown", _labelStyle, GUILayout.Width(innerWidth));
+            // K322 S4 (K320): the count at three words at rest; what it counts on its slip, the old line behind the †
+            LawsSlips.Moved count = LawsSlips.AffordableCount(affordable, visibleLaws.Count);
+            string text = count.Drawn(DeskProvenance.On);
+            GUILayout.Label(text, _labelStyle, GUILayout.Width(innerWidth));
+            Rect bar = GUILayoutUtility.GetLastRect();
+            SlipAnchor(new Rect(bar.x, bar.y, Mathf.Min(bar.width, Mathf.Ceil(_labelStyle.CalcSize(new GUIContent(text)).x) + 4f), bar.height), LawsSlips.Affordable);
+            count.Into(_lawsSlipBook, LawsSlips.Affordable);
         }
 
         /// <summary>Board 1j's two-column dial grid, replacing the single-column DrawLawDeltaRow
@@ -8796,16 +9015,52 @@ namespace PoliSim.UI
             foreach (PartyStance stance in _chamberVerdicts.Stances(_playerCountry, concern))
             {
                 string side = !stance.Measured ? "UNMEASURED" : stance.Side > 0 ? "FOR" : stance.Side < 0 ? "AGAINST" : "UNDECIDED";
-                DrawLawPartyStanceRow(stance.Party.Name, stance.Seats, side, contentWidth);
+                Rect partyRow = DrawLawPartyStanceRow(stance.Party.Name, stance.Seats, side, contentWidth);
                 string reason = StanceModel.ReasonLine(stance);
-                if (!string.IsNullOrEmpty(reason)) { GUILayout.Label(reason, reasonStyle, GUILayout.Width(contentWidth)); }
+                // K322 S4 (K320): the reason is a sentence - at rest the party, its seats and its side over the reason's short form (the stance model's own,
+                // StanceModel.ReasonShort, on one line - its later clauses dropped whole past eight words); the whole reason, clause by clause, on the row's
+                // slip (its whole line on level 2 where a clause runs long), and under the row behind the †
+                if (DeskProvenance.On)
+                {
+                    if (!string.IsNullOrEmpty(reason)) { GUILayout.Label(reason, reasonStyle, GUILayout.Width(contentWidth)); }
+                }
+                else
+                {
+                    string brief = LawStanceBrief(stance, reason);
+                    if (!string.IsNullOrEmpty(brief))
+                    {
+                        Rect briefRect = GUILayoutUtility.GetRect(contentWidth, Mathf.Ceil(reasonStyle.CalcHeight(new GUIContent("Wg"), contentWidth)), GUILayout.Width(contentWidth));
+                        if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(briefRect, brief, reasonStyle); }
+                    }
+                }
+                string anchor = LawsSlips.PaneStance + stance.Party.ShortName;
+                SlipAnchor(partyRow, anchor);
+                LawsSlips.Fragments(stance.Party.ShortName + " " + stance.Seats + " · " + side, reason ?? string.Empty, stance.Party.ShortName + " · THE REASON IN FULL")
+                    .Into(_lawsSlipBook, anchor);
             }
+        }
+
+        /// <summary>K322 S4 (K320): a party's reason as the pane keeps it at rest - the stance model's short form (<see cref="StanceModel.ReasonShort"/>), or,
+        /// where it holds nothing (the author's line is the full reason's alone), the full reason's first clause; whole clauses dropped from the end past
+        /// eight counted words. The whole reason is the row's slip.</summary>
+        private static string LawStanceBrief(in PartyStance stance, string reason)
+        {
+            string brief = StanceModel.ReasonShort(stance);
+            if (string.IsNullOrEmpty(brief) && !string.IsNullOrEmpty(reason))
+            {
+                int colon = reason.IndexOf(": ", System.StringComparison.Ordinal);
+                brief = colon > 0 ? reason.Substring(0, colon) : reason;
+            }
+            if (string.IsNullOrEmpty(brief)) { return brief; }
+            var parts = new List<string>(brief.Split(new[] { " · " }, System.StringSplitOptions.RemoveEmptyEntries));
+            while (parts.Count > 1 && RangeCaptions.CountedWords(string.Join(" · ", parts)) > LawsSlips.LineWords) { parts.RemoveAt(parts.Count - 1); }
+            return string.Join(" · ", parts);
         }
 
         /// <summary>One party's row in the stance list. Explicit width - see DrawLawDialMovementGrid's
         /// comment: an expanding rect inside the pane's scroll view tracks content width, not the
-        /// viewport, and the first capture clipped these rows' right cells at the pane edge.</summary>
-        private void DrawLawPartyStanceRow(string name, int seats, string side, float contentWidth)
+        /// viewport, and the first capture clipped these rows' right cells at the pane edge. Returns the row's rect (K322 S4: its slip's anchor).</summary>
+        private Rect DrawLawPartyStanceRow(string name, int seats, string side, float contentWidth)
         {
             Rect rowRect = GUILayoutUtility.GetRect(contentWidth, LedgerRow.Height(_labelStyle), GUILayout.Width(contentWidth));
             float sideWidth = Mathf.Max(0f, rowRect.width * 0.28f);
@@ -8813,6 +9068,7 @@ namespace PoliSim.UI
                 $"{name} - {UiFormat.Seats(seats)}", _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
             LedgerRow.Cell(new Rect(rowRect.x + rowRect.width - sideWidth, rowRect.y, sideWidth, rowRect.height),
                 side, _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+            return rowRect;
         }
 
         /// <summary>The statute-book search slot (board 1j): the label plus the paper-idiom field
@@ -9098,25 +9354,45 @@ namespace PoliSim.UI
         private void DrawRecentDivisions()
         {
             GUILayout.Label("Division Records", _headerStyle);
+            // K322 S3 (K320 (5)): the head's slip - what the section holds and what its empty state's two words stand for - on every frame, divisions or none
+            if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "parl:divisions"); }
+            _politicsSlipBook.Anchors["parl:divisions"] = new SlipContent("DIVISION RECORDS")
+                .Add("Bills that resolve appear here · newest first")
+                .Add("Each its date, its lean and its verdict")
+                .Add("No divisions yet: none recorded");
 
             List<DivisionRecord> entries = _playerCountry.Divisions.Entries;
             if (entries.Count == 0)
             {
-                GUILayout.Label("No divisions recorded yet - bills that resolve appear here.", _labelStyle);
+                GUILayout.Label("No divisions yet", _labelStyle);
                 return;
             }
 
             Texture2D carried = IconLibrary.GetChrome("ui_stamp_carried");
             Texture2D rejected = IconLibrary.GetChrome("ui_stamp_rejected");
+            float rowsRowHeight = Mathf.Max(20f, _labelStyle.fontSize * 1.2f);
+            // K322 S3 (K320: a caption is one line, never cut): the room the title has beside the date, the lean bar and the stamp
+            float titleRoom = Mathf.Max(40f, _parliamentVisibleWidth - _divisionMetaStyle.fontSize * 6.5f - _labelStyle.fontSize * 5f - Mathf.Round(rowsRowHeight * (170f / 50f)) - _labelStyle.fontSize * 3f);
 
             for (int i = entries.Count - 1; i >= 0; i--)
             {
                 DivisionRecord record = entries[i];
                 Color verdictInk = record.Passed ? PoliSimTheme.Good : PoliSimTheme.Bad;
-                float rowHeight = Mathf.Max(20f, _labelStyle.fontSize * 1.2f);
+                float rowHeight = rowsRowHeight;
 
+                // K322 S3 (K320's caps): the title at rest is its head - the clause before its first colon or dash, its bracket dropped where that still runs
+                // long - whole, within eight words and one line; the full title is the row's slip
+                string title = EnumNames.ShownTitle(record.Title);
+                string chamberWords = DivisionChamberWords(record);
+                string number = "No. " + record.Number.ToString(CultureInfo.InvariantCulture);
+                string head = DivisionTitleHead(title);
+                var forms = new List<string>();
+                foreach (string form in new[] { number + " · " + title + chamberWords, number + " · " + head + chamberWords, number + " · " + head, number + chamberWords, number })
+                {
+                    if (CountedWords(form) <= 8 && !forms.Contains(form)) { forms.Add(form); }
+                }
                 GUILayout.BeginHorizontal();
-                GUILayout.Label($"No. {record.Number} · {EnumNames.ShownTitle(record.Title)}{DivisionChamberWords(record)}", _labelStyle, GUILayout.ExpandWidth(true));
+                GUILayout.Label(PoliticsFitWhole(_labelStyle, titleRoom, forms.ToArray()), _labelStyle, GUILayout.ExpandWidth(true));
                 GUILayout.Label(record.Date.ToString("yyyy-MM-dd"), _divisionMetaStyle, GUILayout.Width(_divisionMetaStyle.fontSize * 6.5f));
 
                 // The lean bar sits in a slot as tall as the stamp beside it and is drawn centred in
@@ -9146,7 +9422,47 @@ namespace PoliSim.UI
                     GUI.color = saved;
                 }
                 GUILayout.EndHorizontal();
+                string divAnchor = "parl:div:" + record.Number.ToString(CultureInfo.InvariantCulture);
+                if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), divAnchor); }
+                var divSlip = new SlipContent((number + chamberWords).ToUpperInvariant() + " · " + record.Date.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() + " · " + (record.Passed ? "CARRIED" : "REJECTED"));
+                foreach (string line in DivisionTitleLines(title)) { divSlip.Add(line); }
+                _politicsSlipBook.Anchors[divAnchor] = divSlip;
             }
+        }
+
+        /// <summary>K322 S3 (K320's caps): a division title's head at rest - the clause before its first ": " or " - ", and, where that still runs past five
+        /// words, the clause before its bracket ("Vetoed by the President (you, …)" reads "Vetoed by the President"). Whole clauses only, never a word cut.</summary>
+        private static string DivisionTitleHead(string title)
+        {
+            if (string.IsNullOrEmpty(title)) { return title ?? string.Empty; }
+            int cut = -1;
+            foreach (string mark in new[] { ": ", " - " })
+            {
+                int at = title.IndexOf(mark, System.StringComparison.Ordinal);
+                if (at > 0 && (cut < 0 || at < cut)) { cut = at; }
+            }
+            string head = cut > 0 ? title.Substring(0, cut) : title;
+            if (CountedWords(head) > 5)
+            {
+                int bracket = head.IndexOf(" (", System.StringComparison.Ordinal);
+                if (bracket > 0) { head = head.Substring(0, bracket); }
+            }
+            return head;
+        }
+
+        /// <summary>K322 S3: a division title on its slip - its clauses one a line (split where the title's own colons and dashes fall), at most four, the
+        /// rest joined onto the fourth.</summary>
+        private static List<string> DivisionTitleLines(string title)
+        {
+            var parts = new List<string>(System.Text.RegularExpressions.Regex.Split(title ?? string.Empty, ": | - "));
+            parts.RemoveAll(p => p.Trim().Length == 0);
+            if (parts.Count > 4)
+            {
+                string tail = string.Join(" - ", parts.GetRange(3, parts.Count - 3));
+                parts.RemoveRange(3, parts.Count - 3);
+                parts.Add(tail);
+            }
+            return parts;
         }
 
         /// <summary>
@@ -9161,6 +9477,12 @@ namespace PoliSim.UI
         private void DrawPendingLegislation()
         {
             GUILayout.Label("Pending Legislation", _headerStyle);
+            // K322 S3 (K320 (5)): the head's slip - what the list holds and what its empty state's words stand for - on every frame, bills or none
+            if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "parl:pending"); }
+            _politicsSlipBook.Anchors["parl:pending"] = new SlipContent("PENDING LEGISLATION")
+                .Add("Every bill before " + Legislature + ", one card each")
+                .Add("Its days left, its lean and the breakdown")
+                .Add("No bill pending: no bill currently before " + Legislature);
             bool usActs = UsBudgetProcedure.Applies(_playerCountry);   // PS-6 US-22: the US Congress votes the budget as its acts
             string lapse = usActs ? UsBudgetProcedure.LapseWords(_playerCountry, _simulationManager.CurrentDate) : null;
             if (lapse != null) { DrawColoredLabel(lapse, _labelStyle, PoliSimTheme.Bad); }   // PS-6 US-22: a shutdown's days, said while it lasts
@@ -9295,7 +9617,7 @@ namespace PoliSim.UI
 
             if (pending.Count == 0)
             {
-                GUILayout.Label("No bill currently before " + Legislature + ".", _labelStyle);
+                GUILayout.Label("No bill pending", _labelStyle);   // K322 S3 (K320: no sentence at rest): the head's slip says it whole
                 return;
             }
 
@@ -9338,13 +9660,25 @@ namespace PoliSim.UI
             if (usVetoed) { wouldPass = false; }
 
             BeginAreaCard(null, area);
-            GUILayout.Label(label, _labelStyle);
-            DrawColoredLabel(
-                usVetoed ? "Currently leans FAIL · the President vetoes it" :
+            // K322 S3 (K320: no sentence at rest): the bill's name and its days at rest; the countdown's sentence, the verdict's qualifiers and the
+            // President's answer are the card's slip
+            string name = PendingBillName(label);
+            GUILayout.Label(PendingBillShort(label, name, daysRemaining), _labelStyle);
+            if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "parl:bill:" + label); }
+            string verdict = usVetoed ? "Currently leans FAIL · the President vetoes it" :
                 contested ? (wouldPass ? "Currently leans PASS" + (atRisk ? " · veto risk " + ChamberVerdicts.RiskWords(veto) : "")
-                    : "Currently leans FAIL" + (stop != null ? " · stopped in the " + Congress.ChamberName(PlayerCountryId, stop.Chamber) + (stop.Cloture ? " at cloture" : "") : "")) : uncontested ?? "Unopposed - no change requested",
-                _labelStyle,
-                contested && atRisk ? PoliSimTheme.Caution : UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+                    : "Currently leans FAIL" + (stop != null ? " · stopped in the " + Congress.ChamberName(PlayerCountryId, stop.Chamber) + (stop.Cloture ? " at cloture" : "") : "")) : uncontested ?? "Unopposed - no change requested";
+            string verdictAtRest = usVetoed ? "Currently leans FAIL · vetoed"
+                : !contested && CountedWords(verdict) > 4 && verdict.IndexOf(" - ", System.StringComparison.Ordinal) > 0 ? verdict.Substring(0, verdict.IndexOf(" - ", System.StringComparison.Ordinal))
+                : CountedWords(verdict) > 8 && stop != null ? "Currently leans FAIL · stopped in the " + Congress.ChamberName(PlayerCountryId, stop.Chamber)
+                : verdict;
+            DrawColoredLabel(verdictAtRest, _labelStyle, contested && atRisk ? PoliSimTheme.Caution : UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+            var billSlip = new SlipContent(name.ToUpperInvariant());
+            foreach (string fragment in PendingBillFragments(label, name)) { billSlip.Add(fragment); }
+            billSlip.Add(verdict);
+            string vetoLine = atRisk ? ChamberVerdicts.VetoLine(PlayerCountryId, veto) : null;
+            if (vetoLine != null) { billSlip.Add(vetoLine); }
+            _politicsSlipBook.Anchors["parl:bill:" + label] = billSlip;
 
             // P2-2.2 (2026-09-02): the seat map replaces the lean bar here too (a law-support preview); an
             // unopposed bill maps every seat UNDECIDED, because SeatSides treats a zero direction as no side.
@@ -9354,9 +9688,49 @@ namespace PoliSim.UI
             // Layout event a 1×1 dummy (the layout facts' quirk), so the rows were laid out at the 10 px floor and the party names drawn in a ten-pixel cell.
             if (Event.current.type == EventType.Repaint && seatMapRect.width > 10f) { _pendingCardWidths[label] = seatMapRect.width; }
             float breakdownWidth = _pendingCardWidths.TryGetValue(label, out float laidOut) ? laidOut : PoliSimWidgets.InnerWidth(UiScreen.Width * 0.5f, _boxStyle);
-            if (contested) { DrawStanceBreakdown(concern, Mathf.Max(10f, breakdownWidth)); }
+            if (contested) { DrawStanceBreakdown(concern, Mathf.Max(10f, breakdownWidth), label); }
 
             EndAreaCard(area);
+        }
+
+        /// <summary>K322 S3: a pending card's bill as its name - the label's clause before its first " - ", then before its first ", " ("Appropriation with
+        /// the budget, by a majority" reads "Appropriation with the budget"); the drawdown keeps its share of GDP, which is what the bill is.</summary>
+        private static string PendingBillName(string label)
+        {
+            string text = (label ?? string.Empty).TrimEnd('.');
+            int dash = text.IndexOf(" - ", System.StringComparison.Ordinal);
+            string name = dash > 0 ? text.Substring(0, dash) : text;
+            int comma = name.IndexOf(", ", System.StringComparison.Ordinal);
+            if (comma > 0) { name = name.Substring(0, comma); }
+            if (dash > 0 && name.StartsWith("SWF emergency drawdown", System.StringComparison.Ordinal))
+            {
+                string rest = text.Substring(dash + 3);
+                int share = rest.IndexOf(", ", System.StringComparison.Ordinal);
+                if (share > 0) { name += " · " + rest.Substring(0, share); }
+            }
+            return name;
+        }
+
+        /// <summary>K322 S3: a pending card's line at rest - its name and its days ("Annual budget bill · 21 days"), or "on the desk" while the President holds
+        /// it; no verb, no stop.</summary>
+        private static string PendingBillShort(string label, string name, int days)
+        {
+            bool onDesk = (label ?? string.Empty).IndexOf("on the President's desk", System.StringComparison.Ordinal) >= 0;
+            return name + " · " + (onDesk ? "on the desk" : days.ToString(CultureInfo.InvariantCulture) + (days == 1 ? " day" : " days"));
+        }
+
+        /// <summary>K322 S3: the clauses of a pending card's label its name leaves - the countdown's sentence, the procedure ("by a majority"), the drawdown's
+        /// share - one a slip line, split where the label's own dashes and commas fall.</summary>
+        private static List<string> PendingBillFragments(string label, string name)
+        {
+            var lines = new List<string>();
+            foreach (string part in System.Text.RegularExpressions.Regex.Split((label ?? string.Empty).TrimEnd('.'), " - |, "))
+            {
+                string p = part.Trim();
+                if (p.Length == 0 || name.StartsWith(p, System.StringComparison.Ordinal) || name.EndsWith(p, System.StringComparison.Ordinal)) { continue; }
+                lines.Add(p);
+            }
+            return lines;
         }
 
         /// <summary>PF-10 (§594): each pending card's width at its last Repaint, keyed by the card's label - the Layout event's GetRect is a dummy.</summary>
@@ -9373,16 +9747,33 @@ namespace PoliSim.UI
         private void DrawPoliticalCompassContent(float availableWidth)
         {
             DrawColoredLabel("Political Compass", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            GUILayout.Label("CHES 2024 positions: economic left-right across, liberal-conservative down. Parties at their published pairs, countries at the seat-weighted mean of their chambers, the sitting cabinet ringed.", _labelStyle);   // P2-3.2 (2026-09-02)
+            // P2-3.2 (2026-09-02). K322 S3 (K320: no sentence at rest): the caption's two sentences became three words at rest and the slip THE COMPASS,
+            // the diamond and the trails defined at level 2 (the legend's long lines moved there too)
+            GUILayout.Label("CHES 2024 positions", _labelStyle);
+            if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), "compass:key"); }
+            _politicsSlipBook.Anchors["compass:key"] = new SlipContent("THE COMPASS · CHES 2024")
+                .Add("Economic left-right across, liberal-conservative down")
+                .Add("Parties at published pairs · countries at chamber means")
+                .Add("The sitting cabinet ringed · the electorate a [[diamond]]")
+                .Add("[[Trails]]: each chamber's mean at every turn close");
+            _politicsSlipBook.Terms["diamond"] = new SlipContent("THE DIAMOND").Add("The electorate's compatibility-weighted mean over the parties: the fitted electorate over the cohorts, or held, not fitted, on the House vote where the poll has a basis of its own.");
+            _politicsSlipBook.Terms["Trails"] = new SlipContent("TRAILS").Add("Each chamber's seat-weighted mean at every turn close, drawn faint in its country's ink.");
             float compassSize = Mathf.Clamp(UiScreen.Height * 0.55f, 260f, 800f);   // P2-3.2: the plot takes the height the sheet has; the legend column takes the rest of the width
             // R-SP4 (2026-08-28): reserve the compass's HONEST footprint - the plot square plus its
             // caption band at the width the captions need, capped at the sheet's own inner width less
             // the scroll view's gutter - so the renderer's declared rect contains everything it draws
             // and the layout reflows around the real size rather than a bare square.
+            // K322 S3 (K320: no sentence at rest): the two axis captions leave the plot's foot for the compass's own slip (§726's switch - the renderer is
+            // shared, so it is put back below)
+            _politicalCompassRenderer.AxisCaptions = false;
             float footprintWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - CompassScrollGutter;
             Vector2 footprint = _politicalCompassRenderer.Footprint(_world.Countries, compassSize, footprintWidth, _labelStyle, PlayerCountryId, withLegend: true);
             Rect compassRect = GUILayoutUtility.GetRect(footprint.x, footprint.y, GUILayout.Width(footprint.x), GUILayout.Height(footprint.y));
             _politicalCompassRenderer.Draw(compassRect, _world.Countries, PlayerCountryId, _labelStyle, withLegend: true);
+            _politicalCompassRenderer.AxisCaptions = true;
+            SlipAnchor(compassRect, "compass:axes");
+            (string axisX, string axisY) = PoliticalCompassRenderer.AxisCaptionTexts;
+            _politicsSlipBook.Anchors["compass:axes"] = new SlipContent("THE AXES · CHES 2024").Add(axisX.TrimEnd('.')).Add(axisY.TrimEnd('.'));
         }
 
         /// <summary>The Compass tab's scroll view takes its vertical scrollbar out of the content's width - the Budget ledger's own 18 px allowance, the same measurement.</summary>
@@ -9437,7 +9828,11 @@ namespace PoliSim.UI
 
             // §564 (2026-09-22): the family's rows - a section caption, the dial, what it would release as a read-only row, and the bill's call to action as the one-width
             // button beside its sentence (it was a header sentence, a prose sentence, the dial, a prose sentence and a full-width paper button).
-            DrawStatsSectionCaption("EMERGENCY DRAWDOWN · A STANDALONE BILL · DOES NOT WAIT FOR THE ANNUAL BUDGET");
+            // K322 S2 (K320): the caption is the section's name at rest; what it said of the bill, and the clauses the status sentence below drops, are its slip
+            BudgetCaptionWithSlip("EMERGENCY DRAWDOWN", "budget:fund:drawdown", new SlipContent("EMERGENCY DRAWDOWN")
+                .Add("A STANDALONE BILL · DOES NOT WAIT FOR THE ANNUAL BUDGET")
+                .Add("ONE WITHDRAWS FROM THE FUND NOW, NOT AT THE FISCAL YEAR")
+                .Add("WHERE NO FUND STANDS, THE ANNUAL BUDGET CREATES ONE FIRST"));
 
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && fundExists && pendingBill == null;
@@ -9455,12 +9850,16 @@ namespace PoliSim.UI
                 DrawDerivedStatRow("Would release", -1f, UiFormat.Money(deliverable, MoneyUnit.Billions), deliverable < requested ? "capped by the fund" : "to the budget", UiPalette.GetAreaColor(UiPalette.SystemArea.SovereignWealth));
             }
 
+            // K322 S2 (K320): the status at rest is its state in a few words - no sentence; the clauses it dropped are the section caption's slip (above), and a
+            // pending bill's whole sentence is the status's own slip
             string statusText = pendingBill != null
-                ? $"A drawdown bill is before {Legislature} - {UiFormat.Number(pendingBill.WithdrawalPercentOfGdp, 1)}% of GDP, {ResolvesIn(pendingBill.DaysRemaining, pendingBill.Docket)}."
-                : fundExists
-                    ? "No drawdown bill before " + Legislature + " - one withdraws from the fund now, not at the fiscal year."
-                    : "No fund stands to draw down - the annual budget creates one first.";
-            if (DrawLeverLock(kind: Congress.Kind.SwfDrawdown)) { } else if (DrawSentenceAction(statusText, pendingBill != null ? $"Pending ({pendingBill.DaysRemaining}d)" : "Introduce", fundExists && pendingBill == null, pendingBill != null ? _pendingButtonStyle : _implementButtonStyle))
+                ? "Drawdown bill · " + UiFormat.Number(pendingBill.WithdrawalPercentOfGdp, 1) + "% of GDP · " + (pendingBill.Docket != null ? "on the desk" : BudgetDays(pendingBill.DaysRemaining))
+                : fundExists ? "No drawdown bill before " + Legislature : "No fund stands to draw down";
+            if (pendingBill != null)
+            {
+                _budgetSlipBook.Anchors["budget:fund:drawdown"].Add((pendingBill.Docket != null ? "PENDING · " : "PENDING BEFORE " + LegislatureCaps + " · ") + ResolvesIn(pendingBill.DaysRemaining, pendingBill.Docket).ToUpperInvariant());
+            }
+            if (BudgetLock(Congress.Kind.SwfDrawdown, "budget:fund:lock")) { } else if (DrawSentenceAction(statusText, pendingBill != null ? $"Pending ({pendingBill.DaysRemaining}d)" : "Introduce", fundExists && pendingBill == null, pendingBill != null ? _pendingButtonStyle : _implementButtonStyle))
             {
                 _simulationManager.IntroduceSwfDrawdownBill(PlayerCountryId,
                     new SwfDrawdownBill { WithdrawalPercentOfGdp = _swfDrawdownPercentInput });
@@ -9977,18 +10376,9 @@ namespace PoliSim.UI
 
             // ---- the curve: the marginal rate over income, the standing statute solid, the draft dashed where it differs ----------------
             GUIStyle footFace = DeskCaptionWrapped(6.5f, PoliSimTheme.TextMuted);
-            string footText = (statute.CitationLine ?? "X: THE TARIFF'S OWN CURRENCY, TO ITS TOP THRESHOLD × 1.5");
-            // P6-E1 (2026-09-17): where the statute carries the earned income credit, the foot says what the credit does to the mean income's rate - the
-            // rate with it against the rate without - and that the yield does not read it yet. A sentence, so it rides the wrapped foot and not the figure
-            // cell (the first form put the pair in the cell and overflowed it by 63 px at 1280).
-            if (TaxSchedule.CarriesCredit(country.Id))
-            {
-                double without = TaxSchedule.AverageEffectiveRateAtMeanIncome(country, taxLine, draftLever);
-                double with = TaxSchedule.AverageEffectiveRateWithCreditAtMeanIncome(country, taxLine, draftLever);
-                footText += " · THE EARNED INCOME CREDIT (JOBBSKATTEAVDRAGET, SKV 433 " + EarnedIncomeCredit.IncomeYear.ToString(CultureInfo.InvariantCulture) + "): "
-                    + with.ToString("0.0", CultureInfo.InvariantCulture) + " % WITH IT AGAINST " + without.ToString("0.0", CultureInfo.InvariantCulture)
-                    + " % WITHOUT AT THE MEAN INCOME · " + (EarnedIncomeCredit.Live ? "IN THE YIELD" : "HELD OFF THE YIELD UNTIL ITS FAMILY IS RULED");
-            }
+            // K322 S2 (K320): the foot at rest is the x axis in seven words, one line; the axis in full, the statute's citation verbatim (F4-4's coefficients, the
+            // barème's CSG/CRDS split) and P6-E1's earned income credit are the statute's slip (DrawBudgetRevenue's "budget:statute", opened on the foot as on the head)
+            string footText = BudgetStatuteFoot;
             // the foot's height is measured at a width no wider than the band it is drawn in (the band is 37 % of the window at 1280; 36 % wraps at least as much)
             float footH = Mathf.Ceil(footFace.CalcHeight(new GUIContent(footText), Mathf.Max(10f, UiScreen.Width * 0.36f))) + StatsUnit(2f);
             float curveH = StatsUnit(44f) + capH + footH;
@@ -10042,8 +10432,10 @@ namespace PoliSim.UI
                     LedgerRow.Cell(new Rect(labelLeft, plot.yMax + StatsUnit(2f), tw, capH), tick, mono, PoliSimTheme.TextMuted, TextAnchor.UpperCenter);
                     lastLabelRight = labelLeft + tw;
                 }
-                // the citation line under the curve, wrapped to the band's width (the coefficients verbatim are longer than any lane at 1280)
-                GUI.Label(new Rect(plot.x, plot.yMax + StatsUnit(2f) + capH, cAction.xMax - plot.x, footH), footText, footFace);
+                // the axis line under the curve (K322 S2: the citation verbatim, longer than any lane at 1280, is the statute's slip)
+                var footRect = new Rect(plot.x, plot.yMax + StatsUnit(2f) + capH, cAction.xMax - plot.x, footH);
+                GUI.Label(footRect, footText, footFace);
+                SlipAnchor(new Rect(footRect.x, footRect.y, Mathf.Min(footRect.width, Mathf.Ceil(footFace.CalcSize(new GUIContent(footText)).x) + 4f), footRect.height), "budget:statute");
             }
 
             // ---- the sub-rows: one per band, the dial on the rate alone, the name a span nobody can drag -----------------------------------
@@ -10414,6 +10806,12 @@ namespace PoliSim.UI
         private void DrawSwfPolicyContent()
         {
             DrawColoredLabel("Sovereign Wealth Fund", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.SovereignWealth));
+            // K322 S2 (K320): the fund's head opens what its existence sentence said of the budget bill - the sentence at rest is the state in a few words
+            Rect fundHead = GUILayoutUtility.GetLastRect();
+            SlipAnchor(new Rect(fundHead.x, fundHead.y, Mathf.Min(fundHead.width, Mathf.Ceil(_headerStyle.CalcSize(new GUIContent("Sovereign Wealth Fund")).x) + 4f), fundHead.height), "budget:fund");
+            _budgetSlipBook.Anchors["budget:fund"] = new SlipContent("SOVEREIGN WEALTH FUND")
+                .Add("CREATED OR DISSOLVED WHEN THE ANNUAL BUDGET BILL PASSES")
+                .Add("ITS CONTRIBUTION IS THEN A LINE ON THE BOOK");
 
             SovereignWealthFund fund = _playerCountry.SovereignWealthFund;
             bool draftExists = GetSwfExistsDraft(fund != null);
@@ -10422,8 +10820,8 @@ namespace PoliSim.UI
             // (Design's sitting, part A item 2: paragraphs around a red Dissolve Fund). The sentence takes the draft's Caution ink while the draft differs from what stands.
             bool existenceDrafted = draftExists != (fund != null);
             string existenceSentence = fund != null
-                ? (existenceDrafted ? "A fund stands - drafted to dissolve when the annual budget bill passes." : "A fund stands.")
-                : (existenceDrafted ? "No fund stands - drafted to exist when the annual budget bill passes; its contribution is then a line on the book." : "No fund stands.");
+                ? (existenceDrafted ? "A fund stands · drafted to dissolve" : "A fund stands")
+                : (existenceDrafted ? "No fund stands · drafted to exist" : "No fund stands");
             if (DrawSentenceAction(existenceSentence, draftExists ? "Dissolve" : "Create", true, draftExists ? _removeButtonStyle : _implementButtonStyle, existenceDrafted ? PoliSimTheme.Caution : (Color?)null))
             {
                 _swfExistsDraft = !draftExists;
@@ -10498,7 +10896,9 @@ namespace PoliSim.UI
             // and the bill leg stay for the day the spread is sourced; the bill carries the standing figure unchanged.
 
             GUILayout.Space(8f);
-            DrawStatsSectionCaption("ASSET CLASS MIX · RAW WEIGHTS, NORMALISED TO 100 · THE FIGURE AT THE RIGHT IS EACH CLASS'S SHARE OF THE FUND");
+            BudgetCaptionWithSlip("ASSET CLASS MIX", "budget:fund:mix", new SlipContent("ASSET CLASS MIX")   // K322 S2 (K320): the caption's name at rest, the rest its slip
+                .Add("RAW WEIGHTS, NORMALISED TO 100")
+                .Add("THE FIGURE AT THE RIGHT: EACH CLASS'S SHARE OF THE FUND"));
 
             // ⚠ THE TRAILING COLUMN IS WHAT MAKES NORMALISED WEIGHTS LEGIBLE, and it is why the per-row
             // bars are gone rather than merely moved.
@@ -10622,6 +11022,8 @@ namespace PoliSim.UI
             PensionAgeStatute.Rule rule = PensionAgeStatute.Of(country.Id);
             if (rule == null) { return; }
             int year = _pensionRowYearForFilm ?? (_simulationManager != null ? _simulationManager.CurrentDate.Year : PensionAgeStatute.SeedYear);
+            // K322 S2 (K320): the caption band's citation and NEXT sentence whole, as the band's slip - the band at rest keeps a rung of at most eight words
+            _budgetSlipBook.Anchors["budget:pension:next"] = BudgetPackedSlip("STATUTORY PENSION AGE", rule.Citation.ToUpperInvariant() + " · " + PensionAgeStatute.BandSentence(country.Id, year, int.MaxValue, true), _budgetSlipBook);
             // PN-1's DIAL (§590, DS-3): the row is a lever now. The figure standing is a passed bill's where one stands, else the statute's; the knob is the
             // draft, which rides the Budget bill; the law's own figure stays on the track as the override's ghost. A film pinned to another year reads the statute.
             float statuteAge = PensionAgeStatute.AgeInForce(country.Id, year);
@@ -10796,7 +11198,7 @@ namespace PoliSim.UI
             // stopped the band at the track's end, the fourth shrank Poland's and France's sentences into the label's floor, the fifth set the provenance at the
             // band's height under a figure centred on the whole row, and the figure's glyphs ran into it.
             // §590: the dial's range caption, mid-drag and its fade, speaks in the band - the band's one line, so the statute's sentence gives way to it while it is painted
-            if (DrawRangeCaption("Pension age", "Pension age", draft, age, TrackMin, TrackMax)) { return; }
+            if (DrawLedgerBandName("Pension age", "Pension age", draft, age, TrackMin, TrackMax)) { return; }   // K322 S2 (K320): the band's name alone, its line on its slip
             Rect band = LedgerRow.LastCaptionBand;
             if (band.width > 8f)
             {
@@ -10816,6 +11218,7 @@ namespace PoliSim.UI
                 float leftEnd = Mathf.Min(bandEnd, knobX - knobHalf), rightStart = knobX + knobHalf;
                 foreach ((string driver, string next) in rungs)
                 {
+                    if (RangeCaptions.CountedWords(next) > BudgetRestWordCap) { continue; }   // K322 S2 (K320): a rung over eight words is not a caption at rest - it is the band's slip
                     float need = Need(driver, next);
                     if (need <= leftEnd - band.x) { chosenDriver = driver; chosenNext = next; x = band.x; bandRight = leftEnd; break; }
                     if (need <= bandEnd - rightStart) { chosenDriver = driver; chosenNext = next; x = rightStart; bandRight = bandEnd; break; }
@@ -10827,6 +11230,7 @@ namespace PoliSim.UI
                     if (bandEnd - rightStart > leftEnd - band.x) { x = rightStart; bandRight = bandEnd; } else { x = band.x; bandRight = leftEnd; }
                 }
                 GUIStyle bandFace = Inked(new GUIStyle(face) { alignment = TextAnchor.UpperLeft, clipping = TextClipping.Clip }, PoliSimTheme.TextSecondary);
+                float textLeft = x;
                 if (chosenDriver != null)
                 {
                     float dw = Mathf.Ceil(face.CalcSize(new GUIContent(chosenDriver)).x);
@@ -10835,6 +11239,7 @@ namespace PoliSim.UI
                     x += dw + divider;
                 }
                 PoliSimWidgets.MeasuredLabel(new Rect(x, band.y, Mathf.Max(10f, bandRight - x), band.height), chosenNext, bandFace);
+                SlipAnchor(new Rect(textLeft, band.y, Mathf.Max(10f, bandRight - textLeft), band.height), "budget:pension:next");
             }
         }
 

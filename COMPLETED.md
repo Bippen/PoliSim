@@ -42965,3 +42965,49 @@ Energy's slips from before S1 still hold lines over 10 words. They carry no move
 **Declared:**
 - A scoped row is judged where its country's film takes its capture. A row scoped to a country no film covers is judged by none (no film covers France's or Italy's interrupts today).
 - The prose rows K334 holds back for country-specific words (the Energy record's 159) can now convert. That conversion is owed and is not part of this item.
+
+## 970. K322 SWEEPS S2 (THE BUDGET), S3 (POLITICS) AND S4 (LAWS): K320'S CAPS ON THREE PAGES, MEASURED TOGETHER; THE BASELINE 1,623 -> 424 ROWS (K320, K321, K322, K334) (2026-10-31)
+
+**What was owed:** K322's sweep order after S1 (Energy, §957): the Budget, Politics and Laws pages held 344, 347 and 564 of the 1,623 breaches §967 grandfathered. Three implementers worked in parallel on disjoint pages, none running Unity. The three branches were applied together and measured on one tree; the judge keys every breach by capture, so a failure names its page.
+
+**Built:**
+- **S2, the Budget** (wave/k322s2 976ca775; `05*`, `93*`): 341 of 354 rows addressed.
+  - A shared `BudgetPackedSlip` turns a sentence at rest into its slip verbatim, broken only at the judge's segment marks.
+  - The bill's status is a caption of at most 8 words (`Government budget before the chamber · 21 days`), with the whole status as the BILL STATUS slip.
+  - The statute foot is one line, with the axis and citation on THE STATUTE slip. Range captions show the band's name alone, as S1 did.
+  - The fund's drawdown and mix keep their names at rest. The US debt chip's line is the limit alone, with the headroom on the debt slip. Desk effects get a resting form.
+  - Left (13): the Δ foot `GraphRenderer` shares with Politics, the event stories drawn by the Desk's card (S5's), and one generic division row.
+- **S3, Politics** (wave/k322s3 96e4d17c; `07*`, `pl1`/`pl3`): all 347 rows addressed.
+  - Party names step down to whole shorter forms, with the full name on the party's slip.
+  - The US Senate lines, pending bills ("Annual budget bill · 21 days", "No bill pending"), divisions and the breakdown's reasons ("+N" folding, K329's precedent) get the same treatment.
+  - THE PRESIDENT slip is cut to the caps; the compass caption and axes go onto slips.
+  - The cabinet search reads "N portfolios to search". The bank page and the shared-currency tab, which drew no slip book at all, now draw one.
+  - `GraphRenderer.ShortFootDelta`, opt-in, for the bank's graph. It also clears four US `90h`/`90i` bank and Congress rows.
+- **S4, Laws** (wave/k322s4 a494de07..e4dabda3; `06*`, `08_energy_laws_link_arrived`): 493 of 589 rows addressed.
+  - The role lock keeps its role word, with the clauses on its slip.
+  - Bill status lines read "No sectors bill · support X a year". The dials show band names only. The empty card reads "0 in force · 0 pending". The bottom bar reads "Affordable: N of M". The pane button reads "INTRODUCE BILL ›".
+  - Competence notes keep their heads. The natural-rate line reads "(capped)". Party reasons use `ReasonShort` with the full reason on the slip. The debt trace's names are shortened. A new `LawsSlips`.
+  - Left (96): the law descriptions, "a law's text" under K320 (4).
+- **Moved words in machine form:** 226 rows in total, scoped by §969's countries column where the words exist only in some countries:
+  - `moved_k322s2.tsv`, 26 (15 scoped);
+  - `moved_k322s3.tsv`, 85 (79 scoped);
+  - `moved_k322s4.tsv`, 115 (53 scoped).
+- **K334:** the Politics sweep converted COAL-2's 13 Polish rows and retired the 14th: "MOVE ART. 158" still stands at rest as the button, recorded in the file's header. `moved_s9coal.tsv` is deleted, and `ProseRowCeiling` falls 308 -> 294.
+
+**At integration:** the three patches applied with no conflict, though `GameController.cs` was shared by all three. The first cheap bar failed one check: `UsCongressViewDiagnostic` (d) pinned the debt chip's old line, "limit … · … below". It now asserts the new contract: the limit alone on the line, the headroom named on the debt slip (`FiscalRules.DebtLimitLines`).
+
+**The baseline, regenerated** from this tree's tables (the six `drys970` dry sweeps, `reals970se`, `reals970pl`): 424 breach rows, 0 grown, 1,199 shrunk; every table 0 new, 0 stale, PASS.
+
+| | Sweden | Germany | France | USA | Poland | Italy | Sweden real | Poland real |
+|---|---|---|---|---|---|---|---|---|
+| at rest before (§967) | 250 | 258 | 224 | 290 | 245 | 238 | 251 | 36 |
+| at rest after | 70 | 49 | 47 | 72 | 52 | 50 | 71 | 36 |
+
+**Measured (this tree):** cheap bar 154 of 154 clean on the final tree (cheaps970b; the first, cheaps970, failed UsCongressViewDiagnostic (d) on the debt chip's old line), K334 294 prose rows within the ceiling of 294; dry films of the six countries at 1280 (drys970, scope row drys970): 0 failed, 0 overflow, 0 escape, 0 canvas text, declutter 0 new and only stale rows (182-231 a country, the sweeps' removed breaches), moved words 231-262 judged a film, 0 unreachable, 0 still at rest; real films Sweden's sweep at 1280 (reals970se) 0 new, 182 stale, 0 unreachable, and Poland -shotinterrupts at 1280 (reals970pl) 0 new, 0 stale - PASS; the baseline regenerated from those eight tables (424 rows, 0 grown, 1,199 shrunk; every table 0 new, 0 stale - PASS; selftest PASS); after it, the USA's dry film (drys970b, scope row drys970b) 72 at rest, 0 new, 0 stale, 238 moved words judged, 0 unreachable - PASS; frames read by eye (the law pane's stack, the Budget tiles): no collision; UI tier, review skipped; doc bar (docs970)
+
+**Declared** (the implementers' readings, listed back to Design):
+- Band captions are names alone, with the page's book holding every band's slip.
+- The status captions' wording is the sweeps' own. Slip-internal restructures move words between levels of one slip without a moved row.
+- Party names use whole forms only. Division titles keep their head clause. "+N" folds the breakdown's reasons, verbatim on the slip.
+- Law descriptions stay at rest as a law's text. Each status line keeps its draft's figure. A slip_text leaves out "Parliament" / "Congress", so one row reads the same on every legislature.
+- Every moved row's countries name exactly the films whose book holds it.

@@ -394,6 +394,13 @@ namespace PoliSim.UI
         /// footer. Every figure is the number the simulation used, recorded at the write, never
         /// recomputed for display (the single-book rider).
         /// </summary>
+        /// <summary>K322 S4 (K320): the debt trace's two term names at rest, one line each in the name column.</summary>
+        public const string DebtPrimaryTerm = "Primary balance";
+        public const string DebtIssuanceTerm = "Interest at issuance";
+
+        /// <summary>K322 S4: the two names as they stood - a host page puts them on its trace slip, so no word is lost.</summary>
+        public static readonly string[] DebtTermsInFull = { "Primary balance · before the reaction", "Interest at the issuance rate" };
+
         private static List<TraceRow> BuildDebtRows(Country country)
         {
             var rows = new List<TraceRow>();
@@ -416,9 +423,11 @@ namespace PoliSim.UI
             // Playtest 3 cut (2026-08-27): the trailing MECHANISM texts ("a primary deficit",
             // "stance ×1.00", "blended pays ... vs issuance", "(rounding, audited)") were (b) and are
             // cut; the rate and π figures in the trailing column are figures and stay.
-            MoneyTerm(rows, "Primary balance (before the reaction)", ledger.PrimaryBalanceEffect, "");
+            // K322 S4 (K320): the two names that wrapped in the name column at 1280 kept to one line; their whole words are the host page's trace slip
+            // (DebtTermsInFull - the Laws page's, GameController.LawsV35.cs DrawLawsReadings)
+            MoneyTerm(rows, DebtPrimaryTerm, ledger.PrimaryBalanceEffect, "");
             MoneyTerm(rows, "Fiscal reaction on revenue", ledger.FiscalReactionEffect, "");
-            MoneyTerm(rows, "Interest at the issuance rate", ledger.InterestAtIssuance, $"{ledger.IssuanceRateAtOpen:F2}→{ledger.IssuanceRateAtClose:F2}%");
+            MoneyTerm(rows, DebtIssuanceTerm, ledger.InterestAtIssuance, $"{ledger.IssuanceRateAtOpen:F2}→{ledger.IssuanceRateAtClose:F2}%");
             // Name kept short: the first capture (1600, 2026-08-25) showed "Maturity lag (blended −
             // issuance)" SHRUNK to fit the name column rather than wrapping - a parenthetical is one
             // unbreakable run to the measured label.

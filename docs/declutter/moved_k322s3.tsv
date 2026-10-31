@@ -1,0 +1,99 @@
+# K322 S3 (Politics: Parliament, Compass, Cabinet, the central bank; Elias's K320 of 2026-10-30, K321 (g), K334): every at-rest string the sweep moved
+# off the Politics page, in K321 (g)'s machine form with the countries column. capture_stem: the frame the words left (the draw as the label table
+# wrote it; the judge folds digit runs). now_in: the frame whose slip book holds them, two levels. slip_text: the slip's words that hold them (empty:
+# the text before itself). countries: the films whose frame draws them (empty: every country's).
+#
+# Generated rows (party names, the positions list, the breakdown's reasons, the statutes, the shared currency) are read from the label tables the
+# baseline was made from (dryk321_<country>_1280, realk321se) and their slip books; a string is one row, at the first frame it was read on, scoped
+# to every country that drew it.
+#
+# K334 (moved_s9coal.tsv, 14 prose rows, removed with this file): 13 convert to rows (the last thirteen); one does not -
+#   pl3_politics_art158  MOVE ART. 158 - not a move: the brass MOVE ART. 158 still stands at rest on the In the Sejm row (Politics > Cabinet; the pl3
+#   frame's own label table draws it), and its slip coal:sejm:move/act holds MOVE ART. 158 / The Sejm votes today / 231 needed. K321 (g) has no
+#   at-rest form; as a row it would fail STILL AT REST, rightly, so it is recorded here and not as a row.
+capture_stem	text_before	now_in	slip_text	countries
+07a_politics_parliament_deep	No divisions recorded yet - bills that resolve appear here.	slip:07a_politics_parliament_deep	Bills that resolve appear here · No divisions yet: none recorded	
+07a_politics_parliament_deep	No bill currently before Parliament.	slip:07a_politics_parliament_deep	No bill pending: no bill currently before Parliament	sweden,germany,france,poland,italy
+07a_politics_parliament_deep	No bill currently before Congress.	slip:07a_politics_parliament_deep	No bill pending: no bill currently before Congress	usa
+07a_politics_parliament	Annual budget bill - resolves in 21 day(s).	slip:07a_politics_parliament	Annual budget bill · resolves in 21 day(s)	sweden,poland
+07a_politics_parliament_rows	nationalism 1.6 → +0.69 · spendvtax 1.9 → -0.62 · immigrate_policy 3.2 → +0.37 · civlib_laworder 2.1 → +0.59 · lrecon 2.3 → -0.54 · cohesion +0.25 · far - may refuse · opinion cost below 0.01	slip:07a_politics_parliament_rows		poland
+07a_politics_parliament_rows	nationalism 3.6 → +0.29 · spendvtax 5.5 → +0.09 · immigrate_policy 7.0 → -0.40 · civlib_laworder 3.1 → +0.38 · lrecon 6.2 → +0.23 · cohesion +0.29 · opinion cost below 0.01	slip:07a_politics_parliament_rows		poland
+07a_politics_parliament_rows	nationalism 5.3 → -0.06 · spendvtax 5.6 → +0.11 · immigrate_policy 6.4 → -0.29 · civlib_laworder 4.6 → +0.08 · lrecon 5.3 → +0.06 · cohesion +0.30 · opinion cost below 0.01	slip:07a_politics_parliament_rows		poland
+07a_politics_parliament_rows	nationalism 9.1 → -0.81 · spendvtax 3.7 → -0.26 · immigrate_policy 8.8 → -0.75 · civlib_laworder 8.3 → -0.66 · lrecon 2.5 → -0.50 · opposition line -0.18 · opinion cost below 0.01	slip:07a_politics_parliament_rows		poland
+07a_politics_parliament_rows	nationalism 9.8 → -0.96 · spendvtax 9.4 → +0.88 · immigrate_policy 9.8 → -0.96 · civlib_laworder 7.9 → -0.58 · lrecon 9.0 → +0.79 · nearer than the government: own position · populism -0.29 · opinion cost below 0.01	slip:07a_politics_parliament_rows		poland
+07a_politics_parliament_rows	Chair of the Federal Reserve: Harriet Ellsworth, the term as chair to 12…	slip:07a_politics_parliament_rows	Chair of the Federal Reserve: Harriet Ellsworth, the term as chair to 12 Mar 2028.	usa
+07a_politics_parliament_rows	The President nominates; the Senate votes 89 days later, by a majority.	slip:07a_politics_parliament_rows		usa
+07a_politics_parliament_rows	The count: a crossing rule on the chair's roll calls since 2013.	slip:07a_politics_parliament_rows		usa
+07a_politics_parliament_rows	No. 1 · Reconciliation (the debt limit): the limit raised by the excess and US$5.00T · House	slip:07a_politics_parliament_rows		usa
+07a_politics_parliament_rows	No. 2 · Reconciliation (the debt limit): the limit raised by the excess and US$5.00T · Senate	slip:07a_politics_parliament_rows		usa
+90h_congress_before_senate	Acting: the Vice Chair, Rowan Achterberg, until a successor is…	slip:90h_congress_before_senate	Acting: the Vice Chair, Rowan Achterberg, until a successor is confirmed.	usa
+07b_politics_compass	CHES 2024 positions: economic left-right across, liberal-conservative down. Parties at their published pairs, countries at the seat-weighted mean of their chambers, the sitting cabinet ringed.	slip:07b_politics_compass	CHES 2024 · Economic left-right across, liberal-conservative down · Parties at published pairs · countries at chamber means · The sitting cabinet ringed	
+07b_politics_compass	X: economic left (0) to right (10) - CHES lrecon.	slip:07b_politics_compass		
+07b_politics_compass	Y: liberal / GAL (0) to conservative / TAN (10) - CHES galtan.	slip:07b_politics_compass		
+07b_politics_compass	TRAILS · each chamber's mean at every turn close, faint	slip:07b_politics_compass	Trails: each chamber's mean at every turn close · drawn faint	
+07b_politics_compass	diamond  5.6 · 5.2 · over 8 parties, the fitted electorate over the cohorts	slip:07b_politics_compass	the fitted electorate over the cohorts	sweden,germany,poland
+07b_politics_compass	diamond  6.0 · 5.4 · over 2 parties, held, not fitted, on the House vote	slip:07b_politics_compass	held, not fitted, on the House vote	usa
+07d_politics_federalreserve_rows	Δ = LAST − FIRST IN WINDOW · IN THE READING'S OWN UNIT · NEVER %	slip:07d_politics_federalreserve_rows		
+07d_politics_federalreserve_rows	HISTORY 3 px SOLID · PROJECTION 2 px DASHED · THE RULE DOTTED	slip:07d_politics_federalreserve_rows	History 3 px solid · Projection 2 px dashed · The rule dotted	sweden,usa,poland
+07d_politics_federalreserve_rows	THE 4-YEAR TERM ENDS 12 MAR 2028 (12 U.S.C. 242) · 7 IN THE POOL	slip:07d_politics_federalreserve_rows		usa
+07d_politics_federalreserve_rows	The sitting chair at the start of the game - tracks the Taylor Rule's suggested rate closely, with no strong lean in either direction.	slip:07d_politics_federalreserve_rows		usa
+90h_bank_acting_lever	The Vice Chair at the start of the game - acts as chair whenever the chair's term has ended and the Senate has confirmed no successor; tracks the rule's suggested rate closely, with no strong lean in either direction.	slip:90h_bank_acting_lever		usa
+90h_bank_acting_lever	THE TERM ENDED 12 MAR 2028 · ACTING: THE VICE CHAIR, ROWAN ACHTERBERG · BEFORE THE SENATE: INES KOWALSKI, NOMINATED 12 MAR 2028; THE VOTE ON 9 JUN 2028	slip:90h_bank_acting_lever		usa
+90h_bank_acting	Before the Senate: Ines Kowalski, nominated 12 Mar 2028; the vote on 9 Jun 2028	slip:90h_bank_acting		usa
+90i_bank_refused	Three candidates for the next term - the choice is below and on the Docket	slip:90i_bank_refused	A successor is to be chosen - the choice is below and on the Docket	usa
+07_politics	AfD · Alternative für…	slip:07_politics	AfD · ALTERNATIVE FÜR DEUTSCHLAND	germany
+07_politics	BSW · Bündnis Sahra…	slip:07_politics	BSW · BÜNDNIS SAHRA WAGENKNECHT	germany
+07_politics	CDU · Christlich…	slip:07_politics	CDU · CHRISTLICH DEMOKRATISCHE UNION	germany
+07_politics	GRÜNE · Bündnis 90/Die…	slip:07_politics	GRÜNE · BÜNDNIS 90/DIE GRÜNEN	germany
+07_politics	SPD · Sozialdemokratische…	slip:07_politics	SPD · SOZIALDEMOKRATISCHE PARTEI	germany
+07_politics	SSW · Südschleswigscher…	slip:07_politics	SSW · SÜDSCHLESWIGSCHER WÄHLERVERBAND	germany
+07_politics	ENS · Ensemble (majorité…	slip:07_politics	ENS · ENSEMBLE (MAJORITÉ PRÉSIDENTIELLE)	france
+07_politics	RN · Rassemblement…	slip:07_politics	RN · RASSEMBLEMENT NATIONAL	france
+07_politics	SOC · Parti socialiste…	slip:07_politics	SOC · PARTI SOCIALISTE (OUTSIDE THE UG BANNER)	france
+07_politics	UDI · Union des…	slip:07_politics	UDI · UNION DES DÉMOCRATES ET INDÉPENDANTS	france
+07_politics	UG · Union de la gauche…	slip:07_politics	UG · UNION DE LA GAUCHE (NFP JOINT CANDIDACIES)	france
+07_politics	AVS · Alleanza Verdi e…	slip:07_politics	AVS · ALLEANZA VERDI E SINISTRA	italy
+07_politics	Lega · Lega per Salvini…	slip:07_politics	Lega · LEGA PER SALVINI PREMIER	italy
+07_politics	MAIE · MAIE…	slip:07_politics	MAIE · MAIE (CIRCOSCRIZIONE ESTERO)	italy
+07_politics	UV · Union Valdôtaine…	slip:07_politics	UV · UNION VALDÔTAINE (VDA COLLEGE)	italy
+07a_politics_parliament_deep	spendvtax 5.5 → -0.10 · civlib_laworder 9.3 → +0.86 · nationalism 9.5 → +0.90 · lrecon 6.3 → -0.26 · support pull +0.15 · far - may refuse · undecided: inside the band	slip:07a_politics_parliament_deep		sweden
+07a_politics_parliament_deep	spendvtax 6.5 → -0.30 · civlib_laworder 7.9 → +0.58 · nationalism 7.2 → +0.44 · lrecon 7.3 → -0.45 · cohesion +0.28 · far - may refuse · undecided: inside the band	slip:07a_politics_parliament_deep		sweden
+07a_politics_parliament_deep	spendvtax 6.8 → -0.35 · civlib_laworder 5.7 → +0.14 · nationalism 3.9 → -0.22 · lrecon 7.3 → -0.46 · cohesion +0.26 · far - may refuse · undecided: inside the band	slip:07a_politics_parliament_deep		sweden
+07a_politics_parliament_deep	no published spendvtax position · no published nationalism position · no published immigrate_policy position · no published lrecon position · no published civlib_laworder position	slip:07a_politics_parliament_deep		italy
+07a_politics_parliament_rows	spendvtax 0.3 → -0.94 · nationalism 0.9 → +0.83 · immigrate_policy 1.0 → +0.79 · lrecon 1.8 → -0.64 · civlib_laworder 1.6 → +0.68 · opposition line -0.08 · cuts Social Security -0.01 · cuts Income Security -0.01 · opinion cost below 0.01	slip:07a_politics_parliament_rows		italy
+07a_politics_parliament_rows	spendvtax 2.0 → -0.60 · nationalism 4.4 → +0.12 · immigrate_policy 4.9 → +0.03 · lrecon 2.9 → -0.43 · civlib_laworder 4.3 → +0.13 · opposition line -0.15 · populism -0.04 · cuts Social Security -0.01 · cuts Income Security -0.01 · opinion cost below 0.01	slip:07a_politics_parliament_rows		italy
+07a_politics_parliament_rows	spendvtax 4.3 → -0.13 · nationalism 2.5 → +0.50 · immigrate_policy 3.8 → +0.25 · lrecon 5.2 → +0.04 · civlib_laworder 2.8 → +0.43 · opposition line -0.28 · cuts Social Security -0.01 · cuts Income Security -0.01 · opinion cost below 0.01	slip:07a_politics_parliament_rows		italy
+07a_politics_parliament_rows	spendvtax 8.5 → +0.70 · nationalism 6.6 → -0.32 · immigrate_policy 6.5 → -0.29 · lrecon 7.4 → +0.48 · civlib_laworder 6.3 → -0.27 · cohesion +0.20 · cuts Social Security -0.01 · cuts Income Security -0.01 · opinion cost below 0.01	slip:07a_politics_parliament_rows		italy
+07b_politics_compass	Südschleswigscher…	slip:07b_politics_compass	SÜDSCHLESWIGSCHER WÄHLERVERBAND	germany
+07b_politics_compass	Ensemble (majorité…	slip:07b_politics_compass	ENSEMBLE (MAJORITÉ PRÉSIDENTIELLE)	france
+07b_politics_compass	Parti socialiste (outside the…	slip:07b_politics_compass	PARTI SOCIALISTE (OUTSIDE THE UG BANNER)	france
+07b_politics_compass	Union de la gauche (NFP joint…	slip:07b_politics_compass	UNION DE LA GAUCHE (NFP JOINT CANDIDACIES)	france
+07b_politics_compass	Union des démocrates et…	slip:07b_politics_compass	UNION DES DÉMOCRATES ET INDÉPENDANTS	france
+07c_politics_cabinet_deep	One search draws a shortlist for every vacant portfolio; you appoint from each.	slip:07c_politics_cabinet_deep	One search draws a shortlist · For every vacant portfolio · You appoint from each	sweden
+07d_politics_federalreserve	Moderate · the 6-year term ends 18 Jan 2032 (the Riksbank Act, SFS 2022:1568, ch. 7)	slip:07d_politics_federalreserve	THE 6-YEAR TERM ENDS 18 JAN 2032 (THE RIKSBANK ACT, SFS 2022:1568, CH. 7)	sweden
+07d_politics_federalreserve	Blended rule reading this year	slip:07d_politics_federalreserve	Blended rule reading this year · Weighted by household spending	germany,france,italy
+07d_politics_federalreserve	Germany shares the Eurozone's single currency and interest rate with France and Italy. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate), weighted by its share of the three countries' household spending at current prices - the basis Eurostat weights the euro area's inflation index on. As Germany's governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.	slip:07d_politics_federalreserve	One currency and rate with France and Italy / Each member's Taylor Rule reading pulls it / Weighted by household spending / Your push: modest, bounded, not control / Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate) / Each member is weighted by its share of the three countries' household spending at current prices - the basis Eurostat weights the euro area's inflation index on / As Germany's governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone	germany
+07d_politics_federalreserve	MODERATE · LEAN 0.00 · APPOINTED BY THE EUROPEAN COUNCIL, BY A QUALIFIED MAJORITY · THE 8-YEAR TERM ENDS 6 NOV 2032 (THE ESCB STATUTE, ART. 11.2)	slip:07d_politics_federalreserve		germany
+07d_politics_federalreserve	France shares the Eurozone's single currency and interest rate with Germany and Italy. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate), weighted by its share of the three countries' household spending at current prices - the basis Eurostat weights the euro area's inflation index on. As France's governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.	slip:07d_politics_federalreserve	One currency and rate with Germany and Italy / Each member's Taylor Rule reading pulls it / Weighted by household spending / Your push: modest, bounded, not control / Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate) / Each member is weighted by its share of the three countries' household spending at current prices - the basis Eurostat weights the euro area's inflation index on / As France's governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone	france
+07d_politics_federalreserve	MODERATE · LEAN 0.00 · APPOINTED BY THE EUROPEAN COUNCIL, BY A QUALIFIED MAJORITY · THE 8-YEAR TERM ENDS 18 JUL 2032 (THE ESCB STATUTE, ART. 11.2)	slip:07d_politics_federalreserve		france
+07d_politics_federalreserve	Moderate · the 6-year term ends 19 Feb 2029 (the NBP Act, Art. 9)	slip:07d_politics_federalreserve	THE 6-YEAR TERM ENDS 19 FEB 2029 (THE NBP ACT, ART. 9)	poland
+07d_politics_federalreserve	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:07d_politics_federalreserve		italy
+07d_politics_federalreserve	Italy shares the Eurozone's single currency and interest rate with Germany and France. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate), weighted by its share of the three countries' household spending at current prices - the basis Eurostat weights the euro area's inflation index on. As Italy's governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.	slip:07d_politics_federalreserve	One currency and rate with Germany and France / Each member's Taylor Rule reading pulls it / Weighted by household spending / Your push: modest, bounded, not control / Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate) / Each member is weighted by its share of the three countries' household spending at current prices - the basis Eurostat weights the euro area's inflation index on / As Italy's governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone	italy
+07d_politics_federalreserve	MODERATE · LEAN 0.00 · APPOINTED BY THE EUROPEAN COUNCIL, BY A QUALIFIED MAJORITY · THE 8-YEAR TERM ENDS 21 JUL 2030 (THE ESCB STATUTE, ART. 11.2)	slip:07d_politics_federalreserve		italy
+07d_politics_federalreserve_deep	THE 6-YEAR TERM ENDS 18 JAN 2032 (THE RIKSBANK ACT, SFS 2022:1568, CH. 7) · 7 IN THE POOL	slip:07d_politics_federalreserve_deep		sweden
+07d_politics_federalreserve_deep	The sitting Riksbank governor at the start of the game - tracks the rule's suggested rate closely, with no strong lean in either direction.	slip:07d_politics_federalreserve_deep		sweden
+07d_politics_federalreserve_deep	THE 6-YEAR TERM ENDS 19 FEB 2029 (THE NBP ACT, ART. 9) · 7 IN THE POOL	slip:07d_politics_federalreserve_deep		poland
+07d_politics_federalreserve_deep	The sitting NBP president at the start of the game - tracks the rule's suggested rate closely, with no strong lean in either direction.	slip:07d_politics_federalreserve_deep		poland
+pl1_politics_leave	LEAVE THE GOVERNMENT	slip:pl1_politics_leave	LEAVE THE GOVERNMENT	poland
+pl1_politics_leave	YOUR MINISTERS LEAVE THE COUNCIL OF MINISTERS	slip:pl1_politics_leave	Your posts go to · Leaving ends your ministers' posts the same day	poland
+pl1_politics_leave	THE CABINET GOVERNS ON THE SEATS IT KEEPS	slip:pl1_politics_leave	After: 230 of 460 · One short of 231 · the cabinet stays unless the Sejm removes it	poland
+pl1_politics_leave	THE DECLARED OPPOSITION MAY MOVE ART. 158 THE SAME DAY	slip:pl1_politics_leave	Leaving · Art. 158 may follow	poland
+pl3_politics_art158	ART. 158 · A CONSTRUCTIVE VOTE	slip:pl3_politics_art158	Art. 158: a constructive vote	poland
+pl3_politics_art158	⁄ 231 NEEDED	slip:pl3_politics_art158	231 needed	poland
+pl3_politics_art158	⁄ 46 TO MOVE IT	slip:pl3_politics_art158	46 deputies move it	poland
+pl3_politics_art158	A CONSTRUCTIVE VOTE OF NO CONFIDENCE (ART. 158)	slip:pl3_politics_art158	ART. 158 · YOUR MOTION · Art. 158: a constructive vote	poland
+pl3_politics_art158	200 OF 460 DEPUTIES WOULD CHOOSE YOUR CANDIDATE FOR PRIME MINISTER	slip:pl3_politics_art158	200 of 460 deputies for	poland
+pl3_politics_art158	IT NEEDS 231, A MAJORITY OF THE STATUTORY 460 DEPUTIES	slip:pl3_politics_art158	It needs 231 of the statutory 460	poland
+pl3_politics_art158	46 DEPUTIES MUST MOVE IT, NAMING THE CANDIDATE (ART. 158 UST. 1)	slip:pl3_politics_art158	46 deputies move it	poland
+pl3_politics_art158	YOUR GOVERNMENT: <CABINET>	slip:pl3_politics_art158	Your government: PiS	poland
+pl3_politics_art158	THE SEJM VOTES ON THE MOTION'S DAY	slip:pl3_politics_art158	Voted on the motion's day	poland

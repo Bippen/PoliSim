@@ -1,0 +1,34 @@
+# K322 S2 - THE BUDGET (every tab: 05*) and the Desk's government-budget frames (93*). The words K320 took off these frames at rest, and the slip
+# (or the slip book) that holds them now. K321 (g)'s machine form: now_in is slip:<capture stem>, the frame on which that slip book holds the words
+# (two levels); slip_text is the words the slip holds them in (empty: the text before itself is on the slip); countries names the films a row is
+# judged on where its words exist only in some countries (empty: every country's film).
+# One row per moved string (figures fold to '#', so one row covers every figure a string printed); capture_stem is a frame it breached on.
+# The bill's status, the locked action's reason, the fund's lock and the Desk's empty effects note are slips packed from the sentence verbatim
+# (GameController.BudgetPackedSlip: lines of at most ten words at the sentence's own breaks, a fifth line on as a marked term's level 2), so their
+# rows carry no slip_text. The statute's citation and the earned income credit are the statute slip's marked terms, one line each at level 2.
+capture_stem	text_before	now_in	slip_text	countries
+05a_budget_tax_deep	The government's budget is before the chamber (25 line(s) raised); the chamber decides in 21 day(s). Your draft below can be tabled as the alternative.	slip:05a_budget_tax_deep		sweden
+05a_budget_tax_deep	The government's budget is before the chamber (25 line(s) cut); the chamber decides in 21 day(s). Your draft below can be tabled as the alternative.	slip:05a_budget_tax_deep		italy,poland
+05a_budget_tax_deep	Your incoming government's first budget is open - introduce your current draft as a bill below. After this one, the annual process opens on your country's own fiscal-year date.	slip:05a_budget_tax_deep		france,germany
+05s_budget_us_congress_verbs	No budget bill currently before Congress. The annual process opens on the first Monday in February, the president's request day. The government is funded through 30 Sep 2024.	slip:05s_budget_us_congress_verbs		usa
+05a_budget_tax_deep	This country's budget procedure is not yet modelled - the government's bill is voted alone	slip:05a_budget_tax_deep		italy,poland
+05a_budget_tax_rows	X: THE TARIFF'S OWN CURRENCY, TO ITS TOP THRESHOLD × 1.5	slip:05a_budget_tax_rows		
+05a_budget_tax_rows	X: THE TARIFF'S OWN CURRENCY, TO ITS TOP THRESHOLD × 1.5 · THE EARNED INCOME CREDIT (JOBBSKATTEAVDRAGET, SKV 433 2025): 22.2 % WITH IT AGAINST 32.4 % WITHOUT AT THE MEAN INCOME · IN THE YIELD	slip:05a_budget_tax_rows		sweden
+05a_budget_tax_rows	(914,51 · y + 1 400) · y · (173,10 · z + 2 397) · z + 1 034,87 · 0,42 · x – 11 135,63 · 0,45 · x – 19 470,38 — THE STATUTE'S COEFFICIENTS, VERBATIM · SPLITTING: TWICE THE TARIFF ON HALF, NOT DRAWN	slip:05a_budget_tax_rows		germany
+05a_budget_tax_rows	CSG 9.20 + CRDS 0.50 ON 98.25 % OF GROSS TO 192 240 € · 2.40 OF IT DEDUCTIBLE — THE SPLIT IS THE INSTRUMENT · A SUPPORTING FLAT ROW, NOT A BRACKET · urssaf 2fd04556	slip:05a_budget_tax_rows		france
+05r_budget_rest	limit US$46.9T · US$1.16T…	slip:05r_budget_us_debt_limit_slip	LIMIT US$46.9T · US$1.16T BELOW	usa
+05s_budget_us_congress_verbs	Raise by the excess and US$2.50T	slip:05s_budget_us_congress_verbs	PROPOSE A RAISE OF THE EXCESS AND US$2.50T	usa
+05b_budget_spending	A tenth, to stay.	slip:05b_budget_spending		
+05b_budget_spending_pension_dial_drafted	Few reach it young. The line is lean.	slip:05b_budget_spending_pension_dial_drafted		
+05b_budget_spending_pension_dial_drafted	Sixty-five. The line as the pyramid has it.	slip:05b_budget_spending_pension_dial_drafted		
+05b_budget_spending_pension_dial_drafted	Three years on. The line is smaller.	slip:05b_budget_spending_pension_dial_drafted		
+05b_budget_spending_pension_dial_drafted	Two years on. The line eases.	slip:05b_budget_spending_pension_dial_drafted		
+05b_budget_spending_pension_dial_set_by_bill	NEXT: SCHEDULE ENDS AT 64 · BY BIRTH YEAR, YEARS IN FORCE	slip:05b_budget_spending_pension_dial_set_by_bill		france
+05e_budget_swf_rows	EMERGENCY DRAWDOWN · A STANDALONE BILL · DOES NOT WAIT FOR THE ANNUAL BUDGET	slip:05e_budget_swf_rows		
+05e_budget_swf_rows	No drawdown bill before Parliament - one withdraws from the fund now, not at the fiscal year.	slip:05e_budget_swf_rows	ONE WITHDRAWS FROM THE FUND NOW, NOT AT THE FISCAL YEAR	
+05e_budget_swf_rows	No fund stands to draw down - the annual budget creates one first.	slip:05e_budget_swf_rows	THE ANNUAL BUDGET CREATES ONE FIRST	
+05e_budget_swf_rows	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:05e_budget_swf_rows		italy,poland,sweden
+05e_budget_swf	No fund stands - drafted to exist when the annual budget bill passes; its contribution is then a line on the book.	slip:05e_budget_swf	WHEN THE ANNUAL BUDGET BILL PASSES · ITS CONTRIBUTION IS THEN A LINE ON THE BOOK	
+05e_budget_swf	ASSET CLASS MIX · RAW WEIGHTS, NORMALISED TO 100 · THE FIGURE AT THE RIGHT IS EACH CLASS'S SHARE OF THE FUND	slip:05e_budget_swf	RAW WEIGHTS, NORMALISED TO 100 · THE FIGURE AT THE RIGHT: EACH CLASS'S SHARE OF THE FUND	
+93b_desk_us_budget_acts	NO BUDGET BEFORE THE CHAMBER — THE BOOK AS IT STANDS, UNTIL THE GOVERNMENT TABLES ITS BUDGET · NO MARGIN: THE PROJECTION IS DETERMINISTIC · SCALED DISPLAY ESTIMATE, NOT A SIMULATED SUB-YEAR VALUE	slip:93b_desk_us_budget_acts		usa
+93c_desk_us_shutdown	Funding lapse · day 12 · no funding measure law…	slip:93c_desk_us_shutdown	A FUNDING LAPSE · DAY 12 · NO APPROPRIATION OR CONTINUING RESOLUTION BECAME LAW BY THE HORIZON · NON-EXCEPTED OUTLAYS STOP AND ARE PAID IN FULL WHEN FUNDING RETURNS	usa

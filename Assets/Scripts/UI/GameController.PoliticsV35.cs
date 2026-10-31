@@ -25,6 +25,51 @@ namespace PoliSim.UI
         private PeopleSlips.Book _politicsSlipBook = new PeopleSlips.Book();
 
         /// <summary>
+        /// K322 S3 (K320's caps, Elias 2026-10-30): the first of <paramref name="candidates"/> that fits <paramref name="width"/> whole at its size - a
+        /// caption is never cut with "…", so a long form steps down to a shorter WHOLE form (a clause dropped, never a word cut) and the last, the
+        /// shortest, stands where nothing fits. The caller keeps the long form on its slip.
+        /// </summary>
+        private static string PoliticsFitWhole(GUIStyle face, float width, params string[] candidates)
+        {
+            string last = string.Empty;
+            foreach (string c in candidates)
+            {
+                if (string.IsNullOrEmpty(c)) { continue; }
+                last = c;
+                if (face.CalcSize(new GUIContent(c)).x <= width) { return c; }
+            }
+            return last;
+        }
+
+        /// <summary>K322 S3: a party's name in whole forms, longest first - the name as published, the name before its bracket ("Ensemble"), the last part of
+        /// a hyphenated name ("Socialdemokraterna"); with <paramref name="shortName"/>, each led by the short name and the short name alone last. The name as
+        /// published stands whole on the party's slip.</summary>
+        private static string[] PartyNameForms(PoliticalParty party, bool shortName)
+        {
+            string name = party.Name ?? string.Empty;
+            int bracket = name.IndexOf(" (", System.StringComparison.Ordinal);
+            string beforeBracket = bracket > 0 ? name.Substring(0, bracket) : null;
+            // the last part only of a name that is one hyphenated word ("Arbetarepartiet-Socialdemokraterna"); a spaced dash or a hyphen in a phrase
+            // ("Azione - Italia Viva", "Christlich-Soziale Union", "(RN-Ciotti)") joins words, and its tail is no name
+            string hyphenTail = name.Contains("-") && !name.Contains(" ") ? name.Substring(name.LastIndexOf('-') + 1) : null;
+            if (!shortName) { return new[] { name, beforeBracket, hyphenTail }; }
+            string lead = party.ShortName + " · ";
+            return new[] { lead + name, beforeBracket != null ? lead + beforeBracket : null, hyphenTail != null ? lead + hyphenTail : null, party.ShortName };
+        }
+
+        /// <summary>K322 S3: K321 (b)'s counted words - a token (split at white space, the middle dot and the slash) that holds a letter; figures are uncounted.</summary>
+        private static int CountedWords(string text)
+        {
+            if (string.IsNullOrEmpty(text)) { return 0; }
+            int n = 0;
+            foreach (string token in text.Split(new[] { ' ', '\t', '\n', '·', '/' }, System.StringSplitOptions.RemoveEmptyEntries))
+            {
+                foreach (char ch in token) { if (char.IsLetter(ch)) { n++; break; } }
+            }
+            return n;
+        }
+
+        /// <summary>
         /// Master Sequence step 5e, Phase A: Politics tab - Parliament, the Political Compass half of the old "Compass &amp; Demographics" tab, Cabinet's
         /// management half, and the central bank (Elias's own confirmed placement - a real political institution with its own lever, even though the
         /// Fed/Eurozone exemption means it's never Parliament-gated). Per-category gating matches the old dispatch exactly - Parliament/Compass were never
@@ -103,6 +148,8 @@ namespace PoliSim.UI
                     break;
             }
             GUILayout.EndVertical();
+            // K322 S3 (K320 (5)): the shared currency's tab carries slips too - the words its paragraph and its long rows held at rest
+            if (!DeskProvenance.On) { DrawSlips(_politicsSlipBook, GUILayoutUtility.GetLastRect()); }
         }
 
         /// <summary>
@@ -400,9 +447,10 @@ namespace PoliSim.UI
                     float abbrevW = V35.Px(34f), pairW = Mathf.Ceil(pairFace.CalcSize(new GUIContent("10.0 · 10.0")).x) + 4f;
                     GUI.Label(new Rect(row.x, row.y, abbrevW, row.height), party.ShortName, abbrevFace);
                     float nameW = Mathf.Max(1f, row.width - abbrevW - pairW - V35.Px(6f));
-                    string shown = V35Fit(party.Name, nameFace, nameW, out bool cut);
-                    if (cut && party.Name.Contains("-")) { shown = V35Fit(party.Name.Substring(party.Name.LastIndexOf('-') + 1), nameFace, nameW, out _); }
-                    PoliSimWidgets.MeasuredLabel(new Rect(row.x + abbrevW, row.y, nameW, row.height), shown, nameFace);
+                    // K322 S3 (K320: never cut with "…"): the name whole, before its bracket, or its hyphenated last part - else none beside the short name;
+                    // the name as published is the row's slip
+                    string shown = PoliticsFitWhole(nameFace, nameW, PartyNameForms(party, shortName: false));
+                    if (nameFace.CalcSize(new GUIContent(shown)).x <= nameW) { PoliSimWidgets.MeasuredLabel(new Rect(row.x + abbrevW, row.y, nameW, row.height), shown, nameFace); }
                     GUI.Label(new Rect(row.xMax - pairW, row.y, pairW, row.height), pair, point.HasValue ? pairFace : absentFace);
                 }
                 SlipAnchor(row, "compass:party:" + party.Abbrev);
@@ -468,13 +516,18 @@ namespace PoliSim.UI
                 {
                     foreach (CabinetPortfolio portfolio in unsearched) { _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio); }
                 }
-                string sentence = unsearched.Count == 1 ? "A shortlist is drawn for the vacant portfolio; you appoint from it." : "One search draws a shortlist for every vacant portfolio; you appoint from each.";
+                // K322 S3 (K320: no sentence at rest): the vacancies with no shortlist counted beside the button; what one search does is the button's slip
+                string caption = unsearched.Count == 1 ? "1 portfolio to search" : unsearched.Count.ToString(CultureInfo.InvariantCulture) + " portfolios to search";
                 if (Event.current.type == EventType.Repaint)
                 {
                     GUIStyle face = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
                     float sx = row.x + bw + V35.Px(14f);
-                    PoliSimWidgets.MeasuredLabel(new Rect(sx, row.y, Mathf.Max(1f, row.xMax - sx), row.height), V35Fit(sentence, face, Mathf.Max(1f, row.xMax - sx), out _), face);
+                    PoliSimWidgets.MeasuredLabel(new Rect(sx, row.y, Mathf.Max(1f, row.xMax - sx), row.height), caption, face);
                 }
+                SlipAnchor(new Rect(row.x, row.y, bw, row.height), "cab:search");
+                _politicsSlipBook.Anchors["cab:search"] = unsearched.Count == 1
+                    ? new SlipContent("SEARCH").Add("A shortlist for the vacant portfolio").Add("You appoint from it")
+                    : new SlipContent("SEARCH").Add("One search draws a shortlist").Add("For every vacant portfolio").Add("You appoint from each");
             }
             V35.FloorGuarded = false;
         }
@@ -848,12 +901,11 @@ namespace PoliSim.UI
                 float tx = govInner.x + side + V35.Px(12f);
                 float lineW = Mathf.Max(1f, (pending ? govInner.width * 0.7f : govInner.xMax - tx));
                 GUIStyle nameFace = V35Serif(V35.Name, PoliSimTheme.TextPrimary), stateFace = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
-                PoliSimWidgets.MeasuredLabel(new Rect(tx, govInner.y, lineW, V35.Px(24f)), V35Fit(acting != null && !pending ? acting : head + " · " + chair.Name, nameFace, lineW, out _), nameFace);   // K15: "Acting: the Vice Chair"
-                string state = pending ? CapitalWord(UiFormat.CountWord(_fedChairCandidates.Count)) + " candidates for the next term - the choice is below and on the Docket"
-                    : beforeSenate != null ? beforeSenate
-                    : heldOver != null ? "The chair's term ended " + chair.TermEnds.ToString("d MMM yyyy", CultureInfo.InvariantCulture) + " - the Senate has confirmed no successor"
-                    : chair.Philosophy + " · " + CentralBankTermWords(chair, PlayerCountryId);
-                PoliSimWidgets.MeasuredLabel(new Rect(tx, govInner.y + V35.Px(24f), lineW, V35.Px(20f)), V35Fit(state, stateFace, lineW, out _), stateFace);
+                // K322 S3 (K320: never cut with "…"): the name line steps down whole
+                PoliSimWidgets.MeasuredLabel(new Rect(tx, govInner.y, lineW, V35.Px(24f)), PoliticsFitWhole(nameFace, lineW, acting != null && !pending ? acting : null, head + " · " + chair.Name, chair.Name), nameFace);   // K15: "Acting: the Vice Chair"
+                // K322 S3 (K320: a caption is one line, no sentence at rest): the state in a few words - the statute, the choice's place and the Senate's
+                // sentence are the governor's slip
+                PoliSimWidgets.MeasuredLabel(new Rect(tx, govInner.y + V35.Px(24f), lineW, V35.Px(20f)), PoliticsFitWhole(stateFace, lineW, GovernorStateShort(chair, pending, beforeSenate != null, heldOver != null)), stateFace);
                 if (pending)
                 {
                     GUIStyle stamp = V35Mono(V35.Floor, PoliSimTheme.Caution, bold: true, TextAnchor.MiddleCenter);
@@ -870,7 +922,8 @@ namespace PoliSim.UI
             _politicsSlipBook.Anchors["bank:governor"] = new SlipContent(head.ToUpperInvariant() + " · " + chair.Name.ToUpperInvariant())
                 .Add(chair.Philosophy.ToString().ToUpperInvariant() + " · LEAN " + chair.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + " ON THE RULE'S RATE")
                 .Add(chair.Description.ToUpperInvariant())
-                .Add(pending ? "A SUCCESSOR IS TO BE CHOSEN - TIME HOLDS UNTIL ONE IS" : heldOver ?? CentralBankTermWords(chair, PlayerCountryId).ToUpperInvariant() + "; A SHORTLIST IS DRAWN THEN");
+                .Add(pending ? "A SUCCESSOR IS TO BE CHOSEN - THE CHOICE IS BELOW AND ON THE DOCKET - TIME HOLDS UNTIL ONE IS" : heldOver ?? CentralBankTermWords(chair, PlayerCountryId).ToUpperInvariant() + "; A SHORTLIST IS DRAWN THEN");
+            if (!pending && heldOver == null && beforeSenate != null) { _politicsSlipBook.Anchors["bank:governor"].Add(beforeSenate.ToUpperInvariant()); }   // K322 S3: the Senate's sentence, off the card at rest
             if (UsFedConsent.Applies(_playerCountry))
             {
                 // PS-6 US-29 (R-US12 (a)): who appoints, and the day's count by the crossing rule (K17); the Vice Chair named where acting (K15)
@@ -884,6 +937,27 @@ namespace PoliSim.UI
 
         /// <summary>§746: a count word as a sentence starts it - "Two", not "TWO" or "two".</summary>
         private static string CapitalWord(string word) => string.IsNullOrEmpty(word) ? word : char.ToUpperInvariant(word[0]) + word.Substring(1).ToLowerInvariant();
+
+        /// <summary>K322 S3 (K320's caps): the governor card's state at rest, whole forms longest first - the choice, the Senate, the holdover or the term's end;
+        /// the sentences they stood for (the statute, where the choice is, the Senate's count) are the governor's slip.</summary>
+        private string[] GovernorStateShort(FedChair chair, bool pending, bool beforeSenate, bool heldOver)
+        {
+            string Day(System.DateTime d) => d.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
+            if (pending)
+            {
+                string count = CapitalWord(UiFormat.CountWord(_fedChairCandidates.Count)) + " candidates";
+                return new[] { count + " · next term", count };
+            }
+            if (beforeSenate)
+            {
+                FedNomination nomination = UsFedConsent.PendingWords(_playerCountry) != null ? _playerCountry.FedNominationPending : null;
+                if (nomination != null) { return new[] { "Before the Senate · vote " + Day(nomination.VoteOn), "Before the Senate" }; }
+                FedSenateVote refused = UsFedConsent.StandingRefusal(_playerCountry, _simulationManager.CurrentDate);
+                return refused != null ? new[] { "Refused by the Senate · " + Day(refused.VotedOn), "Refused by the Senate" } : new[] { "Before the Senate" };
+            }
+            if (heldOver) { return new[] { "Term ended " + Day(chair.TermEnds) + " · no successor", "Term ended " + Day(chair.TermEnds) }; }
+            return new[] { chair.Philosophy + (chair.HasTerm() ? " · term ends " + Day(chair.TermEnds) : string.Empty), chair.Philosophy.ToString() };
+        }
 
         private float PartyTileHeight()
         {
@@ -903,7 +977,6 @@ namespace PoliSim.UI
             string shareText = UiFormat.Number(share, 1) + " %";
             // §575: a player reads the display short name, never the key; the model holds the name as published (the composition's common
             // "Socialdemokraterna" is not held) - fitted here, whole on the slip
-            string name = party.ShortName + " · " + party.Name;
             if (Event.current.type == EventType.Repaint)
             {
                 HemicycleRenderer.DrawMark(new Rect(inner.x, inner.y + Mathf.Round((inner.height - side) * 0.5f), side, side), PlayerCountryId, party);
@@ -919,13 +992,9 @@ namespace PoliSim.UI
                 float sw = Mathf.Ceil(shareFace.CalcSize(new GUIContent(shareText)).x) + 2f;
                 if (x + fw + V35.Px(6f) + sw <= inner.xMax) { GUI.Label(new Rect(x + fw + V35.Px(6f), y, sw, figureH), shareText, shareFace); }
                 float nameW = Mathf.Max(1f, inner.xMax - x);
-                string fitted = V35Fit(name, nameFace, nameW, out bool cut);
-                if (cut && party.Name.Contains("-"))
-                {
-                    // a hyphenated name has no word to cut at ("Arbetarepartiet-Socialdemokraterna" fitted to "S …", the first film): its last part, which is the
-                    // party's own common name where the published name joins two ("Socialdemokraterna")
-                    fitted = V35Fit(party.ShortName + " · " + party.Name.Substring(party.Name.LastIndexOf('-') + 1), nameFace, nameW, out _);
-                }
+                // K322 S3 (K320: never cut with "…"): the name steps down whole - as published, before its bracket, a hyphenated name's last part (the party's
+                // own common name where the published name joins two: "Socialdemokraterna"), then the short name alone; the name as published is on the slip
+                string fitted = PoliticsFitWhole(nameFace, nameW, PartyNameForms(party, shortName: true));
                 PoliSimWidgets.MeasuredLabel(new Rect(x, y + figureH + 2f, nameW, nameH), fitted, nameFace);
             }
             SlipAnchor(r, "parl:party:" + party.Abbrev);

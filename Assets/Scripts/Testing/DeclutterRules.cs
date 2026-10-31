@@ -579,8 +579,9 @@ namespace PoliSim.Testing
 
         /// <summary>K334: the prose rows standing when the reader landed (eight files, §957-§966). A ratchet - lowered as files convert, never raised:
         /// DeclutterReachabilityCheck fails above it, so no new prose file and no added prose row passes. 439 -> 308 at §968: 131 of the Energy
-        /// sweep's rows converted (moved_k334s1.tsv); its other 159 are on some countries' books only, and a moved row has no country scope yet.</summary>
-        public const int ProseRowCeiling = 308;
+        /// sweep's rows converted (moved_k334s1.tsv); its other 159 are on some countries' books only (the country scope came at §969). 308 -> 294
+        /// at §970: COAL-2's 14 (moved_s9coal.tsv) converted by the Politics sweep.</summary>
+        public const int ProseRowCeiling = 294;
 
         /// <summary>The <see cref="MovedRow.Where"/> of a prose file's row.</summary>
         public const string ProseWhere = "prose";

@@ -313,7 +313,7 @@ namespace PoliSim.UI
 
         /// <summary>
         /// PS-6 US-35 (board 30c, answer 4): THE DEBT TILE'S STATE in a few words, for the chip under its name - null where the game holds no limit, or the debt is
-        /// below it (then <paramref name="sub"/> is the muted line: the limit and the headroom). The states the model reaches: AT THE LIMIT with the measures'
+        /// below it (then <paramref name="sub"/> is the muted line: the limit; K322 S2 moved the headroom to the slip). The states the model reaches: AT THE LIMIT with the measures'
         /// days (a clock running); RAISE BEFORE CONGRESS and RAISE ON YOUR DESK while the measures run (a clock); LIMIT BINDS · CUT IN FORCE and BINDS · RAISE ON
         /// YOUR DESK once they have run out (the cut in force); SUSPENDED TO a day (the limit set aside - the record's P.L. 118-5 at a start inside it, or the
         /// game's own suspension, K22). A withheld raise (K22) keeps the board's chip - RAISE BEFORE CONGRESS while the measures run, LIMIT BINDS · CUT IN FORCE
@@ -327,8 +327,8 @@ namespace PoliSim.UI
             if (UsDebtLimit.Suspended(country, today)) { ink = DebtLimitInk.SetAside; return "SUSPENDED TO " + Day(country.DebtLimitSuspendedThrough).ToUpperInvariant(); }
             if (country.DebtLimitReachedOn == System.DateTime.MinValue)
             {
-                double below = country.DebtLimitUsd - UsDebtLimit.SubjectToLimitUsd(country);
-                sub = "limit " + UiFormat.Money(Billions(country.DebtLimitUsd), MoneyUnit.Billions) + " · " + UiFormat.Money(Billions(below), MoneyUnit.Billions) + " below";
+                // K322 S2 (K320): the limit alone at rest - the headroom with it was cut with an ellipsis on the tile; it is the debt slip's (DebtLimitLines: "US$1.16T below")
+                sub = "limit " + UiFormat.Money(Billions(country.DebtLimitUsd), MoneyUnit.Billions);
                 return null;
             }
             bool onDesk = pendingRaise != null && pendingRaise.Docket != null;

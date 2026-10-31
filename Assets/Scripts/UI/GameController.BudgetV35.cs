@@ -36,6 +36,109 @@ namespace PoliSim.UI
         /// <summary>§734: the page's slips, built each frame as the page draws.</summary>
         private PeopleSlips.Book _budgetSlipBook = new PeopleSlips.Book();
 
+        // ---- K322 S2 (K320, Elias 2026-10-30; K321's caps): the page at rest is labels and one-line captions; the sentences they replaced are slips ----
+
+        /// <summary>K321 (f): a level-1 slip line holds at most this many counted words, and a slip at most <see cref="BudgetSlipLineCap"/> lines under its head.</summary>
+        private const int BudgetSlipWordCap = 10;
+        private const int BudgetSlipLineCap = 4;
+
+        /// <summary>K321 (b): the most counted words a caption at rest may hold.</summary>
+        private const int BudgetRestWordCap = 8;
+
+        /// <summary>Where a packed slip may break a line: the reachability check's own segment breaks (a middle dot, a spaced dash or slash, a colon, a
+        /// semicolon, a full stop, a comma) and the em dash, so no segment the check reads is ever split across two lines.</summary>
+        private static readonly System.Text.RegularExpressions.Regex BudgetSlipBreaks =
+            new System.Text.RegularExpressions.Regex(@"( · | - | — | / |: |; |\. |, )", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+        /// <summary>
+        /// K322 S2: a sentence the page drew at rest, as its slip - its words verbatim in the slip's capitals, packed into lines of at most ten counted words
+        /// at the sentence's own breaks (a line ends where a break was, and the break's mark goes), at most four lines; past four, the fourth line is a marked
+        /// term and the rest is that term's level-2 slip, one line. Nothing is reworded, so every segment the reachability check reads is on the slip.
+        /// </summary>
+        private static SlipContent BudgetPackedSlip(string head, string text, PeopleSlips.Book book)
+        {
+            var slip = new SlipContent(head);
+            if (string.IsNullOrEmpty(text)) { return slip; }
+            string[] parts = BudgetSlipBreaks.Split(text.Trim());
+            var lines = new List<string>();
+            var line = new System.Text.StringBuilder();
+            int words = 0;
+            for (int i = 0; i < parts.Length; i += 2)
+            {
+                string segment = parts[i].Trim();
+                if (segment.Length == 0) { continue; }
+                int w = RangeCaptions.CountedWords(segment);
+                if (line.Length > 0 && words + w > BudgetSlipWordCap) { lines.Add(BudgetSlipLine(line)); line.Clear(); words = 0; }
+                else if (line.Length > 0) { line.Append(parts[i - 1]); }
+                line.Append(segment);
+                words += w;
+            }
+            if (line.Length > 0) { lines.Add(BudgetSlipLine(line)); }
+            if (lines.Count <= BudgetSlipLineCap)
+            {
+                foreach (string l in lines) { slip.Add(l); }
+                return slip;
+            }
+            for (int i = 0; i < BudgetSlipLineCap - 1; i++) { slip.Add(lines[i]); }
+            string term = lines[BudgetSlipLineCap - 1];
+            slip.Add("[[" + term + "]]");
+            book.Terms[term] = new SlipContent(term).Add(string.Join(" · ", lines.GetRange(BudgetSlipLineCap, lines.Count - BudgetSlipLineCap)));
+            return slip;
+        }
+
+        private static string BudgetSlipLine(System.Text.StringBuilder line) => line.ToString().Trim().TrimEnd('.', ',', ';', ':').Trim().ToUpperInvariant();
+
+        /// <summary>A count of days as a caption prints it.</summary>
+        private static string BudgetDays(int days) => days.ToString(CultureInfo.InvariantCulture) + (days == 1 ? " day" : " days");
+
+        /// <summary>K322 S2: a kept section's caption on its rule (the Statistics sheet's form) with its slip on the caption's words.</summary>
+        private void BudgetCaptionWithSlip(string caption, string anchor, SlipContent slip)
+        {
+            Rect row = DrawStatsSectionCaption(caption);
+            GUIStyle face = DeskCaption(8.5f, PoliSimTheme.TextSecondary);
+            SlipAnchor(new Rect(row.x, row.y, Mathf.Min(row.width, Mathf.Ceil(face.CalcSize(new GUIContent(caption)).x) + 4f), row.height), anchor);
+            _budgetSlipBook.Anchors[anchor] = slip;
+        }
+
+        /// <summary>K322 S2 (K320): a kept lever's lock as this page draws it - the lock and its word at rest, the role's reason (a sentence; the shared
+        /// <c>DrawLeverLock</c> prints it whole) its slip. False, drawing nothing, where the player's party may introduce the bill.</summary>
+        private bool BudgetLock(Congress.Kind kind, string anchor)
+        {
+            if (_playerCountry == null || _simulationManager.PlayerMayIntroduce(PlayerCountryId, kind, null, out string lockedBecause)) { return false; }
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            float h = Mathf.Ceil(DeskCaptionHeight(caption)) + V35.Px(4f);
+            Rect row = GUILayoutUtility.GetRect(10f, h, GUILayout.ExpandWidth(true));
+            float glyph = Mathf.Min(h, V35.Px(14f));
+            float wordWidth = Mathf.Ceil(caption.CalcSize(new GUIContent("LOCKED")).x) + 2f;
+            var hit = new Rect(row.x, row.y, glyph + V35.Px(6f) + wordWidth, row.height);
+            if (Event.current.type == EventType.Repaint)
+            {
+                bool ambient = GUI.enabled;
+                GUI.enabled = true;   // the lock reads at full ink whatever the family's ambient state, as DrawLeverLock's caption did
+                DrawStateGlyph(new Rect(row.x, row.y + Mathf.Round((row.height - glyph) * 0.5f), glyph, glyph), Symbol.Locked, PoliSimTheme.TextSecondary);
+                GUI.Label(new Rect(row.x + glyph + V35.Px(6f), row.y, wordWidth, row.height), "LOCKED", caption);
+                GUI.enabled = ambient;
+            }
+            SlipAnchor(hit, anchor);
+            _budgetSlipBook.Anchors[anchor] = BudgetPackedSlip("LOCKED", lockedBecause, _budgetSlipBook);
+            return true;
+        }
+
+        /// <summary>Caption segments joined by the middle dot while they stay inside <see cref="BudgetRestWordCap"/> counted words - the first always, a later one
+        /// only where it fits (its words are the slip's either way).</summary>
+        private static string BudgetRestJoin(params string[] segments)
+        {
+            string joined = null;
+            foreach (string s in segments)
+            {
+                if (string.IsNullOrEmpty(s)) { continue; }
+                if (joined == null) { joined = s; continue; }
+                string next = joined + " · " + s;
+                if (RangeCaptions.CountedWords(next) <= BudgetRestWordCap) { joined = next; }
+            }
+            return joined ?? string.Empty;
+        }
+
         private void DrawBudgetProcessTab(float availableHeight, float availableWidth)
         {
             // P2-1.1: the sheet is sized to the FRAME, not to its content.
@@ -195,20 +298,27 @@ namespace PoliSim.UI
             // the debt
             var debt = new V35TileData { Icon = "debt", IconInk = area, Name = "Government debt", Figure = UiFormat.Money(state.GovernmentDebt, MoneyUnit.Billions), FigurePx = V35.FigureSmall };
             debt.FigureInk = V35.FiscalInk(PlayerCountryId, FiscalRules.Measure.Debt, state.DebtToGdpRatio, PoliSimTheme.TextPrimary, out string debtRule);
-            var debtSlip = new SlipContent("GOVERNMENT DEBT · " + debt.Figure).Add(UiFormat.Number(state.DebtToGdpRatio, 1) + "% OF GDP");
-            if (debtRule != null) { debtSlip.Add(debtRule); }
-            if (FiscalRules.Notice(PlayerCountryId, FiscalRules.Measure.Debt, state.DebtToGdpRatio) is string debtNotice) { debtSlip.Add(debtNotice.ToUpperInvariant()); }   // §758 (ruling B6): a notice, neutral ink
+            // K322 S2 (K320 (3)): the slip at its caps - the share of GDP (and the country's rule, a marked term), the federal debt limit and the debt crisis as
+            // marked terms whose level 2 holds their sentences (the slip ran to eight lines, two of them past ten words), and the history's caveat
+            var debtSlip = new SlipContent("GOVERNMENT DEBT · " + debt.Figure);
+            var debtRuleWords = new List<string>();
+            if (debtRule != null) { debtRuleWords.Add(debtRule); }
+            if (FiscalRules.Notice(PlayerCountryId, FiscalRules.Measure.Debt, state.DebtToGdpRatio) is string debtNotice) { debtRuleWords.Add(debtNotice.ToUpperInvariant()); }   // §758 (ruling B6): a notice, neutral ink
+            string debtGdp = UiFormat.Number(state.DebtToGdpRatio, 1) + "% OF GDP";
+            if (debtRuleWords.Count > 0) { _budgetSlipBook.Terms["THE DEBT RULE"] = new SlipContent("THE DEBT RULE").Add(string.Join(" · ", debtRuleWords)); debtGdp += " · [[THE DEBT RULE]]"; }
+            debtSlip.Add(debtGdp);
             BudgetBill pendingRaise = _simulationManager.GetPendingDebtLimitBill(PlayerCountryId);
-            List<string> limitLines = FiscalRules.DebtLimitLines(_playerCountry, _simulationManager.CurrentDate, pendingRaise);
-            if (limitLines.Count > 0) { debtSlip.Add("THE FEDERAL DEBT LIMIT"); }   // PS-6 US-35 (board 30c): the slip's section, its lines in sentence case
-            foreach (string limitLine in limitLines) { debtSlip.Add(limitLine); }   // PS-6 US-24: the federal debt limit, live (nothing where the game holds no limit)
+            List<string> limitLines = FiscalRules.DebtLimitLines(_playerCountry, _simulationManager.CurrentDate, pendingRaise);   // PS-6 US-24: the federal debt limit, live (nothing where the game holds no limit)
             List<string> crisisLines = FiscalRules.CrisisLines(_playerCountry, _simulationManager.CurrentDate);   // MF q33: the debt crisis, live (nothing while the country has the market)
-            if (crisisLines.Count > 0) { debtSlip.Add("THE DEBT CRISIS"); }
-            foreach (string crisisLine in crisisLines) { debtSlip.Add(crisisLine); }
+            var debtSections = new List<string>();
+            if (limitLines.Count > 0) { _budgetSlipBook.Terms["THE FEDERAL DEBT LIMIT"] = new SlipContent("THE FEDERAL DEBT LIMIT").Add(string.Join(" ", limitLines)); debtSections.Add("[[THE FEDERAL DEBT LIMIT]]"); }   // PS-6 US-35 (board 30c): its lines in sentence case
+            if (crisisLines.Count > 0) { _budgetSlipBook.Terms["THE DEBT CRISIS"] = new SlipContent("THE DEBT CRISIS").Add(string.Join(" ", crisisLines)); debtSections.Add("[[THE DEBT CRISIS]]"); }
+            if (debtSections.Count > 0) { debtSlip.Add(string.Join(" · ", debtSections)); }
             // PS-6 US-35 (board 30c, answer 4): the tile keeps its figure, and one chip under the name gives the limit's state - or, below it, a muted line
             debt.Chip = FiscalRules.DebtLimitChip(_playerCountry, _simulationManager.CurrentDate, pendingRaise, out FiscalRules.DebtLimitInk limitInk, out debt.Sub);
             debt.ChipGround = limitInk == FiscalRules.DebtLimitInk.Cut ? PoliSimTheme.Bad : limitInk == FiscalRules.DebtLimitInk.SetAside ? PoliSimTheme.Neutral : PoliSimTheme.Caution;
-            debtSlip.Add("THE STOCK KEEPS NO YEARLY HISTORY - NO CHANGE IS DRAWN RATHER THAN ONE INVENTED");
+            _budgetSlipBook.Terms["NO YEARLY HISTORY"] = new SlipContent("NO YEARLY HISTORY").Add("THE STOCK KEEPS NO YEARLY HISTORY - NO CHANGE IS DRAWN RATHER THAN ONE INVENTED");
+            debtSlip.Add("NO CHANGE DRAWN · [[NO YEARLY HISTORY]]");
 
             // last year's revenue and spending
             var revenue = new V35TileData { Icon = "in", IconInk = area, Name = "Revenue", Figure = lastYear != null ? UiFormat.Money(lastYear.Revenue, MoneyUnit.Billions) : null, Glyph = lastYear != null ? (Symbol?)null : Symbol.Absent, FigurePx = V35.FigureSmall };
@@ -300,10 +410,24 @@ namespace PoliSim.UI
             if (income != null && TaxSchedule.Of(_playerCountry.Id).Kind != TaxScheduleKind.Flat)
             {
                 DrawBudgetSectionHead("Income tax · the statute", "budget:statute", width);
-                _budgetSlipBook.Anchors["budget:statute"] = new SlipContent("THE STATUTE")
-                    .Add(TaxSchedule.KindWord(TaxSchedule.Of(_playerCountry.Id).Kind))
-                    .Add("THE MARGINAL RATE OVER INCOME, THE STANDING STATUTE SOLID AND THE DRAFT DASHED; ONE DIAL PER BAND · ONE BILL FOR THE DIAL AND THE BANDS")
-                    .Add("KEPT AS BUILT - THE COMPOSITION DRAWS THE CURVE UNDER THE INCOME TAX'S DIAL; ITS BANDS ARE ASKED");
+                // K322 S2 (K320): the slip at its caps - the kind, the curve's x axis in full (the foot under the curve says it in seven words at rest), the
+                // reading of the curve, and the statute's own words (its citation verbatim, the earned income credit) behind marked terms, one line each
+                TaxSchedule.Statute statute = TaxSchedule.Of(_playerCountry.Id);
+                var statuteSlip = new SlipContent("THE STATUTE")
+                    .Add(TaxSchedule.KindWord(statute.Kind))
+                    .Add(BudgetStatuteAxis)
+                    .Add("SOLID THE STATUTE, DASHED THE DRAFT · [[ONE BILL]]");
+                _budgetSlipBook.Terms["ONE BILL"] = new SlipContent("ONE BILL")
+                    .Add("THE MARGINAL RATE OVER INCOME, THE STANDING STATUTE SOLID AND THE DRAFT DASHED; ONE DIAL PER BAND · ONE BILL FOR THE DIAL AND THE BANDS · KEPT AS BUILT - THE COMPOSITION DRAWS THE CURVE UNDER THE INCOME TAX'S DIAL; ITS BANDS ARE ASKED");
+                string credit = BudgetCreditWords(income);
+                if (statute.CitationLine != null || credit != null)
+                {
+                    var terms = new List<string>();
+                    if (statute.CitationLine != null) { terms.Add("[[THE STATUTE VERBATIM]]"); _budgetSlipBook.Terms["THE STATUTE VERBATIM"] = new SlipContent("THE STATUTE VERBATIM").Add(statute.CitationLine); }
+                    if (credit != null) { terms.Add("[[THE EARNED INCOME CREDIT]]"); _budgetSlipBook.Terms["THE EARNED INCOME CREDIT"] = new SlipContent("THE EARNED INCOME CREDIT").Add(credit); }
+                    statuteSlip.Add(string.Join(" · ", terms));
+                }
+                _budgetSlipBook.Anchors["budget:statute"] = statuteSlip;
                 bool guarded = V35.FloorGuarded;
                 V35.FloorGuarded = false;
                 GUILayout.BeginVertical(V35CardStyle(), GUILayout.Width(width));
@@ -313,6 +437,23 @@ namespace PoliSim.UI
                 V35.FloorGuarded = guarded;
                 GUILayout.Space(gutter);
             }
+        }
+
+        /// <summary>K322 S2: the income-tax curve's x axis as the statute's slip says it in full (F4-4's foot, word for word), and as the foot says it at rest.</summary>
+        private const string BudgetStatuteAxis = "X: THE TARIFF'S OWN CURRENCY, TO ITS TOP THRESHOLD × 1.5";
+        private const string BudgetStatuteFoot = "X: THE TARIFF'S CURRENCY, TO TOP THRESHOLD × 1.5";
+
+        /// <summary>P6-E1 (2026-09-17), moved to the statute's slip at K322 S2: what the earned income credit does to the mean income's rate - the rate with it
+        /// against the rate without, at the draft's lever - and whether the yield reads it; null where the statute carries no credit.</summary>
+        private string BudgetCreditWords(TaxLine taxLine)
+        {
+            if (!TaxSchedule.CarriesCredit(_playerCountry.Id)) { return null; }
+            float draftLever = GetTaxRateInput(taxLine.Type, taxLine.Rate);
+            double without = TaxSchedule.AverageEffectiveRateAtMeanIncome(_playerCountry, taxLine, draftLever);
+            double with = TaxSchedule.AverageEffectiveRateWithCreditAtMeanIncome(_playerCountry, taxLine, draftLever);
+            return "THE EARNED INCOME CREDIT (JOBBSKATTEAVDRAGET, SKV 433 " + EarnedIncomeCredit.IncomeYear.ToString(CultureInfo.InvariantCulture) + "): "
+                + with.ToString("0.0", CultureInfo.InvariantCulture) + " % WITH IT AGAINST " + without.ToString("0.0", CultureInfo.InvariantCulture)
+                + " % WITHOUT AT THE MEAN INCOME · " + (EarnedIncomeCredit.Live ? "IN THE YIELD" : "HELD OFF THE YIELD UNTIL ITS FAMILY IS RULED");
         }
 
         /// <summary>
@@ -600,14 +741,21 @@ namespace PoliSim.UI
             var slip = new SlipContent(name.ToUpperInvariant() + " · " + (levied ? TaxRateText(taxLine, taxLine.Rate) : "NOT LEVIED"));
             if (drafted) { slip.Add("DRAFTED · " + TaxRateText(taxLine, draftRate) + " · WAS " + TaxRateText(taxLine, taxLine.Rate)); }
             if (levied) { slip.Add("RAISES " + UiFormat.Money(revenue, MoneyUnit.Billions) + " A YEAR AT THE STANDING RATE"); }
-            slip.Add("THE DIAL RUNS " + BudgetTaxEndText(taxLine, taxLine.MinRate) + " – " + BudgetTaxEndText(taxLine, taxLine.MaxRate));
+            string dialRuns = "THE DIAL RUNS " + BudgetTaxEndText(taxLine, taxLine.MinRate) + " – " + BudgetTaxEndText(taxLine, taxLine.MaxRate);
             if (taxLine.IsPerTonne && track.width > 0f)
             {
+                // K322 S2 (K320 (3)): the slip at its four lines - the range and the step one line, the passed figure's day one line with what follows it as its
+                // marked term's level 2 (the line ran to sixteen words), the carry one line
                 float step = LedgerRow.StepFor((taxLine.MaxRate - taxLine.MinRate) / track.width / Mathf.Max(0.0001f, taxLine.DialGrain)) * taxLine.DialGrain;
-                slip.Add("BY " + step.ToString("0.#", CultureInfo.InvariantCulture) + " " + EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t A STEP");
-                if (PassedCarbonFigureLine() is string passedLine) { slip.Add(passedLine); }   // AF-36 (q36): the date the passed rate reverts
+                slip.Add(dialRuns + " · BY " + step.ToString("0.#", CultureInfo.InvariantCulture) + " " + EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t A STEP");
+                if (_simulationManager.TryPassedCarbonFigure(PlayerCountryId, out TaxLine passed, out System.DateTime reverts))   // AF-36 (q36): the date the passed rate reverts
+                {
+                    slip.Add("PASSED · " + TaxRateText(passed, passed.Rate) + " STANDS UNTIL " + reverts.ToString("d MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture) + " · [[AFTER THAT DAY]]");
+                    _budgetSlipBook.Terms["AFTER THAT DAY"] = new SlipContent("AFTER THAT DAY").Add(CarbonYieldWords(reverts, passed.PassedForYear, caps: true));
+                }
                 if (carrySlip != null && carrySlip.Lines.Count > 0 && _taxCarryInputs.ContainsKey(taxLine.Type)) { slip.Add("CARRY OVER · " + carrySlip.Lines[0]); }
             }
+            else { slip.Add(dialRuns); }
             if (taxLine.Type == TaxType.IncomeTax && TaxSchedule.Of(_playerCountry.Id).Kind != TaxScheduleKind.Flat)
             {
                 slip.Add(TaxSchedule.KindWord(TaxSchedule.Of(_playerCountry.Id).Kind) + " · AVERAGE EFFECTIVE RATE AT THE MEAN INCOME "
@@ -710,6 +858,9 @@ namespace PoliSim.UI
             _budgetSlipBook.Anchors["budget:discretionary"] = new SlipContent("DISCRETIONARY LINES")
                 .Add("THIS YEAR'S ALLOWED CHANGE ±" + SimulationManager.DiscretionaryPercentChangeRangeForRules.ToString("0", CultureInfo.InvariantCulture) + " % OF THE LINE")
                 .Add("THE DRAFT IS A FIGURE; THE BILL CARRIES IT AS A NOMINAL TARGET");
+            BudgetBandSlips("Mandatory line");   // K322 S2: the tiles' band names at rest open these
+            BudgetBandSlips("Discretionary line");
+            BudgetBandSlips("Pension age");
             if (hasMandatory) { DrawBudgetSpendingGroup(width, true); }
             if (hasDiscretionary) { DrawBudgetSpendingGroup(width, false); }
             DrawBudgetLastYearBook(width);
@@ -788,9 +939,10 @@ namespace PoliSim.UI
             if (Event.current.type == EventType.Repaint)
             {
                 // Two literal keys so RangeCaptionCheck's enumeration of the drawn dials reads them off the controller's partials.
+                // K322 S2 (K320, S1's form): the band's NAME alone at rest, its line on the band's slip (DrawBudgetSpending holds every band's)
                 bool speaking = line.IsMandatory
-                    ? DrawRangeCaption("Mandatory line", line.Category.ToString(), result, standing, min, max, endLane)
-                    : DrawRangeCaption("Discretionary line", line.Category.ToString(), result, standing, min, max, endLane);
+                    ? DrawRangeCaption("Mandatory line", line.Category.ToString(), result, standing, min, max, endLane, nameOnly: true, bandKeyed: true)
+                    : DrawRangeCaption("Discretionary line", line.Category.ToString(), result, standing, min, max, endLane, nameOnly: true, bandKeyed: true);
                 if (!speaking) { DrawBudgetEndLabels(endLane, UiFormat.Money(min, MoneyUnit.Billions), UiFormat.Money(max, MoneyUnit.Billions), false); }
             }
             if (Mathf.Approximately(result, standing)) { _spendingLineInputs.Remove(line.Category); }
@@ -826,8 +978,10 @@ namespace PoliSim.UI
         /// stays empty and the guard is told. The tile's ends yield the lane while it speaks. Returns whether it was painted.
         /// <para>S1 (K320): <paramref name="nameOnly"/> - the band's NAME alone at rest, centred in the lane, the anchor of the band's slip ("dial:" + the
         /// dial's name + ":band", <see cref="RangeCaptions.BandSlip"/>), where its line is; a page opts in.</para>
+        /// <para>K322 S2: <paramref name="bandKeyed"/> - the name's anchor is the band's own (<see cref="BudgetBandAnchor"/>), for a page whose tiles share
+        /// one dial and so may stand in different bands at once; the page holds every band's slip under those keys (<see cref="BudgetBandSlips"/>).</para>
         /// </summary>
-        private bool DrawRangeCaption(string name, string captionKey, float draft, float standing, float min, float max, Rect lane, bool nameOnly = false)
+        private bool DrawRangeCaption(string name, string captionKey, float draft, float standing, float min, float max, Rect lane, bool nameOnly = false, bool bandKeyed = false)
         {
             if (!RangeCaptions.TryGet(name, out RangeCaptions.Dial dial)) { return false; }
             int band = RangeCaptions.BandIndex(draft, min, max);
@@ -845,7 +999,7 @@ namespace PoliSim.UI
                 float wordWidth = Mathf.Min(lane.width, Mathf.Ceil(nameFace.CalcSize(new GUIContent(word)).x));
                 var at = new Rect(lane.x + Mathf.Round((lane.width - wordWidth) * 0.5f), lane.y, wordWidth, lane.height);
                 PoliSimWidgets.MeasuredLabel(at, word, nameFace);
-                SlipAnchor(at, "dial:" + name + ":band");
+                SlipAnchor(at, bandKeyed ? BudgetBandAnchor(name, band) : "dial:" + name + ":band");
                 return true;
             }
             string nameText = b.Name.ToUpperInvariant() + " · ";
@@ -860,6 +1014,45 @@ namespace PoliSim.UI
             float x = lane.x + Mathf.Round((lane.width - total) * 0.5f);
             if (withName) { PoliSimWidgets.MeasuredLabel(new Rect(x, lane.y, nameWidth, lane.height), nameText, nameFace); x += nameWidth; }
             PoliSimWidgets.MeasuredLabel(new Rect(x, lane.y, lineWidth, lane.height), b.Line, line);
+            return true;
+        }
+
+        /// <summary>K322 S2: a band's own anchor on this page - "dial:" + the dial's name + ":band:" + the band's index.</summary>
+        private static string BudgetBandAnchor(string dial, int band) => "dial:" + dial + ":band:" + band.ToString(CultureInfo.InvariantCulture);
+
+        /// <summary>K322 S2 (K320 (5)): every band's slip of a dial the page draws, under the band's own anchor - the band's name at rest opens its own; the line
+        /// the caption spoke (it was a sentence at rest) is on it, so the page's book holds every line its captions can drop, whichever band a draft stands in.</summary>
+        private void BudgetBandSlips(string dialName)
+        {
+            if (!RangeCaptions.TryGet(dialName, out RangeCaptions.Dial dial)) { return; }
+            for (int b = 0; b < dial.Bands.Length; b++) { _budgetSlipBook.Anchors[BudgetBandAnchor(dialName, b)] = RangeCaptions.BandSlip(dial, b); }
+        }
+
+        /// <summary>
+        /// K322 S2 (K320): a ledger row's range caption as the band's NAME alone (the pension age's row, kept as built) - in the row's caption band at the caption
+        /// face (the ledger caption's 8d size, bold), centred, at the presenter's alpha; the anchor of the band's slip (<see cref="BudgetBandSlips"/>), where its
+        /// line is. Replaces the name-and-line caption the controller's shared ledger dial draws, on this one row. Returns whether it was painted (a Repaint's).
+        /// </summary>
+        private bool DrawLedgerBandName(string name, string captionKey, float draft, float standing, float min, float max)
+        {
+            if (!RangeCaptions.TryGet(name, out RangeCaptions.Dial dial)) { return false; }
+            int band = RangeCaptions.BandIndex(draft, min, max);
+            float alpha = RangeCaptionPresenter.Alpha(captionKey, band, !Mathf.Approximately(draft, standing));
+            if (alpha <= 0f) { return false; }
+            Rect area = LedgerRow.LastCaptionBand;
+            if (area.width <= 8f) { return false; }
+            int size = Mathf.Max(8, Mathf.RoundToInt(RangeCaptionFontAt1280 * _labelStyle.fontSize / 14f));
+            GUIStyle face = new GUIStyle(LedgerRow.CaptionStyle(_labelStyle)) { fontSize = size, alignment = TextAnchor.LowerLeft, fontStyle = FontStyle.Bold, clipping = TextClipping.Overflow };
+            Color ink = PoliSimTheme.TextPrimary;
+            ink.a *= alpha;
+            string word = dial.Bands[band].Name.ToUpperInvariant();
+            float w = Mathf.Min(area.width, Mathf.Ceil(face.CalcSize(new GUIContent(word)).x) + 2f);
+            var at = new Rect(Mathf.Round(area.x + (area.width - w) * 0.5f), area.y, w, area.height);
+            Color previous = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, alpha);
+            GUI.Label(at, word, Inked(face, ink));
+            GUI.color = previous;
+            SlipAnchor(at, BudgetBandAnchor(name, band));
             return true;
         }
 
@@ -1015,21 +1208,21 @@ namespace PoliSim.UI
             else
             {
                 BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
-                string line = null;
+                string line = null, lineAtRest = null;   // K322 S2: the reason's short label at rest beside the lock; the reason itself is the slip's
                 // PS-6 US-22: the opposition's verb on a continuing resolution before Congress (Ask 2's reading (P), standing - I13 (2)); US-22b (I13 (3)): or due,
                 // since the one decided the day before the horizon is withheld in advance
                 bool withholdVerb = UsBudgetProcedure.Applies(_playerCountry) && (_playerCountry.ContinuingResolutionWithheldBy == _playerCountry.PlayerPartyAbbrev   // US-22b (the review's M2): the release is offered whenever the player's party withholds, whatever is before Congress
                                     || ((pendingBill == null || pendingBill.ContinuingResolution) && UsBudgetProcedure.MayWithhold(_playerCountry, pendingBill, _simulationManager.CurrentDate, out _)));
                 if (withholdVerb) { }
-                else if (pendingBill == null || !pendingBill.GovernmentBill) { _simulationManager.PlayerMayIntroduce(PlayerCountryId, Congress.Kind.Budget, null, out line); }   // PS-6 US-19: in a Congress the budget's own reason - the president proposes it
-                else if (tabled != null) { line = "Your alternative is tabled · the chamber decides in " + pendingBill.DaysRemaining + " day(s)"; }
-                else if (PoliSim.Elections.WorldClock.CongressActs(PlayerCountryId)) { line = "Congress votes the president's budget as its acts - no alternative budget is weighed"; }   // PS-6 US-22: Congress votes the president's budget as its acts, weighing no alternative
-                else if (!PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId)) { line = "This country's budget procedure is not yet modelled - the government's bill is voted alone"; }
+                else if (pendingBill == null || !pendingBill.GovernmentBill) { _simulationManager.PlayerMayIntroduce(PlayerCountryId, Congress.Kind.Budget, null, out line); lineAtRest = "Locked"; }   // PS-6 US-19: in a Congress the budget's own reason - the president proposes it
+                else if (tabled != null) { line = "Your alternative is tabled · the chamber decides in " + pendingBill.DaysRemaining + " day(s)"; lineAtRest = "Alternative tabled · " + BudgetDays(pendingBill.DaysRemaining); }
+                else if (PoliSim.Elections.WorldClock.CongressActs(PlayerCountryId)) { line = "Congress votes the president's budget as its acts - no alternative budget is weighed"; lineAtRest = "No alternative weighed"; }   // PS-6 US-22: Congress votes the president's budget as its acts, weighing no alternative
+                else if (!PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId)) { line = "This country's budget procedure is not yet modelled - the government's bill is voted alone"; lineAtRest = "Government bill voted alone"; }
                 if (withholdVerb)
                 {
                     // PS-6 US-22: withhold or release - the party stands against the resolution in both chambers while withheld (PROVISIONAL reading, asked)
                     bool withheld = _playerCountry.ContinuingResolutionWithheldBy == _playerCountry.PlayerPartyAbbrev;
-                    if (DrawBudgetButton(row, withheld ? "Release the continuing resolution" : "Withhold the continuing resolution", null, true))
+                    if (DrawBudgetButton(row, withheld ? "Release the resolution" : "Withhold the resolution", null, true))   // K322 S2: three words at rest; the slip's head names the continuing resolution
                     {
                         if (!_simulationManager.WithholdContinuingResolution(PlayerCountryId, !withheld, out string refused)) { Debug.Log($"BUDGET: the continuing resolution's verb was refused - {refused}"); }
                     }
@@ -1047,17 +1240,20 @@ namespace PoliSim.UI
                 }
                 else if (line != null)
                 {
+                    // K322 S2 (K320): the lock and a label of at most four words at rest - the reason, a sentence, is the slip's (it was cut with an ellipsis at rest)
+                    GUIStyle lockFace = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
+                    var lockRow = new Rect(row.x, row.y, Mathf.Min(row.width, V35.Px(24f) + Mathf.Ceil(lockFace.CalcSize(new GUIContent(lineAtRest)).x) + 2f), row.height);
                     if (Event.current.type == EventType.Repaint)
                     {
                         DrawStateGlyph(new Rect(row.x, row.y + Mathf.Round((row.height - V35.Px(16f)) * 0.5f), V35.Px(16f), V35.Px(16f)), Symbol.Locked, PoliSimTheme.TextSecondary);
-                        PoliSimWidgets.MeasuredLabel(new Rect(row.x + V35.Px(24f), row.y, row.width - V35.Px(24f), row.height), V35Fit(line, V35Serif(V35.Floor, PoliSimTheme.TextSecondary), row.width - V35.Px(24f), out _), V35Serif(V35.Floor, PoliSimTheme.TextSecondary));
+                        PoliSimWidgets.MeasuredLabel(new Rect(row.x + V35.Px(24f), row.y, Mathf.Max(1f, lockRow.width - V35.Px(24f)), row.height), lineAtRest, lockFace);
                     }
-                    SlipAnchor(row, "budget:introduce");
-                    _budgetSlipBook.Anchors["budget:introduce"] = new SlipContent("THE BUDGET IS THE GOVERNMENT'S").Add(line.ToUpperInvariant());
+                    SlipAnchor(lockRow, "budget:introduce");
+                    _budgetSlipBook.Anchors["budget:introduce"] = BudgetPackedSlip("THE BUDGET IS THE GOVERNMENT'S", line, _budgetSlipBook);
                 }
                 else
                 {
-                    if (DrawBudgetButton(row, "Table an alternative budget", changes > 0 ? changes + (changes == 1 ? " change" : " changes") : null, true))
+                    if (DrawBudgetButton(row, "Table alternative budget", changes > 0 ? changes + (changes == 1 ? " change" : " changes") : null, true))   // K322 S2: three words at rest; the slip's head is the whole verb
                     {
                         if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { NoteBudgetRefusal(refused); Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
                     }
@@ -1067,13 +1263,56 @@ namespace PoliSim.UI
                         .Add("KEPT - THE COMPOSITION DRAWS NO OPPOSITION ACTION; ASKED");
                 }
             }
-            // the bill's status, under the action
-            string status = BuildBudgetBillStatusText();
-            GUIStyle statusFace = V35SerifWrapped(V35.Floor, PoliSimTheme.TextSecondary);
-            float sh = Mathf.Ceil(statusFace.CalcHeight(new GUIContent(status), width)) + V35.Px(4f);
+            // the bill's status, under the action - K322 S2 (K320): a one-line caption at rest, the status's sentences (BuildBudgetBillStatusText, as the
+            // Docket's body still prints them) its slip, word for word
+            string caption = BudgetStatusCaption();
+            GUIStyle statusFace = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
+            Vector2 captionSize = statusFace.CalcSize(new GUIContent(caption));
+            float sh = Mathf.Ceil(captionSize.y) + V35.Px(4f);
             Rect statusRect = GUILayoutUtility.GetRect(width, sh, GUILayout.Width(width), GUILayout.Height(sh));
-            if (Event.current.type == EventType.Repaint) { GUI.Label(statusRect, status, statusFace); }
+            var captionRect = new Rect(statusRect.x, statusRect.y, Mathf.Min(statusRect.width, Mathf.Ceil(captionSize.x) + 2f), statusRect.height);
+            if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(captionRect, caption, statusFace); }
+            SlipAnchor(captionRect, "budget:status");
+            _budgetSlipBook.Anchors["budget:status"] = BudgetPackedSlip("BILL STATUS", BuildBudgetBillStatusText(), _budgetSlipBook);
             GUILayout.Space(V35.Px(V35.Gutter));
+        }
+
+        /// <summary>
+        /// K322 S2 (K320): the bill's status as the page shows it at rest - a caption of at most eight counted words, one line, no sentence: what is before the
+        /// chamber and when it decides, or which window is open. Its branches are <see cref="BudgetBillStatusCore"/>'s, and that sentence (with a refusal of
+        /// the day ahead of it) is the caption's slip, word for word.
+        /// </summary>
+        private string BudgetStatusCaption()
+        {
+            BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
+            string state;
+            if (UsBudgetProcedure.Applies(_playerCountry)) { state = UsBudgetStatusCaption(pendingBill, _simulationManager.GetPendingMajorityReconciliation(PlayerCountryId) != null); }
+            else if (pendingBill != null && pendingBill.GovernmentBill) { state = "Government budget before the chamber · " + BudgetDays(pendingBill.DaysRemaining); }
+            else if (pendingBill != null) { state = pendingBill.Docket != null ? "Budget bill on the President's desk" : BudgetRestJoin("Budget bill before " + Legislature, BudgetDays(pendingBill.DaysRemaining)); }
+            else if (_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId)) { state = "Incoming government · first budget open"; }
+            else if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _)) { state = Congress.Applies(_playerCountry) ? "The president proposes the budget" : "The government lays the budget"; }
+            else if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId)) { state = "Budget process open"; }
+            else { state = "No budget bill before " + Legislature; }
+            bool refusedToday = _budgetRefusal != null && _simulationManager.CurrentDate.Date == _budgetRefusalOn;
+            return refusedToday ? BudgetRestJoin("Refused today", state) : state;
+        }
+
+        /// <summary>K322 S2: <see cref="UsBudgetStatusText"/>'s branches as a caption - what is before Congress, then the funding (its horizon, or the shutdown's
+        /// day) where both fit the cap.</summary>
+        private string UsBudgetStatusCaption(BudgetBill pendingBill, bool majorityPending)
+        {
+            System.DateTime today = _simulationManager.CurrentDate;
+            string funding = _playerCountry.LapseSince != System.DateTime.MinValue ? "shut down, day " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, today).ToString(CultureInfo.InvariantCulture)
+                : _playerCountry.AppropriatedThrough != System.DateTime.MinValue ? "funded to " + _playerCountry.AppropriatedThrough.ToString("d MMM yyyy", CultureInfo.InvariantCulture) : null;
+            string state;
+            if (DeskOf(pendingBill) != null) { state = "On the President's desk"; }
+            else if (pendingBill != null && pendingBill.ContinuingResolution) { state = BudgetRestJoin("Continuing resolution", BudgetDays(pendingBill.DaysRemaining), _playerCountry.ContinuingResolutionWithheldBy != null ? "withheld" : null); }
+            else if (pendingBill != null) { state = BudgetRestJoin(pendingBill.GovernmentBill ? "President's budget before Congress" : "Your budget before Congress", BudgetDays(pendingBill.DaysRemaining)); }
+            else if (_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId)) { state = "First budget open"; }
+            else if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _)) { state = "The president proposes the budget"; }
+            else if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId)) { state = "Budget process open"; }
+            else { state = majorityPending ? "President's budget not before Congress" : "No bill before Congress"; }
+            return BudgetRestJoin(state, funding);
         }
 
         /// <summary>
@@ -1147,7 +1386,7 @@ namespace PoliSim.UI
             bool ownWithheld = !string.IsNullOrEmpty(mine) && _playerCountry.ContinuingResolutionWithheldBy == mine;
             if (governs && (ownWithheld || ((pendingBill == null || pendingBill.ContinuingResolution) && UsBudgetProcedure.MayWithhold(_playerCountry, pendingBill, today, out _))))
             {
-                verbs.Add((ownWithheld ? "Release the continuing resolution" : "Withhold the continuing resolution", "budget:uscr",
+                verbs.Add((ownWithheld ? "Release the resolution" : "Withhold the resolution", "budget:uscr",
                     new SlipContent(ownWithheld ? "RELEASE THE CONTINUING RESOLUTION" : "WITHHOLD THE CONTINUING RESOLUTION")
                         .Add(ownWithheld ? "YOUR PARTY VOTES AGAINST ITS OWN GOVERNMENT'S RESOLUTION IN BOTH CHAMBERS · RELEASED, ONE IS ASKED NOTHING AND PASSES UNCONTESTED"
                             : "YOUR PARTY WOULD VOTE AGAINST ITS OWN GOVERNMENT'S RESOLUTION IN BOTH CHAMBERS AND EVERY OTHER PARTY FOR IT")
@@ -1169,7 +1408,7 @@ namespace PoliSim.UI
                 {
                     double tabled = size;
                     string money = UiFormat.Money((float)(tabled / 1e9), MoneyUnit.Billions);
-                    verbs.Add(("Raise by the excess and " + money, "budget:uslimit:" + verbs.Count.ToString(CultureInfo.InvariantCulture),
+                    verbs.Add(("Raise · excess + " + money, "budget:uslimit:" + verbs.Count.ToString(CultureInfo.InvariantCulture),
                         new SlipContent("PROPOSE A RAISE OF THE EXCESS AND " + money)
                             .Add("THE LIMIT UP BY THE DEBT'S EXCESS OVER IT ON THE DAY IT IS LAW, AND " + money + " MORE - THE ROOM IT LEAVES · THE EXCESS TODAY " + UiFormat.Money((float)(excess / 1e9), MoneyUnit.Billions))
                             .Add("BY RECONCILIATION - A MAJORITY IN BOTH CHAMBERS, THE HOUSE FIRST · " + when)
@@ -1193,7 +1432,7 @@ namespace PoliSim.UI
             // K90: the President answers the binding limit's hold by letting it bind - the cut bites until he proposes later
             if (_simulationManager.DebtLimitAwaitsPresident(PlayerCountryId))
             {
-                verbs.Add(("Let the limit bind", "budget:uslimitbind",
+                verbs.Add(("Let limit bind", "budget:uslimitbind",
                     new SlipContent("LET THE LIMIT BIND")
                         .Add("THE CLOCK RUNS ON WITH NO RAISE BEFORE CONGRESS: SPENDING OTHER THAN INTEREST IS CUT TO REVENUE LESS INTEREST UNTIL YOU PROPOSE ONE")
                         .Add("YOU ARE ASKED AGAIN WHEN SOMETHING CHANGES: A RAISE THAT FALLS OR IS VETOED, OR A MAJORITY RELEASING ITS WITHHOLD"),
@@ -1204,7 +1443,7 @@ namespace PoliSim.UI
             bool raiseWithheld = !string.IsNullOrEmpty(mine) && _playerCountry.DebtLimitWithheldBy == mine;
             if (raiseWithheld || UsDebtLimit.MayWithhold(_playerCountry, true, today, out _))
             {
-                verbs.Add((raiseWithheld ? "Release the debt-limit raise" : "Withhold the debt-limit raise", "budget:uslimitwithhold",
+                verbs.Add((raiseWithheld ? "Release the raise" : "Withhold the raise", "budget:uslimitwithhold",
                     new SlipContent(raiseWithheld ? "RELEASE THE DEBT-LIMIT RAISE" : "WITHHOLD THE DEBT-LIMIT RAISE")
                         .Add(raiseWithheld ? "YOUR PARTY VOTES AGAINST EVERY RAISE IN BOTH CHAMBERS · RELEASED, THE NEXT IS ASKED NOTHING AND PASSES UNCONTESTED"
                             : "YOUR PARTY WOULD VOTE AGAINST EVERY RAISE IN BOTH CHAMBERS AND EVERY OTHER PARTY FOR IT - A CHAMBER YOUR PARTY HOLDS STOPS IT")
@@ -1368,70 +1607,87 @@ namespace PoliSim.UI
             {
                 foreach (BudgetBill.StatutePart part in BudgetBill.StatuteParts) { if (draft.Changes(part, _playerCountry)) { acts.Add(part); } }
             }
-            var countSlip = new SlipContent(wouldPass ? "WOULD PASS" : "WOULD FAIL")
-                .Add(contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "")
-                    : usActs ? "THE APPROPRIATION CHANGES NO LINE · UNCONTESTED" : acts.Count > 0 ? "THE BUDGET ACT CHANGES NOTHING · UNCONTESTED" : "NOTHING CHANGES · UNCONTESTED");
+            // K322 S2 (K320 (3)): the count's slip at its caps - four lines at most of at most ten words: the count, how it is decided, the acts, the parties.
+            // What a line names is a marked term, its words (each act's verdict, the rules, a party's side and reasons) that term's level-2 slip, one line - the
+            // slip held up to fourteen lines, a party's reasons one line of some forty words. Every word it held is on it, within the two levels.
+            PeopleSlips.Book countBook = _budgetSlipBook;
+            string Term(string term, IEnumerable<string> words)
+            {
+                countBook.Terms[term] = new SlipContent(term).Add(string.Join(" · ", words));
+                return "[[" + term + "]]";
+            }
             Congress.Verdict congress = contested ? _chamberVerdicts.Chambers(_playerCountry, concern, budgetVoteDay) : null;   // PS-6 US-18: both chambers, where the budget goes through two
+            string countLine = contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "")
+                : usActs ? "THE APPROPRIATION CHANGES NO LINE · UNCONTESTED" : acts.Count > 0 ? "THE BUDGET ACT CHANGES NOTHING · UNCONTESTED" : "NOTHING CHANGES · UNCONTESTED";
+            var countSlip = new SlipContent(wouldPass ? "WOULD PASS" : "WOULD FAIL").Add(countLine + (usActs && congress != null ? " · THE HOUSE, ON THE APPROPRIATION" : congress != null ? " · THE HOUSE" : string.Empty));
             if (usActs)
             {
                 // PS-6 US-22: the draft as Congress votes it - each act with its procedure and where it stops, the president's answer to each, what follows a
                 // fallen appropriation, and what is not modelled
-                if (congress != null) { countSlip.Add("THE COUNT ABOVE IS THE HOUSE'S, ON THE APPROPRIATION"); }
                 Congress.Verdict reconciliation = null;
+                var actTerms = new List<string>();
                 foreach (UsBudgetProcedure.Act act in UsBudgetProcedure.Acts)
                 {
                     if (!UsBudgetProcedure.IsVoted(draft, act, _playerCountry)) { continue; }
                     BillConcern actConcern = act == UsBudgetProcedure.Act.Appropriation ? concern : UsBudgetProcedure.ConcernOf(_playerCountry, draft, act);
                     Congress.Verdict actVerdict = actConcern.IsEmpty ? null : _chamberVerdicts.Chambers(_playerCountry, actConcern, budgetVoteDay);
                     if (act == UsBudgetProcedure.Act.Reconciliation) { reconciliation = actVerdict; }
-                    countSlip.Add("THE " + UsBudgetProcedure.ActWords(act).ToUpperInvariant() + ", " + UsBudgetProcedure.ProcedureOf(act) + " - "
-                        + (actVerdict == null ? "NOTHING ASKED, IT PASSES UNCONTESTED" : Congress.StopWords(PlayerCountryId, actVerdict)));
-                    if (actVerdict != null && actVerdict.Passed) { foreach (string veto in ChamberVerdicts.UsVetoLines(PlayerCountryId, _chamberVerdicts.UsVetoProjection(_playerCountry, actConcern, budgetVoteDay))) { countSlip.Add(veto); } }
+                    var actWords = new List<string> { "THE " + UsBudgetProcedure.ActWords(act).ToUpperInvariant() + ", " + UsBudgetProcedure.ProcedureOf(act) + " - "
+                        + (actVerdict == null ? "NOTHING ASKED, IT PASSES UNCONTESTED" : Congress.StopWords(PlayerCountryId, actVerdict)) };
+                    if (actVerdict != null && actVerdict.Passed) { actWords.AddRange(ChamberVerdicts.UsVetoLines(PlayerCountryId, _chamberVerdicts.UsVetoProjection(_playerCountry, actConcern, budgetVoteDay))); }
+                    actTerms.Add(Term(UsBudgetProcedure.ActWords(act).ToUpperInvariant(), actWords));
                 }
-                foreach (string line in UsBudgetProcedure.ProcedureWords()) { countSlip.Add(line); }
-                if (congress != null) { countSlip.Add(Congress.RuleWords(congress)); }
-                if (reconciliation != null) { countSlip.Add(Congress.RuleWords(reconciliation)); }   // its yearly limit, not modelled, said
+                if (actTerms.Count > 0) { countSlip.Add("THE ACTS · " + string.Join(" · ", actTerms)); }
+                var counts = new List<string>();
+                if (congress != null) { counts.Add("THE COUNT ABOVE IS THE HOUSE'S, ON THE APPROPRIATION"); counts.Add(Congress.RuleWords(congress)); }
+                if (reconciliation != null) { counts.Add(Congress.RuleWords(reconciliation)); }   // its yearly limit, not modelled, said
+                countSlip.Add("THE RULES · " + Term("THE PROCEDURE", UsBudgetProcedure.ProcedureWords()) + (counts.Count > 0 ? " · " + Term("HOW EACH CHAMBER COUNTS", counts) : string.Empty));
             }
             else if (congress != null)
             {
                 // the Congress branch counts as each chamber counts (LawsV35's form), and says why a budget that moves a spending line goes to cloture whole
-                countSlip.Add("THE COUNT ABOVE IS THE HOUSE'S - " + Congress.StopWords(PlayerCountryId, congress));
-                foreach (string line in Congress.OrderWords(PlayerCountryId, congress)) { countSlip.Add(line); }
-                countSlip.Add(Congress.RuleWords(congress))
-                    .Add("A BUDGET THAT MOVES ANY SPENDING LINE, OR THE PENSION AGE (ITS OWN STATUTE), GOES TO CLOTURE WHOLE; ONE MOVING ONLY RATES, BENEFIT LEVELS OR THE FUND RIDES RECONCILIATION - SPLITTING A BUDGET INTO ITS ACTS IS NOT YET MODELLED");
+                var stops = new List<string> { "THE COUNT ABOVE IS THE HOUSE'S - " + Congress.StopWords(PlayerCountryId, congress) };
+                stops.AddRange(Congress.OrderWords(PlayerCountryId, congress));
+                countSlip.Add(Term("WHERE IT STOPS", stops) + " · " + Term("THE RULES", new[] { Congress.RuleWords(congress),
+                    "A BUDGET THAT MOVES ANY SPENDING LINE, OR THE PENSION AGE (ITS OWN STATUTE), GOES TO CLOTURE WHOLE; ONE MOVING ONLY RATES, BENEFIT LEVELS OR THE FUND RIDES RECONCILIATION - SPLITTING A BUDGET INTO ITS ACTS IS NOT YET MODELLED" }));
             }
             else
             {
-                countSlip.Add("THE COUNT DECIDES - FOR AGAINST AGAINST, THE UNDECIDED ABSTAINING; NO FIXED SEAT LINE");
+                countSlip.Add("THE COUNT DECIDES · " + Term("NO FIXED SEAT LINE", new[] { "FOR AGAINST AGAINST, THE UNDECIDED ABSTAINING" }));
             }
-            PoliSim.Elections.PresidentialVeto.Outcome firstAtRisk = null;   // F3 (the review's finding: the slip's height): whose rate the risk is, said once
+            bool riskSaid = false;   // F3 (the review's finding: the slip's height): whose rate the risk is, said once - on the first act at risk
+            var statuteTerms = new List<string>();
             foreach (BudgetBill.StatutePart part in acts)
             {
                 BillConcern actConcern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, draft.PartOf(part));
                 bool actPasses = _chamberVerdicts.WouldPass(_playerCountry, actConcern, budgetVoteDay);
                 PoliSim.Elections.PresidentialVeto.Outcome actVeto = _chamberVerdicts.Veto(_playerCountry, actConcern, budgetVoteDay);   // F3: the president on the budget's vote day
                 string stays = StatutePartStays(part);
-                countSlip.Add("IF THE BUDGET PASSES, " + StatutePartWords(part) + " A SEPARATE " + SimulationManager.ActWords(part).ToUpperInvariant() + " - "
+                var actWords = new List<string> { "IF THE BUDGET PASSES, " + StatutePartWords(part) + " A SEPARATE " + SimulationManager.ActWords(part).ToUpperInvariant() + " - "
                     + (!actPasses ? "IT WOULD FAIL; " + stays
                     : ChamberVerdicts.AtRisk(actVeto) ? "IT WOULD PASS - VETO RISK " + ChamberVerdicts.RiskWords(actVeto) + "; IF VETOED, "
                         + (actVeto.OverrideCarries ? "THE VETO WOULD BE OVERRIDDEN" : stays)
-                    : "IT WOULD PASS AND BE SIGNED"));
-                if (firstAtRisk == null && ChamberVerdicts.AtRisk(actVeto)) { firstAtRisk = actVeto; }
+                    : "IT WOULD PASS AND BE SIGNED") };
+                if (!riskSaid && ChamberVerdicts.AtRisk(actVeto))
+                {
+                    riskSaid = true;
+                    actWords.Add("AN ACT IS AT RISK WHERE THE PRESIDENT'S BACKING PARTY (" + PartySystems.ShortName(PlayerCountryId, actVeto.BackingParty) + ") DOES NOT VOTE FOR IT; THE PRESIDENT ("
+                        + actVeto.President.ToUpperInvariant() + ") VETOES AT " + actVeto.RiskBasis.ToUpperInvariant());
+                }
+                statuteTerms.Add(Term(SimulationManager.ActWords(part).ToUpperInvariant(), actWords));
             }
-            if (firstAtRisk != null)
-            {
-                countSlip.Add("AN ACT IS AT RISK WHERE THE PRESIDENT'S BACKING PARTY (" + PartySystems.ShortName(PlayerCountryId, firstAtRisk.BackingParty) + ") DOES NOT VOTE FOR IT; THE PRESIDENT ("
-                    + firstAtRisk.President.ToUpperInvariant() + ") VETOES AT " + firstAtRisk.RiskBasis.ToUpperInvariant());
-            }
+            if (statuteTerms.Count > 0) { countSlip.Add("SEPARATE ACTS · " + string.Join(" · ", statuteTerms)); }
             if (contested)
             {
+                var partyTerms = new List<string>();
                 foreach (PartyStance stance in _chamberVerdicts.Stances(_playerCountry, concern))
                 {
                     if (stance.Seats <= 0) { continue; }
                     string word = !stance.Measured ? "UNMEASURED" : stance.Side > 0 ? "FOR" : stance.Side < 0 ? "AGAINST" : "UNDECIDED";
                     string reason = StanceModel.ReasonShort(stance);
-                    countSlip.Add(stance.Party.ShortName + " " + stance.Seats + " · " + word + (string.IsNullOrEmpty(reason) ? string.Empty : " · " + reason.ToUpperInvariant()));
+                    partyTerms.Add(Term(stance.Party.ShortName + " " + stance.Seats, new[] { word + (string.IsNullOrEmpty(reason) ? string.Empty : " · " + reason.ToUpperInvariant()) }));
                 }
+                if (partyTerms.Count > 0) { countSlip.Add(string.Join(" · ", partyTerms)); }
             }
             _budgetSlipBook.Anchors["ifpassed:count"] = countSlip;
             y += countH + V35.Px(6f);

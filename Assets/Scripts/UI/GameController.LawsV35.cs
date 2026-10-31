@@ -37,6 +37,10 @@ namespace PoliSim.UI
         private PeopleSlips.Book _dialSlipBookOverride;
         private PeopleSlips.Book DialSlipBook => _dialSlipBookOverride ?? _lawsSlipBook;
 
+        /// <summary>K322 S4: the dials whose range caption spoke on the last repaint (by caption key) - a name-only caption still fading after a reset keeps
+        /// its band's slip, so the word drawn always opens its line.</summary>
+        private readonly HashSet<string> _bandCaptionSpeaking = new HashSet<string>();
+
         private void DrawPolicyLawsTab(float availableHeight, float availableWidth)
         {
             // P2-1.1: the sheet is sized to the FRAME, not to its content.
@@ -153,7 +157,7 @@ namespace PoliSim.UI
                     Figure = v => UiFormat.Number(v, 0) + "% of median",
                     EndLeft = "0%", EndRight = "100% of median",
                     Census = hasWage ? "A STATUTORY MINIMUM AS A SHARE OF THE MEDIAN WAGE · % OF MEDIAN" + MinimumWageInForce(c, GetMinimumWageInput(c.MinimumWagePercentOfMedianBase)) : "OFF · NO STATUTORY MINIMUM - WAGES ARE SET BY COLLECTIVE BARGAINING; THE MODEL HOLDS NO ACT TO INTRODUCE ONE",
-                }, hasWage, bandNote: hasWage ? LaborDialInForce(c.MinimumWagePercentOfMedianBase, c.MinimumWagePercentOfMedian) : null);
+                }, hasWage, bandNote: hasWage ? LaborDialInForce(c.MinimumWagePercentOfMedianBase, c.MinimumWagePercentOfMedian) : null, captionNameOnly: true);
             if (hasWage) { _minimumWageInput = minimumWage; }
             _paidFamilyLeaveWeeksInput = DrawDialRow("Paid Family Leave", c.PaidFamilyLeaveWeeksBase, GetPaidFamilyLeaveWeeksInput(c.PaidFamilyLeaveWeeksBase),
                 MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks, "F0", string.Empty, "weeks",
@@ -163,7 +167,7 @@ namespace PoliSim.UI
                     Figure = v => UiFormat.Number(v, 0) + " weeks",
                     EndLeft = "0 weeks", EndRight = "104 weeks",
                     Census = "PAID FAMILY LEAVE, IN WEEKS - THE MODEL'S UNIT (480 BENEFIT DAYS IS SWEDEN'S STATUTE; THE MODEL HOLDS WEEKS)",
-                }, bandNote: LaborDialInForce(c.PaidFamilyLeaveWeeksBase, c.PaidFamilyLeaveWeeks));
+                }, bandNote: LaborDialInForce(c.PaidFamilyLeaveWeeksBase, c.PaidFamilyLeaveWeeks), captionNameOnly: true);
             GUILayout.Space(gutter);
 
             row = LawsDialRow(width, rowHeight);
@@ -171,12 +175,12 @@ namespace PoliSim.UI
                 MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty, "0 unregulated - 100 strict",
                 new Rect(row.x, row.y, tileWidth, rowHeight), NamedFace("clock", DialStops.WorkingHours,
                     "THE MODEL COMPUTES NO HOURS · 0 UNREGULATED (LONG HOURS) … 100 STRICT CAPS - LOOSE LEFT, THE MODEL'S DIRECTION"),
-                bandNote: LaborDialInForce(c.OvertimeRegulationBase, c.OvertimeRegulationLevel));
+                bandNote: LaborDialInForce(c.OvertimeRegulationBase, c.OvertimeRegulationLevel), captionNameOnly: true);
             _retrainingProgramInput = DrawDialRow("Workforce Retraining Programs", c.RetrainingProgramBase, GetRetrainingProgramInput(c.RetrainingProgramBase),
                 MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty, null,
                 new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight), NamedFace("book", DialStops.Retraining,
                     "THE MODEL COMPUTES NO SPENDING FOR IT - AN INDEX"),
-                bandNote: LaborDialInForce(c.RetrainingProgramBase, c.RetrainingProgramLevel));
+                bandNote: LaborDialInForce(c.RetrainingProgramBase, c.RetrainingProgramLevel), captionNameOnly: true);
             GUILayout.Space(gutter);
 
             row = LawsDialRow(width, rowHeight);
@@ -184,7 +188,7 @@ namespace PoliSim.UI
                 MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 minimal - 100 pro-natalist",
                 new Rect(row.x, row.y, tileWidth, rowHeight), NamedFace("family", DialStops.FamilySupport,
                     "0 MINIMAL … 100 PRO-NATALIST · IT MOVES THE BIRTH RATE (±1.5 PER 1 000); THE MODEL COMPUTES NO MONEY FOR IT"),
-                bandNote: LaborDialInForce(c.FamilyPolicyBase, c.FamilyPolicyLevel));
+                bandNote: LaborDialInForce(c.FamilyPolicyBase, c.FamilyPolicyLevel), captionNameOnly: true);
             _immigrationPolicyInput = DrawDialRow("Immigration Policy", c.ImmigrationPolicyBase, GetImmigrationPolicyInput(c.ImmigrationPolicyBase),
                 MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 restrictive - 100 open",
                 new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight), new V35DialFace
@@ -194,15 +198,22 @@ namespace PoliSim.UI
                     EndLeft = "Restrictive", EndRight = "Open",
                     Census = "THE FLOW THE LEVER ADDS TO NET MIGRATION AGAINST THE PROJECTION - 0.1 ‰ OF THE POPULATION A YEAR PER POINT FROM 50 · "
                         + ImmigrationFlowText(0f, population).ToUpperInvariant() + " AT RESTRICTIVE, " + ImmigrationFlowText(100f, population).ToUpperInvariant() + " AT OPEN · ALL NET MIGRATION, NOT LABOUR MIGRATION ALONE",
-                }, bandNote: LaborDialInForce(c.ImmigrationPolicyBase, c.ImmigrationPolicyLevel));
+                }, bandNote: LaborDialInForce(c.ImmigrationPolicyBase, c.ImmigrationPolicyLevel), captionNameOnly: true);
             GUILayout.Space(gutter);
 
             // ---- the bill ----
             LaborPolicyBill pending = _simulationManager.GetPendingLaborBill(PlayerCountryId);
             LaborPolicyBill draft = BuildLaborBillFromDrafts();
+            // K322 S4 (K320): whether a bill stands before the legislature at rest; the draft's clause, or when the bill resolves, on the status's slip and
+            // behind the †; the role's lock keeps its role word at rest, its clauses on the lock's slip
+            string resolves = pending != null ? ResolvesIn(pending.DaysRemaining, pending.Docket) : null;
+            LawsSlips.Moved status = LawsSlips.BillStatus("Labor Market", Legislature,
+                pending != null ? $"A Labor Market bill is before {Legislature} - {resolves}." : "No Labor Market bill before " + Legislature + " - the dials above are its draft.",
+                resolves, "the dials above are its draft");
+            status.Into(DialSlipBook, LawsSlips.LabourStatus);
             DrawLawsBillAction(width, "Introduce labour bill", "laws:labourbill", ParliamentSystem.GetLaborBillConcern(c, draft), pending != null, pending != null ? pending.DaysRemaining : 0,
                 LaborDraftChanges(), () => _simulationManager.IntroduceLaborBill(PlayerCountryId, BuildLaborBillFromDrafts()),
-                pending != null ? $"A Labor Market bill is before {Legislature} - {ResolvesIn(pending.DaysRemaining, pending.Docket)}." : "No Labor Market bill before " + Legislature + " - the dials above are its draft.", Congress.Kind.Labor);
+                status.Drawn(DeskProvenance.On), Congress.Kind.Labor, statusAnchor: LawsSlips.LabourStatus, lockHeadAtRest: true);
         }
 
         /// <summary>Immigration's figure: the flow the lever adds, in thousands of people a year against the projection, at the dial's level (DERIVED -
@@ -466,12 +477,20 @@ namespace PoliSim.UI
                 draftCost += SectorCouplings.SupportCost(gdp, GetSectorSubsidyInput(s.Type, s.SubsidyLevel), GetSectorTaxCreditInput(s.Type, s.TaxCreditLevel), GetSectorResearchGrantsInput(s.Type, s.ResearchGrantsLevel));
             }
             float costDelta = draftCost - standingCost;
-            string status = pending != null
-                ? $"An Economic Sectors bill is before {Legislature} - {ResolvesIn(pending.DaysRemaining, pending.Docket)}."
+            string resolves = pending != null ? ResolvesIn(pending.DaysRemaining, pending.Docket) : null;
+            bool costs = Mathf.Abs(costDelta) >= 0.0005f;
+            string cost = costs ? UiFormat.MoneyDelta(costDelta, MoneyUnit.Billions) : null;
+            string sentence = pending != null
+                ? $"An Economic Sectors bill is before {Legislature} - {resolves}."
                 : "No Economic Sectors bill before " + Legislature + " - the dials of all eight sectors are its draft"
-                    + (Mathf.Abs(costDelta) >= 0.0005f ? " · it would change sector support by " + UiFormat.MoneyDelta(costDelta, MoneyUnit.Billions) + " a year." : ".");
+                    + (costs ? " · it would change sector support by " + cost + " a year." : ".");
+            // K322 S4 (K320): at rest whether a bill stands - and the draft's cost a year while it has one; the clauses on the status's slip, the sentence behind the †
+            LawsSlips.Moved status = LawsSlips.BillStatus("Economic Sectors", Legislature, sentence, resolves, "the dials of all eight sectors are its draft",
+                costs ? "No sectors bill · support " + cost + " a year" : null, costs ? "it would change sector support by " + cost + " a year" : null);
+            status.Into(DialSlipBook, LawsSlips.SectorsStatus);
             DrawLawsBillAction(width, "Introduce sectors bill", "laws:sectorsbill", ParliamentSystem.GetSectorBillConcern(c, BuildSectorBillFromDrafts()), pending != null,
-                pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status, Congress.Kind.Sector);
+                pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status.Drawn(DeskProvenance.On),
+                Congress.Kind.Sector, statusAnchor: LawsSlips.SectorsStatus, lockHeadAtRest: true);
 
             DrawLawsReadings(width, UiPalette.SystemArea.Sectors);
         }
@@ -509,13 +528,13 @@ namespace PoliSim.UI
                 MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null,
                 new Rect(row.x, row.y, tileWidth, rowHeight), SupportFace("receipt", DialStops.TaxCredits, v => SectorCouplings.SupportCost(gdp, 50f, v, 50f),
                     "A GENERAL TAX CREDIT TO THE SECTOR, NOT AN R&D CREDIT · " + UiFormat.Number(SectorCouplings.TaxCreditBudgetCostPercentOfGdpPerPoint, 3) + " % OF GDP A POINT FROM 50, THE SIZE DECLARED · " + supportLands),
-                captionKey: type + "/Tax Credits");
+                captionKey: type + "/Tax Credits", captionNameOnly: true);
             _sectorResearchGrantsInputs[type] = DrawDialRow("Research Grants",
                 sector.ResearchGrantsLevel, GetSectorResearchGrantsInput(type, sector.ResearchGrantsLevel),
                 MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null,
                 new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight), SupportFace("book", DialStops.ResearchGrants, v => SectorCouplings.SupportCost(gdp, 50f, 50f, v),
                     "THE MODEL COMPUTES NO SHARE OF OUTPUT · " + UiFormat.Number(SectorCouplings.ResearchGrantsBudgetCostPercentOfGdpPerPoint, 3) + " % OF GDP A POINT FROM 50, THE SIZE DECLARED · " + supportLands),
-                captionKey: type + "/Research Grants");
+                captionKey: type + "/Research Grants", captionNameOnly: true);
             GUILayout.Space(gutter);
 
             row = LawsDialRow(width, rowHeight);
@@ -531,13 +550,13 @@ namespace PoliSim.UI
                     Census = "THE OECD'S PRODUCT MARKET REGULATION SCORE (0-6, LOWER IS LIGHTER) - THE SEED'S OWN MAPPING INVERTED: THE DIAL IS 50 × PMR / THE OECD AVERAGE · "
                         + "MODERATE AT THE OECD AVERAGE, " + UiFormat.Number(pmrAverage, 2) + (PmrSectorSeries(type) ? " FOR THE SECTOR'S OWN SERIES" : " ECONOMY-WIDE")
                         + " · LIGHT BELOW IT, HEAVY ABOVE · THE SEED HELD THE DIAL INSIDE 10-90",
-                }, captionKey: type + "/Regulation");
+                }, captionKey: type + "/Regulation", captionNameOnly: true);
             _sectorDeregulationInputs[type] = DrawDialRow("Nationalization / Deregulation",   // P3-C3: one axis, both ends in the trailing's order
                 sector.DeregulationNationalizationLevel, GetSectorDeregulationInput(type, sector.DeregulationNationalizationLevel),
                 MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated",
                 new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight), NamedFace("key", DialStops.Ownership,
                     "0 NATIONALISED … 100 DEREGULATED · THE MODEL COMPUTES NO OWNERSHIP SHARE", area),
-                captionKey: type + "/Deregulation");
+                captionKey: type + "/Deregulation", captionNameOnly: true);
             GUILayout.Space(gutter);
 
             row = LawsDialRow(width, rowHeight);
@@ -562,7 +581,7 @@ namespace PoliSim.UI
                         EndLeft = UiFormat.MoneyDelta(subsidyCost(MinPolicyDialLevel), MoneyUnit.Billions), EndRight = UiFormat.MoneyDelta(subsidyCost(MaxPolicyDialLevel), MoneyUnit.Billions),
                         Census = "ITS COST A YEAR · " + subsidyCensus,
                     },
-                captionKey: type + "/Subsidy");
+                captionKey: type + "/Subsidy", captionNameOnly: true);
             GUILayout.Space(gutter);
         }
 
@@ -772,7 +791,7 @@ namespace PoliSim.UI
                         Figure = v => UiFormat.Number(v, 1) + "%",
                         EndLeft = "Free trade · " + UiFormat.Number(MinBaseTariffRate, 0) + "%", EndRight = "Protection · " + UiFormat.Number(MaxBaseTariffRate, 0) + "%",
                         Census = "THE RATE ON EVERY PARTNER WITH NO OVERRIDE · THE AVERAGE CHARGED TODAY, WEIGHTED BY OUR IMPORTS: " + UiFormat.Number(average, 2) + " % - " + string.Join(" · ", chargedLines),
-                    });
+                    }, captionNameOnly: true);
             }
             GUILayout.Space(gutter);
 
@@ -800,22 +819,33 @@ namespace PoliSim.UI
             // ---- the bill ----
             TradePolicyBill pending = _simulationManager.GetPendingTradeBill(PlayerCountryId);
             int changes = TradeDraftChanges(blocMember);
+            string resolves = pending != null ? ResolvesIn(pending.DaysRemaining, pending.Docket) : null;
+            string draftClause = blocMember ? "the override rates are its draft" : "the base rate and the override rates are its draft";
             string status = pending != null
-                ? $"A Trade bill is before {Legislature} - {ResolvesIn(pending.DaysRemaining, pending.Docket)}."
-                : "No Trade bill before " + Legislature + " - " + (blocMember ? "the override rates are its draft" : "the base rate and the override rates are its draft");
+                ? $"A Trade bill is before {Legislature} - {resolves}."
+                : "No Trade bill before " + Legislature + " - " + draftClause;
+            string estimateWords = null, takeRest = null;
             if (pending == null && changes > 0)
             {
                 // pass 6: the draft's cost at the next boundary, the real functions on throwaway clones (SimulationManager.EstimateTradeBill)
                 TradeBillEstimate estimate = _simulationManager.EstimateTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
-                status += " · at these rates the tariff take is " + UiFormat.Money(estimate.Take, MoneyUnit.Billions) + " a year (" + UiFormat.MoneyDelta(estimate.TakeDelta, MoneyUnit.Billions)
+                estimateWords = "at these rates the tariff take is " + UiFormat.Money(estimate.Take, MoneyUnit.Billions) + " a year (" + UiFormat.MoneyDelta(estimate.TakeDelta, MoneyUnit.Billions)
                     + " on today), the trade balance moves " + UiFormat.MoneyDelta(estimate.TradeBalanceDelta, MoneyUnit.Billions) + " a year as the partners mirror it, and prices "
                     + StatsReadings.TrueMinus(estimate.PassThroughPp.ToString("+0.00;-0.00", CultureInfo.InvariantCulture)) + " pp this year";
+                status += " · " + estimateWords;
+                takeRest = "No trade bill · tariff take " + UiFormat.Money(estimate.Take, MoneyUnit.Billions) + " a year";
             }
             else if (pending == null) { status += "."; }
             // PS-6 US-19, R-US8 (a) stated on screen: where a Congress votes the bill, the tariff is its to move and the president's delegated powers are not modelled
             if (Congress.Applies(c)) { status += (status.EndsWith(".", System.StringComparison.Ordinal) ? " " : ". ") + Congress.TariffPowersWords; }   // the review's L5: the estimate's clause closed first, so the words do not run on
+            // K322 S4 (K320): at rest whether a bill stands - and the draft's tariff take while it moves one; the clauses on the status's slip, the estimate as one
+            // sentence behind its DRAFT and the Congress's rule behind the legislature's name (level 2), the sentence behind the †
+            LawsSlips.Moved moved = LawsSlips.BillStatus("Trade", Legislature, status, resolves, draftClause, takeRest, null,
+                estimateWords != null ? char.ToUpperInvariant(estimateWords[0]) + estimateWords.Substring(1) + "." : null, Congress.Applies(c) ? Congress.TariffPowersWords : null);
+            moved.Into(DialSlipBook, LawsSlips.TradeStatus);
             DrawLawsBillAction(width, "Introduce trade bill", "laws:tradebill", ParliamentSystem.GetTradeBillConcern(c, BuildTradeBillFromDrafts(), _world), pending != null,
-                pending != null ? pending.DaysRemaining : 0, changes, () => _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts()), status, Congress.Kind.Trade, CabinetPortfolio.ForeignAffairs);
+                pending != null ? pending.DaysRemaining : 0, changes, () => _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts()), moved.Drawn(DeskProvenance.On),
+                Congress.Kind.Trade, CabinetPortfolio.ForeignAffairs, statusAnchor: LawsSlips.TradeStatus, lockHeadAtRest: true);
 
             DrawLawsReadings(width, UiPalette.SystemArea.Trade);
         }
@@ -850,7 +880,7 @@ namespace PoliSim.UI
                     Figure = v => UiFormat.Number(v, 2) + "% on their goods",
                     EndLeft = UiFormat.Number(PartnerTariffOverrideMin, 0) + "%", EndRight = UiFormat.Number(PartnerTariffOverrideMax, 0) + "%",
                     Census = census,
-                }, hasOverride, captionKey: "Override rate/" + link.PartnerId, geometryKey: first ? null : "Override rate (" + tag + ")");
+                }, hasOverride, captionKey: "Override rate/" + link.PartnerId, geometryKey: first ? null : "Override rate (" + tag + ")", captionNameOnly: true);
             if (hasOverride) { _partnerTariffInputs[link.PartnerId] = newRate; }
 
             // the action, at the head's right
@@ -861,7 +891,7 @@ namespace PoliSim.UI
                 var glyph = new Rect(tile.xMax - padX - side, tile.y + padY + Mathf.Round((h - side) * 0.5f), side, side);
                 if (Event.current.type == EventType.Repaint) { DrawStateGlyph(glyph, Symbol.Locked, PoliSimTheme.TextSecondary); }
                 SlipAnchor(glyph, "trade:lock");
-                _lawsSlipBook.Anchors["trade:lock"] = new SlipContent("LOCKED").Add((lockedBecause ?? string.Empty).ToUpperInvariant());
+                _lawsSlipBook.Anchors["trade:lock"] = EnergySlips.Fragments(SymbolRegistry.Word(Symbol.Locked), (lockedBecause ?? string.Empty).ToUpperInvariant());   // K322 S4: its clauses one a line
                 return;
             }
             string label = hasOverride ? "Reset draft" : "Set override";
@@ -948,7 +978,13 @@ namespace PoliSim.UI
             GUIStyle wordFace = DeskCaption(6.5f, PoliSimTheme.TextPrimary);
             if (rows.Count == 0)
             {
-                if (repaint) { PoliSimWidgets.MeasuredLabel(listRect, "No law is in force or before " + Legislature + " - the statute book below enacts them.", V35Serif(V35.Floor, PoliSimTheme.TextMuted)); }
+                // K322 S4 (K320): the two counts at rest; the sentence on the slip and behind the †
+                LawsSlips.Moved empty = LawsSlips.EmptyList(Legislature);
+                empty.Into(_lawsSlipBook, LawsSlips.ListEmpty);
+                GUIStyle emptyFace = V35Serif(V35.Floor, PoliSimTheme.TextMuted);
+                string emptyText = empty.Drawn(DeskProvenance.On);
+                if (repaint) { PoliSimWidgets.MeasuredLabel(listRect, emptyText, emptyFace); }
+                SlipAnchor(new Rect(listRect.x, listRect.y, Mathf.Min(listRect.width, Mathf.Ceil(emptyFace.CalcSize(new GUIContent(emptyText)).x) + V35.Px(4f)), listRect.height), LawsSlips.ListEmpty);
                 GUILayout.Space(V35.Px(V35.Gutter));
                 return cardH + V35.Px(26f) + V35.Px(6f) + V35.Px(V35.Gutter);
             }
@@ -1154,6 +1190,14 @@ namespace PoliSim.UI
                 GUILayout.BeginVertical(V35CardStyle(), GUILayout.Width(width));
                 StatTracePanel.Draw(_playerCountry, gap, _labelStyle, _labelStyle, width - V35.Px(V35.CardPadX) * 2f - 4f, host);
                 GUILayout.EndVertical();
+                if (StatTracePanel.SelectedStat == StatNodeId.DebtToGdp)
+                {
+                    // K322 S4 (K320): the debt trace's term names kept to one line at rest; their whole words on the trace's slip
+                    SlipAnchor(GUILayoutUtility.GetLastRect(), LawsSlips.Trace);
+                    var traceSlip = new SlipContent("THE TRACE · DEBT-TO-GDP");
+                    foreach (string term in StatTracePanel.DebtTermsInFull) { traceSlip.Add(term.ToUpperInvariant()); }
+                    _lawsSlipBook.Anchors[LawsSlips.Trace] = traceSlip;
+                }
                 GUILayout.Space(gutter);
             }
             V35.FloorGuarded = guarded;
@@ -1223,13 +1267,16 @@ namespace PoliSim.UI
 
             Rect track = BudgetTrackRect(inner, out Rect endLane);
             float result = LedgerRow.Track(track, name, standing, draft, min, max, interactive, _sliderStyle, _sliderThumbStyle, LedgerRow.ScaleOf(_labelStyle));
+            string speakingKey = captionKey ?? name;
             if (Event.current.type == EventType.Repaint)
             {
-                bool speaking = interactive && DrawRangeCaption(name, captionKey ?? name, result, standing, min, max, endLane, captionNameOnly);
+                bool speaking = interactive && DrawRangeCaption(name, speakingKey, result, standing, min, max, endLane, captionNameOnly);
                 if (!speaking) { DrawBudgetEndLabels(endLane, face.EndLeft, face.EndRight, face.Off || !interactive); }
+                if (speaking) { _bandCaptionSpeaking.Add(speakingKey); } else { _bandCaptionSpeaking.Remove(speakingKey); }
             }
-            // S1: the band's slip, on every event while the draft differs (a pin is taken on a MouseDown); its anchor is the band's name, drawn while it speaks
-            if (captionNameOnly && interactive && !Mathf.Approximately(result, standing) && RangeCaptions.TryGet(name, out RangeCaptions.Dial bandDial))
+            // S1: the band's slip, on every event while the draft differs (a pin is taken on a MouseDown); its anchor is the band's name, drawn while it speaks.
+            // K322 S4: and while the name still speaks after a reset (the caption fades on the standing band), so the name drawn always opens its line
+            if (captionNameOnly && interactive && (!Mathf.Approximately(result, standing) || _bandCaptionSpeaking.Contains(speakingKey)) && RangeCaptions.TryGet(name, out RangeCaptions.Dial bandDial))
             {
                 DialSlipBook.Anchors["dial:" + name + ":band"] = RangeCaptions.BandSlip(bandDial, RangeCaptions.BandIndex(result, min, max));
             }

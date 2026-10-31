@@ -130,15 +130,17 @@ namespace PoliSim.UI
                 // PS-6 US-6: the electorate's basis in the caption - a country whose poll has a basis of its own (the USA's House vote, R-US15) holds an
                 // electorate that was not fitted to it (σ and τ the four fitted countries' median), so "fitted" would be false there; every other country's
                 // caption is the one it was
-                string electorateBasis = PartySystems.HistoryBasis(player.Id) != null ? "held, not fitted, on the House vote" : "the fitted electorate over the cohorts";
+                // K322 S3 (K320's caps): the basis in a word or a short phrase at rest; the whole basis ("the fitted electorate over the cohorts", "held, not
+                // fitted, on the House vote") is the diamond's level-2 slip on the Politics page (GameController's compass key)
+                string electorateBasis = PartySystems.HistoryBasis(player.Id) != null ? "held on the House vote" : "fitted";
                 lines.Add(electorateMean.HasValue
-                    ? new LegendLine(string.Format(CultureInfo.InvariantCulture, "diamond  {0} · over {1} parties, {2}", Pair(electorateMean.Value), electorateParties, electorateBasis), null, false, false)
+                    ? new LegendLine(string.Format(CultureInfo.InvariantCulture, "diamond  {0} · {1} parties · {2}", Pair(electorateMean.Value), electorateParties, electorateBasis), null, false, false)
                     : new LegendLine("no fitted electorate for this chamber - no point", null, false, false));
-                lines.Add(new LegendLine("TRAILS · each chamber's mean at every turn close, faint", null, false, true));
+                lines.Add(new LegendLine("TRAILS · each chamber's mean, faint", null, false, true));   // K322 S3: "at every turn close" is the trails' level-2 slip
                 List<(System.DateTime Date, float LrEcon, float Galtan)> playerTrail = CompassPositions.Trail(player);
                 lines.Add(new LegendLine(playerTrail.Count > 0
                     ? string.Format(CultureInfo.InvariantCulture, "{0} point(s) stored for {1}, {2:yyyy-MM-dd} to {3:yyyy-MM-dd}", playerTrail.Count, player.Name, playerTrail[0].Date, playerTrail[playerTrail.Count - 1].Date)
-                    : $"no turn has closed yet - {UiFormat.Possessive(player.Name)} trail starts at the first close", null, false, false));
+                    : "no trail yet · from the first close", null, false, false));
                 lines.Add(new LegendLine($"{UiFormat.Possessive(player.Name.ToUpperInvariant())} PARTIES · PUBLISHED PAIRS (CHES 2024)", null, false, true));
                 foreach (PoliticalParty party in PartySystems.For(player.Id))
                 {

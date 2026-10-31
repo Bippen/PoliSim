@@ -226,7 +226,10 @@ namespace PoliSim.EditorTools
                         u.DebtLimitUsd = subject + 1e12;
                         u.DebtLimitReachedOn = DateTime.MinValue;
                         string below = Chip(null, out _, out string headroom);
-                        Check(below == null && headroom != null && headroom.StartsWith("limit ", StringComparison.Ordinal) && headroom.EndsWith(" below", StringComparison.Ordinal), F("(d) below the limit: no chip, the line \"{0}\"", headroom));
+                        // §970 (K322 S2, K320): the limit alone at rest - the headroom left the line for the debt slip, which still names it ("... below")
+                        bool slipNamesHeadroom = FiscalRules.DebtLimitLines(u, day, null).Exists(l => l.Contains(" below"));
+                        Check(below == null && headroom != null && headroom.StartsWith("limit ", StringComparison.Ordinal) && !headroom.Contains(" below") && slipNamesHeadroom,
+                            F("(d) below the limit: no chip, the line \"{0}\" (the limit alone), the headroom on the debt slip ({1})", headroom, slipNamesHeadroom ? "named" : "MISSING"));
                         u.DebtLimitUsd = subject;
                         u.DebtLimitReachedOn = day.AddDays(-10);
                         string at = Chip(null, out FiscalRules.DebtLimitInk atInk, out _);

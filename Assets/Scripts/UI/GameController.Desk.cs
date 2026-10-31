@@ -982,8 +982,10 @@ namespace PoliSim.UI
             Rect head = DrawV35CardHead(inner, "chart", DeskEffectsNote.Head(subject), PoliSimTheme.TextSecondary, reserveRight: scopeWidth + V35.Px(8f));
             DrawDeskChipButton(new Rect(head.xMax - scopeWidth, head.y + V35.Px(2f), scopeWidth, Mathf.Max(1f, head.height - V35.Px(4f))), scopeChip, chipCaption, selected: true, disabled: true);
             string scopeText = DeskEffectsNote.Line(subject, rateLever, mayTable, chamberDays);
-            var slip = new SlipContent("ESTIMATED EFFECTS").Add(scopeText);
+            // K322 S2 (K320): the empty state's caption at rest is DeskEffectsNote.Rest, a few words; the whole note is the head's slip, packed to the slip's caps
+            var slip = emptyState ? BudgetPackedSlip("ESTIMATED EFFECTS", scopeText, _deskSlipBook) : new SlipContent("ESTIMATED EFFECTS").Add(scopeText);
             if (!emptyState) { slip.Add(DeskEffectsNote.Method(subject, SimulationManager.DaysPerTurn)); }
+            string restNote = emptyState ? DeskEffectsNote.Rest(subject, chamberDays) : scopeText;
             _deskSlipBook.Anchors["card:effects"] = slip;
             DeskAnchor(new Rect(head.x, head.y, Mathf.Max(1f, head.width - scopeWidth - V35.Px(8f)), head.height), "card:effects");
             Rect body = DrawV35DenseLine(V35UnderHead(inner, head), slip);
@@ -994,7 +996,7 @@ namespace PoliSim.UI
             GUIStyle note = V35SerifWrapped(V35.Floor, PoliSimTheme.TextMuted);
             float notePad = V35.Px(8f);
             float noteWidth = Mathf.Max(1f, body.width - notePad * 2f);
-            float noteHeight = emptyState ? Mathf.Ceil(note.CalcHeight(new GUIContent(scopeText), noteWidth)) : 0f;
+            float noteHeight = emptyState ? Mathf.Ceil(note.CalcHeight(new GUIContent(restNote), noteWidth)) : 0f;
             float noteBlock = emptyState ? noteHeight + notePad * 2f + V35.Px(6f) : 0f;
 
             // The numerals from the same cached scaled figures the OPEN panel prints, formatted here WITHOUT the per-row "(±…)" margin. Invariant culture, as the tiles print.
@@ -1035,7 +1037,7 @@ namespace PoliSim.UI
                 {
                     UiContainmentGuard.Check("Desk effects no-draft caption", new Rect(body.x + notePad, y + notePad, noteWidth, noteHeight), body);
                 }
-                GUI.Label(new Rect(body.x + notePad, y + notePad, noteWidth, Mathf.Max(1f, boxHeight - notePad * 2f)), scopeText, note);
+                GUI.Label(new Rect(body.x + notePad, y + notePad, noteWidth, Mathf.Max(1f, boxHeight - notePad * 2f)), restNote, note);
             }
         }
 

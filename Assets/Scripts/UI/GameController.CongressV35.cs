@@ -444,20 +444,27 @@ namespace PoliSim.UI
 
         // ------------------------------------------------------------------ before the Senate (the Fed chair, as the model holds it: K15-K17)
 
-        private List<(string Text, bool Billed)> CongressNominationLines()
+        /// <summary>The "Before the Senate" card's lines - each its words at rest (K322 S3, K320's caps: a few words, never a sentence, never cut) and its
+        /// sentence, which the card's slip holds whole.</summary>
+        private List<(string Text, string Full, bool Billed)> CongressNominationLines()
         {
-            var lines = new List<(string, bool)>();
+            var lines = new List<(string, string, bool)>();
             FedChair chair = _playerCountry.CurrentFedChair;
             System.DateTime today = _simulationManager.CurrentDate;
             if (chair != null)
             {
-                lines.Add(("Chair of the " + GetCentralBankName(PlayerCountryId) + ": " + chair.Name + (chair.HasTerm() ? ", the term as chair to " + CongressDay(chair.TermEnds) + "." : "."), false));
+                lines.Add(("Chair · " + chair.Name + (chair.HasTerm() ? " · to " + CongressDay(chair.TermEnds) : string.Empty),
+                    "Chair of the " + GetCentralBankName(PlayerCountryId) + ": " + chair.Name + (chair.HasTerm() ? ", the term as chair to " + CongressDay(chair.TermEnds) + "." : "."), false));
                 string acting = UsFedConsent.ActingWords(_playerCountry, today);
-                if (acting != null) { lines.Add((acting + ", until a successor is confirmed.", false)); }   // K15
-                if (UsFedConsent.StandingRefusal(_playerCountry, _simulationManager.CurrentDate) is FedSenateVote refused) { lines.Add((UsFedConsent.VoteWords(refused) + ".", false)); }   // K16: the refusal as an event
+                if (acting != null) { lines.Add((acting, acting + ", until a successor is confirmed.", false)); }   // K15
+                if (UsFedConsent.StandingRefusal(_playerCountry, _simulationManager.CurrentDate) is FedSenateVote refused)   // K16: the refusal as an event
+                {
+                    lines.Add(("Refused · " + N(refused.For) + "-" + N(refused.Against) + " · " + CongressDay(refused.VotedOn), UsFedConsent.VoteWords(refused) + ".", false));
+                }
             }
-            lines.Add(("The President nominates; the Senate votes " + UsFedConsent.NominationToVoteDays + " days later, by a majority.", false));
-            lines.Add(("The count: a crossing rule on the chair's roll calls since 2013.", false));   // K17
+            lines.Add(("Nomination to vote · " + UsFedConsent.NominationToVoteDays + " days · a majority",
+                "The President nominates; the Senate votes " + UsFedConsent.NominationToVoteDays + " days later, by a majority.", false));
+            lines.Add(("The count · a crossing rule · since 2013", "The count: a crossing rule on the chair's roll calls since 2013.", false));   // K17
             return lines;
         }
 
@@ -473,19 +480,20 @@ namespace PoliSim.UI
             float px = V35.Px(V35.CardPadX), py = V35.Px(10f);
             var inner = new Rect(r.x + px, r.y + py, r.width - 2f * px, r.height - 2f * py);
             DrawV35SectionHead(new Rect(inner.x, inner.y, inner.width, V35.Px(20f)), "Before the Senate");
-            List<(string Text, bool Billed)> lines = CongressNominationLines();
+            List<(string Text, string Full, bool Billed)> lines = CongressNominationLines();
             float y = inner.y + V35.Px(22f);
             if (Event.current.type == EventType.Repaint)
             {
                 GUIStyle title = V35Serif(17f, PoliSimTheme.TextPrimary);
                 title.fontStyle = FontStyle.Bold;
-                string head = _playerCountry.FedNominationPending?.Nominee != null ? _playerCountry.FedNominationPending.Nominee.Name + ", the vote on " + CongressDay(_playerCountry.FedNominationPending.VoteOn) : "No nomination is before the Senate";   // K16
-                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, y, inner.width, V35.Px(22f)), V35Fit(head, title, inner.width, out _), title);
+                string nominee = _playerCountry.FedNominationPending?.Nominee?.Name;
+                string head = nominee != null ? nominee + ", the vote on " + CongressDay(_playerCountry.FedNominationPending.VoteOn) : "No nomination is before the Senate";   // K16
+                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, y, inner.width, V35.Px(22f)), PoliticsFitWhole(title, inner.width, head, nominee), title);   // K322 S3: whole, never cut
             }
             y += V35.Px(24f);
             var slip = new SlipContent("BEFORE THE SENATE").Add((UsFedConsent.PendingWords(_playerCountry) ?? "NO NOMINATION IS BEFORE THE SENATE").ToUpperInvariant())
                 .Add("A PLAYER-PRESIDENT'S NOMINEE WAITS FOR ITS VOTE DAY UNDER ANY SENATE; AN AI PRESIDENT'S NOMINEE IS COUNTED ON THE TERM'S DAY");
-            foreach ((string text, bool billed) in lines)
+            foreach ((string text, string full, bool billed) in lines)
             {
                 if (Event.current.type == EventType.Repaint)
                 {
@@ -497,9 +505,9 @@ namespace PoliSim.UI
                         gx += side + V35.Px(6f);
                     }
                     GUIStyle face = V35Serif(V35.Floor, PoliSimTheme.TextPrimary);
-                    PoliSimWidgets.MeasuredLabel(new Rect(gx, y, Mathf.Max(1f, inner.xMax - gx), V35.Px(20f)), V35Fit(text, face, Mathf.Max(1f, inner.xMax - gx), out _), face);
+                    PoliSimWidgets.MeasuredLabel(new Rect(gx, y, Mathf.Max(1f, inner.xMax - gx), V35.Px(20f)), text, face);
                 }
-                slip.Add(text.ToUpperInvariant());
+                slip.Add(full.ToUpperInvariant());
                 y += V35.Px(20f);
             }
             slip.Add("THE VICE CHAIR ACTS WHILE THE CHAIR'S TERM HAS ENDED AND NO SUCCESSOR IS CONFIRMED (12 U.S.C. 242 AND 244)");

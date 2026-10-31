@@ -169,6 +169,10 @@ namespace PoliSim.UI
         public float WindowFirstLive { get; private set; } = float.NaN;
         public float WindowLast { get; private set; } = float.NaN;
 
+        /// <summary>K322 S3 (K320's caps): the foot's Δ definition at rest as "Δ = LAST − FIRST" alone - the window and the unit go to the page's slip.
+        /// Opt-in per instance (the central bank's graph sets it); every other graph keeps its ladder until its own page's sweep.</summary>
+        public bool ShortFootDelta;
+
         /// <summary>
         /// Draws this graph via GUILayout, stretching to whatever width the current layout group
         /// gives it. <paramref name="history"/> may hold up to StatHistory.MaxEntries worth of
@@ -703,7 +707,7 @@ namespace PoliSim.UI
             float leftWidth = Mathf.Min(_footStyle.CalcSize(new GUIContent(left)).x, foot.width * 0.6f);
             float rightWidth = Mathf.Max(0f, foot.width - leftWidth - gap);
             string right = null;
-            foreach (string candidate in new[] { "Δ = LAST − FIRST IN WINDOW · " + unit, "Δ = LAST − FIRST · " + unit, "Δ = LAST − FIRST" })
+            foreach (string candidate in ShortFootDelta ? new[] { "Δ = LAST − FIRST" } : new[] { "Δ = LAST − FIRST IN WINDOW · " + unit, "Δ = LAST − FIRST · " + unit, "Δ = LAST − FIRST" })
             {
                 if (_footStyle.CalcSize(new GUIContent(candidate)).x <= rightWidth) { right = candidate; break; }
             }

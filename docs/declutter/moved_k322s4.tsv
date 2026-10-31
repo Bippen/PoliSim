@@ -1,0 +1,129 @@
+# K322 S4 (K320's sweep, LAWS AND POLICY): the words the sweep took off the Laws page at rest (the captures 06*) and off the Energy page's link into it
+# (08_energy_laws_link_arrived), in machine form (K321 (g)). Every row's slip is the Laws page's book on the frame named (GameController.LawsV35.cs and the
+# statute book in GameController.cs; the builders are Assets/Scripts/UI/LawsSlips.cs). A slip_text drops the legislature's name (Parliament, Congress)
+# where a row's text named it, so the row reads the same words on every country's film.
+#
+# COUNTRY-SCOPED ROWS (DECLARED): these rows' words exist only where the
+# text stood, so each carries its countries in the fifth column and the judge reads it on those countries' films alone. They are the last 53 rows below:
+#   the role lock's clauses (IN OPPOSITION · ...)                 italy, poland, sweden (06i: poland, sweden)
+#   TREATY COMPETENCE - ... (06i)                                   france, germany, italy
+#   NO NATIONAL ELECTRICITY TAX - ... (08)                          usa
+#   Natural rate of unemployment: ... the floor # caps it (06h)    france, germany, usa
+#   No Trade bill before Congress - ... not modelled. (06e)        usa
+#   each party's stance reason (06f deep, rows)                     the party's own country
+capture_stem	text_before	now_in	slip_text	countries
+06a_policylaws_labormarket_caption_drag	Half a year. Employers keep the desk warm.	slip:06a_policylaws_labormarket_caption_drag		
+06a_policylaws_labormarket_caption_drag	No Labor Market bill before Congress - the dials above are its draft.	slip:06a_policylaws_labormarket_caption_drag	NO LABOR MARKET BILL BEFORE · THE DIALS ABOVE ARE ITS DRAFT	
+06a_policylaws_labormarket_caption_drag	No Labor Market bill before Parliament - the dials above are its draft.	slip:06a_policylaws_labormarket_caption_drag	NO LABOR MARKET BILL BEFORE · THE DIALS ABOVE ARE ITS DRAFT	
+06a_policylaws_labormarket_caption_faded	No Labor Market bill before Congress - the dials above are its draft.	slip:06a_policylaws_labormarket_caption_faded	NO LABOR MARKET BILL BEFORE · THE DIALS ABOVE ARE ITS DRAFT	
+06a_policylaws_labormarket_caption_faded	No Labor Market bill before Parliament - the dials above are its draft.	slip:06a_policylaws_labormarket_caption_faded	NO LABOR MARKET BILL BEFORE · THE DIALS ABOVE ARE ITS DRAFT	
+06a_policylaws_labormarket_caption_held	Half a year. Employers keep the desk warm.	slip:06a_policylaws_labormarket_caption_held		
+06a_policylaws_labormarket_caption_held	No Labor Market bill before Congress - the dials above are its draft.	slip:06a_policylaws_labormarket_caption_held	NO LABOR MARKET BILL BEFORE · THE DIALS ABOVE ARE ITS DRAFT	
+06a_policylaws_labormarket_caption_held	No Labor Market bill before Parliament - the dials above are its draft.	slip:06a_policylaws_labormarket_caption_held	NO LABOR MARKET BILL BEFORE · THE DIALS ABOVE ARE ITS DRAFT	
+06a_policylaws_labormarket_deep	No Labor Market bill before Congress - the dials above are its draft.	slip:06a_policylaws_labormarket_deep	NO LABOR MARKET BILL BEFORE · THE DIALS ABOVE ARE ITS DRAFT	
+06a_policylaws_labormarket_deep	No Labor Market bill before Parliament - the dials above are its draft.	slip:06a_policylaws_labormarket_deep	NO LABOR MARKET BILL BEFORE · THE DIALS ABOVE ARE ITS DRAFT	
+06a_policylaws_labormarket_rows	No Labor Market bill before Congress - the dials above are its draft.	slip:06a_policylaws_labormarket_rows	NO LABOR MARKET BILL BEFORE · THE DIALS ABOVE ARE ITS DRAFT	
+06a_policylaws_labormarket_rows	No Labor Market bill before Parliament - the dials above are its draft.	slip:06a_policylaws_labormarket_rows	NO LABOR MARKET BILL BEFORE · THE DIALS ABOVE ARE ITS DRAFT	
+06c_policylaws_sectors_caption_drag	No Economic Sectors bill before Congress - the dials of all eight sectors are its draft · it would change sector support by +US$#B a year.	slip:06c_policylaws_sectors_caption_drag	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT · IT WOULD CHANGE SECTOR SUPPORT BY	
+06c_policylaws_sectors_caption_drag	No Economic Sectors bill before Parliament - the dials of all eight sectors are its draft · it would change sector support by +US$#B a year.	slip:06c_policylaws_sectors_caption_drag	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT · IT WOULD CHANGE SECTOR SUPPORT BY	
+06c_policylaws_sectors_caption_drag	No Economic Sectors bill before Parliament - the dials of all eight sectors are its draft · it would change sector support by +US$#M a year.	slip:06c_policylaws_sectors_caption_drag	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT · IT WOULD CHANGE SECTOR SUPPORT BY	
+06c_policylaws_sectors_caption_drag	Output well above custom; the treasury's, less so.	slip:06c_policylaws_sectors_caption_drag		
+06c_policylaws_sectors_caption_faded	No Economic Sectors bill before Congress - the dials of all eight sectors are its draft · it would change sector support by +US$#B a year.	slip:06c_policylaws_sectors_caption_faded	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT · IT WOULD CHANGE SECTOR SUPPORT BY	
+06c_policylaws_sectors_caption_faded	No Economic Sectors bill before Parliament - the dials of all eight sectors are its draft · it would change sector support by +US$#B a year.	slip:06c_policylaws_sectors_caption_faded	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT · IT WOULD CHANGE SECTOR SUPPORT BY	
+06c_policylaws_sectors_caption_faded	No Economic Sectors bill before Parliament - the dials of all eight sectors are its draft · it would change sector support by +US$#M a year.	slip:06c_policylaws_sectors_caption_faded	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT · IT WOULD CHANGE SECTOR SUPPORT BY	
+06c_policylaws_sectors_caption_held	No Economic Sectors bill before Congress - the dials of all eight sectors are its draft · it would change sector support by +US$#B a year.	slip:06c_policylaws_sectors_caption_held	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT · IT WOULD CHANGE SECTOR SUPPORT BY	
+06c_policylaws_sectors_caption_held	No Economic Sectors bill before Parliament - the dials of all eight sectors are its draft · it would change sector support by +US$#B a year.	slip:06c_policylaws_sectors_caption_held	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT · IT WOULD CHANGE SECTOR SUPPORT BY	
+06c_policylaws_sectors_caption_held	No Economic Sectors bill before Parliament - the dials of all eight sectors are its draft · it would change sector support by +US$#M a year.	slip:06c_policylaws_sectors_caption_held	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT · IT WOULD CHANGE SECTOR SUPPORT BY	
+06c_policylaws_sectors_caption_held	Output well above custom; the treasury's, less so.	slip:06c_policylaws_sectors_caption_held		
+06c_policylaws_sectors_deep	No Economic Sectors bill before Congress - the dials of all eight sectors are its draft.	slip:06c_policylaws_sectors_deep	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT	
+06c_policylaws_sectors_deep	No Economic Sectors bill before Parliament - the dials of all eight sectors are its draft.	slip:06c_policylaws_sectors_deep	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT	
+06c_policylaws_sectors_rows	No Economic Sectors bill before Congress - the dials of all eight sectors are its draft.	slip:06c_policylaws_sectors_rows	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT	
+06c_policylaws_sectors_rows	No Economic Sectors bill before Parliament - the dials of all eight sectors are its draft.	slip:06c_policylaws_sectors_rows	NO ECONOMIC SECTORS BILL BEFORE · THE DIALS OF ALL EIGHT SECTORS ARE ITS DRAFT	
+06e_policylaws_trade_deep	No Trade bill before Parliament - the override rates are its draft.	slip:06e_policylaws_trade_deep	NO TRADE BILL BEFORE · THE OVERRIDE RATES ARE ITS DRAFT	
+06e_policylaws_trade_rows	No Trade bill before Parliament - the override rates are its draft.	slip:06e_policylaws_trade_rows	NO TRADE BILL BEFORE · THE OVERRIDE RATES ARE ITS DRAFT	
+06f_policylaws_laws	Affordable now: # of # shown	slip:06f_policylaws_laws		
+06f_policylaws_laws	INTRODUCE AS A BILL ›	slip:06f_policylaws_laws	INTRODUCE AS A BILL	
+06f_policylaws_laws	No law is in force or before Congress - the statute book below enacts them.	slip:06f_policylaws_laws	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06f_policylaws_laws	No law is in force or before Parliament - the statute book below enacts them.	slip:06f_policylaws_laws	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06f_policylaws_laws_deep	Affordable now: # of # shown	slip:06f_policylaws_laws_deep		
+06f_policylaws_laws_deep	No law is in force or before Congress - the statute book below enacts them.	slip:06f_policylaws_laws_deep	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06f_policylaws_laws_deep	No law is in force or before Parliament - the statute book below enacts them.	slip:06f_policylaws_laws_deep	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06f_policylaws_laws_rows	No law is in force or before Congress - the statute book below enacts them.	slip:06f_policylaws_laws_rows	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06f_policylaws_laws_rows	No law is in force or before Parliament - the statute book below enacts them.	slip:06f_policylaws_laws_rows	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06g_laws_expected_effects	Affordable now: # of # shown	slip:06g_laws_expected_effects		
+06g_laws_expected_effects	No law is in force or before Congress - the statute book below enacts them.	slip:06g_laws_expected_effects	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06g_laws_expected_effects	No law is in force or before Parliament - the statute book below enacts them.	slip:06g_laws_expected_effects	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06g_laws_repealable	Affordable now: # of # shown	slip:06g_laws_repealable		
+06h_laws_electricity_card	Affordable now: # of # shown	slip:06h_laws_electricity_card		
+06h_laws_electricity_card	No law is in force or before Congress - the statute book below enacts them.	slip:06h_laws_electricity_card	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06h_laws_electricity_card	No law is in force or before Parliament - the statute book below enacts them.	slip:06h_laws_electricity_card	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06h_laws_fiscal_card	Affordable now: # of # shown	slip:06h_laws_fiscal_card		
+06h_laws_fiscal_card	No law is in force or before Congress - the statute book below enacts them.	slip:06h_laws_fiscal_card	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06h_laws_fiscal_card	No law is in force or before Parliament - the statute book below enacts them.	slip:06h_laws_fiscal_card	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06h_laws_institutions_card	Affordable now: # of # shown	slip:06h_laws_institutions_card		
+06h_laws_institutions_card	No law is in force or before Congress - the statute book below enacts them.	slip:06h_laws_institutions_card	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06h_laws_institutions_card	No law is in force or before Parliament - the statute book below enacts them.	slip:06h_laws_institutions_card	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06h_laws_monetary_card	Affordable now: # of # shown	slip:06h_laws_monetary_card		
+06h_laws_monetary_card	No law is in force or before Congress - the statute book below enacts them.	slip:06h_laws_monetary_card	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06h_laws_monetary_card	No law is in force or before Parliament - the statute book below enacts them.	slip:06h_laws_monetary_card	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06i_laws_monetary_row	INTRODUCE AS A BILL ›	slip:06i_laws_monetary_row	INTRODUCE AS A BILL	
+06j_policylaws_trace_debt	Interest at the issuance rate	slip:06j_policylaws_trace_debt		
+06j_policylaws_trace_debt	Primary balance (before the reaction)	slip:06j_policylaws_trace_debt	PRIMARY BALANCE · BEFORE THE REACTION	
+06m_policylaws_trade_draft_moved	A small excess. The partner's customs office mirrors it, small.	slip:06m_policylaws_trade_draft_moved		
+06n_policylaws_trade_draft_reset	This partner pays the standing rate. Nothing to mirror.	slip:06n_policylaws_trade_draft_reset		
+08_energy_laws_link_arrived	INTRODUCE AS A BILL ›	slip:08_energy_laws_link_arrived	INTRODUCE AS A BILL	
+08_energy_laws_link_arrived	No law is in force or before Congress - the statute book below enacts them.	slip:08_energy_laws_link_arrived	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+08_energy_laws_link_arrived	No law is in force or before Parliament - the statute book below enacts them.	slip:08_energy_laws_link_arrived	NO LAW IS IN FORCE OR BEFORE · THE STATUTE BOOK BELOW ENACTS THEM	
+06a_policylaws_labormarket_caption_drag	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06a_policylaws_labormarket_caption_drag		italy,poland,sweden
+06a_policylaws_labormarket_caption_faded	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06a_policylaws_labormarket_caption_faded		italy,poland,sweden
+06a_policylaws_labormarket_caption_held	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06a_policylaws_labormarket_caption_held		italy,poland,sweden
+06a_policylaws_labormarket_deep	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06a_policylaws_labormarket_deep		italy,poland,sweden
+06a_policylaws_labormarket_rows	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06a_policylaws_labormarket_rows		italy,poland,sweden
+06c_policylaws_sectors_caption_drag	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06c_policylaws_sectors_caption_drag		italy,poland,sweden
+06c_policylaws_sectors_caption_faded	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06c_policylaws_sectors_caption_faded		italy,poland,sweden
+06c_policylaws_sectors_caption_held	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06c_policylaws_sectors_caption_held		italy,poland,sweden
+06c_policylaws_sectors_deep	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06c_policylaws_sectors_deep		italy,poland,sweden
+06c_policylaws_sectors_rows	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06c_policylaws_sectors_rows		italy,poland,sweden
+06e_policylaws_trade_deep	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06e_policylaws_trade_deep		italy,poland,sweden
+06e_policylaws_trade_deep	No Trade bill before Congress - the base rate and the override rates are its draft. A tariff moves only by a bill through Congress - the president's delegated tariff powers are not modelled.	slip:06e_policylaws_trade_deep		usa
+06e_policylaws_trade_rows	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06e_policylaws_trade_rows		italy,poland,sweden
+06e_policylaws_trade_rows	No Trade bill before Congress - the base rate and the override rates are its draft. A tariff moves only by a bill through Congress - the president's delegated tariff powers are not modelled.	slip:06e_policylaws_trade_rows		usa
+06f_policylaws_laws	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06f_policylaws_laws		italy,poland,sweden
+06f_policylaws_laws_deep	BSW # on the galtan axis, the bill toward its # end: -# · opposition line: the bill is nearer the government (#) than this party (#) → -# · populism: people_v_elite # → -# (anti-establishment framing of a government bill)	slip:06f_policylaws_laws_deep		germany
+06f_policylaws_laws_deep	C # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_deep		sweden
+06f_policylaws_laws_deep	CSU # on the galtan axis, the bill toward its # end: -# · opposition line: the bill is nearer the government (#) than this party (#) → -#	slip:06f_policylaws_laws_deep		germany
+06f_policylaws_laws_deep	DEM # on the galtan axis, the bill toward its # end: +# · opposition, but the bill is nearer this party (#) than the government (#): votes its position	slip:06f_policylaws_laws_deep		usa
+06f_policylaws_laws_deep	ECO # on the galtan axis, the bill toward its # end: +# · opposition, but the bill is nearer this party (#) than the government (#): votes its position · populism: people_v_elite # → -# (anti-establishment framing of a government bill)	slip:06f_policylaws_laws_deep		france
+06f_policylaws_laws_deep	KD # on the galtan axis, the bill toward its # end: -#	slip:06f_policylaws_laws_deep		sweden
+06f_policylaws_laws_deep	KO # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_deep		poland
+06f_policylaws_laws_deep	Konf # on the galtan axis, the bill toward its # end: -#	slip:06f_policylaws_laws_deep		poland
+06f_policylaws_laws_deep	L # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_deep		sweden
+06f_policylaws_laws_deep	MP # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_deep		sweden
+06f_policylaws_laws_deep	NL # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_deep		poland
+06f_policylaws_laws_deep	REP tabled the bill: its author votes for it	slip:06f_policylaws_laws_deep		usa
+06f_policylaws_laws_deep	SOC # on the galtan axis, the bill toward its # end: +# · opposition, but the bill is nearer this party (#) than the government (#): votes its position	slip:06f_policylaws_laws_deep		france
+06f_policylaws_laws_deep	TD # on the galtan axis, the bill toward its # end: -#	slip:06f_policylaws_laws_deep		poland
+06f_policylaws_laws_rows	AVS # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_rows		italy
+06f_policylaws_laws_rows	Az-IV # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_rows		italy
+06f_policylaws_laws_rows	C # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_rows		sweden
+06f_policylaws_laws_rows	CSU # on the galtan axis, the bill toward its # end: -# · opposition line: the bill is nearer the government (#) than this party (#) → -#	slip:06f_policylaws_laws_rows		germany
+06f_policylaws_laws_rows	DEM # on the galtan axis, the bill toward its # end: +# · opposition, but the bill is nearer this party (#) than the government (#): votes its position	slip:06f_policylaws_laws_rows		usa
+06f_policylaws_laws_rows	FI # on the galtan axis, the bill toward its # end: -#	slip:06f_policylaws_laws_rows		italy
+06f_policylaws_laws_rows	GRÜNE # on the galtan axis, the bill toward its # end: +# · cabinet party: cohesion # at distance # from the bill → +#	slip:06f_policylaws_laws_rows		germany
+06f_policylaws_laws_rows	KD # on the galtan axis, the bill toward its # end: -#	slip:06f_policylaws_laws_rows		sweden
+06f_policylaws_laws_rows	KO # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_rows		poland
+06f_policylaws_laws_rows	Konf # on the galtan axis, the bill toward its # end: -#	slip:06f_policylaws_laws_rows		poland
+06f_policylaws_laws_rows	LR # on the galtan axis, the bill toward its # end: -# · opposition line: the bill is nearer the government (#) than this party (#) → -#	slip:06f_policylaws_laws_rows		france
+06f_policylaws_laws_rows	Linke # on the galtan axis, the bill toward its # end: +# · opposition, but the bill is nearer this party (#) than the government (#): votes its position	slip:06f_policylaws_laws_rows		germany
+06f_policylaws_laws_rows	M#S tabled the bill: its author votes for it	slip:06f_policylaws_laws_rows		italy
+06f_policylaws_laws_rows	MP # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_rows		sweden
+06f_policylaws_laws_rows	NL # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_rows		poland
+06f_policylaws_laws_rows	REP tabled the bill: its author votes for it	slip:06f_policylaws_laws_rows		usa
+06f_policylaws_laws_rows	TD # on the galtan axis, the bill toward its # end: -#	slip:06f_policylaws_laws_rows		poland
+06f_policylaws_laws_rows	V # on the galtan axis, the bill toward its # end: +#	slip:06f_policylaws_laws_rows		sweden
+06g_laws_repealable	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06g_laws_repealable		italy,poland,sweden
+06h_laws_institutions_card	Natural rate of unemployment: -# pp (law -#; the floor # caps it)	slip:06h_laws_institutions_card	NATURAL RATE OF UNEMPLOYMENT · LAW -# PP · THE FLOOR # CAPS IT	france,germany,usa
+06i_laws_monetary_row	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:06i_laws_monetary_row		poland,sweden
+06i_laws_monetary_row	TREATY COMPETENCE - the target and the mandate are the currency union's, not this House's	slip:06i_laws_monetary_row		france,germany,italy
+08_energy_laws_link_arrived	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:08_energy_laws_link_arrived		italy,poland,sweden
+08_energy_laws_link_arrived	NO NATIONAL ELECTRICITY TAX - the country levies no federal excise on electricity for this House to move	slip:08_energy_laws_link_arrived		usa

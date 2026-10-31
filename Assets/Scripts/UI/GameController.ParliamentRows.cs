@@ -616,44 +616,68 @@ namespace PoliSim.UI
             if (yours != null) { Words(yours, caption); }
             SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "president");
 
+            // K322 S3 (K320 (3), K321 (f)): the slip at its caps - at most four lines of a few words under the head, each long line's whole sentence at level 2
+            // behind its marked term (the verdict for the player, the office's standing, the veto, the vote); no word of the slip as it stood is dropped
             var slip = new SlipContent("THE PRESIDENT");
-            if (yoursLine != null) { slip.Add(yoursLine); }
+            if (yoursLine != null)
+            {
+                string first = yoursLine.Split(new[] { " · " }, System.StringSplitOptions.None)[0];
+                slip.Add("[[YOU]] · " + (CountedWords(first) <= 8 ? first : "YOUR CANDIDATE"));
+                book.Terms["YOU"] = new SlipContent("YOU").Add(yoursLine);
+            }
+            string standingTerm = ofGame ? "ELECTED IN THE GAME" : "OF RECORD";
             slip.Add(president.Name.ToUpperInvariant() + (president.BackingParty != null ? " · " + PartySystems.ShortName(country, president.BackingParty).ToUpperInvariant() : string.Empty)
-                + " · IN OFFICE SINCE " + DeskDay(president.TookOffice));
-            slip.Add(ofGame ? "ELECTED IN THE GAME'S OWN ELECTION" : "OF RECORD - THE GAME'S OWN ELECTION SEATS THE NEXT");
+                + " · SINCE " + DeskDay(president.TookOffice) + " · [[" + standingTerm + "]]");
+            book.Terms[standingTerm] = new SlipContent(standingTerm).Add("IN OFFICE SINCE " + DeskDay(president.TookOffice) + " · "
+                + (ofGame ? "ELECTED IN THE GAME'S OWN ELECTION" : "OF RECORD - THE GAME'S OWN ELECTION SEATS THE NEXT"));
             // §770: whole lines - the slip's box wraps them to its own width (a pre-wrapped line is wrapped twice); F3: the rule at risk, the president's own
             // rate - and where no seated party backs the president, no statute is at risk (the slips' own reading, ChamberVerdicts.VetoLine)
             bool backedInChamber = president.BackingParty != null && _playerCountry.ParliamentSeats.TryGetValue(president.BackingParty, out int backingSeats) && backingSeats > 0;
             double vetoRate = PoliSim.Elections.PresidentialVeto.RateOf(president.Name, out string rateBasis);
-            slip.Add(!backedInChamber
+            string vetoPercent = (vetoRate * 100.0).ToString("0", CultureInfo.InvariantCulture);
+            slip.Add("[[THE VETO]] · " + (backedInChamber ? "VETOED AT " + vetoPercent + " % · 3/5 OVERRIDES" : "NO STATUTE AT RISK"));
+            book.Terms["THE VETO"] = new SlipContent("THE VETO").Add(!backedInChamber
                 ? (president.BackingParty == null ? "NO PARTY BACKS THE PRESIDENT" : "THE PRESIDENT'S BACKING PARTY HOLDS NO SEAT") + ", SO NO STATUTE IS AT RISK OF A VETO - THE SEJM OVERRIDES ONE BY 3/5 OF THOSE VOTING"
-                : "A STATUTE THE PRESIDENT'S BACKING PARTY DOES NOT VOTE FOR IS AT RISK - VETOED AT " + (vetoRate * 100.0).ToString("0", CultureInfo.InvariantCulture)
+                : "A STATUTE THE PRESIDENT'S BACKING PARTY DOES NOT VOTE FOR IS AT RISK - VETOED AT " + vetoPercent
                     + " %, " + rateBasis.ToUpperInvariant() + " - THE SEJM OVERRIDES BY 3/5 OF THOSE VOTING");
+            var vote = new List<string>();   // the vote's sentence, one level-2 line
+            var voteLine = new System.Text.StringBuilder("[[THE VOTE]]");
             if (last != null)
             {
-                slip.Add("FIRST VOTE " + DeskDay(last.FirstVote) + " - " + DayWords(last.DayBasis));
+                voteLine.Append(" · FIRST ").Append(DeskDay(last.FirstVote));
+                vote.Add("FIRST VOTE " + DeskDay(last.FirstVote) + " - " + DayWords(last.DayBasis));
+                var field = new List<string>();
                 foreach (PresidentialElection.Candidate c in last.Field)
                 {
                     string who = Surname(c.Name).ToUpperInvariant();
                     bool unnamed = UsTermLimit.IsUnnamedLabel(c.Name);   // the label already names the party
                     // §772 (E1): a candidate of record no roster party backs (Braun, Zandberg, Stanowski ...) has no party to name
                     string party = unnamed || c.Party == null ? string.Empty : " (" + PartySystems.ShortName(country, c.Party).ToUpperInvariant() + ")";
-                    slip.Add(who + party + " " + c.Share.ToString("0.00", CultureInfo.InvariantCulture) + " %");
+                    field.Add(who + party + " " + c.Share.ToString("0.00", CultureInfo.InvariantCulture) + " %");
                 }
+                if (field.Count > 0) { vote.Add(string.Join(", ", field)); }
                 if (last.RunOffHeld && last.Decided())
                 {
-                    slip.Add("RUN-OFF " + DeskDay(last.RunOffOn) + " · " + Surname(last.RunOffA).ToUpperInvariant() + " " + last.RunOffShareA.ToString("0.00", CultureInfo.InvariantCulture) + " % OF THE TWO");
+                    voteLine.Append(" · RUN-OFF ").Append(DeskDay(last.RunOffOn));
+                    vote.Add("RUN-OFF " + DeskDay(last.RunOffOn) + " · " + Surname(last.RunOffA).ToUpperInvariant() + " " + last.RunOffShareA.ToString("0.00", CultureInfo.InvariantCulture) + " % OF THE TWO");
                 }
                 else if (runOffAhead)
                 {
-                    slip.Add("RUN-OFF " + DeskDay(last.RunOffOn) + " · " + Surname(last.RunOffA).ToUpperInvariant() + " AND " + Surname(last.RunOffB).ToUpperInvariant());
+                    voteLine.Append(" · RUN-OFF ").Append(DeskDay(last.RunOffOn));
+                    vote.Add("RUN-OFF " + DeskDay(last.RunOffOn) + " · " + Surname(last.RunOffA).ToUpperInvariant() + " AND " + Surname(last.RunOffB).ToUpperInvariant());
                 }
-                if (undecided) { slip.Add(last.Line.ToUpperInvariant()); }
-                foreach (string n in last.NotStanding) { slip.Add("NOT STANDING: " + n.ToUpperInvariant()); }
+                if (undecided) { vote.Add(last.Line.ToUpperInvariant()); }
+                foreach (string n in last.NotStanding) { vote.Add("NOT STANDING: " + n.ToUpperInvariant()); }
             }
             if (next && !elect && !runOffAhead)
             {
-                slip.Add("NEXT FIRST VOTE " + DeskDay(firstVote) + " - " + DayWords(dayBasis));
+                voteLine.Append(" · NEXT ").Append(DeskDay(firstVote));
+                vote.Add("NEXT FIRST VOTE " + DeskDay(firstVote) + " - " + DayWords(dayBasis));
+            }
+            if (vote.Count > 0)
+            {
+                slip.Add(voteLine.ToString());
+                book.Terms["THE VOTE"] = new SlipContent("THE VOTE").Add(string.Join("; ", vote));
             }
             book.Anchors["president"] = slip;
             DrawRowRule(row);
