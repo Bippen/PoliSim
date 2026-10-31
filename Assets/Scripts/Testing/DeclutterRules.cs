@@ -526,7 +526,7 @@ namespace PoliSim.Testing
                 }
             }
 
-            if (v.Reading != null && slipBooks != null) { JudgeMoved(root, rows, slipBooks, v); }
+            if (v.Reading != null && slipBooks != null) { JudgeMoved(root, rows, slipBooks, v, country); }
             else if (v.Reading != null) { v.Notes.Add("DECLUTTER MOVED: no slip books recorded by this film - the moved words are not judged here"); }
 
             int atRest = v.Reading?.AtRest.Count ?? 0, slips = v.Reading?.Slips.Count ?? 0;
@@ -557,9 +557,20 @@ namespace PoliSim.Testing
             public string Target;
             /// <summary>What must be reachable: the declared slip text, else the text before.</summary>
             public string Needed => SlipText.Length > 0 ? SlipText : TextBefore;
+            /// <summary>§969: the countries whose films hold the row (the fifth column, lower case as the films name them); empty for every country.</summary>
+            public string[] Countries = Array.Empty<string>();
+            /// <summary>§969: whether a film of <paramref name="country"/> judges the row - every country where none is named.</summary>
+            public bool HoldsFor(string country) => Countries.Length == 0 || Array.IndexOf(Countries, (country ?? string.Empty).ToLowerInvariant()) >= 0;
         }
 
         public const string MovedHeader = "capture_stem\ttext_before\tnow_in\tslip_text";
+
+        /// <summary>§969: the scoped header - a fifth column, countries, for words a screen draws only in some countries (one country's grid, one
+        /// statute, one chamber). A film judges a scoped row only where its country is named; a row with the column empty holds on every film.</summary>
+        public const string MovedHeaderScoped = MovedHeader + "\tcountries";
+
+        /// <summary>§969: the countries a scoped row may name - the films' own names for them.</summary>
+        public static readonly string[] FilmCountries = { "sweden", "germany", "france", "usa", "poland", "italy" };
 
         /// <summary>K334 (§967): the marker a moved file written before this reader landed carries as a comment line above its header - its now_in
         /// describes the slip in prose. Its rows are read for shape (the header, four columns, a stem and the text before) and counted UNJUDGED: never
@@ -597,7 +608,7 @@ namespace PoliSim.Testing
         public static List<MovedRow> ParseMoved(IEnumerable<string> lines, string name, List<string> errors)
         {
             var rows = new List<MovedRow>();
-            bool header = false, prose = false;
+            bool header = false, prose = false, scoped = false;
             int n = 0;
             foreach (string raw in lines)
             {
@@ -608,18 +619,27 @@ namespace PoliSim.Testing
                 if (!header)
                 {
                     header = true;
-                    if (line != MovedHeader) { errors.Add($"{name} line {n}: the header is capture_stem, text_before, now_in, slip_text - '{line}'"); return rows; }
+                    scoped = line == MovedHeaderScoped;   // §969: the fifth column, countries
+                    if (line != MovedHeader && !scoped) { errors.Add($"{name} line {n}: the header is capture_stem, text_before, now_in, slip_text (and optionally countries) - '{line}'"); return rows; }
                     continue;
                 }
                 string[] c = line.Split('\t');
-                if (c.Length != 4) { errors.Add($"{name} line {n}: four columns (the slip text may be empty) - '{line}'"); continue; }
+                int want = scoped ? 5 : 4;
+                if (c.Length != want) { errors.Add($"{name} line {n}: {(scoped ? "five" : "four")} columns (the slip text{(scoped ? " and the countries" : string.Empty)} may be empty) - '{line}'"); continue; }
+                string[] countries = Array.Empty<string>();
+                if (scoped && c[4].Trim().Length > 0)
+                {
+                    countries = c[4].Split(',').Select(s => s.Trim().ToLowerInvariant()).Where(s => s.Length > 0).ToArray();
+                    string[] unknown = countries.Where(s => Array.IndexOf(FilmCountries, s) < 0).ToArray();
+                    if (unknown.Length > 0) { errors.Add($"{name} line {n}: countries are the films' names ({string.Join(", ", FilmCountries)}) - '{string.Join(",", unknown)}'"); continue; }
+                }
                 int colon = c[2].IndexOf(':');
                 string where = colon > 0 ? c[2].Substring(0, colon) : string.Empty;
                 string target = colon > 0 ? c[2].Substring(colon + 1) : string.Empty;
                 if (c[0].Trim().Length == 0 || c[1].Trim().Length == 0) { errors.Add($"{name} line {n}: a capture stem and the text before are required - '{line}'"); continue; }
-                if (prose) { rows.Add(new MovedRow { File = name, Line = n, CaptureStem = c[0], TextBefore = c[1], NowIn = c[2], SlipText = c[3], Where = ProseWhere, Target = string.Empty }); continue; }
+                if (prose) { rows.Add(new MovedRow { File = name, Line = n, CaptureStem = c[0], TextBefore = c[1], NowIn = c[2], SlipText = c[3], Where = ProseWhere, Target = string.Empty, Countries = countries }); continue; }
                 if ((where != "slip" && where != "dense") || target.Length == 0) { errors.Add($"{name} line {n}: now_in is slip:<capture stem> or dense:<capture stem> - '{c[2]}'"); continue; }
-                rows.Add(new MovedRow { File = name, Line = n, CaptureStem = c[0], TextBefore = c[1], NowIn = c[2], SlipText = c[3], Where = where, Target = target });
+                rows.Add(new MovedRow { File = name, Line = n, CaptureStem = c[0], TextBefore = c[1], NowIn = c[2], SlipText = c[3], Where = where, Target = target, Countries = countries });
             }
             if (!header) { errors.Add($"{name}: no header - the file is capture_stem, text_before, now_in, slip_text"); }
             return rows;
@@ -678,18 +698,18 @@ namespace PoliSim.Testing
         /// there is UNREACHABLE; the text before still drawn at rest on its own capture is STILL AT REST (it was not moved). A row whose target the
         /// film did not take is left to the film that does.
         /// </summary>
-        public static void JudgeMoved(string root, List<Row> rows, string slipBooks, Verdict v)
+        public static void JudgeMoved(string root, List<Row> rows, string slipBooks, Verdict v, string country = null)
         {
             var errors = new List<string>();
             List<MovedRow> moved = ReadMoved(root, errors, out int files);
             foreach (string e in errors) { v.Failures.Add("DECLUTTER MOVED MALFORMED: " + e); v.MovedMalformed++; }
             if (files == 0) { v.Notes.Add($"DECLUTTER MOVED: no moved files under {MovedFolder} - nothing to judge"); return; }
             Dictionary<string, StringBuilder> books = File.Exists(slipBooks) ? ReadSlipBooks(File.ReadAllLines(slipBooks, Encoding.UTF8)) : new Dictionary<string, StringBuilder>();
-            JudgeMovedRows(moved, rows, books, v);
+            JudgeMovedRows(moved, rows, books, v, country);
         }
 
         /// <summary>The judgement of <see cref="JudgeMoved"/> on rows already read - the cheap bar's teeth drive it with planted data.</summary>
-        public static void JudgeMovedRows(List<MovedRow> moved, List<Row> rows, Dictionary<string, StringBuilder> books, Verdict v)
+        public static void JudgeMovedRows(List<MovedRow> moved, List<Row> rows, Dictionary<string, StringBuilder> books, Verdict v, string country = null)
         {
             var dense = new Dictionary<string, StringBuilder>(StringComparer.Ordinal);
             var atRest = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
@@ -705,6 +725,7 @@ namespace PoliSim.Testing
             foreach (MovedRow m in moved)
             {
                 if (m.Where == ProseWhere) { v.MovedProse++; continue; }   // K334: a prose file's row is counted, never judged, never reached
+                if (country != null && !m.HoldsFor(country)) { v.MovedElsewhere++; continue; }   // §969: another country's words - left to its own films
                 string where = $"{m.File} line {m.Line} ({m.CaptureStem} -> {m.NowIn})";
                 if (atRest.TryGetValue(m.CaptureStem, out HashSet<string> still) && still.Contains(Fold(m.TextBefore)))
                 {

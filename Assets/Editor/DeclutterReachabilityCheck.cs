@@ -86,7 +86,7 @@ namespace PoliSim.EditorTools
                     string where = $"{m.File} line {m.Line} ({m.CaptureStem} -> {m.NowIn})";
                     DeclutterRules.Exemption ex = rules.ExemptionOf(m.CaptureStem);
                     if (ex != null && ex.All) { exempt++; Fail($"{where}: '{m.CaptureStem}' is exempt from every cap by {ex.Glob} ({ex.Reason}) - nothing on it is decluttered, so nothing moves from it"); continue; }
-                    string book = ModelBook(m.Target);
+                    string book = m.HoldsFor("sweden") ? ModelBook(m.Target) : null;   // §969: the model's books here are Sweden's - another country's row goes to its films
                     if (book == null)
                     {
                         film++;
@@ -154,6 +154,30 @@ namespace PoliSim.EditorTools
                 DeclutterRules.ParseMoved(new[] { DeclutterRules.MovedHeader, "05a_budget_tax\tthree columns only", "05a_budget_tax\tA text\tdrawer:05a\t" }, "planted.tsv", refused);
                 if (refused.Count == 2) { Ok("teeth: a row short of a column and a row whose now_in is neither slip: nor dense: are refused"); }
                 else { Fail($"teeth: the two malformed planted rows must both be refused - {refused.Count} refusal(s)"); }
+
+                // §969, the teeth: a scoped file - a country's own row is judged only on that country's film, an unscoped row on every film, an unknown
+                // country refused
+                var scopeErrors = new List<string>();
+                List<DeclutterRules.MovedRow> scopedRows = DeclutterRules.ParseMoved(new[]
+                {
+                    DeclutterRules.MovedHeaderScoped,
+                    "08_energy\tA German-only line\tslip:08_energy\tZQX ON NO SWEDISH BOOK\tgermany",
+                    "08_energy\tPrices at the wholesale market today\tslip:08_energy\tWHOLESALE PRICE · AT THE MARKET\t",
+                    "08_energy\tA line for nowhere\tslip:08_energy\t\tatlantis",
+                }, "planted_scoped.tsv", scopeErrors);
+                var onSweden = new DeclutterRules.Verdict();
+                DeclutterRules.JudgeMovedRows(scopedRows, frame, books, onSweden, "sweden");
+                var onGermany = new DeclutterRules.Verdict();
+                DeclutterRules.JudgeMovedRows(scopedRows, frame, books, onGermany, "germany");
+                if (scopeErrors.Count == 1 && scopedRows.Count == 2 && onSweden.MovedJudged == 1 && onSweden.MovedUnreachable == 0 && onSweden.MovedElsewhere == 1
+                    && onGermany.MovedJudged == 2 && onGermany.MovedUnreachable == 1)
+                {
+                    Ok("teeth: §969's countries column - a German-only row left to Germany's film on Sweden's and judged (unreached) on Germany's, an unscoped row judged on both, an unknown country refused");
+                }
+                else
+                {
+                    Fail($"teeth: §969's countries column - {scopeErrors.Count} refusal(s) (1 wanted), {scopedRows.Count} row(s) (2), Sweden judged {onSweden.MovedJudged} left {onSweden.MovedElsewhere} unreached {onSweden.MovedUnreachable} (1/1/0), Germany judged {onGermany.MovedJudged} unreached {onGermany.MovedUnreachable} (2/1)");
+                }
             }
             finally { EnergyMarket.ResetTurnState(); }
 

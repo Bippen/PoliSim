@@ -42948,3 +42948,20 @@ Energy's slips from before S1 still hold lines over 10 words. They carry no move
 - A row converts only if every film that takes its capture reaches it.
 - Five derivation rows reach Sweden's book through its water line "UNDER THE RULE ROW'S THREE BLOCKS": if that line changes, those 35 rows fail on Sweden's films.
 - **FILED (the reader's gap):** a moved row needs a country scope (for example `slip:<stem>@<country>`) before any country-specific moved string can be written in machine form. The 159 Energy rows, and every later K334 conversion with country-specific words, wait on it.
+
+## 969. THE MOVED-WORDS READER'S COUNTRIES COLUMN: A ROW WHOSE WORDS EXIST ONLY IN SOME COUNTRIES IS JUDGED ONLY ON THEIR FILMS (K321 (G), K334) (2026-10-31)
+
+**What was owed:** the gap §968 filed. The films share capture stems across six countries, and a moved row had no country scope, so the film's judge read every row on every film that takes its capture. A string a screen draws in only some countries (one country's grid, one statute, one chamber, a role lock) read UNREACHABLE on the others. That held 159 Energy rows in prose, and all five K322 sweeps reported the same wall (S4: 53 of 115 rows).
+
+**Built** (on main):
+- **`DeclutterRules.MovedHeaderScoped`:** an optional fifth column, `countries`. It is empty for a row that holds on every film, or a comma list of the films' own names (`sweden`, `germany`, `france`, `usa`, `poland`, `italy`). A file is either four-column (unchanged) or five-column throughout. An unknown name is refused.
+- **`MovedRow.Countries` / `HoldsFor(country)`.** The film's judge passes its own country, and `JudgeMovedRows` leaves another country's row to that country's films, counted as left elsewhere, never as reached.
+- **`DeclutterReachabilityCheck`** builds People's and Statistics' books from Sweden's seed world, so a row scoped away from Sweden goes to its films.
+- **New teeth on every run:** a German-only row is left on Sweden's judgement and judged (and unreached) on Germany's; an unscoped row is judged on both; an unknown country is refused.
+- The sweeps' moved files (S2-S6) were written in the five-column form against this reader.
+
+**Measured (this tree):** cheap bar 154 of 154 clean (cheaps969), the new teeth ok - a German-only row left to Germany's film on Sweden's and judged (unreached) on Germany's, an unscoped row judged on both, an unknown country refused - DECLUTTER REACH: PASS; dry film Sweden at 1280 (drys969, scope row drys969) moved words 131 judged, 0 unreachable, declutter 0 new 0 stale - PASS; doc bar (docs969)
+
+**Declared:**
+- A scoped row is judged where its country's film takes its capture. A row scoped to a country no film covers is judged by none (no film covers France's or Italy's interrupts today).
+- The prose rows K334 holds back for country-specific words (the Energy record's 159) can now convert. That conversion is owed and is not part of this item.
