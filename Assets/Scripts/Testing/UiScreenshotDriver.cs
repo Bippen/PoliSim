@@ -6024,6 +6024,7 @@ namespace PoliSim.Testing
                 yield return Settle();
                 Claim("imgui");
                 yield return Capture("cl1_runup_hq_opened");
+                if (_countryId == CountryId.USA) { yield return FilmS7BallotHq(controller, sim); }   // S7 (SP-6b): an independent's ballot drive on this HQ, STAGED and put back
                 // A role the party's staging does not already hold - the stand-in's party (the largest seeded) stages a
                 // manager and a pollster, so a pollster would be refused "already on the roster" and the film would show
                 // a refusal where it means to show a hire.
@@ -6390,9 +6391,146 @@ namespace PoliSim.Testing
                     if (house.Root != null) { UnityEngine.Object.Destroy(house.Root); }
                 }
             }
+            yield return FilmS7Night(controller, usa, president, congress, polled);   // S7 (SP-6b): the College with a third ink, STAGED
             PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
             SetPrivateField(controller, "_canvasLive", false);
             yield return Settle();
+        }
+
+        /// <summary>
+        /// S7 (Design's return of 2026-10-30, 7a and 7c; SP-6b): AN INDEPENDENT'S BALLOT DRIVE ON THE RUN-UP'S HQ, STAGED. SP-6b's run is not built, so a drive is
+        /// handed to the HQ (`GameController.StageUsBallotForFilm`) on the sourced rules (`UsBallotAccess`): filed by the fee wherever a fee may be paid instead of
+        /// the petition (the one route the rules allow without signatures); the target Ohio collecting at Design's illustrative 3,410 signatures; the next three
+        /// open deadlines' states collecting at Design's illustrative shares of their requirement (85, 72 and 30 %); every other jurisdiction as the rules leave it
+        /// on the day - off, its deadline passed, or BILLED. Filmed whole, then one slip of each face pinned; the drive put back, nothing of the game touched.
+        /// </summary>
+        private IEnumerator FilmS7BallotHq(GameController controller, SimulationManager sim)
+        {
+            string[] slipFrames = { "s7c_us_ballot_on_slip", "s7c_us_ballot_collecting_slip", "s7c_us_ballot_off_slip", "s7c_us_ballot_lost_slip", "s7c_us_ballot_billed_slip" };
+            Expect("s7a_us_ballot_hq_staged");
+            Expect(slipFrames);
+            DateTime poll = sim.PlayerPreCampaign.Calendar.ElectionDate, today = sim.CurrentDate.Date;
+            UsBallotAccess.Drive drive = UsBallotAccess.NewDrive(poll);
+            if (drive.Petitions.Count == 0)
+            {
+                Debug.LogError($"SHOT: S7 s7a_us_ballot_hq_staged - MISSING: no ballot rules for the polling day {poll:yyyy-MM-dd} (the summary is 2024's)");
+                _failed += 1 + slipFrames.Length;
+                yield break;
+            }
+            var filed = new List<string>();
+            foreach (UsBallotAccess.Rule r in UsBallotAccess.Rules(poll)) { if (r.FeeInstead && UsBallotAccess.File(r, drive.Of(r.State), today, out string _)) { filed.Add(r.State); } }
+            UsBallotAccess.Petition ohio = drive.Of("OH");
+            if (ohio != null) { ohio.Gathered = 3410; }
+            double[] shares = { 0.85, 0.72, 0.30 };
+            var collecting = new List<string> { "OH 3410" };
+            int k = 0;
+            foreach (UsBallotAccess.Rule r in UsBallotAccess.NextDeadlines(drive, today, 8))
+            {
+                if (k >= shares.Length) { break; }
+                if (r.State == "OH" || r.Signatures <= 0) { continue; }
+                drive.Of(r.State).Gathered = (int)Math.Round(r.Signatures * shares[k]);
+                collecting.Add(r.State + " " + drive.Of(r.State).Gathered.ToString(CultureInfo.InvariantCulture) + "/" + r.Signatures.ToString(CultureInfo.InvariantCulture));
+                k++;
+            }
+            controller.StageUsBallotForFilm(drive, "OH");
+            yield return Settle();
+            yield return Settle();
+            UsBallotAccess.Tally(drive, today, out int on, out int col, out int lost, out int onCount);
+            Claim("imgui");
+            Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: S7 s7a_us_ballot_hq_staged - STAGED: the run-up's HQ on {0:yyyy-MM-dd} with an independent's drive - filed by the fee {1}; collecting {2}; the rest as the rules leave them; electors on {3}, collecting {4}, lost {5}; {6} of {7} on the ballot; target OH",
+                today, filed.Count > 0 ? string.Join(" ", filed.ToArray()) : "nowhere", string.Join(", ", collecting.ToArray()), on, col, lost, onCount, drive.Petitions.Count));
+            yield return Capture("s7a_us_ballot_hq_staged");
+
+            // one slip of each face, pinned on its tile
+            MethodInfo pin = controller.GetType().GetMethod("PinSlipOnAnchorForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo pins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic);
+            string FirstOf(UsBallotAccess.Standing st)
+            {
+                foreach (UsBallotAccess.Rule r in UsBallotAccess.Rules(poll)) { if (UsBallotAccess.StandingOf(r, drive.Of(r.State), today) == st) { return r.State; } }
+                return null;
+            }
+            string[] states = { FirstOf(UsBallotAccess.Standing.OnBallot), "OH", FirstOf(UsBallotAccess.Standing.Off), FirstOf(UsBallotAccess.Standing.Lost), FirstOf(UsBallotAccess.Standing.Billed) };
+            for (int i = 0; i < slipFrames.Length; i++)
+            {
+                if (pin == null || pins == null || states[i] == null)
+                {
+                    Debug.LogError("SHOT: S7 " + slipFrames[i] + " - MISSING: " + (pin == null || pins == null ? "the controller has no PinSlipOnAnchorForFilm / _slipPins" : "no jurisdiction stands so on " + today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
+                    _failed++;
+                    continue;
+                }
+                pin.Invoke(controller, new object[] { "hq:ballot:" + states[i], Vector2.zero });
+                yield return Settle();
+                yield return Settle();
+                Debug.Log("SHOT: S7 " + slipFrames[i] + " - STAGED: the slip of " + states[i] + " pinned on its tile (the drive above)");
+                yield return Capture(slipFrames[i]);
+                (pins.GetValue(controller) as IList)?.Clear();
+                yield return Settle();
+            }
+            controller.StageUsBallotForFilm(null, null);
+            yield return Settle();
+        }
+
+        /// <summary>
+        /// S7 (Design's 7b; SP-6b): THE COLLEGE NIGHT WITH A THIRD INK, STAGED on the count the night just played (its states as `UsPresidentialElection.StatesOf`
+        /// re-derives them), the night at 51 of 51. On the ballot: every jurisdiction whose rule is not BILLED and whose deadline falls on or after the run-up's
+        /// first day - the drive filed wherever its sourced rule could be met. The independent's share where on the ballot (`UsBallotAccess.Night`): (a) every other
+        /// candidate's national share as the count read it - no elector; (b) the least share that wins one (`UsBallotAccess.LeastShareForOneElector`) - and with
+        /// no one at a majority, the House decides. Each a screen of its own, filmed with the Canvas guard and destroyed; the game is not touched.
+        /// </summary>
+        private IEnumerator FilmS7Night(GameController controller, Country usa, UsPresidentialElection.Contest president, UsCongressElection.Contest congress, DateTime polled)
+        {
+            Expect("s7b_us_night_ind_zero_staged", "s7b_us_night_ind_one_staged");
+            ElectoralCollege.StateCall[] states = UsPresidentialElection.StatesOf(usa, president);
+            UsNight.State full = UsNight.At(int.MaxValue, usa, president, congress);
+            var onBallot = new HashSet<string>();
+            DateTime opened = WorldClock.StartDate(CountryId.USA).Date;
+            foreach (UsBallotAccess.Rule r in UsBallotAccess.Rules(polled)) { if (!r.Billed && r.Deadline.Value.Date >= opened) { onBallot.Add(r.State); } }
+            double others = double.NaN;
+            foreach (UsPresidentialElection.Tally t in president.Electors) { if (t.Candidate == UsPresidentialElection.OtherCandidates) { others = t.Popular() / 100.0; } }
+            if (states == null || full == null || onBallot.Count == 0 || double.IsNaN(others) || !ElectoralCollege.TryPriorYear(polled.Year, out int prior))
+            {
+                Debug.LogError($"SHOT: S7 s7b_us_night_ind_zero_staged / s7b_us_night_ind_one_staged - MISSING: {(states == null || full == null ? "the count's states could not be re-derived" : onBallot.Count == 0 ? "no ballot rules for " + polled.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : double.IsNaN(others) ? "the count carries no other candidates' share" : "no prior election")}");
+                _failed += 2;
+                yield break;
+            }
+            // (b) on the College e7g stages with no majority (the fewest states called the other way to an equal College, `UsNight.FlipsToTie`): on the count's own
+            // states the place the least share wins can be taken from the larger side and leave its majority standing, so the one elector that sends the count to
+            // the House is staged from an equal College - as Design's 7b drew it
+            string[] flips = UsNight.FlipsToTie(states);
+            ElectoralCollege.StateCall[] tiedStates = flips != null ? UsNight.Flipped(states, flips) : null;
+            UsNight.State tied = null;
+            if (tiedStates != null)
+            {
+                Dictionary<(string, int), string> notUp = UsNight.NotUp(usa, congress, out int independents);
+                tied = UsNight.Of(int.MaxValue, polled, tiedStates, congress, notUp, independents);
+            }
+            if (tied == null) { Debug.LogError("SHOT: S7 s7b_us_night_ind_one_staged - MISSING: no set of states called the other way leaves the College equal"); _failed++; }
+            double least = tiedStates != null ? UsBallotAccess.LeastShareForOneElector(tiedStates, onBallot, prior) : double.NaN;
+            var frames = new List<(string Frame, double Share, string Words, ElectoralCollege.StateCall[] States, UsNight.State Night)>
+            {
+                ("s7b_us_night_ind_zero_staged", others, "every other candidate's national share as the count read it, on the count's own states", states, full),
+            };
+            if (tied != null) { frames.Add(("s7b_us_night_ind_one_staged", least, "the least share that wins an elector, on the College staged equal (" + string.Join(", ", flips) + " called the other way)", tiedStates, tied)); }
+            foreach ((string frame, double share, string words, ElectoralCollege.StateCall[] on, UsNight.State nightState) in frames)
+            {
+                UsBallotAccess.NightReading reading = UsBallotAccess.Night(on, share, onBallot, prior);
+                ElectionNightScreen.UsNightBoard board = GameController.UsNightInputs(usa, nightState, president, congress);
+                board.HasReference = false;   // a staged College is no played count to set beside the record
+                board.Independent = reading;
+                board.IndependentInk = GameController.IndependentInk();
+                ElectionNightScreen screen = ElectionNightScreen.BuildUsa(board, null);
+                if (screen == null) { Debug.LogError("SHOT: S7 " + frame + " - MISSING: the board did not build"); _failed++; continue; }
+                yield return Settle();
+                Claim("electionnight");
+                UsBallotAccess.Place nearest = reading.Nearest.Count > 0 ? reading.Nearest[0] : null;
+                Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: S7 {0} - STAGED: the independent on {1} ballots at {2:0.00} % where on them ({3}), {4:0.00} % nationally; electors IND {5} REP {6} DEM {7}; nearest {8}{9}",
+                    frame, onBallot.Count, 100.0 * share, words, 100.0 * reading.NationalShare, reading.Electors, reading.ElectorsRep, reading.ElectorsDem,
+                    nearest != null ? nearest.Code + " " + nearest.GapPp.ToString("0.0", CultureInfo.InvariantCulture) + " pp" : "none", reading.NoMajority ? "; no one at 270 - the House decides" : string.Empty));
+                yield return Capture(frame);
+                RecordCanvasTextAssert(frame, controller);
+                if (screen.Root != null) { UnityEngine.Object.Destroy(screen.Root); }
+                yield return Settle();
+            }
         }
 
         /// <summary>

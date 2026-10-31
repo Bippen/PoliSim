@@ -198,6 +198,9 @@ namespace PoliSim.EditorTools
             // AF-8 (ruling q8): the Bundestag's standing orders on who may move the constructive vote - "GO-BT § 97 ABS. 1" - the rule's own paragraph on the
             // Parliament row's slip, allowed by the authority's name beside it (F4-2's precedent)
             ("GameController.ParliamentRows.cs", "GO-BT"),
+            // S7 (§964, Design's 7a): the ballot drive's § RULES verb, which pins the jurisdiction's statute - Design's own glyph for "the rule", the one
+            // section sign the file draws (narrowed to the verb's words)
+            ("GameController.CampaignBallot.cs", "§ RULES"),
             ("GameController.ImmigrationPoverty.cs", "SOURCED"),   // P5-C6 (2026-09-06)
             // P4-B1 (2026-09-04): the range-caption catalog is [AUTHORED] game fiction - the desk's own deadpan on every
             // dial's ten bands - and is exempt BY NAME so its satire is not read as meta-text; RangeCaptionCheck holds it

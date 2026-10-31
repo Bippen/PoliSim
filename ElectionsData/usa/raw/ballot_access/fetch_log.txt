@@ -1,0 +1,6 @@
+2026-10-30T15:41:11Z	200	377963	nass_summary_ballot_access_laws_president_072924.pdf	https://www.nass.org/sites/default/files/reports/summary-ballot-access-laws-president-072924.pdf
+2026-10-30T15:41:12Z	403	37512	nass_node_134.html	https://nass.org/node/134
+2026-10-30T15:41:14Z	200	83691	ballot_access_news_home.html	https://ballot-access.org/
+2026-10-30T15:41:15Z	403	5675	dcboe_2024_general_calendar_08052024.pdf	https://www.dcboe.org/getmedia/8463f8bd-b4c1-4698-994c-2a2f494ab1c2/2024-General-Calendar-08052024.pdf
+2026-10-30T15:41:15Z	403	5674	dcboe_candidate_access_deadlines_08022024.pdf	https://dcboe.org/getmedia/af4238f2-9a2a-4948-a87c-62524b072096/Candidate-Access-Deadlines-08022024
+# ballot_access_news_home.html: a reachability probe (its first fetch, with a browser user agent, answered 406); not kept - it carries no figure. NASS node/134 and dcboe.org refused (403): the District of Columbia is BILLED.

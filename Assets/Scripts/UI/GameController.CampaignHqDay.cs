@@ -144,6 +144,10 @@ namespace PoliSim.UI
                 .Add(overHours && overMoney ? "over the hours and the chest · refused" : overHours ? "over the day's hours · refused" : overMoney ? "over the chest · refused" : "within the day and the chest");
             y += head.height + HqH(2f);
 
+            // S7 (7a): an independent's run-up opens the day on BALLOT ACCESS - GATHER, FILE, § RULES
+            UsBallotAccess.Drive ballot = HqBallotDrive(s);
+            if (ballot != null) { y = DrawHqBallotVerbs(x, y, w, s, ballot, book) + HqH(8f); }
+
             // the verbs' caption, and the verbs
             CampaignActionKind[] legal = CampaignLegality.LegalActions(s.Phase);
             bool finalWeek = s.DaysUntilElection <= GotvTurnout.PhoneFinalWeekDays && s.DaysUntilElection >= 0;

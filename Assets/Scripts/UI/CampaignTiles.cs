@@ -9,7 +9,7 @@ namespace PoliSim.UI
     /// wojewodztwa and the valkretsar: `CampaignTiles.Generated.cs`, generated from its hq_tiles.json by `Tools/s4_tiles.pl`); a staging's region is
     /// matched to its tile by the region's key (an okreg's number, a wojewodztwo's or a valkrets's name). Germany's Lander take the same grammar on a
     /// plain 4 x 4 grid in the staging's order (<see cref="GermanLander"/>) - DECLARED, Code's placeholder: Design placed no Lander, and a grid in the
-    /// staging's order claims no geography. The USA's tiles are Design's section 7 and are not drawn here (<see cref="For"/> answers null).
+    /// staging's order claims no geography. The USA's tiles are Design's section 7 (`CampaignTiles.UsGenerated.cs`, generated from its us_tiles.json by `Tools/s7_tiles.pl`), a jurisdiction matched by its postal code (the US staging's region names).
     /// </summary>
     public static partial class CampaignTiles
     {
@@ -70,7 +70,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>The map the HQ draws for <paramref name="country"/>'s <paramref name="contest"/> over <paramref name="regionNames"/>, or null where none is
-        /// drawn (the USA, until section 7's tiles; a country with no regional campaign).</summary>
+        /// drawn (a country with no regional campaign).</summary>
         public static TileMap For(CountryId country, CampaignContest contest, IReadOnlyList<string> regionNames)
         {
             switch (country)
@@ -78,16 +78,17 @@ namespace PoliSim.UI
                 case CountryId.Poland: return contest == CampaignContest.Chamber ? PolishSejm : PolishWojewodztwa;
                 case CountryId.Sweden: return SwedishValkretsar;
                 case CountryId.Germany: return regionNames != null && regionNames.Count > 0 ? GermanLander(regionNames) : null;
+                case CountryId.USA: return UsStates;   // S7: Design's 51 (`CampaignTiles.UsGenerated.cs`), a jurisdiction matched by its postal code
                 default: return null;
             }
         }
 
         /// <summary>The region (an index into <paramref name="regionNames"/>) <paramref name="tile"/> stands for on <paramref name="map"/>, or −1: an okreg by
-        /// its number ("okreg 3" is tile "3"), every other map by the tile's label.</summary>
+        /// its number ("okreg 3" is tile "3"), a US jurisdiction by its postal code (the tile's id), every other map by the tile's label.</summary>
         public static int RegionOf(TileMap map, Tile tile, IReadOnlyList<string> regionNames)
         {
             if (regionNames == null) { return -1; }
-            string key = map.Key == "pl_sejm" ? "okreg " + tile.Id : tile.Label;
+            string key = map.Key == "pl_sejm" ? "okreg " + tile.Id : map.Key == "us_states" ? tile.Id : tile.Label;
             for (int r = 0; r < regionNames.Count; r++) { if (regionNames[r] == key) { return r; } }
             return -1;
         }

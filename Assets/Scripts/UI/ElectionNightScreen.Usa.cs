@@ -72,6 +72,42 @@ namespace PoliSim.UI
             public int RealElectorsRep, RealElectorsDem, RealHouseRep, RealHouseDem;
             public int? RealSenateRep, RealSenateDem;
             public Dictionary<string, string> RecordWinners;
+            /// <summary>S7 (Design's 7b, SP-6b): the independent on tonight's count - its share by state where on the ballot, the electors it wins, the nearest
+            /// elector (`UsBallotAccess.Night`) - drawn in its ink as the third; null on every night without one.</summary>
+            public UsBallotAccess.NightReading Independent;
+            public Color IndependentInk;
+        }
+
+        /// <summary>S7: the College's call on a night with the independent - the reading's electors (its wins taken from the nominees); the night's own otherwise.
+        /// DECLARED: an independent at a majority is not drawn as elected (the count does not hold the independent; only a staged night carries one).</summary>
+        private static UsNight.Call CollegeCall(UsNightBoard board)
+        {
+            if (board.Independent == null) { return board.State.College; }
+            UsBallotAccess.NightReading n = board.Independent;
+            return n.ElectorsRep >= board.State.ElectorsMajority ? UsNight.Call.Republican : n.ElectorsDem >= board.State.ElectorsMajority ? UsNight.Call.Democrat : UsNight.Call.NoMajority;
+        }
+
+        /// <summary>S7 (7b): a President's-lens cell with the independent - its ink where it won the place (the state's at-large cells, or a district's
+        /// own); the winner's ink struck where it was not on the state's ballot.</summary>
+        private static UsTileView.Cell IndependentCell(UsNightBoard board, string state, int district, UsTileView.Cell nominee)
+        {
+            string code = district > 0 ? state + "-" + Count(district) : state;
+            UsBallotAccess.Place place = board.Independent.Places.Find(p => p.Code == code);
+            if (place == null) { return nominee; }
+            if (place.Won) { return new UsTileView.Cell { Paint = UsTileView.Paint.Ink, Ink = board.IndependentInk }; }
+            if (!place.OnBallot) { nominee.Struck = true; }
+            return nominee;
+        }
+
+        /// <summary>A place's code as the night's slips name it: a district in words ("Maine's 2nd district"), a state by its name.</summary>
+        private static string PlaceWords(UsBallotAccess.Place p)
+        {
+            string name = p.State;
+            foreach (UsTileCartogram.Block b in UsTileCartogram.States) { if (b.Code == p.State) { name = b.Name; } }
+            if (p.District <= 0) { return name; }
+            int n = p.District;
+            string ordinal = n % 100 >= 11 && n % 100 <= 13 ? "th" : n % 10 == 1 ? "st" : n % 10 == 2 ? "nd" : n % 10 == 3 ? "rd" : "th";
+            return UiFormat.Possessive(name) + " " + Count(n) + ordinal + " district";
         }
 
         // ---------------------------------------------------------------------------------------------------------------------------------------
@@ -122,7 +158,8 @@ namespace PoliSim.UI
         private static void BuildUsCount(Transform parent, UsNightBoard board, Transform overlay)
         {
             UsNight.State s = board.State;
-            if (s.Presidential)
+            if (s.Presidential && board.Independent != null) { BuildUsCollegeWithIndependent(parent, board, overlay); }
+            else if (s.Presidential)
             {
                 string toCome = s.ElectorsToCome > 0 ? Count(s.ElectorsToCome) + " to come" : string.Empty;
                 TugBar(parent, overlay, "President", "the College · " + Count(s.Electors), Count(s.ElectorsMajority),
@@ -165,7 +202,17 @@ namespace PoliSim.UI
             bool shown = s.Complete && (s.Presidential ? !double.IsNaN(board.RepShare) : !double.IsNaN(board.HouseV));
             PlText(nation, "Owed", shown ? "shares only" : "owed", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document);
             var nationLines = new List<string>();
-            if (shown && s.Presidential)
+            if (shown && s.Presidential && board.Independent != null)
+            {
+                // S7 (7b): the nation's vote gains IND - each share re-summed with the independent standing where on the ballot
+                UsBallotAccess.NightReading n = board.Independent;
+                string line = "REP " + Share(100.0 * n.NationalRep) + " · DEM " + Share(100.0 * n.NationalDem) + " · IND " + Share(100.0 * n.NationalShare);
+                SizedWrapped(parent, line, Px(14f), PoliSimTheme.TextPrimary, ColumnWidth);
+                nationLines.Add(line + Nbsp + "%");
+                nationLines.Add("OTHER " + Share(100.0 * n.NationalOther) + " · EVERY OTHER CANDIDATE AS ONE");
+                nationLines.Add("IND ON " + Count(n.Places.FindAll(p => p.District == 0 && p.OnBallot).Count) + " BALLOTS · NONE ELSEWHERE");
+            }
+            else if (shown && s.Presidential)
             {
                 string line = "REP " + Share(board.RepShare) + " · DEM " + Share(board.DemShare) + " · OTHER " + Share(board.OtherShare) + Nbsp + "%";
                 SizedWrapped(parent, line, Px(14f), PoliSimTheme.TextPrimary, ColumnWidth);
@@ -177,6 +224,68 @@ namespace PoliSim.UI
             nationLines.Add("TURNOUT IS NOT MODELLED: SHARES ONLY");
             CanvasRows.Slip(nation.gameObject, overlay, s.Presidential ? "THE NATION'S VOTE" : "THE HOUSE VOTE", nationLines);
             // real904 (e7c): the legend note clipped at the column's foot - it is 29a's dense-mode line, and each bar's slip carries it (TugBar's last slip line)
+        }
+
+        /// <summary>
+        /// S7 (Design's 7b, "drawn over the film's President block"): THE COLLEGE WITH A THIRD INK - REP from the left, DEM from the right, the independent
+        /// between them at its electors in its own ink, never under 4 px; the 270 tick; under the figures one row, "the distance to one elector": the
+        /// independent's swatch (a stand-in for its mark - the run picks none), IND, its electors, and the nearest elector it has not won with the gap to that
+        /// place's leader (BAD) - "nearest" with none won, "next" once one is. The slip names it in Design's fragments; no one at 270 sends it to the House.
+        /// </summary>
+        private static void BuildUsCollegeWithIndependent(Transform parent, UsNightBoard board, Transform overlay)
+        {
+            UsNight.State s = board.State;
+            UsBallotAccess.NightReading n = board.Independent;
+            UsNight.Call call = CollegeCall(board);
+            string ind = UsBallotAccess.Key;
+            TugBar(parent, overlay, "President", "the College · " + Count(s.Electors), Count(s.ElectorsMajority),
+                new[] { (n.ElectorsRep, Seg.Rep), (n.Electors, Seg.Ind), (n.ElectorsDem, Seg.Dem) }, s.Electors,
+                "REP " + Count(n.ElectorsRep) + " · " + ind + " " + Count(n.Electors), string.Empty, Count(n.ElectorsDem) + " DEM",
+                "THE ELECTORAL COLLEGE · " + Count(s.Electors),
+                new[] { "REP " + Count(n.ElectorsRep) + " · " + ind + " " + Count(n.Electors) + " · DEM " + Count(n.ElectorsDem), Count(s.ElectorsMajority) + " TO WIN", ind + " DRAWN AT LEAST 4 PX" },
+                call, s.Total, s.Total, "OPEN · " + Count(s.ElectorsMajority) + " ELECTS", "NO MAJORITY · TO THE HOUSE",
+                call == UsNight.Call.NoMajority ? new[] { UsBallotAccess.HouseContingency.ToUpperInvariant(), UsBallotAccess.HouseContingencyRule.ToUpperInvariant() } : null,
+                indInk: board.IndependentInk);
+
+            // the distance to one elector
+            Transform row = CanvasRows.HRow(parent, "DistanceToOneElector", Px(30f), Px(8f));
+            Edge(row, PoliSimTheme.RuleRow, top: true);
+            var swatch = new GameObject("IndependentSwatch");
+            swatch.transform.SetParent(row, false);
+            swatch.AddComponent<RectTransform>();
+            LayoutElement size = swatch.AddComponent<LayoutElement>();
+            size.minWidth = size.preferredWidth = size.minHeight = size.preferredHeight = Px(16f);
+            Image face = swatch.AddComponent<Image>();
+            face.color = board.IndependentInk;
+            face.raycastTarget = false;
+            HoldWidth(PlText(row, "Key", ind, Px(14f), PoliSimTheme.TextPrimary, PoliSimTheme.Document, FontStyle.Bold));
+            HoldWidth(PlText(row, "Electors", Count(n.Electors), Px(16f), PoliSimTheme.TextPrimary, PoliSimTheme.Document, FontStyle.Bold));
+            CanvasRows.Spacer(row);
+            UsBallotAccess.Place nearest = n.Nearest.Count > 0 ? n.Nearest[0] : null;
+            UsBallotAccess.Place then = n.Nearest.Count > 1 ? n.Nearest[1] : null;
+            UsBallotAccess.Place won = n.Places.Find(p => p.Won);
+            HoldWidth(PlText(row, "NearLabel", n.Electors > 0 ? "next" : "nearest", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document));
+            string near = nearest != null ? nearest.Code + " ▼" + Share(nearest.GapPp) : "none";
+            HoldWidth(PlText(row, "Near", near, Px(14f), PoliSimTheme.Bad, PoliSimTheme.Document, FontStyle.Bold));
+            var lines = new List<string>();
+            if (n.Electors == 0)
+            {
+                if (nearest != null)
+                {
+                    lines.Add("Nearest: " + PlaceWords(nearest));
+                    lines.Add(ind + " " + Share(100.0 * nearest.Independent) + " · " + nearest.LeaderKey + " " + Share(100.0 * nearest.Leader));
+                    lines.Add(Share(nearest.GapPp) + " pp short of the lead");
+                }
+                else { lines.Add("On no ballot: no elector within reach"); }
+                if (then != null) { lines.Add("Then " + then.Code + ", " + Share(then.GapPp) + " pp short"); }
+            }
+            else
+            {
+                lines.Add("Won: " + (won != null ? PlaceWords(won) : Count(n.Electors) + " electors"));
+                if (nearest != null) { lines.Add("Next: " + nearest.Code + ", " + Share(nearest.GapPp) + " pp short"); }
+                if (call == UsNight.Call.NoMajority) { lines.Add(UsBallotAccess.HouseContingency); lines.Add(UsBallotAccess.HouseContingencyRule); }
+            }
+            CanvasRows.Slip(row.gameObject, overlay, ind + (n.Electors == 0 ? " · no elector" : " · " + Count(n.Electors) + (n.Electors == 1 ? " elector" : " electors")), lines);
         }
 
         /// <summary>The Senate's ballot tonight in words: its class, and the specials beside it.</summary>
@@ -191,12 +300,13 @@ namespace PoliSim.UI
             return main == 0 ? "no class" : "class " + Count(main) + (specials > 0 ? " + " + Count(specials) + " special" : string.Empty);
         }
 
-        private enum Seg { Rep, Dem, RepPale, DemPale, IndPale, ToCome }
+        private enum Seg { Rep, Dem, RepPale, DemPale, IndPale, ToCome, Ind }
 
         /// <summary>One tug bar (29a): the head (its title and what it counts), the bar's segments from the left in order - DEM's packed against the right
         /// end - the tick at the centre with the majority under it, the figures, the call chip and its slip.</summary>
         private static void TugBar(Transform parent, Transform overlay, string title, string sub, string tick, (int Seats, Seg Kind)[] segments, int total,
-            string figLeft, string figMiddle, string figRight, string slipHead, string[] slipLinesIn, UsNight.Call call, int calledAt, int of, string openWords, string stuckWords, string[] stuckSlip, string decidedWords = null)
+            string figLeft, string figMiddle, string figRight, string slipHead, string[] slipLinesIn, UsNight.Call call, int calledAt, int of, string openWords, string stuckWords, string[] stuckSlip, string decidedWords = null,
+            Color? indInk = null)
         {
             var slipLines = new List<string>(slipLinesIn) { "REP FILLS FROM THE LEFT, DEM FROM THE RIGHT; WHAT IS STILL TO COME SITS BETWEEN; THE TICK IS THE MAJORITY" };
             Transform head = CanvasRows.HRow(parent, title + "Head", Px(26f), 8f);
@@ -210,14 +320,20 @@ namespace PoliSim.UI
             LayoutElement barSize = bar.AddComponent<LayoutElement>();
             barSize.minHeight = barSize.preferredHeight = Px(54f);
             double t = Math.Max(1, total);
-            double x = 0.0;
+            double x = 0.0, extra = 0.0;
             // DEM's segments sit against the right end, REP's against the left; the middle is what is to come
-            foreach ((int seats, Seg kind) in segments)
+            foreach ((int seatsIn, Seg kind) in segments)
             {
-                if (seats <= 0) { continue; }
+                // S7 (7b): the independent is never drawn under 4 px (of the board's 290), even at none - the segment after it gives the room
+                int seats = seatsIn;
+                if (seats <= 0 && kind != Seg.Ind) { continue; }
+                double drawn = seats;
+                if (kind == Seg.Ind) { drawn = Math.Max(seats, 4.0 / 290.0 * t); extra = drawn - seats; }
+                else if (extra > 0.0) { drawn = Math.Max(0.0, seats - extra); extra = 0.0; }
                 Color fill; Color? rule = null; string word = null;
                 switch (kind)
                 {
+                    case Seg.Ind: fill = indInk ?? PoliSimTheme.Neutral; word = seats > 0 ? Count(seats) : null; break;
                     case Seg.Rep: fill = UsInk("REP"); word = Count(seats); break;
                     case Seg.Dem: fill = UsInk("DEM"); word = Count(seats); break;
                     case Seg.RepPale: fill = Color.Lerp(UsInk("REP"), PoliSimTheme.Card, 0.55f); break;
@@ -225,7 +341,7 @@ namespace PoliSim.UI
                     case Seg.IndPale: fill = Color.Lerp(PoliSimTheme.Neutral, PoliSimTheme.Card, 0.55f); break;
                     default: fill = PoliSimTheme.CardInset; rule = PoliSimTheme.HairlineStrong; break;
                 }
-                double from = x / t, to = (x + seats) / t;
+                double from = x / t, to = (x + drawn) / t;
                 bool split = word != null && from < 0.5 && to > 0.5;
                 Block(bar.transform, title + " " + kind, from, to, fill, rule, Px(28f), split ? null : word);
                 if (split)
@@ -237,7 +353,7 @@ namespace PoliSim.UI
                     // real904b (e7e/e7f): a segment narrower than the gap left the figure a block of negative width - no block, the slip carries the figure
                     if (figureTo > figureFrom) { Block(bar.transform, title + " " + kind + " figure", figureFrom, figureTo, Color.clear, null, Px(28f), word); }
                 }
-                x += seats;
+                x += drawn;
             }
             Tick(bar.transform, 0.5, tick, Px(28f));
             CanvasRows.Slip(bar, overlay, slipHead, slipLines);
@@ -303,7 +419,7 @@ namespace PoliSim.UI
             var lenses = new List<UsTileView.Lens>();
             if (s.Presidential) { lenses.Add(UsTileView.Lens.President); }
             lenses.Add(UsTileView.Lens.Congress);
-            if (s.College == UsNight.Call.NoMajority) { lenses.Add(UsTileView.Lens.Delegations); }
+            if (CollegeCall(board) == UsNight.Call.NoMajority) { lenses.Add(UsTileView.Lens.Delegations); }
             if (!lenses.Contains(lens)) { lens = lenses[0]; }
 
             Transform head = CanvasRows.HRow(parent, "MapHead", Px(28f), Px(4f));
@@ -374,7 +490,7 @@ namespace PoliSim.UI
                     kv.Value.Words.color = on ? PoliSimTheme.Card : PoliSimTheme.TextPrimary;
                 }
                 for (int i = keys.childCount - 1; i >= 0; i--) { UnityEngine.Object.Destroy(keys.GetChild(i).gameObject); }
-                BuildKeys(keys, l, s.Presidential);
+                BuildKeys(keys, l, s.Presidential, board.Independent != null ? board.IndependentInk : (Color?)null);
                 note.text = LensNote(l);
                 noteSize.minHeight = noteSize.preferredHeight = WrappedHeight(note.text, Px(14f), PoliSimTheme.Document, MapWidth);   // real904: measured, never the column's guess
                 view.SetLens(l);
@@ -387,7 +503,7 @@ namespace PoliSim.UI
                 kv.Value.Face.color = on ? PoliSimTheme.TextPrimary : PoliSimTheme.Card;
                 kv.Value.Words.color = on ? PoliSimTheme.Card : PoliSimTheme.TextPrimary;
             }
-            BuildKeys(keys, lens, s.Presidential);
+            BuildKeys(keys, lens, s.Presidential, board.Independent != null ? board.IndependentInk : (Color?)null);
             note.text = LensNote(lens);
             noteSize.minHeight = noteSize.preferredHeight = WrappedHeight(note.text, Px(14f), PoliSimTheme.Document, MapWidth);
         }
@@ -405,12 +521,15 @@ namespace PoliSim.UI
             : "Each state whole by its delegation's majority in the House elected tonight. A tied delegation casts no vote; DC has none.";
 
         /// <summary>The key under the map for a lens, in rows that fit the column (29a's keys; a key never wider than the map).</summary>
-        private static void BuildKeys(Transform keys, UsTileView.Lens l, bool presidential)
+        private static void BuildKeys(Transform keys, UsTileView.Lens l, bool presidential, Color? independent = null)
         {
             var items = new List<(Color? Fill, string Kind, string Words)>();
             if (l == UsTileView.Lens.President)
             {
-                items.Add((UsInk("REP"), "ink", "REP")); items.Add((UsInk("DEM"), "ink", "DEM")); items.Add((null, "notyet", "not yet"));
+                items.Add((UsInk("REP"), "ink", "REP")); items.Add((UsInk("DEM"), "ink", "DEM"));
+                if (independent.HasValue) { items.Add((independent.Value, "ink", UsBallotAccess.Key)); }   // S7 (7b): the third ink, and its absence struck
+                items.Add((null, "notyet", "not yet"));
+                if (independent.HasValue) { items.Add((null, "struck", "not on ballot")); }
                 items.Add((null, "paper", "1 2 3 · a district (ME, NE)"));
             }
             else if (l == UsTileView.Lens.Congress)
@@ -439,6 +558,21 @@ namespace PoliSim.UI
                 face.raycastTarget = false;
                 face.color = fill ?? (kind == "notyet" ? PoliSimTheme.CardInset : kind == "hatch" ? PoliSimTheme.Hairline : PoliSimTheme.Card);
                 if (kind == "notyet" || kind == "paper" || kind == "dotted") { CanvasRows.Edges(swatch.transform, kind == "dotted" ? PoliSimTheme.TextPrimary : PoliSimTheme.HairlineStrong, 1f); }
+                if (kind == "struck")
+                {
+                    // S7 (7b): a 1 px BAD rule struck by a 2 px BAD stroke at −45°
+                    CanvasRows.Edges(swatch.transform, PoliSimTheme.Bad, 1f);
+                    var stroke = new GameObject("Strike");
+                    stroke.transform.SetParent(swatch.transform, false);
+                    Image line = stroke.AddComponent<Image>();
+                    line.color = PoliSimTheme.Bad;
+                    line.raycastTarget = false;
+                    RectTransform sr = line.rectTransform;
+                    sr.anchorMin = sr.anchorMax = new Vector2(0.5f, 0.5f);
+                    sr.sizeDelta = new Vector2(Px(17f), Px(2f));
+                    sr.localRotation = Quaternion.Euler(0f, 0f, 45f);
+                    stroke.AddComponent<LayoutElement>().ignoreLayout = true;
+                }
                 HoldWidth(PlText(row, "Key " + words, words, Px(14f), PoliSimTheme.TextPrimary, PoliSimTheme.Document));
                 Blank(row, Px(8f));
             }
@@ -474,6 +608,7 @@ namespace PoliSim.UI
                     int at = Array.IndexOf(j.Districts, district);
                     int w = district > 0 && at >= 0 && at < j.DistrictWinners.Length ? j.DistrictWinners[at] : j.Winner;
                     fill.President[r] = Ink(w == ElectoralCollege.Republican ? "REP" : "DEM");
+                    if (board.Independent != null) { fill.President[r] = IndependentCell(board, block.Code, district, fill.President[r]); }   // S7 (7b)
                 }
                 else { fill.President[r] = notYet; }
                 // Congress's lens (29b's answer 2): the two at-large cells, else the first two, the senators; the rest the delegation, REP first
@@ -531,6 +666,17 @@ namespace PoliSim.UI
                 }
                 double rep = j.RepTwoParty;
                 lines.Add((district > 0 ? "Statewide" : "President") + " · REP " + Pct(rep) + " · DEM " + Pct(1.0 - rep) + " · lead " + (rep >= 0.5 ? "REP" : "DEM") + " " + Pct(Math.Abs(2.0 * rep - 1.0)) + " of the two");
+                if (board.Independent != null)
+                {
+                    // S7 (7b): the independent's reading here - its share and the gap to the leader, or not on the ballot
+                    UsBallotAccess.Place place = board.Independent.Places.Find(p => p.Code == (district > 0 ? j.Code + "-" + Count(district) : j.Code));
+                    if (place != null)
+                    {
+                        lines.Add(!place.OnBallot ? UsBallotAccess.Key + " · not on the ballot"
+                            : place.Won ? UsBallotAccess.Key + " " + Pct(place.Independent) + " · won, " + Count(place.Electors) + (place.Electors == 1 ? " elector" : " electors")
+                            : UsBallotAccess.Key + " " + Pct(place.Independent) + " · " + Share(place.GapPp) + " pp short of " + place.LeaderKey);
+                    }
+                }
                 lines.Add(j.Districts.Length > 0
                     ? "Electors · 2 to the state, 1 per district: REP " + Count(j.ElectorsRep) + " · DEM " + Count(j.ElectorsDem)
                     : "Electors · " + Count(j.Electors) + " to " + (j.Winner == ElectoralCollege.Republican ? "REP" : "DEM"));
@@ -625,7 +771,7 @@ namespace PoliSim.UI
             SittingRow(parent, overlay, "Congress", null, congress, "to " + ShortDay(board.Convenes),
                 (congress + " Congress").ToUpperInvariant(), new[] { "SITS UNTIL THE NEW CONGRESS IS SEATED ON " + DeskDay(board.Convenes) });
 
-            string called = UsNight.PartyOf(s.College);
+            string called = UsNight.PartyOf(CollegeCall(board));
             if (called != null)
             {
                 string name = called == "REP" ? board.RepNominee : board.DemNominee;
@@ -644,12 +790,14 @@ namespace PoliSim.UI
                 lines.Add("THE OATH " + DeskDay(board.TakesOffice));
                 CanvasRows.Slip(card.gameObject, overlay, (name ?? called).ToUpperInvariant() + " · PRESIDENT-ELECT", lines);
             }
-            else if (s.College == UsNight.Call.NoMajority)
+            else if (CollegeCall(board) == UsNight.Call.NoMajority)
             {
                 Transform card = Card(parent, "NoMajority", PoliSimTheme.Hex(0xC9A23A), Px(2f));
                 card.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(Px(10f), Px(10f), Px(8f), Px(8f));
                 card.GetComponent<VerticalLayoutGroup>().spacing = Px(4f);
                 Transform top = CanvasRows.HRow(card, "Head", Px(22f), Px(8f));
+                // §964: "No majority" in both cases - Design's "The House decides" ran 225 units in the head's 179 beside its chip (the film's ESCAPE); the
+                // HOUSE chip says who decides and the card's slip holds "No one at 270: the House decides" (K320: words move to the slip)
                 PlText(top, "Words", "No majority", Px(17f), PoliSimTheme.TextPrimary, PoliSimTheme.Body, FontStyle.Bold);
                 CanvasRows.Spacer(top);
                 FilledChip(top, "HOUSE · " + ShortDay(board.CountedOn).ToUpperInvariant(), PoliSimTheme.Caution, PoliSimTheme.Card);
@@ -660,7 +808,19 @@ namespace PoliSim.UI
                 HoldWidth(PlText(tally, "Dem", "DEM " + Count(s.DelegationsDem), Px(14f), PoliSimTheme.TextPrimary, PoliSimTheme.Document, FontStyle.Bold));
                 HoldWidth(PlText(tally, "Tied", "tied " + Count(s.DelegationsTied), Px(14f), PoliSimTheme.TextPrimary, PoliSimTheme.Document, FontStyle.Bold));
                 if (s.DelegationsToCome > 0) { HoldWidth(PlText(tally, "ToCome", Count(s.DelegationsToCome) + " to come", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document)); }
-                CanvasRows.Slip(card.gameObject, overlay, "NO MAJORITY IN THE COLLEGE", new[]
+                if (board.Independent != null)
+                {
+                    // S7 (7b, For Code 4): the House's choice with a third candidate holding electors - the three named, the delegations the game's
+                    UsBallotAccess.NightReading n = board.Independent;
+                    CanvasRows.Slip(card.gameObject, overlay, "THE HOUSE DECIDES", new[]
+                    {
+                        "REP " + Count(n.ElectorsRep) + " · DEM " + Count(n.ElectorsDem) + " · " + UsBallotAccess.Key + " " + Count(n.Electors) + ": NO ONE AT " + Count(s.ElectorsMajority),
+                        "THE TOP THREE BEFORE THE HOUSE ON " + DeskDay(board.CountedOn),
+                        UsBallotAccess.HouseContingencyRule.ToUpperInvariant() + " · " + Count(majority) + " OF " + Count(board.AllStates) + " ELECTS",
+                        "EACH DELEGATION VOTES ITS PARTY'S NOMINEE",
+                    });
+                }
+                else CanvasRows.Slip(card.gameObject, overlay, "NO MAJORITY IN THE COLLEGE", new[]
                 {
                     Count(s.ElectorsRep) + "–" + Count(s.ElectorsDem) + ": NEITHER SIDE HAS " + Count(s.ElectorsMajority),
                     "THE HOUSE CHOOSES ON " + DeskDay(board.CountedOn) + ", ONE VOTE A STATE (THE TWELFTH AMENDMENT)",

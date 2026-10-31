@@ -540,6 +540,18 @@ namespace PoliSim.UI
             float y = Mathf.Round(HqY(131f));
             float bottom = _hqPage.yMax;
             bool poland = !double.IsNaN(HqCap());
+            UsBallotAccess.Drive ballot = HqBallotDrive(s);
+            if (ballot != null)
+            {
+                // S7 (7a): an independent's run-up - ballot access, what the 51 add up to and the next deadlines take the race's place; the chest and the
+                // organisation follow as the board's column does
+                y = DrawHqBallotStanding(x, y, w, s, ballot, book);
+                y = DrawHqChest(x, y, w, s, book);
+                y = DrawHqHours(x, y, w, s, book);
+                y = DrawHqFundraising(x, y, w, s, book);
+                DrawHqOrganisation(x, y, w, s, book);
+                return;
+            }
             // what the column holds under the race, at the board's heights - the race takes what is left of the page (its rows' pitch shrinks to fit)
             float under = HqH(20f + 28f + 14f + 26f + 34f + (poland ? 34f : 0f) + 30f + 28f + 14f + 26f + 32f + 26f + 26f);
             y = DrawHqRace(new Rect(x, y, w, Mathf.Max(HqH(80f), bottom - y - under)), s, book);

@@ -1,0 +1,73 @@
+# SP-6b (section 7): AN INDEPENDENT PRESIDENTIAL CANDIDATE'S BALLOT ACCESS, 2024 - READ from NASS's "Summary: State Laws Regarding Presidential Ballot
+# Access for the General Election" (updated July 2024; raw/ballot_access/nass_summary_ballot_access_laws_president_072924.pdf), one row a jurisdiction.
+# Tools/us_ballot_prep.pl holds every row to the summary's own text: each quote must occur in that state's section (whitespace ignored, the
+# extraction splitting figures such as "5 ,000"), and every figure a rule names must stand in its quote. Nothing here is a figure of its own: a count is
+# the summary's, a formula's base is read from the catalog on disk or BILLED, a deadline is the summary's rule applied to 5 Nov 2024.
+#
+# signatures:  count N                      the summary's number (a range's floor where it gives one: ME 4,000-6,000, WI 2,000-4,000)
+#              pct P BASE                   P % of BASE, rounded up
+#              lesser P BASE N [bound B]    the lesser of P % of BASE and N; where BASE is not on disk, B (on disk, never above BASE) decides it
+#                                           when P % of B already reaches N - else BILLED
+#              billed WHY                   no count can be read
+# deadline:    days N                       N days before polling day
+#              date MM-DD                   the date the summary names
+#              nth K DAY MON                the K-th DAY of MON (K = last for the last)
+#              after K DAY MON DAY2 J       the J-th DAY2 after the K-th DAY of MON
+#              mondays N                    the N-th Monday before polling day
+#              business N MM-DD             the N-th business day after MM-DD
+#              billed WHY
+# fee:         usd N add | usd N alt        a fee beside the petition (add) or instead of it (alt); none: the summary names none; billed WHY
+#
+# BASE: pres2020 (president_by_state.csv, 2020 votes_total), house2022 (house_by_state.csv, 2022 votes_total), or a base not on disk, named.
+state	signatures	deadline	fee	quote
+AL	count 5000	days 82	none	no later than 82 days before the election a petition containing the signatures of at least 5,000 qualified electors
+AK	pct 1 pres2020	days 90	none	no later than the 90th day before a presidential election a petition containing the signature of qualified voters equal to at least 1% of the number of votes cast for president at the last general election
+AZ	billed 3 % of the registered independent voters - not on disk	days 80	none	no less than 80 days before the general election nomination papers and a petition containing the number of signatures equal to 3% of the registered independent voters in the state
+AR	count 5000	nth 1 Mon Aug	none	no later than the first Monday in August a petition containing the names of 5,000 qualified electors
+CA	billed 1 % of the registered voters - not on disk	days 88	none	no later than 88 days before the election a declaration of candidacy for each of the presidential electors and nomination papers signed by the number of voters equal to at least 1% of the entire number of registered voters in the state
+CO	count 5000	days 90	usd 500 alt	no later than the 90 th day before the election a petition containing the signatures of at least 5,000 eligible electors | no later than 90 days before the election a statement of intent and a $500 fee
+CT	lesser 1 pres2020 7500	days 97	none	no later than the 97 th day prior to the election a petition containing the number of signatures of qualified electors equal to the lesser of 1% of the votes cast for the office at the last election, or 7,500
+DE	billed 1 % of the registered voters on 31 December 2023 - not on disk	date 09-01	none	no later than September 1 st a sworn declaration of non - affiliation and a nominating petition signed by at least 1% of the total number of registered voters
+FL	billed 1 % of the registered electors - not on disk	date 07-15	none	no later than July 15 th a petition signed by 1% of the registered electors of the state
+GA	count 7500	nth 2 Tue Jul	billed 3 % of the annual fee of the office - not on disk	no later than the second Tuesday in July a nominating petition signed by 7500 registered voters | a qualifying fee equal to 3% of the annual fee of the office
+HI	pct 1 pres2020	days 90	none	no later than the 90 th day prior to the general election a petition containing the signatures of at least 1% of the number of votes cast in the state at the last presidential election
+ID	count 1000	billed between the 12th Monday and the 10th Friday before the primary - the 2024 primary's date not on disk	none	between the 12 th Monday before the primary election and the 10 th Friday before the primary election, a petition signed by 1,000 qualified electors
+IL	lesser 1 voters2022 25000 bound house2022	days 134	none	no less than 134 prior to the election a petition signed by 1% of the number of voters who voted at the next preceding statewide general election or 25,000 qualified voters, whichever is less
+IN	billed 2 % of the votes cast for secretary of state - not on disk	date 07-15	none	no later than July 15 a written consent form and a petition containing the signatures of registered voters equal to 2% of the votes cast at the last election for secretary of state
+IA	count 3500	days 73	none	no later than the 73rd day before the general election an affidavit of candidacy and a petition signed by at least 3500 eligible electors
+KS	count 5000	billed the Monday before the primary - the 2024 primary's date not on disk	none	no later than the Monday preceding the primary election a petition signed by at least 5,000 qualified voters
+KY	count 5000	after 1 Tue Sep Fri 1	none	no later than the Friday following the first Tuesday in September a nominating petition signed by at least 5,000 registered voters
+LA	count 5000	after 1 Tue Sep Fri 1	usd 500 alt	no later than the first Friday following the first Tuesday in September a notice of candidacy, affidavit of each elector, and a petition containing at least 5,000 signatures | by paying a $500 fee
+ME	count 4000	date 08-15	none	no later than August 15 th a petition signed by at least 4,000 and not more than 6,000 voters
+MD	count 10000	nth 1 Mon Aug	none	no later than the first Monday in August a certificate of candidacy and a petition containing the signatures of at least 10,000 registers voters
+MA	count 10000	nth 2 Tue Sep	none	no later than the second Tuesday of September nomination papers containing the signatures of at least 10,000 voters
+MI	billed 1 % of the votes cast for governor - not on disk	days 110	none	no later than the 110 th day before the election a petition signed by a number of qualified and registered electors of the state equal to not less than 1% of the total number of votes cast for all candidates for governor
+MN	count 2000	days 77	none	no later than 77 days before the general election a petition containing the signatures of at least 2,000 eligible voters
+MS	count 1000	days 60	none	no less than 60 days before the election a petition containing the signatures of 1,000 qualified electors
+MO	count 10000	mondays 15	none	no later than the 15th Monday immediately preceding the general election a declaration of candidacy and petition containing the signatures of at least 10,000 registered voters
+MT	billed the lesser of 5 % of the votes for the successful candidate for governor and 5,000 - the governor's vote not on disk	days 76	none	76 days prior to the general election a petition containing the signatures of electors equal to 5% or more of the total votes cast for the successful candidate for governor at the last general election , or 5,000 electors, whichever is less
+NE	count 2500	date 09-01	none	no later than September 1 st a petition containing the signatures of at least 2500 registered voters
+NV	pct 1 house2022	nth 2 Fri Aug	usd 250 add	no later than the second Friday in August a declaration of candidacy , a filing fee of $250 , and a petition containing the signatures of registered voters equal to at least 1% of the total number of votes cast at the last preceding general election for the office of representative in congress
+NH	count 3000	billed the Wednesday one week before the primary - the 2024 primary's date not on disk	usd 250 add	no later than the Wednesday one week before the primary nomination papers containing the signatures of 3,000 registered voters | The candidate must also pay a fee of $250
+NJ	count 800	days 99	none	no later than the 99 th day before the general election a petition containing the signatures of 800 legally qualified voters
+NM	billed 3 % of the votes cast for governor - not on disk	billed the 21st day after the primary - the 2024 primary's date not on disk	none	on the 21st day following the primary election a declaration of candidacy and a nominating petition containing the number of voter signatures equal to at least 3% of the total vote cast for governor
+NY	billed the lesser of 45,000 and 1 % of the votes cast for governor - the governor's vote not on disk	billed the summary names no petition deadline	none	a petition containing 45,000 signatures, or 1% of the total votes cast for the office of governor at the last gubernatorial election, whichever is less
+NC	billed 1.5 % of the voters at the last election for governor - not on disk	nth last Fri Jun	none	no later than the last Friday in June preceding the general election a petition containing the number signatures of registered voters equal to 1.5 % of the total number of voters who voted in the most recent general election for governor
+ND	count 4000	days 64	none	no later than the 64 th day before the general election a n affidavit of candidacy, a statement of interests, and a petition containing the signatures of 4,000 qualified electors
+OH	count 5000	days 90	none	no later than the 90 th day before the general election a petition containing the signatures of at least 5,000 qualified electors
+OK	billed 3 % of the votes cast for governor - not on disk	date 07-15	billed the summary names a filing fee but not its amount	the required filing fee or petition containing the signatures of registered voters equal to at least 3% of the total votes cast in the last general election for governor | must be submitted no later than July 15
+OR	pct 1 pres2020	days 70	none	no later than the 70 th day before the general election a petition containing the signatures of individual electors equal to not less than 1% of the total votes cast for all candidates for presidential electors at the last general election
+PA	count 5000	date 08-01	usd 200 add	no later than August 1 st , an affidavit of candidacy, a $200 fee , and n omination papers containing the signatures of 5000 qualified electors
+RI	count 1000	days 60	none	nomination papers containing the signatures of 1000 voters | The nomination papers must be filed with local boards of election no later than 60 days before the election
+SC	lesser 5 registered 10000 bound pres2020	date 07-15	none	no later than July 15 th a petition containing the signatures of at least 5% of qualified registered electors, provided that the petition candidate is not required to furnish more than 10,000 signatures
+SD	billed 1 % of the combined vote for governor - not on disk	nth 1 Tue Aug	none	no later than the first Tuesday in August prior to the election a certificate of nomination containing the number of signatures equal to at least 1% of the total combined vote cast for governor
+TN	count 275	nth 3 Thu Aug	none	no later than the 3 rd Thursday in August a petition containing the signatures of 25 or more registered voters for each elector allotted to the state , which totals 275 valid signatures
+TX	pct 1 pres2020	nth 2 Mon May	none	no later than the 2 nd Monday in May an application and a petition containing the number of signatures equal to at least 1% of the total vote received in the state by all candidates for president in the most recent presidential election
+UT	count 1000	business 4 01-02	none	a nominating petition containing the signatures of 1,000 registered voters n o later than the 4th business day after the filing period begins on January 2 nd
+VT	count 1000	after 1 Mon Jun Thu 2	none	no later than the second Thursday after the first Monday in June preceding the primary election a statement of nomination containing the signatures of 1,000 registered voters
+VA	count 5000	days 74	none	no later than the 74 th day before the election a petition containing the signatures of at least 5 ,000 qualified voters
+WA	count 1000	nth 1 Fri Aug	none	no later than the first Friday of August a certificate of nomination accompanied by a petition containing the signatures of at least 1,000 registered voters
+WV	pct 1 pres2020	date 08-01	billed 1 % of the office's annual salary, at most $2,500 - the salary not on disk	no later than August 1st preceding the general election a certificate of nomination containing the number of signatures of registered voters equal to at least 1% of the entire vote cast for president in the last preceding presidential election | must not exceed $2500
+WI	count 2000	nth 1 Tue Aug	none	the deadline for filing with the Wisconsin Election Commission is 5:00 p.m. on the first Tuesday in August | The nomination papers must contain at least 2,000 and no more than 4,000 signatures
+WY	pct 2 house2022	days 70	usd 200 add	no later than 70 days before a general election a petition containing the signatures of registered electors numbering not less than 2% of t he total number of votes cast for united states representative in the last general election. The petition must be accompanied by a $20 0 fee
+DC	billed not in NASS's summary of the states; dcboe.org refused (403)	billed not in NASS's summary of the states; dcboe.org refused (403)	billed not in NASS's summary of the states; dcboe.org refused (403)	-

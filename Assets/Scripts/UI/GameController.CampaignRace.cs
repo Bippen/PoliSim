@@ -259,7 +259,7 @@ namespace PoliSim.UI
             var volunteers = new int[names.Length];
             for (int i = 0; i < names.Length; i++)
             {
-                names[i] = map.Key == "pl_sejm" ? "okreg " + map.Tiles[i].Id : map.Tiles[i].Label;
+                names[i] = map.Key == "pl_sejm" ? "okreg " + map.Tiles[i].Id : map.Key == "us_states" ? map.Tiles[i].Id : map.Tiles[i].Label;
                 readings[i] = SwingRegions.Unknown(names[i], 0.0);
                 price[i] = double.NaN;
                 volunteers[i] = -1;
@@ -273,6 +273,9 @@ namespace PoliSim.UI
 
         private void DrawHqGround(CampaignSnapshot s, PeopleSlips.Book book)
         {
+            // S7: an independent's run-up draws the 51 as its ballot drive (`GameController.CampaignBallot.cs`) - the map's subject is the ballot, not a poll
+            UsBallotAccess.Drive ballot = HqBallotDrive(s);
+            if (ballot != null) { DrawHqBallotGround(s, ballot, book); return; }
             CampaignContest contest = HqContest(s);
             string[] names = s.Hq?.Ground?.Names;
             CampaignTiles.TileMap map = CampaignTiles.For(PlayerCountryId, contest, names);
@@ -284,8 +287,8 @@ namespace PoliSim.UI
             var head = HqR(444f, 131f, 400f, 26f);
             int regionCount = ground?.Names.Length ?? map?.Tiles.Length ?? 0;
             string unit = PlayerCountryId == CountryId.Poland ? (contest == CampaignContest.Chamber ? "okręgi" : "województwa")
-                : PlayerCountryId == CountryId.Sweden ? "valkretsar" : PlayerCountryId == CountryId.Germany ? "Länder" : PlayerCountryId == CountryId.USA ? "states" : "regions";
-            string title = "The " + regionCount.ToString(CultureInfo.InvariantCulture) + " " + unit;
+                : PlayerCountryId == CountryId.Sweden ? "valkretsar" : PlayerCountryId == CountryId.Germany ? "Länder" : PlayerCountryId == CountryId.USA ? null : "regions";
+            string title = "The " + regionCount.ToString(CultureInfo.InvariantCulture) + (unit != null ? " " + unit : string.Empty);   // S7: the USA's is Design's "The 51" - the District is no state
             GUIStyle head18 = HqSerif(18f, PoliSimTheme.TextPrimary);
             HqLabel(new Rect(head.x, head.y, HqWidth(title, head18), head.height), title, head18);
             int target = ground?.Target ?? -1;
@@ -307,11 +310,11 @@ namespace PoliSim.UI
 
             if (map == null || ground == null)
             {
-                // the USA: no HQ tiles until Design's section 7 - the one-region rule places local acts
+                // a country Design placed no tiles for (S7 drew the USA's) - the one-region rule places local acts
                 var none = HqR(444f, 163f, 400f, 26f);
                 HqLabel(none, "no tile map yet", HqSerif(15f, PoliSimTheme.TextSecondary));
                 SlipAnchor(none, "hq:nomap");
-                book.Anchors["hq:nomap"] = new SlipContent("NO TILE MAP").Add("the states' tiles are still to come").Add("local acts: your strongest office");
+                book.Anchors["hq:nomap"] = new SlipContent("NO TILE MAP").Add("no tiles placed for this country").Add("local acts: your strongest office");
                 DrawHqPlate(HqR(444f, 199f, 400f, 166f), s, ground, map, siting, book);
                 return;
             }
@@ -319,7 +322,7 @@ namespace PoliSim.UI
             // the tiles, at the board's px - one unit both ways, so a tile stays square
             float u = Mathf.Min(_hqUx, _hqUy);
             float side = Mathf.Round(map.TileSize * u), step = (map.TileSize + map.Gap) * u;
-            float ox = Mathf.Round(HqX(map.OriginX)), oy = Mathf.Round(HqY(map.OriginY));
+            float ox = Mathf.Round(HqX(map.OriginX)), oy = Mathf.Round(HqY(Mathf.Max(map.OriginY, HqMapTop)));   // S7: under the head (Design placed the US map on a page with no timeline)
             bool small = map.TileSize < 40f;
             var mapRect = new Rect(ox, oy, map.Width * u, map.Height * u);
             foreach (CampaignTiles.Tile tile in map.Tiles)
@@ -365,7 +368,16 @@ namespace PoliSim.UI
             float pad = V35.Px(4f), line = V35.Px(16f);
             GUIStyle number = HqMono(14f, numberInk, bold: true, anchor: map.LabelTopLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter);
             var numberRect = map.LabelTopLeft ? new Rect(t.x + pad, t.y + V35.Px(3f), t.width - 2f * pad, line) : new Rect(t.x, t.y + (small ? V35.Px(7f) : V35.Px(3f)), t.width, line);
+            bool us = map.Key == "us_states";
+            if (us) { numberRect = new Rect(t.x, t.y + V35.Px(1f), t.width, V35.Px(15f)); }   // S7 (7a): the code over the electors, 15 px lines
             HqLabel(numberRect, tile.Id, number);
+            if (us && state != RegionalPolling.MapState.TooCloseToCall && !next)
+            {
+                int electors = UsElectorsOf(tile.Id, s.Calendar.ElectionDate);
+                string ev = electors > 0 ? electors.ToString(CultureInfo.InvariantCulture) : "—";
+                var evRect = leaderKey != null ? new Rect(t.x + V35.Px(2f), t.y + V35.Px(16f), t.width - V35.Px(17f), V35.Px(15f)) : new Rect(t.x, t.y + V35.Px(16f), t.width, V35.Px(15f));
+                HqLabel(evRect, ev, HqMono(14f, numberInk, anchor: leaderKey != null ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter));
+            }
 
             if (leaderKey != null)
             {
@@ -434,7 +446,7 @@ namespace PoliSim.UI
             // the tile's slip: its name, its reading, its office, the target
             string id = "hq:tile:" + (region >= 0 ? region.ToString(CultureInfo.InvariantCulture) : tile.Id);
             SlipAnchor(t, id);
-            var slip = new SlipContent(tile.Label.ToUpperInvariant());
+            var slip = new SlipContent(map.Key == "us_states" ? tile.Label.ToUpperInvariant() + " · " + UsElectorsOf(tile.Id, s.Calendar.ElectionDate).ToString(CultureInfo.InvariantCulture) + " ELECTORS" : tile.Label.ToUpperInvariant());
             if (state == RegionalPolling.MapState.Unknown) { slip.Add("not polled · no regional reading"); }
             else
             {

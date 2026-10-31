@@ -52,6 +52,8 @@ namespace PoliSim.UI
         {
             public Paint Paint;
             public Color Ink;
+            /// <summary>S7 (7b): struck - a 1.5 px BAD stroke across the inked cell, lower left to upper right (the independent not on that state's ballot).</summary>
+            public bool Struck;
         }
 
         /// <summary>One jurisdiction as the night stands, in `UsTileCartogram.States`' order: declared or not; its cells in reading order under each lens;
@@ -156,6 +158,7 @@ namespace PoliSim.UI
                     }
                 }
             }
+            void Strike(float x, float y) { Color32 bad = PoliSimTheme.Bad; for (float t = 0f; t <= CellSide; t += 0.5f) { Fill(x + t - 0.75f, y + CellSide - t - 0.75f, 1.5f, 1.5f, bad); } }
             void Dots(float x1, float y1, float x2, float y2, Color32 c)
             {
                 const float dot = 1f, gap = 2f, thick = 1f;
@@ -175,7 +178,7 @@ namespace PoliSim.UI
                     float cx = block.Cells[r, 0] * Pitch + 0.5f, cy = block.Cells[r, 1] * Pitch + 0.5f;
                     Cell cell = cells != null && r < cells.Length ? cells[r] : new Cell { Paint = Paint.NotYet };
                     if (!fill.Declared || cell.Paint == Paint.NotYet) { Fill(cx, cy, CellSide, CellSide, plate); LastNotYet++; }
-                    else if (cell.Paint == Paint.Ink) { Fill(cx, cy, CellSide, CellSide, cell.Ink); LastInked++; }
+                    else if (cell.Paint == Paint.Ink) { Fill(cx, cy, CellSide, CellSide, cell.Ink); LastInked++; if (cell.Struck) { Strike(cx, cy); } }
                     else if (cell.Paint == Paint.Hatch) { Hatch(cx, cy); LastHatched++; }
                     else
                     {

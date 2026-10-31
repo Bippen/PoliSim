@@ -53,3 +53,7 @@ Assets/Scripts/Data/Generated/PensionBenefitRatioPath.cs -text
 Assets/Editor/Generated/PensionBenefitRatioAnchors.cs -text
 # SP-8 (2026-10-30): France's 2022 presidential record, byte-exact as fetched (digests in the folder's SHA256SUMS.txt)
 ElectionsData/france/raw/presidential2022/** -text
+# SP-6b (section 7): NASS's ballot access summary byte-exact as fetched (digest in the folder's SHA256SUMS.txt); the READ table and the CSV the generated catalog carries the digests of
+ElectionsData/usa/raw/ballot_access/** -text
+ElectionsData/usa/ballot_access_read_2024.tsv -text
+ElectionsData/usa/ballot_access_2024.csv -text
