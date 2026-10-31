@@ -226,6 +226,13 @@ A government's record feeds the next vote through perceived performance, as it a
 support party shares part of the government's record in the voters' eyes — the fraction is
 `[AUTHORED-DRAFT]` with its line and goes on the play-calibration list, since only play can judge it.
 
+**COAL-2: after a count, the parties' sides, declared before any measurement (K137 as K330 and K331 read it; Elias's K137 of 2026-10-27).** In the player's country only (K327 (1)), once per count (`Country.RedeclaredAfterCount`, saved and copied into the preview clone):
+- a party in the formed government or its recorded support declares FOR;
+- a party outside it declares AGAINST only if `GovernmentFormation.RedLinedFrom` holds it, its own red lines excluding it from the cabinet; any other party keeps its standing side (K330);
+- FOR takes the head's bloc. AGAINST never moves a party onto the rival bloc: a party that stood on the head's bloc goes to no bloc, and any other keeps its own. Under a head with no bloc, every side keeps its standing bloc (K331);
+- the player's own re-declaration follows the same mapping;
+- the no-player world is untouched (its dump byte-identical), and a played world's later counts read each side from the day it is declared.
+
 ## 6. The United States — playing the president
 
 > ⚠ **Planned, being built** (PS-6: `docs/specs/USA_STAGE_PLAN.md`, `COMPLETED.md` §777). R-US4 RULED (a) (Elias's ruling F8,
