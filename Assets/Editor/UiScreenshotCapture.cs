@@ -456,6 +456,7 @@ namespace PoliSim.EditorTools
             driver.UsJourneyWinner = Arg("-shotwinner=", "");
             // PS-8 (K163): -shotabroad plays the game from its start to the day after the AI USA's first count and films the Docket's election abroad, its card open
             driver.Abroad = Environment.GetCommandLineArgs().Contains("-shotabroad");
+            driver.Founding = Environment.GetCommandLineArgs().Contains("-shotfounding");   // SP-5 (S5): with -shotcountry=Germany -shotcreatestart
             driver.CueSweep = Environment.GetCommandLineArgs().Contains("-cuesweep");
             // W-E6 (2026-08-30): film board 1h, election night, instead of the sweep. Stages the
             // SOURCED Swedish 2022 returns like -shotcampaign, and demands the same country.

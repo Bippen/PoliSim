@@ -260,6 +260,7 @@ namespace PoliSim.Elections
             preference = EntrantLayer.RegionalAffinity(country, keys, preference, PartyFamilies.For(country, keys));   // K129: a Regional party read through its valkrets's electorate; none, the very array
             preference = EconomicVote.ApplyRecordShift(keys, preference, recordShift);   // PS-3k (§638): the government's record, before the regions are derived; none given, none applied
             preference = EntrantLayer.HoldToReach(country, keys, preference, null);   // GATE-18 q22: a created party held within its origin's reach (no campaign: the opening awareness); none registered, the very array
+            if (on.HasValue) { preference = BallotAccess.ApplyToCount(country, keys, preference, on.Value); }   // SP-5 (S5): a created party's refused Land lists cost it their votes; none refused, the very array
 
             shares = new Dictionary<string, double>();
             for (int i = 0; i < keys.Length; i++) { shares[keys[i]] = preference[i]; }
@@ -461,6 +462,7 @@ namespace PoliSim.Elections
                 tactical = TacticalVoting.Apply(finalShares, polled, moe, spec);
                 counted = tactical.Preference;
             }
+            if (on.HasValue) { counted = BallotAccess.ApplyToCount(country, keys, counted, on.Value); }   // SP-5 (S5): a created party's refused Land lists cost it their votes; none refused, the very array
             var shares = new Dictionary<string, double>();
             for (int i = 0; i < keys.Length && i < counted.Length; i++) { shares[keys[i]] = counted[i]; }
             DeriveRegional(country, keys, counted, on);   // §707: the polling day - Germany derives its Länder on it (a campaign's count dropped it, and no German night was ever shown)

@@ -132,11 +132,16 @@ namespace PoliSim.Elections
         /// the real parties' (equal) chest, Organisation the offices (a Regional party's region first), Activists the volunteers as a share of the real parties',
         /// Leader the candidate's attributes; no state support (the party-support act pays on past elections, §625 - a created party has none).
         /// ⚠ Recognition reaches nothing: neither the vote model nor the campaign has an awareness term (§674).</summary>
-        public static bool TryCreatedDayZero(string key, RegionAudience[] regions, out double money, out int volunteers, out int[] offices, out CandidateProfile candidate)
+        public static bool TryCreatedDayZero(string key, RegionAudience[] regions, out double money, out int volunteers, out int[] offices, out CandidateProfile candidate) =>
+            TryCreatedDayZero(CountryId.Sweden, key, regions, out money, out volunteers, out offices, out candidate);
+
+        /// <summary>SP-5 (S5): the same day 0 for a created party in the country handed - Germany's staging reads it since S5 (a Regional party there reads
+        /// nationally, K166, so its offices open by audience as every other origin's).</summary>
+        public static bool TryCreatedDayZero(CountryId country, string key, RegionAudience[] regions, out double money, out int volunteers, out int[] offices, out CandidateProfile candidate)
         {
             money = 0; volunteers = 0; offices = null; candidate = default;
             CreatedParty c = null;
-            foreach (CreatedParty x in CreatedParties.Of(CountryId.Sweden)) { if (x.Key == key) { c = x; } }
+            foreach (CreatedParty x in CreatedParties.Of(country)) { if (x.Key == key) { c = x; } }
             if (c == null) { return false; }
             money = WarChest * PartyOrigins.Pip(PartyOrigins.FundingShare, c.Funding);
             volunteers = (int)Math.Round(Volunteers * PartyOrigins.Pip(PartyOrigins.ActivistShare, c.Activists));
@@ -431,10 +436,12 @@ namespace PoliSim.Elections
                 for (int i = 0; i < match.Length; i++) { match[i] = double.IsNaN(salience[i]) ? double.NaN : FlatIssueMatch; }
                 AiPersonality personality = PersonalityOf(CountryId.Germany, cast[p]);
                 PreCampaignRun.Outcome? brought = p == playerParty ? playerOutcome : null;
+                // SP-5 (S5): a created party's day 0 is its stats' (TryCreatedDayZero), as Sweden's staging reads it (§675); a real party's is its cast staging, unchanged
+                bool made = TryCreatedDayZero(CountryId.Germany, cast[p], regions, out double madeMoney, out int madeVolunteers, out int[] madeOffices, out CandidateProfile madeCandidate);
                 parties[p] = new CampaignRun.PartySetup(cast[p], personality, FlatCredibility,
-                    brought.HasValue ? brought.Value.Money : WarChest, match, brought.HasValue ? brought.Value.Volunteers : Volunteers,
-                    CandidateFor(personality, cast[p]), brought.HasValue ? brought.Value.Offices : OfficesFor(personality, regions, stands[p]), OfficeOperationsPerDay,
-                    brought.HasValue ? brought.Value.Staff : StaffFor(personality), brought.HasValue ? brought.Value.TelevisionBuys : TelevisionBuysFor(personality),
+                    brought.HasValue ? brought.Value.Money : made ? madeMoney : WarChest, match, brought.HasValue ? brought.Value.Volunteers : made ? madeVolunteers : Volunteers,
+                    made ? madeCandidate : CandidateFor(personality, cast[p]), brought.HasValue ? brought.Value.Offices : made ? madeOffices : OfficesFor(personality, regions, stands[p]), OfficeOperationsPerDay,
+                    brought.HasValue ? brought.Value.Staff : made ? new StaffRole[0] : StaffFor(personality), brought.HasValue ? brought.Value.TelevisionBuys : made ? 0 : TelevisionBuysFor(personality),
                     p == playerParty ? playerScript : null, p == playerParty ? playerScandalScript : null);
             }
             var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[cast.Length]);

@@ -1,0 +1,4 @@
+url	file	fetched_utc	http_status
+https://www.gesetze-im-internet.de/partg/__18.html	partg_18.html	2026-10-30T15:54:01Z	200
+https://www.bundestag.de/presse/hib/kurzmeldungen-1077396	bt_hib_2025-05-28_184.html	2026-10-30T15:54:02Z	200
+https://dserver.bundestag.de/btd/21/001/2100160.pdf	btd_21-160.pdf	2026-10-30T15:54:02Z	200

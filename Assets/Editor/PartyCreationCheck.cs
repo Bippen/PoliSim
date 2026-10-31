@@ -62,10 +62,10 @@ namespace PoliSim.EditorTools
                 {
                     bool ok = PartyCreationFlow.InkClear(se, step, out string nearest, out float distance);
                     if (ok) { clear++; }
-                    if (ok == (nearest == null || distance >= PoliSimTheme.NudgeTolerance)) { consistent++; }
+                    if (ok == (nearest == null || distance >= PartyCreationFlow.TakenWithin)) { consistent++; }   // S5 (answer 4): taken within the ring's radius (K333: the chamber's 0.06)
                     ring.Append(F(" {0}{1}:{2}@{3:0.000}", ok ? "" : "x", step, nearest, distance));
                 }
-                Check(clear > 0 && consistent == PoliSimTheme.CreatedInkSteps, F("the ink ring's fence: {0} of {1} steps clear, each refusal under the nudge's {2:0.00} of a real party's drawn ink -{3}", clear, PoliSimTheme.CreatedInkSteps, PoliSimTheme.NudgeTolerance, ring));
+                Check(clear > 0 && consistent == PoliSimTheme.CreatedInkSteps, F("the ink ring's fence: {0} of {1} steps clear, each TAKEN cell within {2:0.00} of a seated party's drawn ink (the return's answer 4) -{3}", clear, PoliSimTheme.CreatedInkSteps, PartyCreationFlow.TakenWithin, ring));
 
                 // ── the key ──
                 string[] keysBefore = LiveCampaignSetup.Keys(se);
@@ -92,11 +92,29 @@ namespace PoliSim.EditorTools
                 d.Region = regions[regions.Length - 1];
                 Check(regions.Length > 0 && float.IsNaN(d.PeopleVsElite), F("a Regional party: its region one of the {0} valkrets names ({1}); the Protest lock released", regions.Length, d.Region));
 
+                // ── S5 (Design's return of 2026-10-30): the constituency on the HQ's tile map, the glyphs ──
+                CampaignTiles.TileMap regionMap = PartyCreationFlow.RegionMap(se);
+                var untiled = regions.Where(name => !PartyCreationFlow.TileOf(regionMap, se, name).HasValue).ToList();
+                Check(regionMap != null && regionMap.Key == "se_valkretsar" && untiled.Count == 0 && PartyCreationFlow.RegionMap(CountryId.Germany) == null,
+                    F("answer 6: every one of the {0} valkretsar is a tile on the HQ's map ({1}), none unplaced{2}; Germany offers no map (K166: a Regional party there reads nationally)",
+                        regions.Length, regionMap != null ? regionMap.Key : "none", untiled.Count > 0 ? " - unplaced " + string.Join(", ", untiled) : string.Empty));
+                var glyphStems = new List<string>();
+                for (int s = 0; s < 5; s++) { glyphStems.Add("stat_" + PartyCreationFlow.StatGlyph(s) + "_16"); glyphStems.Add("stat_" + PartyCreationFlow.StatGlyph(s) + "_32"); }
+                foreach (PartyOrigins.Preset p in PartyOrigins.All) { glyphStems.Add("origin_" + PartyCreationFlow.OriginGlyph(p.Origin) + "_20"); glyphStems.Add("origin_" + PartyCreationFlow.OriginGlyph(p.Origin) + "_40"); }
+                var unloaded = glyphStems.Where(stem => IconLibrary.PartyCreationGlyph(stem) == null).ToList();
+                Check(unloaded.Count == 0 && glyphStems.Distinct().Count() == 22,
+                    F("answers 1 and 2: the five stat glyphs and the six origin glyphs, both sizes, load through IconLibrary.PartyCreationGlyph (Art/UI/PartyCreation): {0} of {1}{2}", glyphStems.Count - unloaded.Count, glyphStems.Count,
+                        unloaded.Count > 0 ? " - drawn as their word: " + string.Join(", ", unloaded) : string.Empty));
+                int whiteCut = cells.Count(c => IconLibrary.IsWhiteCutCell(c));
+                Check(whiteCut == cells.Count, F("answer 5: every offered cell is a white-cut cell, tinted at every draw site (Tools/s5_cell_whitecut.pl --check proves the pixels): {0} of {1}", whiteCut, cells.Count));
+
                 // ── the slips ──
                 PeopleSlips.Book book = PartyCreationFlow.Slips(d);
                 var anchors = new List<string> { "candidate", "outside/yes", "outside/no", "compass", "predicted", "key" };
                 for (int s = 0; s < PartyCreationFlow.StepCount; s++) { anchors.Add("step/" + s); }
                 for (int s = 0; s < 5; s++) { anchors.Add("stat/" + s); }
+                for (int s = 0; s < 5; s++) { anchors.Add("statkey/" + s); }   // S5 (answer 1): the ORIGIN caption's key
+                anchors.Add("region/national"); anchors.Add("region/picked");
                 foreach (PartyOrigins.Preset p in PartyOrigins.All) { anchors.Add("origin/" + p.Origin); }
                 foreach (string c in cells) { anchors.Add("mark/" + c); }
                 for (int step = 0; step < PoliSimTheme.CreatedInkSteps; step++) { anchors.Add("ink/" + step); }

@@ -47,6 +47,14 @@ namespace PoliSim.Data
         public string BacksCandidateOf;
         public bool InOrAgainst;
 
+        /// <summary>SP-5 (S5): the ballot-access task's state, where the country's law asks one of a new party (`BallotAccess`) - the polling day the
+        /// task is for (ISO, empty for none), the day the notice was filed (ISO, empty for not yet), and each GATHER and each list filed, dated. ADDITIVE: a
+        /// save from before S5 carries none, which is what it means - a Swedish party, whose task is not modelled, and no German party existed.</summary>
+        public string BallotFor = string.Empty;
+        public string BallotNoticeFiledOn = string.Empty;
+        public List<PoliSim.Elections.BallotGather> BallotGathers = new List<PoliSim.Elections.BallotGather>();
+        public List<PoliSim.Elections.BallotFiling> BallotFilings = new List<PoliSim.Elections.BallotFiling>();
+
         /// <summary>The party as the roster carries it: no seats of its own (a created party enters the chamber by election), its positions and leader.</summary>
         public PoliticalParty ToParty() => new PoliticalParty(Key, Name, LrEcon, Galtan, 0, MarkStem, EuPosition,
             string.IsNullOrEmpty(LeaderName) ? null : new[] { new PartyLeader(LeaderName, LeaderTitle ?? "partiledare") },

@@ -61,7 +61,9 @@ namespace PoliSim.Elections
             for (int r = 0; r < c.Names.Length; r++)
             {
                 var available = new bool[partyKeys.Count];
-                for (int p = 0; p < partyKeys.Count; p++) { available[p] = column[p] < 0 || c.Votes[r][column[p]] > 0L; }
+                // SP-5 (S5): a party the returns do not carry stands everywhere - but a created party only where its Land list stands (`BallotAccess.StandsIn`,
+                // true for every other party, and for a created one until the lists' deadline)
+                for (int p = 0; p < partyKeys.Count; p++) { available[p] = column[p] < 0 ? BallotAccess.StandsIn(CountryId.Germany, partyKeys[p], r, date) : c.Votes[r][column[p]] > 0L; }
                 regions[r] = new RegionalVoteModel.RegionInput(c.Names[r], c.Valid[r], available);
             }
             return regions;

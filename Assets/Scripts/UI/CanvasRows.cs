@@ -27,7 +27,8 @@ namespace PoliSim.UI
         public static GameObject Mark(Transform parent, CountryId country, string key, float side)
         {
             Texture2D mark = null;
-            foreach (PoliticalParty party in PartySystems.For(country)) { if (party.Abbrev == key) { mark = IconLibrary.GetPartyMark(party.MarkName); break; } }
+            string stem = null;
+            foreach (PoliticalParty party in PartySystems.For(country)) { if (party.Abbrev == key) { stem = party.MarkName; mark = IconLibrary.GetPartyMark(stem, side); break; } }   // S5: a hatched cell under 24 px draws its unspent solid twin
             var go = new GameObject("Mark " + key);
             go.transform.SetParent(parent, false);
             go.AddComponent<RectTransform>().sizeDelta = new Vector2(side, side);
@@ -39,6 +40,7 @@ namespace PoliSim.UI
             {
                 RawImage image = go.AddComponent<RawImage>();
                 image.texture = mark;
+                image.color = PoliSimTheme.MarkDrawTint(country, key, stem);   // S5 (answer 5): white for a drawn mark (as authored), the ink for a created party's white-cut cell
                 image.raycastTarget = false;
                 return go;
             }

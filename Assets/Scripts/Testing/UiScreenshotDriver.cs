@@ -429,12 +429,13 @@ namespace PoliSim.Testing
                 yield return Settle();
                 if (controller.GetType().GetField("_pcDraft", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) is CreatedParty draft)
                 {
-                    draft.Name = "Framtidspartiet";
-                    draft.ShortName = "Framtid";
+                    bool german = _countryId == CountryId.Germany;   // SP-5 (S5): the German draft in its own roster's keys
+                    draft.Name = german ? "Neue Mitte" : "Framtidspartiet";
+                    draft.ShortName = german ? "Mitte" : "Framtid";
                     draft.Key = PartyCreationFlow.KeyFrom(_countryId, draft.ShortName);
-                    draft.LeaderName = "Maja Ek";
-                    draft.RedLinesAgainst.Add("SD");
-                    draft.OneWayAgainst.Add("V");
+                    draft.LeaderName = german ? "Lena Vogt" : "Maja Ek";
+                    draft.RedLinesAgainst.Add(german ? "AfD" : "SD");
+                    draft.OneWayAgainst.Add(german ? "Linke" : "V");
                     draft.BacksCandidateOf = draft.Key;
                     draft.LrEcon = 4.5f;
                     draft.Galtan = 3.0f;
@@ -446,6 +447,22 @@ namespace PoliSim.Testing
                     yield return Settle();
                     Claim("imgui");
                     yield return Capture(steps[s]);
+                }
+                // S5 (Design's return of 2026-10-30, answer 6): the Regional party's constituency on the HQ's tile map, opened over the origin cards - filmed where
+                // the country offers a region (Sweden's valkretsar); the draft goes back to Grassroots after it, so no later frame moves
+                if (PartyCreationFlow.RegionMap(_countryId) != null && controller.GetType().GetField("_pcDraft", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) is CreatedParty regionalDraft)
+                {
+                    Expect("01k1r_create_region_map");
+                    SetPrivateField(controller, "_pcStep", 0);
+                    PartyCreationFlow.ChooseOrigin(regionalDraft, PartyOrigin.Regional);
+                    SetPrivateField(controller, "_pcRegionMapOpen", true);
+                    yield return Settle();
+                    Claim("imgui");
+                    yield return Capture("01k1r_create_region_map");
+                    SetPrivateField(controller, "_pcRegionMapOpen", false);
+                    PartyCreationFlow.ChooseOrigin(regionalDraft, PartyOrigin.Grassroots);
+                    SetPrivateField(controller, "_pcStep", steps.Length - 1);
+                    yield return Settle();
                 }
                 if (CreateAndStart)
                 {
@@ -563,8 +580,17 @@ namespace PoliSim.Testing
             // selector's or the strip's. Attribute a text overflow or containment escape read under
             // these names to the Desk on first reading (the Desk's own frames are 01c-01f).
             // S-20: still the SELECTOR - IMGUI is veiling it with a scrim, not replacing it.
-            Claim("selector");
-            yield return Capture("01a_selector_yielding");
+            // §965: except under -shotcreatestart, which STARTS through the creation flow's own commit (01k6) - no selector yields under a scrim, and
+            // the frame would claim a selector the IMGUI desk has replaced (the identity guard's mismatch on the German founding film)
+            if (CreateAndStart)
+            {
+                Debug.Log("SHOT: 01a_selector_yielding skipped - -shotcreatestart started the game through the creation flow's commit (01k6), so no selector yields under a scrim.");
+            }
+            else
+            {
+                Claim("selector");
+                yield return Capture("01a_selector_yielding");
+            }
 
             yield return WaitForCanvasSettle(controller, wantActive: false);
             yield return Settle();
@@ -621,6 +647,7 @@ namespace PoliSim.Testing
             // PS-6 US-36: the US journey plays its game from the start too - the run-up, the campaign and the 2024 count are what it films
             else if (UsJourney) { Debug.Log("SHOT: -shotusjourney - no warm-up: the film plays the US game from its start through the 2024 count to the 2026 midterm (US-36)."); }
             else if (Abroad) { Debug.Log("SHOT: -shotabroad - no warm-up: the film plays the game from its start to the day after the AI USA's first count (PS-8, K163)."); }
+            else if (Founding) { Debug.Log("SHOT: -shotfounding - no warm-up: the film plays the created party's game from its start through its ballot-access task (SP-5)."); }
             else
             {
                 AdvanceDays(controller, _countryId);
@@ -670,6 +697,13 @@ namespace PoliSim.Testing
             if (ElectionNightBoard)
             {
                 yield return CaptureElectionNight(controller);
+                yield break;
+            }
+
+            // SP-5 (S5): a created party's founding instead of the sweep - the run ends here.
+            if (Founding)
+            {
+                yield return CaptureFounding(controller);
                 yield break;
             }
 
@@ -3574,6 +3608,135 @@ namespace PoliSim.Testing
         /// with the result's row) and `abroad06_stats_polling_days` (Statistics › International scrolled to the polling days). Nothing is staged: each state is the
         /// walk's own.
         /// </summary>
+        /// <summary>
+        /// SP-5 (S5, Design's return of 2026-10-30, board 5c; `-shotfounding`, with `-shotcountry=Germany -shotcreatestart`): founding in Germany, filmed. The
+        /// creation flow's START seats the filmed draft (a Grassroots party), and the game is played from its start: the run-up's HQ with the ballot-access
+        /// task COLLECTING (six days of GATHER x3 on the smallest open lists, FILE, a GATHER x2 queued as today's DRAFT row), the country-rules slip pinned,
+        /// the task played on day by day (GATHER x3 on the list with most still to find, FILE) to ON THE BALLOT, then REFUSED - a STAGING for the frame: the
+        /// filings of all but three lists withdrawn (logged), and the world stepped past the lists' deadline - with the strip's chip, and the Desk's Party
+        /// funding tile before the party has a count. The run ends there.
+        /// </summary>
+        private IEnumerator CaptureFounding(GameController controller)
+        {
+            SimulationManager sim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+            Country played = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Country;
+            CreatedParty party = played != null ? BallotAccess.Created(_countryId, played.PlayerPartyAbbrev) : null;
+            if (sim == null || party == null || BallotAccess.RulesOf(_countryId) != BallotAccess.Rules.Sourced || !string.IsNullOrEmpty(LoadSave))
+            {
+                Debug.LogError("SHOT: -shotfounding films a created party in a country whose ballot rules are built, from its start (-shotcountry=Germany -shotcreatestart); this run plays "
+                    + _countryId + ", party " + (party != null ? party.Key : "NONE") + ", load " + (LoadSave ?? "none") + ".");
+                _failed++;
+                EndSweep();
+                yield break;
+            }
+            Expect("s5f1_ballot_collecting", "s5f2_ballot_rules", "s5f3_ballot_on", "s5f4_ballot_refused", "s5f5_desk_funding");
+            var noDecisions = new Dictionary<CountryId, PolicyDecision>();
+            void StepDay()
+            {
+                bool boundaryBefore = sim.AdvanceDay();
+                MemTick(sim);
+                sim.AdvanceCountryDayTick(_countryId);
+                if (boundaryBefore) { sim.AdvanceTurn(noDecisions); }
+            }
+            int walked = 0;
+            while (sim.PlayerPreCampaign == null && sim.PlayerCampaign == null && walked < MaxStateSearchDays) { StepDay(); walked++; }
+            if (!BallotAccess.TryElection(_countryId, sim.CurrentDate, out DateTime pollingDay))
+            {
+                Debug.LogError("SHOT: -shotfounding - no polling day for " + _countryId + " on or after " + sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ".");
+                _failed++;
+                EndSweep();
+                yield break;
+            }
+            BallotAccess.EnsureFor(party, pollingDay);
+            BallotAccess.Deadlines(pollingDay, out DateTime _, out DateTime _, out DateTime listsDay);
+            int Smallest()
+            {
+                int best = -1;
+                for (int r = 0; r < BallotAccess.LandCount; r++)
+                {
+                    if (BallotAccess.FiledOn(party, r, pollingDay).HasValue || BallotAccess.Signatures(party, r, pollingDay, sim.CurrentDate) >= BallotAccess.LandListNeed(r, pollingDay)) { continue; }
+                    if (best < 0 || BallotAccess.LandListNeed(r, pollingDay) < BallotAccess.LandListNeed(best, pollingDay)) { best = r; }
+                }
+                return best;
+            }
+            int MostNeeded()
+            {
+                int best = -1, most = 0;
+                for (int r = 0; r < BallotAccess.LandCount; r++)
+                {
+                    if (BallotAccess.FiledOn(party, r, pollingDay).HasValue) { continue; }
+                    int left = BallotAccess.LandListNeed(r, pollingDay) - BallotAccess.Signatures(party, r, pollingDay, sim.CurrentDate);
+                    if (left > most) { most = left; best = r; }
+                }
+                return best;
+            }
+
+            // COLLECTING: six days on the smallest open lists, FILE, and today's GATHER x2 queued as a DRAFT row
+            for (int d = 0; d < 6; d++) { int land = Smallest(); if (land >= 0) { BallotAccess.TryGather(party, land, 3, pollingDay, sim.CurrentDate, out string _); } StepDay(); }
+            int filedFirst = BallotAccess.File(party, pollingDay, sim.CurrentDate, out bool noticeFiled);
+            int queued = MostNeeded();
+            if (queued >= 0) { BallotAccess.TryGather(party, queued, 2, pollingDay, sim.CurrentDate, out string _); }
+            SetPrivateField(controller, "_hqBallotSize", 2);
+            InvokeNoArg(controller, "OpenLiveCampaign");
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture("s5f1_ballot_collecting");
+            Debug.Log("SHOT: SP-5 - founding: " + party.Key + " on " + sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ", polling day " + pollingDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                + ", lists due " + listsDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "; notice filed " + noticeFiled + ", " + filedFirst + " list(s) filed, "
+                + BallotAccess.YieldOf(party, 3) + " signatures a full day (" + BallotAccess.VolunteersOf(party) + " volunteers).");
+
+            // the country-rules slip, pinned on its § cell
+            Invoke(controller, "PinSlipOnAnchorForFilm", "hq:rules", new Vector2(UiScreen.Width * 0.30f, UiScreen.Height * 0.08f));
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture("s5f2_ballot_rules");
+            (controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as System.Collections.IList)?.Clear();
+
+            // ON THE BALLOT: the task played on, a full day on the list with most still to find, FILE every day
+            while (BallotAccess.StateOf(_countryId, party, pollingDay, sim.CurrentDate) != BallotAccess.TaskState.OnTheBallot && sim.CurrentDate.Date < listsDay && walked < MaxStateSearchDays)
+            {
+                int land = MostNeeded();
+                if (land >= 0) { BallotAccess.TryGather(party, land, 3, pollingDay, sim.CurrentDate, out string _); }
+                StepDay();
+                walked++;
+                BallotAccess.File(party, pollingDay, sim.CurrentDate, out bool _);
+            }
+            bool onBallot = BallotAccess.StateOf(_countryId, party, pollingDay, sim.CurrentDate) == BallotAccess.TaskState.OnTheBallot;
+            if (!onBallot)
+            {
+                Debug.LogError("SHOT: SP-5 - the party did not reach the ballot by " + listsDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ": " + BallotAccess.FiledCount(party, pollingDay) + " of 16 lists filed.");
+                _failed++;
+            }
+            InvokeNoArg(controller, "OpenLiveCampaign");
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture("s5f3_ballot_on");
+            Debug.Log("SHOT: SP-5 - on the ballot " + sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ": " + BallotAccess.FiledCount(party, pollingDay) + " of 16 lists filed.");
+
+            // REFUSED (a STAGING for the frame): every filing withdrawn but the first three, the world stepped past the lists' deadline
+            var keep = new HashSet<int>();
+            foreach (BallotFiling f in party.BallotFilings) { if (keep.Count < 3) { keep.Add(f.Region); } }
+            int withdrawn = party.BallotFilings.RemoveAll(f => !keep.Contains(f.Region));
+            party.BallotGathers.RemoveAll(g => !keep.Contains(g.Region));
+            while (sim.CurrentDate.Date <= listsDay && walked < MaxStateSearchDays) { StepDay(); walked++; }
+            var kept = new List<string>();
+            foreach (int r in keep) { kept.Add(GermanRegions.NameAt(r)); }
+            Debug.Log("SHOT: SP-5 - STAGED for the refused frame: " + withdrawn + " filing(s) and their gathers withdrawn (kept " + string.Join(", ", kept) + "); the world stepped to "
+                + sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ", refused in " + BallotAccess.RefusedCount(party, pollingDay, sim.CurrentDate) + " Länder.");
+            InvokeNoArg(controller, "OpenLiveCampaign");
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture("s5f4_ballot_refused");
+
+            // the Desk's Party funding tile, before the party has a count of its own
+            InvokeNoArg(controller, "CloseLiveCampaign");
+            SetPrivateField(controller, "_onDesk", true);
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture("s5f5_desk_funding");
+            EndSweep();
+        }
+
         private IEnumerator CaptureAbroad(GameController controller)
         {
             SimulationManager sim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
@@ -5964,6 +6127,10 @@ namespace PoliSim.Testing
         /// <summary>PS-8 (K163; M4 of the s938 review; `-shotabroad`): a game played from its start, day by day, to the day after the AI USA's first count (3 Nov
         /// 2026 from Sweden's start), the Docket filmed with the election abroad listed and then with its results card open (`CaptureAbroad`). The run ends there.</summary>
         public bool Abroad;
+
+        /// <summary>SP-5 (S5; `-shotfounding`): a created German party's founding filmed - the ballot-access task collecting, the rules slip, on the ballot,
+        /// refused (staged), the Desk's funding tile (`CaptureFounding`). The run ends there.</summary>
+        public bool Founding;
         /// <summary>PS-6 US-36 (`-shotwinner=DEM|REP`, with `-shotusjourney`): the party the journey's 2024 count is staged to elect.</summary>
         public string UsJourneyWinner = "";
 

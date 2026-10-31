@@ -198,6 +198,20 @@ namespace PoliSim.UI
             return null;
         }
 
+        /// <summary>S5 (Design's return of 2026-10-30, answer 5): a mark drawn "in its authored colours" - a created party's cell, cut white on
+        /// transparent, in its party's ink (`PoliSimTheme.MarkDrawTint`), and a hatched cell under 24 px as its unspent solid twin
+        /// (`IconLibrary.MarkStemAt`); every drawn mark exactly as before. Repaint only, as every call site already guards.</summary>
+        private void HqTintedMark(Rect r, Texture2D mark, string abbrev, string stem)
+        {
+            if (Event.current.type != EventType.Repaint || mark == null) { return; }
+            if (!IconLibrary.IsWhiteCutCell(stem)) { GUI.DrawTexture(r, mark, ScaleMode.ScaleToFit); return; }   // a drawn mark: the very call it always was
+            mark = IconLibrary.GetPartyMark(stem, r.height) ?? mark;
+            Color was = GUI.color;
+            GUI.color = PoliSimTheme.MarkDrawTint(PlayerCountryId, abbrev, stem);
+            GUI.DrawTexture(r, mark, ScaleMode.ScaleToFit);
+            GUI.color = was;
+        }
+
         /// <summary>A party's short name as the authority writes it (a site that DRAWS an abbreviation takes the short name; every lookup keeps the key).</summary>
         private string HqShort(string abbrev) => PartySystems.ShortName(PlayerCountryId, abbrev);
 
@@ -305,7 +319,7 @@ namespace PoliSim.UI
             Texture2D mark = IconLibrary.GetPartyMark(s.MarkKey);
             if (mark != null && Event.current.type == EventType.Repaint)
             {
-                GUI.DrawTexture(new Rect(x, r.y + Mathf.Round((r.height - markSide) * 0.5f), markSide, markSide), mark, ScaleMode.ScaleToFit);   // authored colours, untinted (the accessor's contract)
+                HqTintedMark(new Rect(x, r.y + Mathf.Round((r.height - markSide) * 0.5f), markSide, markSide), mark, s.PartyName, s.MarkKey);   // authored colours, untinted (the accessor's contract); S5: a created party's cell in its ink
             }
             var markRect = new Rect(x, r.y + Mathf.Round((r.height - markSide) * 0.5f), markSide, markSide);
             SlipAnchor(markRect, "hq:party");
@@ -388,11 +402,12 @@ namespace PoliSim.UI
             GUIStyle race = HqSerif(16f, PoliSimTheme.TextSecondary);
             string raceName = HqRaceName(s);
             int dot = raceName.IndexOf(" · ", System.StringComparison.Ordinal);
-            float raceRoom = Mathf.Max(1f, right - V35.Px(6f) - x);
+            float raceRoom = Mathf.Max(1f, right - V35.Px(6f) - x - (BallotAccess.RulesOf(PlayerCountryId) != BallotAccess.Rules.NotModelled && _playerCountry != null && BallotAccess.Created(PlayerCountryId, _playerCountry.PlayerPartyAbbrev) != null ? V35.Px(26f) : 0f));   // SP-5: room for the § cell
             string raceShown = HqFirstFitting(race, raceRoom, raceName, dot > 0 ? raceName.Substring(0, dot) + " · " + HqDate(s.Calendar.ElectionDate) : raceName, dot > 0 ? raceName.Substring(0, dot) : raceName);
             var raceRect = new Rect(x, r.y, Mathf.Min(HqWidth(raceShown, race), raceRoom), r.height);
             HqLabel(raceRect, raceShown, race);
             SlipAnchor(raceRect, "hq:race");
+            DrawHqRulesCell(raceRect.xMax + V35.Px(6f), r, s, book);   // SP-5 (S5, board 5c): the country-rules slip's § cell beside the race
             book.Anchors["hq:race"] = HqRaceSlip(s);
         }
 
@@ -554,6 +569,7 @@ namespace PoliSim.UI
             }
             // what the column holds under the race, at the board's heights - the race takes what is left of the page (its rows' pitch shrinks to fit)
             float under = HqH(20f + 28f + 14f + 26f + 34f + (poland ? 34f : 0f) + 30f + 28f + 14f + 26f + 32f + 26f + 26f);
+            if (HqBallotShown(s)) { y = DrawHqBallotAccess(x, y, w, s, book) + HqH(6f); }   // SP-5 (S5, board 5c): the ballot-access task takes the column's head, above the race, while it is open
             y = DrawHqRace(new Rect(x, y, w, Mathf.Max(HqH(80f), bottom - y - under)), s, book);
 
             // the source, and the economy over the term

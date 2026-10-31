@@ -115,6 +115,11 @@ namespace PoliSim.EditorTools
              + "and who leads where is party identity as the whole subject, the chamber's own argument (only a regional poll colours a tile; a polled "
              + "tile names its leader by its mark, so colour never carries the meaning alone). The ink is the chamber's accessor, so the HQ and the "
              + "hemicycle cannot disagree about a colour; the HQ's other files draw no party ink, and this one draws NO area accent (clause 2 by construction)."),
+            ("GameController.BallotAccess.cs",
+             "S5 (§965, Design's return of 2026-10-30, founding in Germany): the HQ's ballot-access block draws the created party's own filings in its "
+             + "laddered ink - a filed Land's tile, a completed row's square and bar, the legend's 'filed' square (a refused list's bar draws in the BAD "
+             + "ink) - whose lists are filed where is party identity as the whole subject, the race's argument above. The ink is the chamber's accessor, "
+             + "and the file draws NO area accent (clause 2 by construction)."),
             ("GameController.ForeignResultCard.cs",
              "PS-8 (K163, 2026-10-28): the results card of an election abroad draws each list as a bar in its party's laddered ink by the seats it won - who "
              + "won the chamber is party identity as the whole subject, the chamber's own argument. The card is its own file of the partial class and draws "

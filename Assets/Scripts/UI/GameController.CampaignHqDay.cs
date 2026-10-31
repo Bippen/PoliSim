@@ -137,12 +137,15 @@ namespace PoliSim.UI
             var queuedRect = new Rect(head.xMax - qw, head.y, qw, head.height);
             HqLabel(queuedRect, queuedText, queuedFace);
             if (overHours || overMoney) { HqStamp(new Rect(queuedRect.x - V35.Px(8f), head.y, 1f, head.height), "OVER", PoliSimTheme.Bad, right: true); }
+            float ballotTop = head.yMax + HqH(2f);
+            float ballotBottom = DrawHqBallotVerbs(x, ballotTop, w, s, book);   // SP-5 (S5, board 5c): the BALLOT ACCESS verbs and today's gathers, while the task is open
             SlipAnchor(queuedRect, "hq:queued");
             book.Anchors["hq:queued"] = new SlipContent("QUEUED")
                 .Add("what the queue spends when the clock runs")
                 .Add("it steps on " + HqDate(s.Today))
                 .Add(overHours && overMoney ? "over the hours and the chest · refused" : overHours ? "over the day's hours · refused" : overMoney ? "over the chest · refused" : "within the day and the chest");
             y += head.height + HqH(2f);
+            y += ballotBottom - ballotTop;   // SP-5: none drawn, nothing moves
 
             // S7 (7a): an independent's run-up opens the day on BALLOT ACCESS - GATHER, FILE, § RULES
             UsBallotAccess.Drive ballot = HqBallotDrive(s);
@@ -494,6 +497,7 @@ namespace PoliSim.UI
                 {
                     Color was = GUI.color;
                     if (picked) { GUI.color = PoliSimTheme.ModalBackground; }
+                    else if (IconLibrary.IsWhiteCutCell(HqMarkKey(partyKey))) { GUI.color = PoliSimTheme.MarkDrawTint(PlayerCountryId, partyKey, HqMarkKey(partyKey)); }   // S5: a created party's white-cut cell in its ink
                     GUI.DrawTexture(m, glyph, ScaleMode.ScaleToFit, true);
                     GUI.color = was;
                 }

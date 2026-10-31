@@ -224,6 +224,8 @@ namespace PoliSim.UI
             TopStrip.Chip sejm = TopStrip.SejmStepChip(_playerCountry, today);   // S11 (11d): the Sejm's next step while its formation runs
             if (sejm != null) { coming.Add(sejm); }
             if (lapse != null && !lapseBinds) { coming.Add(lapse); }
+            TopStrip.Chip ballot = BallotStripChip(today, out bool ballotBinds);   // SP-5 (S5, board 5c): a created party's ballot access - refused binds, collecting is coming
+            if (ballot != null) { (ballotBinds ? binds : coming).Add(ballot); }
             List<TopStrip.Chip> shown = TopStrip.FoldTimeChips(binds, coming, out TopStrip.Chip more);
             // what the right half leaves: a chip that would run under it folds into the "+N" chip too
             while (shown.Count > 0)

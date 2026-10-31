@@ -92,7 +92,7 @@ namespace PoliSim.UI
                 float x = row.x;
                 float markSide = V35.Px(16f);
                 Texture2D mark = IconLibrary.GetPartyMark(HqMarkKey(key));
-                if (mark != null && Event.current.type == EventType.Repaint) { GUI.DrawTexture(new Rect(x, row.y + Mathf.Round((row.height - markSide) * 0.5f), markSide, markSide), mark, ScaleMode.ScaleToFit); }
+                if (mark != null && Event.current.type == EventType.Repaint) { HqTintedMark(new Rect(x, row.y + Mathf.Round((row.height - markSide) * 0.5f), markSide, markSide), mark, key, HqMarkKey(key)); }
                 x += markSide + HqW(6f);
                 HqLabel(new Rect(x, row.y, codeW, row.height), HqShort(key), player ? codeBold : code);
                 x += codeW + HqW(6f);
@@ -179,14 +179,14 @@ namespace PoliSim.UI
             GUIStyle share24 = HqMono(24f, PoliSimTheme.TextPrimary, bold: true);
             float x = names.x;
             Texture2D ma = IconLibrary.GetPartyMark(HqMarkKey(ka)), mb = IconLibrary.GetPartyMark(HqMarkKey(kb));
-            if (ma != null && Event.current.type == EventType.Repaint) { GUI.DrawTexture(new Rect(x, names.y + Mathf.Round((names.height - markSide) * 0.5f), markSide, markSide), ma, ScaleMode.ScaleToFit); }
+            if (ma != null && Event.current.type == EventType.Repaint) { HqTintedMark(new Rect(x, names.y + Mathf.Round((names.height - markSide) * 0.5f), markSide, markSide), ma, ka, HqMarkKey(ka)); }
             x += markSide + V35.Px(8f);
             string ca = HqShort(ka), cb = HqShort(kb), pa = HqF(100.0 * shareA, 1), pb = HqF(100.0 * (1.0 - shareA), 1);
             HqLabel(new Rect(x, names.y, HqWidth(ca, code16), names.height), ca, code16);
             x += HqWidth(ca, code16) + V35.Px(8f);
             HqLabel(new Rect(x, names.y, HqWidth(pa, share24), names.height), pa, share24);
             float rx = names.xMax;
-            if (mb != null && Event.current.type == EventType.Repaint) { GUI.DrawTexture(new Rect(rx - markSide, names.y + Mathf.Round((names.height - markSide) * 0.5f), markSide, markSide), mb, ScaleMode.ScaleToFit); }
+            if (mb != null && Event.current.type == EventType.Repaint) { HqTintedMark(new Rect(rx - markSide, names.y + Mathf.Round((names.height - markSide) * 0.5f), markSide, markSide), mb, kb, HqMarkKey(kb)); }
             rx -= markSide + V35.Px(8f);
             HqLabel(new Rect(rx - HqWidth(cb, code16), names.y, HqWidth(cb, code16), names.height), cb, code16);
             rx -= HqWidth(cb, code16) + V35.Px(8f);
@@ -325,10 +325,18 @@ namespace PoliSim.UI
             float ox = Mathf.Round(HqX(map.OriginX)), oy = Mathf.Round(HqY(Mathf.Max(map.OriginY, HqMapTop)));   // S7: under the head (Design placed the US map on a page with no timeline)
             bool small = map.TileSize < 40f;
             var mapRect = new Rect(ox, oy, map.Width * u, map.Height * u);
+            bool ballotMap = PlayerCountryId == CountryId.Germany && HqBallotMap(s);
             foreach (CampaignTiles.Tile tile in map.Tiles)
             {
                 int region = CampaignTiles.RegionOf(map, tile, ground.Names);
                 var t = new Rect(ox + Mathf.Round(tile.Column * step), oy + Mathf.Round(tile.Row * step), side, side);
+                if (ballotMap)
+                {
+                    // SP-5 (S5, board 5c): the Länder in their ballot states; a tile pressed is where the next GATHER goes
+                    DrawHqBallotTile(t, tile, region, s, book);
+                    if (live && region >= 0 && PoliSimWidgets.Button(t, GUIContent.none, GUIStyle.none)) { _hqBallotLand = region; }
+                    continue;
+                }
                 DrawHqTile(t, tile, map, region, ground, s, siting, small, book);
                 bool clickable = live && region >= 0 && (!runUp || siting);
                 if (clickable && PoliSimWidgets.Button(t, GUIContent.none, GUIStyle.none)) { PickCampaignRegion(region); }
@@ -337,7 +345,7 @@ namespace PoliSim.UI
             // the legend, and the plate: under the map where it is wide, beside it where it is narrow (Sweden's tall valkretsar)
             bool beside = map.Width < 200f;
             Rect legendArea = beside ? HqR(624f, 163f + map.Height + 10f, 220f, 60f) : new Rect(Mathf.Round(HqX(444f)), mapRect.yMax + HqH(8f), HqW(400f), HqH(40f));
-            float legendBottom = DrawHqLegend(legendArea, ground, s, siting, book);
+            float legendBottom = ballotMap ? DrawHqBallotLegend(legendArea, s) : DrawHqLegend(legendArea, ground, s, siting, book);
             Rect plate = beside ? HqR(624f, 163f, 220f, map.Height)
                 : new Rect(Mathf.Round(HqX(444f)), legendBottom + HqH(10f), HqW(400f), Mathf.Max(HqH(110f), _hqPage.yMax - legendBottom - HqH(10f)));
             if (beside && legendArea.y > plate.yMax) { }
@@ -562,7 +570,7 @@ namespace PoliSim.UI
                     var row = new Rect(ix, y, iw, HqH(20f));
                     float x = row.x, markSide = V35.Px(14f);
                     Texture2D mark = IconLibrary.GetPartyMark(HqMarkKey(s.PartyNames[p]));
-                    if (mark != null && Event.current.type == EventType.Repaint) { GUI.DrawTexture(new Rect(x, row.y + Mathf.Round((row.height - markSide) * 0.5f), markSide, markSide), mark, ScaleMode.ScaleToFit); }
+                    if (mark != null && Event.current.type == EventType.Repaint) { HqTintedMark(new Rect(x, row.y + Mathf.Round((row.height - markSide) * 0.5f), markSide, markSide), mark, s.PartyNames[p], HqMarkKey(s.PartyNames[p])); }
                     x += markSide + HqW(6f);
                     float plateCode = Mathf.Max(HqW(40f), HqWidth(HqShort(s.PartyNames[p]), HqMono(14f, PoliSimTheme.TextPrimary, bold: true)) + V35.Px(2f));
                     HqLabel(new Rect(x, row.y, plateCode, row.height), HqShort(s.PartyNames[p]), p == s.PlayerPartyIndex ? HqMono(14f, PoliSimTheme.TextPrimary, bold: true) : code);

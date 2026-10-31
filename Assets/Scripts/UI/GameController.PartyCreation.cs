@@ -181,21 +181,27 @@ namespace PoliSim.UI
 
         private static Color PcInk(CreatedParty d) => !string.IsNullOrEmpty(d.InkHex) && ColorUtility.TryParseHtmlString(d.InkHex, out Color c) ? c : PoliSimTheme.TextMuted;
 
-        /// <summary>A mark, square in the rect: a real party's tinted in its ink (the chamber's way of drawing a mark); a created party's CELL as
-        /// authored, with its ink as a rule beneath - ⚠ the cells are authored in slate (95,102,114 measured), not white, so a tint multiplies
-        /// them toward black and every ink reads alike (the first real film, s676_1280). Put to Design in D-CP.</summary>
+        /// <summary>A mark, square in the rect: a real party's tinted in its ink (the chamber's way of drawing a mark); a created party's CELL tinted
+        /// in its ink too, with the ink's rule beneath. S5 (Design's return of 2026-10-30, answer 5): the cells are cut white on transparent
+        /// (`Tools/s5_cell_whitecut.pl` - before it they were slate, 95,102,114, and a tint multiplied every ink toward black), and the rule stays:
+        /// at the board's measure the mark 48 px, the rule 48 x 5, 6 below it - so the rect's height is 59 board px, the mark 48 of them. A hatched cell
+        /// under 24 px draws its unspent solid twin (`IconLibrary.MarkStemAt`).</summary>
         private static void PcMark(Rect r, string stem, Color ink)
         {
             if (Event.current.type != EventType.Repaint) { return; }
-            Texture2D t = IconLibrary.GetPartyMark(stem);
+            bool cell = IconLibrary.IsWhiteCutCell(stem);
+            float unit = r.height / 59f;
+            float side = cell ? Mathf.Round(48f * unit) : Mathf.Min(r.width, r.height);
+            Texture2D t = cell ? IconLibrary.GetPartyMark(stem, side) : IconLibrary.GetPartyMark(stem);
             if (t == null) { return; }
-            bool cell = stem.StartsWith("mark_cell_", System.StringComparison.Ordinal);
-            float rule = cell ? Mathf.Max(2f, Mathf.Round(r.height * 0.1f)) : 0f;
             Color previous = GUI.color;
-            GUI.color = cell ? Color.white : ink;
-            GUI.DrawTexture(new Rect(r.x, r.y, r.width, r.height - rule - (cell ? 2f : 0f)), t, ScaleMode.ScaleToFit, true);
+            GUI.color = ink;
+            if (!cell) { GUI.DrawTexture(r, t, ScaleMode.ScaleToFit, true); GUI.color = previous; return; }
+            var markRect = new Rect(Mathf.Round(r.center.x - side * 0.5f), r.y, side, side);
+            GUI.DrawTexture(markRect, t, ScaleMode.ScaleToFit, true);
             GUI.color = previous;
-            if (cell) { PoliSimTheme.Rule(new Rect(r.x + r.width * 0.15f, r.yMax - rule, r.width * 0.7f, rule), ink); }
+            float rule = Mathf.Max(2f, Mathf.Round(5f * unit));
+            PoliSimTheme.Rule(new Rect(markRect.x, markRect.yMax + Mathf.Round(6f * unit), side, rule), ink);
         }
 
         /// <summary>An invisible hit area over something drawn - a mark, a swatch, a card.</summary>
@@ -245,64 +251,89 @@ namespace PoliSim.UI
             }
             SlipAnchor(keyRect, "key");
 
-            // the mark: the unspent cells (PartyCreationFlow.UnspentCells), in the chosen ink
+            // the mark: the unspent cells (PartyCreationFlow.UnspentCells), cut white and tinted in the chosen ink with its rule (S5, answer 5): at the
+            // board's measure 74 px cells 8 apart, 7 across, the mark 48 px over a 48 x 5 rule 6 below it; the selected cell a 1.5 px ink rule
             float y = PcPlateHead(new Rect(left.x, left.y + fieldH + StatStep(12f), left.width, 0f), "MARK");
             List<string> cells = PartyCreationFlow.UnspentCells();
             const int columns = 7;
             int rows = Mathf.CeilToInt(cells.Count / (float)columns);
-            float gap = StatStep(4f);
-            float inkBlock = StatStep(16f) + 2f * StatStep(30f);
-            float side = Mathf.Floor(Mathf.Min((left.width - (columns - 1) * gap) / columns, (left.yMax - y - inkBlock - StatStep(24f) - (rows - 1) * gap) / rows));
+            float gap = StatStep(8f);
+            float inkGap = StatStep(4f);
+            float inkBlock = StatStep(16f) + 2f * StatStep(30f) + inkGap;
+            float side = Mathf.Floor(Mathf.Min(StatStep(74f), Mathf.Min((left.width - (columns - 1) * gap) / columns, (left.yMax - y - inkBlock - StatStep(24f) - (rows - 1) * gap) / rows)));
             Color ink = PcInk(d);
             for (int i = 0; i < cells.Count; i++)
             {
                 var r = new Rect(left.x + (i % columns) * (side + gap), y + (i / columns) * (side + gap), side, side);
-                PcMark(new Rect(r.x + 2f, r.y + 2f, r.width - 4f, r.height - 4f), cells[i], ink);
-                if (cells[i] == d.MarkStem) { PcFrame(r, PoliSimTheme.BrassBorder, 2f); }
+                float inset = Mathf.Round(side * 7.5f / 74f);
+                PcMark(new Rect(r.x + inset, r.y + inset, r.width - 2f * inset, r.height - 2f * inset), cells[i], ink);
+                if (cells[i] == d.MarkStem) { PcFrame(r, PoliSimTheme.TextPrimary, Mathf.Max(1f, Mathf.Round(StatStep(1.5f)))); }
                 if (PcHit(r)) { d.MarkStem = cells[i]; }
                 SlipAnchor(r, "mark/" + cells[i]);
             }
 
-            // the ink: the ring, a refused step crossed by the registry's BAN glyph
-            y = PcPlateHead(new Rect(left.x, y + rows * (side + gap) + StatStep(6f), left.width, 0f), "INK");
+            // the ink: the ring as built (S5, answer 4: it stays), 12 x 2 cells of 44 x 30, 4 apart, yours in a 2 px ink rule; a cell within
+            // PartyCreationFlow.TakenWithin of a seated party's ink draws TAKEN - a 2 px paper stroke at -30 degrees and the holder's mark at 14 px on an
+            // 18 px paper chip - and is not selectable
+            y = PcPlateHead(new Rect(left.x, y + rows * (side + gap) - gap + StatStep(10f), left.width, 0f), "INK");
             int perRow = PoliSimTheme.CreatedInkSteps / 2;
-            float sw = Mathf.Floor(Mathf.Min((left.width - (perRow - 1) * gap) / perRow, StatStep(30f)));
+            float sw = Mathf.Floor(Mathf.Min((left.width - (perRow - 1) * inkGap) / perRow, StatStep(44f)));
+            float sh = Mathf.Round(sw * 30f / 44f);
             for (int step = 0; step < PoliSimTheme.CreatedInkSteps; step++)
             {
-                var r = new Rect(left.x + (step % perRow) * (sw + gap), y + (step / perRow) * (sw + gap), sw, sw);
+                var r = new Rect(left.x + (step % perRow) * (sw + inkGap), y + (step / perRow) * (sh + inkGap), sw, sh);
                 Color candidate = PoliSimTheme.CreatedInkCandidate(step);
-                bool clear = PartyCreationFlow.InkClear(d.Country, step, out string _, out float _);
+                bool clear = PartyCreationFlow.InkClear(d.Country, step, out string holder, out float _);
                 if (Event.current.type == EventType.Repaint) { PoliSimTheme.Rule(r, candidate); }
-                if (!clear) { SymbolRegistry.Draw(new Rect(r.x + 3f, r.y + 3f, r.width - 6f, r.height - 6f), Symbol.Ban, PoliSimTheme.Tile, DeskCaption(7f, PoliSimTheme.Tile)); }
-                if (PartyCreationFlow.HexOf(candidate) == d.InkHex) { PcFrame(new Rect(r.x - 2f, r.y - 2f, r.width + 4f, r.height + 4f), PoliSimTheme.TextPrimary, 2f); }
+                if (!clear) { PcTaken(r, d.Country, holder); }
+                if (PartyCreationFlow.HexOf(candidate) == d.InkHex) { PcFrame(new Rect(r.x - 3f, r.y - 3f, r.width + 6f, r.height + 6f), PoliSimTheme.TextPrimary, Mathf.Max(1f, StatStep(2f))); }
                 if (PcHit(r) && clear) { d.InkHex = PartyCreationFlow.HexOf(candidate); }
                 SlipAnchor(r, "ink/" + step);
             }
 
-            // the origin: six cards, each its five stats as pips (the stats' names and meanings on the card's slip)
+            // the origin: six cards (S5, answers 1 and 2) - each titled by its glyph (22 px) and its name, its five stats as rows of the stat's glyph
+            // (16 px), five 14 px pips 3 apart and the value; the stats' words on the card's slip, the caption's key the five glyphs alone
             y = PcPlateHead(new Rect(right.x, right.y, right.width, 0f), "ORIGIN");
-            float cardGap = StatStep(10f);
+            PcStatKey(new Rect(right.x, right.y, right.width, y - right.y - StatStep(8f)));
+            float cardGap = StatStep(12f);
             float cardW = Mathf.Floor((right.width - 2f * cardGap) / 3f);
-            float cardH = Mathf.Floor(Mathf.Min(StatStep(128f), (right.height * 0.62f - cardGap) / 2f));
+            float cardH = Mathf.Floor(Mathf.Min(StatStep(176f), (right.height * 0.66f - cardGap) / 2f));
             GUIStyle title = DeskCaption(8.5f, PoliSimTheme.TextPrimary, bold: true);
-            float titleH = Mathf.Ceil(DeskCaptionHeight(title));
+            float titleH = Mathf.Max(Mathf.Ceil(DeskCaptionHeight(title)), StatStep(22f));
+            GUIStyle value = HqMono(14f, PoliSimTheme.TextMuted);
             for (int i = 0; i < PartyOrigins.All.Length; i++)
             {
                 PartyOrigins.Preset p = PartyOrigins.All[i];
                 var card = new Rect(right.x + (i % 3) * (cardW + cardGap), y + (i / 3) * (cardH + cardGap), cardW, cardH);
                 bool chosen = d.Origin == p.Origin;
+                float glyph = StatStep(22f);
                 if (Event.current.type == EventType.Repaint)
                 {
-                    PoliSimTheme.RoundedCard(card, PoliSimTheme.Tile, chosen ? PoliSimTheme.BrassBorder : PoliSimTheme.Hairline, 0f, chosen ? 2f : 1f);
-                    PoliSimWidgets.MeasuredLabel(new Rect(card.x + StatStep(8f), card.y + StatStep(6f), card.width - StatStep(16f), titleH), p.Title.ToUpperInvariant(), title);
+                    PoliSimTheme.RoundedCard(card, PoliSimTheme.Tile, chosen ? PoliSimTheme.TextPrimary : PoliSimTheme.RuleRow, 0f, chosen ? Mathf.Max(1f, Mathf.Round(StatStep(1.5f))) : 1f);
                 }
-                float pipTop = card.y + StatStep(10f) + titleH;
-                float pipH = Mathf.Floor((card.yMax - StatStep(8f) - pipTop) / 5f);
+                var titleRow = new Rect(card.x + StatStep(8f), card.y + StatStep(8f), card.width - StatStep(16f), titleH);
+                PcGlyph(new Rect(titleRow.x, titleRow.y + Mathf.Round((titleH - glyph) * 0.5f), glyph, glyph), "origin", PartyCreationFlow.OriginGlyph(p.Origin), 20, PoliSimTheme.TextPrimary, string.Empty);
+                if (Event.current.type == EventType.Repaint)
+                {
+                    PoliSimWidgets.MeasuredLabel(new Rect(titleRow.x + glyph + StatStep(6f), titleRow.y, titleRow.width - glyph - StatStep(6f), titleH), p.Title, title);
+                }
+                float rowTop = titleRow.yMax + StatStep(8f);
+                float rowH = Mathf.Floor(Mathf.Min(StatStep(20f), (card.yMax - StatStep(8f) - rowTop) / 5f));
+                float g16 = Mathf.Min(StatStep(16f), rowH);
+                float pip = Mathf.Min(StatStep(14f), rowH - 2f);
                 for (int stat = 0; stat < 5; stat++)
                 {
-                    PcPips(new Rect(card.x + StatStep(8f), pipTop + stat * pipH + 1f, Mathf.Min(card.width - StatStep(16f), (pipH - 3f) * 5f + 4f * StatStep(3f)), pipH - 3f), PartyCreationFlow.StatOf(p, stat));
+                    var row = new Rect(card.x + StatStep(8f), rowTop + stat * rowH, card.width - StatStep(16f), rowH);
+                    PcGlyph(new Rect(row.x, row.y + Mathf.Round((rowH - g16) * 0.5f), g16, g16), "stat", PartyCreationFlow.StatGlyph(stat), 16, PoliSimTheme.TextPrimary, PartyCreationFlow.StatName(stat).Substring(0, 1));
+                    float pipsX = row.x + g16 + StatStep(8f);
+                    PcPips(new Rect(pipsX, row.y + Mathf.Round((rowH - pip) * 0.5f), 5f * pip + 4f * StatStep(3f), pip), PartyCreationFlow.StatOf(p, stat));
+                    if (Event.current.type == EventType.Repaint)
+                    {
+                        float vx = pipsX + 5f * pip + 4f * StatStep(3f) + StatStep(8f);
+                        PoliSimWidgets.MeasuredLabel(new Rect(vx, row.y, Mathf.Max(1f, row.xMax - vx), rowH), PartyCreationFlow.StatOf(p, stat).ToString(CultureInfo.InvariantCulture), value);
+                    }
                 }
-                if (PcHit(card) && !chosen) { PartyCreationFlow.ChooseOrigin(d, p.Origin); _pcPredictedFor = null; }
+                if (!_pcRegionMapOpen && PcHit(card) && !chosen) { PartyCreationFlow.ChooseOrigin(d, p.Origin); _pcPredictedFor = null; }   // the open map sits over the cards and takes their clicks
                 SlipAnchor(card, "origin/" + p.Origin);
             }
 
@@ -315,6 +346,66 @@ namespace PoliSim.UI
                 case PartyOrigin.SingleIssue: DrawPcIssue(choice, d); break;
                 case PartyOrigin.Regional: DrawPcRegion(choice, d); break;
             }
+            // S5 (answer 6): the constituency map opens over the origin cards, at the HQ's own measure, and is drawn last so it sits on top
+            if (_pcRegionMapOpen && d.Origin == PartyOrigin.Regional) { DrawPcRegionMap(new Rect(right.x, y, right.width, 2f * cardH + cardGap), d); }
+        }
+
+        /// <summary>S5: the constituency map is open (the Regional party's picker, answer 6).</summary>
+        private bool _pcRegionMapOpen;
+
+        /// <summary>S5 (answers 1 and 2): one of party creation's glyphs (`IconLibrary.PartyCreationGlyph`), square in <paramref name="r"/> and tinted; the 2x cut where the
+        /// rect is drawn at 2560's size; its WORD in its place where the file is not held (the honest fallback, never a blank).</summary>
+        private void PcGlyph(Rect r, string family, string name, int basePx, Color ink, string word)
+        {
+            if (Event.current.type != EventType.Repaint) { return; }
+            int px = r.height > basePx * 1.25f ? basePx * 2 : basePx;
+            Texture2D t = IconLibrary.PartyCreationGlyph(family + "_" + name + "_" + px.ToString(CultureInfo.InvariantCulture));
+            if (t == null)
+            {
+                if (!string.IsNullOrEmpty(word)) { PoliSimWidgets.MeasuredLabel(r, word, DeskCaption(7f, ink, false, TextAnchor.MiddleCenter)); }
+                return;
+            }
+            Color was = GUI.color;
+            GUI.color = ink;
+            GUI.DrawTexture(r, t, ScaleMode.ScaleToFit, true);
+            GUI.color = was;
+        }
+
+        /// <summary>S5 (answer 1): the ORIGIN caption's key on its right - the five stat glyphs alone, each its stat's slip.</summary>
+        private void PcStatKey(Rect caption)
+        {
+            float g = StatStep(16f), step = g + StatStep(8f);
+            float x = caption.xMax - 5f * step + StatStep(8f);
+            for (int stat = 0; stat < 5; stat++)
+            {
+                var r = new Rect(x + stat * step, caption.y + Mathf.Round((caption.height - g) * 0.5f), g, g);
+                PcGlyph(r, "stat", PartyCreationFlow.StatGlyph(stat), 16, PoliSimTheme.TextPrimary, PartyCreationFlow.StatName(stat).Substring(0, 1));
+                SlipAnchor(r, "statkey/" + stat);
+            }
+        }
+
+        /// <summary>S5 (answer 4): a TAKEN ring cell - a 2 px paper stroke across it at -30 degrees, and the holder's mark at 14 px on an 18 px paper chip.</summary>
+        private void PcTaken(Rect r, CountryId country, string holder)
+        {
+            if (Event.current.type != EventType.Repaint) { return; }
+            Matrix4x4 was = GUI.matrix;
+            GUIUtility.RotateAroundPivot(-30f, r.center);
+            float length = Mathf.Sqrt(r.width * r.width + r.height * r.height);
+            PoliSimTheme.Rule(new Rect(r.center.x - length * 0.5f, r.center.y - StatStep(1f), length, Mathf.Max(1f, StatStep(2f))), PoliSimTheme.ModalBackground);
+            GUI.matrix = was;
+            if (string.IsNullOrEmpty(holder)) { return; }
+            float chip = StatStep(18f), mark = StatStep(14f);
+            var c = new Rect(Mathf.Round(r.center.x - chip * 0.5f), Mathf.Round(r.center.y - chip * 0.5f), chip, chip);
+            PoliSimTheme.Rule(c, PoliSimTheme.ModalBackground);
+            string stem = null;
+            foreach (PoliticalParty p in PartySystems.RealRoster(country)) { if (p.Abbrev == holder) { stem = p.MarkName; } }
+            Texture2D t = IconLibrary.GetPartyMark(stem);
+            var m = new Rect(c.x + (chip - mark) * 0.5f, c.y + (chip - mark) * 0.5f, mark, mark);
+            if (t == null) { PoliSimWidgets.MeasuredLabel(c, PartySystems.ShortName(country, holder), DeskCaption(6.5f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleCenter)); return; }
+            Color before = GUI.color;
+            GUI.color = PoliSimTheme.PartyLaddered(country, holder);
+            GUI.DrawTexture(m, t, ScaleMode.ScaleToFit, true);
+            GUI.color = before;
         }
 
         private void DrawPcSplinter(Rect r, CreatedParty d)
@@ -369,20 +460,82 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>S5 (Design's return of 2026-10-30, answer 6): the Regional party's constituency - picked on the HQ's own tile map (`CampaignTiles.For`,
+        /// Sweden's valkretsar from Design's hq_tiles.json), never the night's cartogram, where one cell is a seat. At rest the plate holds the picked
+        /// tile (the party's ink, its mark in paper) and the tile's name; pressing it opens the map over the origin cards (<see cref="DrawPcRegionMap"/>).
+        /// Outside Sweden a Regional party reads nationally (K122, K166), so there is no map to pick from and the plate says so.</summary>
         private void DrawPcRegion(Rect r, CreatedParty d)
         {
             float y = PcPlateHead(new Rect(r.x, r.y, r.width, 0f), "REGION");
-            GUIStyle chip = DeskCaption(7.5f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleCenter);
-            float h = Mathf.Ceil(DeskCaptionHeight(chip)) + StatStep(5f);
-            float x = r.x;
-            foreach (string name in PartyCreationFlow.Regions(d.Country))
+            CampaignTiles.TileMap map = PartyCreationFlow.RegionMap(d.Country);
+            if (map == null)
             {
-                float w = Mathf.Ceil(chip.CalcSize(new GUIContent(name)).x) + StatStep(10f);
-                if (x + w > r.xMax) { x = r.x; y += h + StatStep(3f); }
-                if (y + h > r.yMax) { break; }
-                if (DrawDeskChipButton(new Rect(x, y, w, h), name, chip, selected: d.Region == name, disabled: false)) { d.Region = name; }
-                x += w + StatStep(3f);
+                GUIStyle muted = HqMono(14f, PoliSimTheme.TextMuted);
+                var line = new Rect(r.x, y, Mathf.Min(r.width, HqWidth("Reads nationally", muted) + StatStep(4f)), StatStep(20f));
+                if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(line, "Reads nationally", muted); }
+                SlipAnchor(line, "region/national");
+                return;
             }
+            float tile = StatStep(30f);
+            var picked = new Rect(r.x, y, tile, tile);
+            CampaignTiles.Tile? t = PartyCreationFlow.TileOf(map, d.Country, d.Region);
+            PcRegionTile(picked, t.HasValue ? t.Value.Id : "?", d, true);
+            GUIStyle label = DeskCaption(8f, PoliSimTheme.TextPrimary);
+            var name = new Rect(picked.xMax + StatStep(8f), y, Mathf.Max(1f, r.xMax - picked.xMax - StatStep(8f)), tile);
+            if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(name, CampaignTiles.Display(d.Region ?? "—"), label); }
+            var hit = new Rect(r.x, y, Mathf.Min(r.width, tile + StatStep(8f) + Mathf.Ceil(label.CalcSize(new GUIContent(CampaignTiles.Display(d.Region ?? "—"))).x)), tile);
+            if (PcHit(hit)) { _pcRegionMapOpen = !_pcRegionMapOpen; }
+            SlipAnchor(hit, "region/picked");
+        }
+
+        /// <summary>S5 (answer 6): one tile of the constituency map - the picked one in the party's ink with its mark in paper, every other one as the HQ
+        /// draws a region it has not polled (paper, a 1.5 px dashed rule) with its id.</summary>
+        private void PcRegionTile(Rect t, string id, CreatedParty d, bool picked)
+        {
+            if (picked)
+            {
+                HqFill(t, PcInk(d));
+                if (Event.current.type == EventType.Repaint)
+                {
+                    float m = Mathf.Round(t.height * 0.5f);
+                    Texture2D mark = IconLibrary.GetPartyMark(d.MarkStem, m);
+                    if (mark != null)
+                    {
+                        Color was = GUI.color;
+                        GUI.color = PoliSimTheme.ModalBackground;
+                        GUI.DrawTexture(new Rect(t.center.x - m * 0.5f, t.center.y - m * 0.5f, m, m), mark, ScaleMode.ScaleToFit, true);
+                        GUI.color = was;
+                    }
+                }
+                return;
+            }
+            HqFill(t, PoliSimTheme.Card);
+            HqDashed(t, PoliSimTheme.HairlineStrong, HqT(1.5f));
+            if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(t, id, HqMono(12f, PoliSimTheme.TextPrimary, bold: true, anchor: TextAnchor.MiddleCenter)); }
+        }
+
+        /// <summary>S5 (answer 6): the constituency map, open over the origin cards - Design's tiles at their own measure (30 px, 3 apart at 1280) on a paper
+        /// panel; a tile pressed is the party's region and closes the map. The tile's long label is its slip.</summary>
+        private void DrawPcRegionMap(Rect over, CreatedParty d)
+        {
+            CampaignTiles.TileMap map = PartyCreationFlow.RegionMap(d.Country);
+            if (map == null) { _pcRegionMapOpen = false; return; }
+            float tile = StatStep(map.TileSize), gap = StatStep(map.Gap), pad = StatStep(12f);
+            float w = map.Columns * tile + (map.Columns - 1) * gap, h = map.Rows * tile + (map.Rows - 1) * gap;
+            if (h + 2f * pad > over.height) { float k = (over.height - 2f * pad) / h; tile = Mathf.Floor(tile * k); gap = Mathf.Max(1f, Mathf.Floor(gap * k)); w = map.Columns * tile + (map.Columns - 1) * gap; h = map.Rows * tile + (map.Rows - 1) * gap; }
+            var panel = new Rect(Mathf.Round(over.center.x - (w + 2f * pad) * 0.5f), Mathf.Round(over.center.y - (h + 2f * pad) * 0.5f), w + 2f * pad, h + 2f * pad);
+            if (Event.current.type == EventType.Repaint) { PoliSimTheme.RoundedCard(panel, PoliSimTheme.ModalBackground, PoliSimTheme.HairlineStrong, 0f, 1f); }
+            string[] names = PartyCreationFlow.Regions(d.Country);
+            foreach (CampaignTiles.Tile t in map.Tiles)
+            {
+                int region = CampaignTiles.RegionOf(map, t, names);
+                if (region < 0) { continue; }
+                var r = new Rect(panel.x + pad + t.Column * (tile + gap), panel.y + pad + t.Row * (tile + gap), tile, tile);
+                PcRegionTile(r, t.Id, d, names[region] == d.Region);
+                if (PcHit(r)) { d.Region = names[region]; _pcRegionMapOpen = false; }
+                SlipAnchor(r, "region/tile/" + t.Id);
+            }
+            if (Event.current.type == EventType.MouseDown && !panel.Contains(Event.current.mousePosition)) { _pcRegionMapOpen = false; }
         }
 
         // ── step 2: placement ───────────────────────────────────────────────────────────────────────────
@@ -519,7 +672,7 @@ namespace PoliSim.UI
                 x += ms + StatStep(8f);
             }
 
-            float oy = PcPlateHead(new Rect(right.x, ry2 + ms * 1.6f + StatStep(10f), right.width, 0f), "OUTSIDE THE CABINET");
+            float oy = PcPlateHead(new Rect(right.x, ry2 + ms * 1.6f + StatStep(10f), right.width, 0f), "OUTSIDE SUPPORT");   // S5 (answer 3): the board's group word
             float cs = Mathf.Floor(StatStep(34f));
             var yes = new Rect(right.x, oy, cs, cs);
             var no = new Rect(right.x + cs + StatStep(10f), oy, cs, cs);
@@ -586,21 +739,45 @@ namespace PoliSim.UI
             float y = PcPlateHead(new Rect(body.x, mark.yMax + StatStep(14f), Mathf.Floor(body.width * 0.42f), 0f), "STATS");
             y = DrawPcStats(new Rect(body.x, y, Mathf.Floor(body.width * 0.42f), body.yMax - y), d);
 
-            // the declarations as marks under their glyphs
+            // the declarations as marks under their glyphs - S5 (answer 3, the mapping confirmed; its one change): the three group words printed over
+            // their glyphs, RED LINES · CANDIDACY · OUTSIDE SUPPORT, mono 14 muted
             float dy = PcPlateHead(new Rect(body.x, y + StatStep(12f), Mathf.Floor(body.width * 0.42f), 0f), "DECLARATIONS");
             float ds = Mathf.Floor(StatStep(24f));
+            GUIStyle groupWord = HqMono(14f, PoliSimTheme.TextMuted);
+            float wordH = StatStep(18f);
+            float groupGap = StatStep(18f);
             float dx = body.x;
+            float gy = dy + wordH + StatStep(4f);
+            void GroupWord(float x, string word) { if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(new Rect(x, dy, HqWidth(word, groupWord) + 2f, wordH), word, groupWord); } }
+            GroupWord(dx, "RED LINES");
+            float groupStart = dx;
             foreach (PoliticalParty p in PartySystems.RealRoster(d.Country))
             {
                 bool red = d.RedLinesAgainst.Contains(p.Abbrev), oneWay = d.OneWayAgainst.Contains(p.Abbrev);
                 if (!red && !oneWay) { continue; }
-                var m = new Rect(dx, dy, ds, ds);
+                var m = new Rect(dx, gy, ds, ds);
                 PcMark(m, p.MarkName, PoliSimTheme.PartyLaddered(d.Country, p.Abbrev));
-                SymbolRegistry.Draw(new Rect(dx + ds * 0.2f, dy + ds + StatStep(2f), ds * 0.6f, ds * 0.6f), red ? Symbol.Ban : Symbol.Locked, red ? PoliSimTheme.Bad : PoliSimTheme.TextPrimary, DeskCaption(7f, PoliSimTheme.TextPrimary));
+                SymbolRegistry.Draw(new Rect(dx + ds * 0.2f, gy + ds + StatStep(2f), ds * 0.6f, ds * 0.6f), red ? Symbol.Ban : Symbol.Locked, red ? PoliSimTheme.Bad : PoliSimTheme.TextPrimary, DeskCaption(7f, PoliSimTheme.TextPrimary));
                 SlipAnchor(m, "line/" + p.Abbrev);
                 dx += ds + StatStep(8f);
             }
-            var outside = new Rect(dx + StatStep(8f), dy, ds, ds);
+            dx = Mathf.Max(dx, groupStart + HqWidth("RED LINES", groupWord)) + groupGap;
+            GroupWord(dx, "CANDIDACY");
+            float candidacyStart = dx;
+            if (!string.IsNullOrEmpty(d.BacksCandidateOf))
+            {
+                string backedMark = d.BacksCandidateOf == d.Key ? d.MarkStem : null;
+                Color backedInk = d.BacksCandidateOf == d.Key ? PcInk(d) : PoliSimTheme.PartyLaddered(d.Country, d.BacksCandidateOf);
+                foreach (PoliticalParty p in PartySystems.RealRoster(d.Country)) { if (p.Abbrev == d.BacksCandidateOf) { backedMark = p.MarkName; } }
+                var m = new Rect(dx, gy, ds, ds);
+                PcMark(m, backedMark, backedInk);
+                SymbolRegistry.Draw(new Rect(dx + ds * 0.2f, gy + ds + StatStep(2f), ds * 0.6f, ds * 0.6f), Symbol.Good, PoliSimTheme.Good, DeskCaption(7f, PoliSimTheme.Good));
+                SlipAnchor(m, "candidate");
+                dx += ds;
+            }
+            dx = Mathf.Max(dx, candidacyStart + HqWidth("CANDIDACY", groupWord)) + groupGap;
+            GroupWord(dx, "OUTSIDE SUPPORT");
+            var outside = new Rect(dx, gy, ds, ds);
             SymbolRegistry.Draw(outside, d.InOrAgainst ? Symbol.Ban : Symbol.Allow, PoliSimTheme.TextPrimary, DeskCaption(7f, PoliSimTheme.TextPrimary));
             SlipAnchor(outside, d.InOrAgainst ? "outside/no" : "outside/yes");
 

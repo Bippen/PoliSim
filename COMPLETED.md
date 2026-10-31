@@ -42770,3 +42770,58 @@ Energy's slips from before S1 still hold lines over 10 words. They carry no move
 - The map's y origin is 163, under S4's head and timeline, not the board's 133.
 - On the slips: "$ 3.10 a signature · BILLED" became "Per signature · BILLED", and "certified" was dropped (certification is not modelled).
 - The nearest-elector slip on the night is a Canvas hover slip, which the film does not capture.
+
+## 965. S5 - PARTY CREATION FROM DESIGN'S ANSWERS (THE GLYPHS, THE TAKEN INK CELLS, THE WHITE-CUT MARKS, THE CONSTITUENCY MAP) AND FOUNDING IN GERMANY (BWAHLG §18/§19/§27, PARTG §18; K328) (DESIGN'S RETURN OF 2026-10-30, §5) (2026-10-31)
+
+**What was owed:** §5 of the self-contained request. Design answered six questions on the Sweden creation flow and drew founding a party in Germany (`S5 Party Creation.dc.html`, the glyphs now under `Resources/Art/UI/PartyCreation/`).
+
+**Order on main:** the count's rule for a refused created party was committed alone in `START_POINTS_AND_PARTY_CREATION_SPEC.md` §2.7 (82a5018f) before anything was measured. The branch (wave/s5pc 96187c1b..53f0dfa4) was applied on top as a binary patch, less its glyph-folder rename, which main had already made identically (7fbd678a). The folder was compared and found equal.
+
+**Built:**
+- **Design's six answers on the Sweden flow:**
+  - **Glyphs (1, 2):** the origin cards lead with a 22 px origin glyph; each card has five rows of a 16 px stat glyph, five pips and the value; the ORIGIN caption keys the five stat glyphs; the card's slip takes the board's form.
+  - **Declarations (3):** the mapping is kept (LOCKED = one way). The heading reads OUTSIDE SUPPORT, and the review prints RED LINES · CANDIDACY · OUTSIDE SUPPORT.
+  - **Ink ring (4):** a cell within ΔE 0.09 of a seated ink (`TakenWithin`) is drawn taken, struck and chipped with the holder's mark, and cannot be chosen.
+  - **Mark cells (5):** `Tools/s5_cell_whitecut.pl` sets every pixel of our 35 installed cells to white with the alpha kept byte for byte. The stale C2PA chunk each carried is dropped, because it signed pixels that changed. Every site that drew marks untinted now tints the cell in its party's ink (`PoliSimTheme.MarkDrawTint`); under 24 px a hatched cell draws its solid twin where that twin is unspent.
+  - **Constituency (6):** chosen on the HQ's valkretsar tile map, which opens over the origin cards.
+- **Founding in Germany (`BallotAccess`):**
+  - Germany is offered in the creation flow.
+  - The statute's deadlines are days 97/79/69; the 2025 snap election's are 47/40/34 (7, 14 and 20 Jan).
+  - Each Land list needs 1‰ of the last electorate (rounded up, at most 2,000).
+  - GATHER sends thirds of the volunteers; FILE files the notice and every complete list.
+  - A missed deadline refuses the party in those Länder, and `StandsIn` / `ApplyToCount` carry that into the count by the prereg's rule.
+- **Funding (`PartyFunding`, PartG §18):** parties qualify at 0.5 % / 1 % of the list votes, at 1.21 € / 0.99 € a vote (Drucksache 21/160, claim year 2025). The Desk's Party funding tile shows for a created party only (K328 (2)).
+- **The HQ:** the ballot-access block heads the left column; the Länder tiles show ballot states; GATHER / SIZE / FILE / § RULES sit on Today; the strip chip reads "Lists due · 20 Jan" or "Not standing · n Länder".
+- **Sources:** `ElectionsData/germany/raw/ballot_access/` and `party_funding/`, each with SHA256SUMS and a fetch log (`-text`). The price per signature is BILLED (K328 (1)).
+- **`BallotAccessCheck`** (cheap group, registered with this record) reads every BWahlG/PartG figure back out of its source, the 2025 dates and the sixteen Land-list counts, the task played (GATHER, FILE, refused), the count's refusal rule and its inertness.
+- **Film:** `-shotfounding` with `-shotcountry=Germany -shotcreatestart` captures s5f1-s5f5, and frame 01k1r shows Sweden's constituency map.
+
+**At integration:**
+- Two conflicts kept both sides: `.gitattributes` (SP-8's, S7's and S5's `-text` blocks) and MetaTextCheck's allow rows (S7's § RULES; S5's § for the BWahlG/PartG paragraph marks, which S5's report flags for review).
+- The two German PDFs came through the patch changed (git read them as text) and were restored from the branch's blobs. Every file in both source folders matches its SHA256SUMS.
+- S5 and S7 each defined the same `BallotDay` helper on `GameController`; S5's copy was removed.
+- The ballot-access block's 17 labels are drawn through `HqLabel` (§959's line-height fix, made after S5's base).
+- **The first cheap bar failed two checks; the branch had never run in Unity:**
+  - **BallotAccessCheck:** "a German draft commits: the ink is not set". At Design's ΔE 0.09 the seated German inks take all 24 ring cells, so the draft gets no ink and the commit is refused. Both German films failed the same way ("PARTY CREATION: refused - the ink is not set"), and the check's later rows fell with it. **K333:** the ring's taken radius is the chamber's own collision line, `NudgeTolerance` 0.06. Measured, the cells clear at 0.09 are Germany 0, Italy 0, Poland 1, Sweden about 2; at 0.06 they are 3, 3, 5 and about 10.
+  - **PartyInkDrawSiteCheck:** the ballot-access file draws the created party's filings in its ink and had no row on the draw-site list. Its row now gives the race's argument; the file draws no area accent.
+- **The German films, once the party could be founded:**
+  - Each logged one IDENTITY MISMATCH: `01a_selector_yielding` claimed the selector while the frame held the IMGUI desk. `-shotcreatestart` starts the game through the creation flow's own commit (01k6), so no selector yields under a scrim, and the driver now skips that frame on this path and says so.
+  - Read by eye, the ballot legend's fourth entry ("refused") ran out of the map column into the Today column, the label collision no guard measures (§961's class). An entry that would cross the column's edge now starts a second row, and the plate below moves down with it.
+- The first simulation bar (93 of 93, the sentinel unmoved) stands. The fixes are a UI constant, two Editor checks' rows, a driver frame and a legend's layout.
+
+**Not built:** the money half of K165 (the price per signature is BILLED); paying the funding into the war chest, and §18's donations and ceilings; a ballot-access task for later elections and the five-seat exemption; Sweden's registration rule (FILED as SP-5 Sweden, K328 (3)); Poland's articles; Design's 4×5 Länder layout; solid twins for the none/bar/notch hatched cells (Design's to author).
+
+**Measured (this tree):** cheap bar 151 of 151 clean on the final tree (cheaps5pc4; the first, cheaps5pc, failed BallotAccessCheck on the unset ink and PartyInkDrawSiteCheck; cheaps5pc2 and cheaps5pc3 151 of 151 on the trees between); simulation bar 93 of 93 clean, the trajectory sentinel the baseline's on both seeds, so no review is due (sims5pc); dry film Sweden and Germany at 1280, 322 measured, 0 failed, 0 overflow (drys5pc, scope row drys5pc, on K333's tree); the filmed width: Sweden -shotcampaign at 1280 (reals5pc2se), 35 captured at 1280x699, 0 overflow, the creation flow's 01k1-01k5 and 01k1r among them; Germany -shotcreatestart -shotfounding at 1280 (reals5pc3de) and 2560 (reals5pc3dew), 15 declared, 0 missing, 0 overflow, 0 canvas text violations across 4 asserts, 0 errors - s5f1-s5f5 with the party founded, filing, refused in 13 Laender and the Desk's funding tile; doc bar (docs965)
+
+**Declared** (each goes back to Design):
+- LOCKED keeps the model's "one way"; Design's gloss "cannot be withdrawn this term" is not what the formation reads.
+- The ring's taken radius is 0.06, the chamber's nudge, not Design's 0.09 (K333, measured above).
+- Solid twins are drawn only where unspent.
+- The constituency map opens as an overlay: 30 px tiles do not fit below the cards at 1280.
+- In Germany the Regional origin has no map and reads nationally (K166).
+- GATHER costs no money (the price is BILLED); the [AUTHORED-DRAFT] yield is one signature per volunteer per day. Its consequence is declared (K328 (1)): a low-activist origin cannot qualify for the 2025 snap's 27,328 list signatures.
+- A list still being gathered reads as standing until the lists' deadline. Recognition follows a notice filed in time; the committee's two-thirds refusal is not modelled.
+- Constituencies show ABSENT (the count has no Erststimme). FILE files everything complete in one press. The task covers the first election only.
+- The funding tile's list votes are the party's share × the 2025 valid Zweitstimmen; later years' rates are BILLED until fetched.
+- S4's Länder grid is kept for the ballot states. The refused frame s5f4 is STAGED (filings withdrawn, and the log says so). The strip and slip use the real 2025 dates (day 47, 20 Jan), not the board's illustrative day 97.
+- The task's saved fields are additive, so there is no save-format step (K328 (4)).

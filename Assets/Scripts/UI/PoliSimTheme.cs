@@ -457,6 +457,12 @@ namespace PoliSim.UI
             return table.TryGetValue(abbrev, out Color nudged) ? nudged : Party(country, abbrev);
         }
 
+        /// <summary>S5 (Design's return of 2026-10-30, answer 5): the colour a site that draws marks "in their authored colours" draws THIS mark in - white
+        /// (the texture as authored) for a drawn mark, the party's ink for a created party's cell, which is cut white on transparent and would
+        /// otherwise vanish on the paper (`IconLibrary.IsWhiteCutCell`). A site that already tints every mark in its party's ink needs nothing.</summary>
+        public static Color MarkDrawTint(PoliSim.Data.CountryId country, string abbrev, string markName) =>
+            IconLibrary.IsWhiteCutCell(markName) ? PartyLaddered(country, abbrev) : Color.white;
+
         /// <summary>The lightness move the nudge gave this party (0 for an ink no collision touched).</summary>
         public static float LadderLift(PoliSim.Data.CountryId country, string abbrev)
         {

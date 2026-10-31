@@ -1311,7 +1311,19 @@ namespace PoliSim.UI
         /// invented one. Neutral ink on the lines (D7). No area keyline: the tiles one cell away
         /// carry B9's key (R-B5).
         /// </summary>
-        private void DrawDeskChipStrip(Rect r) => DrawChipStrip(r, BuildHeadlineReadings());
+        private void DrawDeskChipStrip(Rect r)
+        {
+            // SP-5 (S5, board 5c): the Party funding tile at the strip's right end, where the law funds parties and the player's party is a created one;
+            // every other desk draws the ten readings exactly as before
+            if (DeskFunding(out string _, out string _, out bool _, out double _))
+            {
+                float fw = Mathf.Round(r.width * 200f / DeskBoardInnerWidth), gap = Mathf.Round(4f * r.width / DeskBoardInnerWidth);
+                DrawChipStrip(new Rect(r.x, r.y, r.width - fw - gap, r.height), BuildHeadlineReadings());
+                DrawDeskFundingTile(new Rect(r.xMax - fw, r.y, fw, r.height));
+                return;
+            }
+            DrawChipStrip(r, BuildHeadlineReadings());
+        }
 
         /// <summary>P2-1.4 (2026-09-02): the chip strip as an idiom - the desk's headline readings and the Budget's fiscal
         /// header draw through the same code, so the two cannot drift in type, pitch or the sparkline's place.</summary>

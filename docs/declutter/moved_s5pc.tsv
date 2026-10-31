@@ -1,0 +1,8 @@
+# S5 (Design's return of 2026-10-30, party creation and founding outside Sweden; K320 (5), K321 (g)): every string the creation flow drew at rest that S5 no longer draws as it was, and where it is now.
+# The creation flow is a setup screen (K320 (4), K321 (e): exempt from the caps); Design drew it under the directive anyway, so its forms are kept and the moves listed. Figures folded to '#'.
+# capture_stem: the capture that drew it. text_before: the old string. now_in: the slip anchor (PartyCreationFlow.Slips, the flow's book) or "at rest:" where it is re-worded on the page. slip_text: what the slip says.
+capture_stem	text_before	now_in	slip_text
+01k1_create_profile	GRASSROOTS MOVEMENT (and the five other origin titles in capitals)	at rest: the origin glyph and the title in the board's case (Grassroots movement)	-
+01k1_create_profile	each valkrets name as a chip under REGION (# chips, the Regional origin only)	region/tile/<id> on the constituency map (answer 6); the picked one at rest beside its tile	<the valkrets's name> / Your constituency | Press to stand here
+01k3_create_declarations	OUTSIDE THE CABINET	at rest: OUTSIDE SUPPORT (the board's group word, answer 3)	-
+01k5_create_review	DECLARATIONS (one row of marks and glyphs)	at rest: RED LINES · CANDIDACY · OUTSIDE SUPPORT over their glyphs (answer 3's one change)	-

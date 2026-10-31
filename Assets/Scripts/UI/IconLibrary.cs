@@ -240,6 +240,45 @@ namespace PoliSim.UI
         private const string CellPrefix = "mark_cell_";
         private const string CellResourcesPath = "Art/UI/Cells/";
 
+        /// <summary>S5 (Design's return of 2026-10-30, answer 5): whether a mark is a created party's CELL. Since S5 the cells are cut white on
+        /// transparent (`Tools/s5_cell_whitecut.pl`, RGB to white with the alpha kept), so a cell is drawn TINTED in its party's ink at every site -
+        /// never "in its authored colours", where white on the paper would vanish (`PoliSimTheme.MarkDrawTint`).</summary>
+        public static bool IsWhiteCutCell(string markName) => markName != null && markName.StartsWith(CellPrefix, System.StringComparison.Ordinal);
+
+        /// <summary>S5 (answer 5): the size below which a hatched cell does not read - "hatched cells read at 24 px and above; at 16 px (the strip, the
+        /// night) a hatched mark draws its solid twin".</summary>
+        public const float HatchedReadsFrom = 24f;
+
+        /// <summary>S5 (answer 5): the stem a mark draws at <paramref name="px"/> - a hatched cell below <see cref="HatchedReadsFrom"/> draws its solid
+        /// twin (the same silhouette and cut, solid) WHERE THE TWIN IS UNSPENT, so no created party ever draws a seated party's mark; every other
+        /// stem is itself. ⚠ The solid twins of the none, bar and notch cuts are spent by the batch chambers' seeds (`PartyCreationFlow.SeedCells`),
+        /// so those hatched cells keep their hatch at 16 px - their twins are owed by Design (S5's return, answer 5: "author a solid twin").</summary>
+        public static string MarkStemAt(string markName, float px)
+        {
+            if (!IsWhiteCutCell(markName) || px >= HatchedReadsFrom || !markName.EndsWith("_hatched", System.StringComparison.Ordinal)) { return markName; }
+            string twin = markName.Substring(0, markName.Length - "_hatched".Length) + "_solid";
+            return PoliSim.UI.PartyCreationFlow.IsUnspent(twin) ? twin : markName;
+        }
+
+        /// <summary>S5: <see cref="GetPartyMark(string)"/> at a drawn size - a hatched cell's solid twin under 24 px (<see cref="MarkStemAt"/>).</summary>
+        public static Texture2D GetPartyMark(string markName, float px) => GetPartyMark(MarkStemAt(markName, px));
+
+        /// <summary>
+        /// S5 (Design's return of 2026-10-30): one of party creation's glyphs - `Resources/Art/UI/PartyCreation/&lt;stem&gt;`, white on alpha and tinted at draw: the
+        /// five stats (<c>stat_funding_16</c> / <c>_32</c>, organisation, recognition, activists, leader) and the six origins (<c>origin_grassroots_20</c> /
+        /// <c>_40</c>, splinter, protest, technocrats, single, regional). Null where the file is not held - the caller draws the glyph's WORD in its place
+        /// (UI v3.3 §4.2's honest fallback) and the stem is named in <see cref="PartyCreationFallbacks"/>. Installed from Design's delivery as files (§424).
+        /// </summary>
+        public static Texture2D PartyCreationGlyph(string stem)
+        {
+            Texture2D t = Load("Art/UI/PartyCreation/" + stem);   // the folder named for what it holds (main 7fbd678a)
+            if (t == null) { PartyCreationFallbacks.Add(stem); }
+            return t;
+        }
+
+        /// <summary>The party-creation glyph stems drawn as their WORD this session because the file did not load.</summary>
+        public static readonly System.Collections.Generic.HashSet<string> PartyCreationFallbacks = new System.Collections.Generic.HashSet<string>();
+
         private const string PortraitResourcesPath = "Art/UI/Portraits/";
 
         /// <summary>

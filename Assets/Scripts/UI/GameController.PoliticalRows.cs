@@ -102,9 +102,19 @@ namespace PoliSim.UI
             float side = Mathf.Min(StatsUnit(16f), r.height);
             var square = new Rect(r.x, r.y + Mathf.Round((r.height - side) * 0.5f), side, side);
             Texture2D mark = null;
-            foreach (PoliticalParty party in PartySystems.For(country)) { if (party.Abbrev == key) { mark = IconLibrary.GetPartyMark(party.MarkName); break; } }
+            string stem = null;
+            foreach (PoliticalParty party in PartySystems.For(country)) { if (party.Abbrev == key) { stem = party.MarkName; mark = IconLibrary.GetPartyMark(stem); break; } }
             if (mark != null)
             {
+                if (IconLibrary.IsWhiteCutCell(stem))
+                {
+                    // S5 (answer 5): a created party's cell, cut white on transparent - in its ink, its solid twin under 24 px
+                    Color was = GUI.color;
+                    GUI.color = PoliSimTheme.MarkDrawTint(country, key, stem);
+                    GUI.DrawTexture(square, IconLibrary.GetPartyMark(stem, side) ?? mark, ScaleMode.ScaleToFit, true);
+                    GUI.color = was;
+                    return;
+                }
                 GUI.DrawTexture(square, mark, ScaleMode.ScaleToFit, true);
                 return;
             }

@@ -607,9 +607,13 @@ namespace PoliSim.UI
                 if (emblem != null)
                 {
                     Rect emblemLane = GUILayoutUtility.GetRect(markerSize, rowHeight, GUILayout.ExpandWidth(false));
+                    bool whiteCut = IconLibrary.IsWhiteCutCell(party.MarkName);   // S5 (answer 5): a created party's cell, in its ink
+                    Color beforeTint = GUI.color;
+                    if (whiteCut) { GUI.color = PoliSimTheme.MarkDrawTint(country, party.Abbrev, party.MarkName); emblem = IconLibrary.GetPartyMark(party.MarkName, markerSize) ?? emblem; }
                     GUI.DrawTexture(
                         new Rect(emblemLane.x, emblemLane.y + (rowHeight - markerSize) * 0.5f, markerSize, markerSize),
                         emblem, ScaleMode.ScaleToFit);
+                    if (whiteCut) { GUI.color = beforeTint; }
                 }
 
                 Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(labelStyle), GUILayout.ExpandWidth(true));

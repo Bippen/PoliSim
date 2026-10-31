@@ -344,9 +344,12 @@ namespace PoliSim.UI
             {
                 if (Event.current.type == EventType.Repaint)
                 {
-                    // Authored in its own colours — drawn untinted, per the accessor's contract.
+                    // Authored in its own colours — drawn untinted, per the accessor's contract; S5: a created party's white-cut cell in its ink
+                    Color wasTint = GUI.color;
+                    GUI.color = PoliSimTheme.MarkDrawTint(PlayerCountryId, s.PartyName, s.MarkKey);
                     GUI.DrawTexture(new Rect(x, r.y + Mathf.Round(2f * uy), Mathf.Round(24f * uy), Mathf.Round(24f * uy)),
                         mark, ScaleMode.ScaleToFit);
+                    GUI.color = wasTint;
                 }
 
                 x += Mathf.Round(24f * uy) + Mathf.Round(8f * ux);

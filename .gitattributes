@@ -57,3 +57,6 @@ ElectionsData/france/raw/presidential2022/** -text
 ElectionsData/usa/raw/ballot_access/** -text
 ElectionsData/usa/ballot_access_read_2024.tsv -text
 ElectionsData/usa/ballot_access_2024.csv -text
+# SP-5 (S5, 2026-10-30): the German ballot-access and party-funding sources, byte-exact as fetched (digests in each folder's SHA256SUMS.txt)
+ElectionsData/germany/raw/ballot_access/** -text
+ElectionsData/germany/raw/party_funding/** -text

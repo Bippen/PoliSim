@@ -20,9 +20,10 @@ namespace PoliSim.UI
         public const int StepCount = 5;
 
         /// <summary>Where a party may be created: a country whose campaign is staged, since a created party enters the chamber only by fighting an
-        /// election - Sweden alone. §697: Germany's campaign is staged too, but a created party's day zero (`LiveCampaignSetup.TryCreatedDayZero`) and
-        /// its placement read Sweden's tables, so offering creation in Germany is an item of its own.</summary>
-        public static bool Offered(CountryId country) => country == CountryId.Sweden;
+        /// election. SP-5 (S5, K164): Sweden and, Germany first of the rest, Germany - its day zero read by Germany's staging, its placement on Germany's
+        /// electorate, its ballot-access task by the BWahlG (`BallotAccess`). Poland next, Italy after PS-7 (K164); a country whose rules are not on disk is
+        /// not offered.</summary>
+        public static bool Offered(CountryId country) => country == CountryId.Sweden || country == CountryId.Germany;
 
         /// <summary>The five steps' plate heads, in order.</summary>
         public static readonly string[] StepHeads = { "PROFILE", "PLACEMENT", "DECLARATIONS", "LEADER", "REVIEW" };
@@ -50,7 +51,9 @@ namespace PoliSim.UI
             var rows = new List<(CountryId, PoliticalParty, string, string, string)>();
             foreach (CountryId country in MarkBatchChambers)
             {
-                var pending = new List<PoliticalParty>(PartySystems.For(country));
+                // S5: the REAL roster - a created party is no seed; with Germany offered (S5), `PartySystems.For` would rank a created German party
+                // after the seeds and "spend" a cell for it. With none registered the two are the same array, so every existing rank stands.
+                var pending = new List<PoliticalParty>(PartySystems.RealRoster(country));
                 pending.Sort((a, b) => b.SeedSeats.CompareTo(a.SeedSeats));   // the very call D18's assignment made, so every existing rank stands
                 for (int k = 0; k < pending.Count && k / Silhouettes.Length < Cuts.Length; k++)
                 {
@@ -78,13 +81,30 @@ namespace PoliSim.UI
             return cells;
         }
 
+        private static HashSet<string> _unspent;
+
+        /// <summary>S5: whether <paramref name="cell"/> is one no seed spends (<see cref="UnspentCells"/>, cached: the seeds are the real rosters', fixed
+        /// for the process) - the draw path's question for a hatched cell's solid twin (`IconLibrary.MarkStemAt`).</summary>
+        public static bool IsUnspent(string cell)
+        {
+            if (_unspent == null) { _unspent = new HashSet<string>(UnspentCells()); }
+            return cell != null && _unspent.Contains(cell);
+        }
+
         // ── the ink: the ring and its fence ──────────────────────────────────────────────────────────────
 
-        /// <summary>A ring step's verdict: clear, or colliding with the nearest real party's drawn ink (under the nudge's tolerance).</summary>
+        /// <summary>S5 (Design's return of 2026-10-30, answer 4: "a cell within ΔE 0.09 of a seated party's ink draws as taken"): the distance, in the
+        /// fence's own measure (oklab, Euclidean - `PoliSimTheme.NearestRealInk`), under which a ring cell is TAKEN and not selectable. K333 (§965): the
+        /// chamber's own collision line (`PoliSimTheme.NudgeTolerance`), not Design's 0.09 - the seated inks sit at the ring's own seat, so at 0.09 Germany's
+        /// nine and Italy's ten take all 24 cells (measured: 0 clear; 3 each at 0.06) and a German party could not be founded. A created party is held to
+        /// the line the seated parties are held to each other.</summary>
+        public const float TakenWithin = PoliSimTheme.NudgeTolerance;
+
+        /// <summary>A ring step's verdict: clear, or TAKEN by the nearest seated party's drawn ink (within <see cref="TakenWithin"/>).</summary>
         public static bool InkClear(CountryId country, int step, out string nearest, out float distance)
         {
             nearest = PoliSimTheme.NearestRealInk(country, PoliSimTheme.CreatedInkCandidate(step), out distance);
-            return nearest == null || distance >= PoliSimTheme.NudgeTolerance;
+            return nearest == null || distance >= TakenWithin;
         }
 
         public static string HexOf(Color c) => "#" + ColorUtility.ToHtmlStringRGB(c);
@@ -99,7 +119,8 @@ namespace PoliSim.UI
             UiPalette.SystemArea.Infrastructure, UiPalette.SystemArea.Trade, UiPalette.SystemArea.Sectors, UiPalette.SystemArea.Political,
         };
 
-        /// <summary>The regional party's region: a valkrets NAME, as `LiveCampaignSetup.TryCreatedDayZero` matches it (§675's review caveat).</summary>
+        /// <summary>The regional party's region: a valkrets NAME, as `LiveCampaignSetup.TryCreatedDayZero` matches it (§675's review caveat). Outside Sweden
+        /// none: a Regional party there reads nationally (K122, K166).</summary>
         public static string[] Regions(CountryId country)
         {
             if (country != CountryId.Sweden) { return Array.Empty<string>(); }
@@ -108,6 +129,38 @@ namespace PoliSim.UI
             for (int i = 0; i < regions.Length; i++) { names[i] = regions[i].Name; }
             return names;
         }
+
+        /// <summary>S5 (answer 6): the map the Regional party picks its constituency on - the HQ's own tiles for the country (`CampaignTiles.For`, the
+        /// chamber's contest over <see cref="Regions"/>), or null where the country offers no region (K166).</summary>
+        public static CampaignTiles.TileMap RegionMap(CountryId country)
+        {
+            string[] names = Regions(country);
+            return names.Length == 0 ? null : CampaignTiles.For(country, CampaignContest.Chamber, names);
+        }
+
+        /// <summary>S5: the tile <paramref name="region"/> is drawn as on <paramref name="map"/>, or null.</summary>
+        public static CampaignTiles.Tile? TileOf(CampaignTiles.TileMap map, CountryId country, string region)
+        {
+            if (map == null || string.IsNullOrEmpty(region)) { return null; }
+            string[] names = Regions(country);
+            foreach (CampaignTiles.Tile t in map.Tiles)
+            {
+                int r = CampaignTiles.RegionOf(map, t, names);
+                if (r >= 0 && names[r] == region) { return t; }
+            }
+            return null;
+        }
+
+        /// <summary>S5 (answer 1): a stat's glyph stem name (`Resources/Art/UI/PartyCreation/stat_&lt;name&gt;_16`).</summary>
+        public static string StatGlyph(int stat) => stat switch { 0 => "funding", 1 => "organisation", 2 => "recognition", 3 => "activists", _ => "leader" };
+
+        /// <summary>S5 (answer 2): an origin's glyph stem name (`Resources/Art/UI/PartyCreation/origin_&lt;name&gt;_20`) - a sprout, a fork, a placard, a briefcase, a
+        /// target, a pin.</summary>
+        public static string OriginGlyph(PartyOrigin origin) => origin switch
+        {
+            PartyOrigin.Grassroots => "grassroots", PartyOrigin.Splinter => "splinter", PartyOrigin.Protest => "protest",
+            PartyOrigin.BusinessTechnocrats => "technocrats", PartyOrigin.SingleIssue => "single", _ => "regional",
+        };
 
         /// <summary>The Splinter's slices of its parent's last result (the spec's "a chosen slice"), as shares 0-1. [AUTHORED-DRAFT] the steps.</summary>
         public static readonly double[] Slices = { 0.05, 0.10, 0.20, 0.30 };
@@ -259,18 +312,49 @@ namespace PoliSim.UI
             for (int s = 0; s < StepCount; s++) { book.Anchors["step/" + s] = new SlipContent(StepHeads[s]).Add(StepLine(s)); }
             foreach (PartyOrigins.Preset p in PartyOrigins.All)
             {
-                var slip = new SlipContent(p.Title.ToUpperInvariant()).Add("Rule: " + p.Rule);
-                for (int stat = 0; stat < 5; stat++) { slip.Add($"{StatName(stat)} {StatOf(p, stat)} of 5 - {PipMeaning(stat, StatOf(p, stat))}"); }
-                book.Anchors["origin/" + p.Origin] = slip;
+                // S5 (answer 1): the card's words moved here, in the board's form - four fragments, the funding term marked (its level 2), and the rule
+                book.Anchors["origin/" + p.Origin] = new SlipContent(p.Title)
+                    .Add(string.Format(CultureInfo.InvariantCulture, "[[Funding]] {0} · {1:0} % of a real chest", p.Funding, 100.0 * PartyOrigins.Pip(PartyOrigins.FundingShare, p.Funding)))
+                    .Add(string.Format(CultureInfo.InvariantCulture, "Organisation {0} · {1}", p.Organisation, Offices(PartyOrigins.Pip(PartyOrigins.Offices, p.Organisation))))
+                    .Add(string.Format(CultureInfo.InvariantCulture, "Recognition {0} · awareness {1:0} %", p.Recognition, 100.0 * PartyOrigins.Pip(PartyOrigins.Awareness, p.Recognition)))
+                    .Add(string.Format(CultureInfo.InvariantCulture, "Activists {0} · Leader {1}", p.Activists, p.Leader))
+                    .Add(string.Format(CultureInfo.InvariantCulture, "Volunteers {0:0} % of a real party's · leader at {1:0}", 100.0 * PartyOrigins.Pip(PartyOrigins.ActivistShare, p.Activists), 100.0 * PartyOrigins.Pip(PartyOrigins.LeaderAttribute, p.Leader)))   // K320 (5): the two figures the board's four lines leave out stay on the slip
+                    .Add("Rule · " + p.Rule);
             }
-            for (int stat = 0; stat < 5; stat++) { book.Anchors["stat/" + stat] = new SlipContent(StatName(stat).ToUpperInvariant()).Add($"{StatOf(d, stat)} of 5 - {PipMeaning(stat, StatOf(d, stat))}"); }
-            foreach (string cell in UnspentCells()) { book.Anchors["mark/" + cell] = new SlipContent("MARK").Add(cell.Replace("mark_cell_", string.Empty).Replace('_', ' ')).Add("No real party wears it."); }
+            book.Terms["Funding"] = new SlipContent("FUNDING").Add("The opening war chest, a share of a real party's; state funding pays only on a party's own past result.");
+            for (int stat = 0; stat < 5; stat++)
+            {
+                book.Anchors["stat/" + stat] = new SlipContent(StatName(stat).ToUpperInvariant()).Add($"{StatOf(d, stat)} of 5 - {PipMeaning(stat, StatOf(d, stat))}");
+                book.Anchors["statkey/" + stat] = new SlipContent(StatName(stat)).Add(StatSets(stat)).Add("Five pips, one to five");
+            }
+            foreach (string cell in UnspentCells())
+            {
+                book.Anchors["mark/" + cell] = new SlipContent(cell == d.MarkStem ? "Yours" : "A mark").Add(cell.Replace("mark_cell_", string.Empty).Replace('_', ' '))
+                    .Add("White-cut, tinted in your ink").Add(cell.EndsWith("_hatched", StringComparison.Ordinal) ? (IsUnspent(cell.Replace("_hatched", "_solid")) ? "Hatched: solid twin at 16 px" : "Hatched: no free twin at 16 px") : "Solid")
+                    .Add("No real party wears it");
+            }
             for (int step = 0; step < PoliSimTheme.CreatedInkSteps; step++)
             {
+                // S5 (answer 4): the board's slip - "Taken · M" / "Too near a seated party's ink", or "Free" / "Clear of every seated ink", with the measure
                 bool clear = InkClear(d.Country, step, out string nearest, out float distance);
-                book.Anchors["ink/" + step] = new SlipContent(clear ? "INK" : "INK - REFUSED")
-                    .Add(nearest == null ? "No real party's ink to measure against." : string.Format(CultureInfo.InvariantCulture, "{0:0.000} from {1} drawn ink; the fence asks {2:0.00}.", distance, UiFormat.Possessive(nearest, false, true), PoliSimTheme.NudgeTolerance))
-                    .Add(clear ? "Clear of every real party's ink." : "Too close to read as a second party at dot size.");
+                book.Anchors["ink/" + step] = new SlipContent(clear ? "Free" : "Taken · " + PartySystems.ShortName(d.Country, nearest))
+                    .Add(nearest == null ? "No seated ink to measure against" : string.Format(CultureInfo.InvariantCulture, "{0} · ΔE {1:0.000} to {2}", HexOf(PoliSimTheme.CreatedInkCandidate(step)), distance, PartySystems.ShortName(d.Country, nearest)))
+                    .Add(clear ? "Clear of every seated ink" : "Too near a seated party's ink")
+                    .Add(string.Format(CultureInfo.InvariantCulture, "Taken within ΔE {0:0.00}", TakenWithin));
+            }
+            // S5 (answer 6): the constituency map's slips
+            CampaignTiles.TileMap regionMap = RegionMap(d.Country);
+            book.Anchors["region/national"] = new SlipContent("REGION").Add("No region to pick here").Add("A Regional party reads nationally").Add("Outside Sweden, by ruling");
+            book.Anchors["region/picked"] = new SlipContent(CampaignTiles.Display(d.Region ?? "No region")).Add("Your constituency").Add("The map opens from here").Add("Its first office opens here");
+            if (regionMap != null)
+            {
+                string[] names = Regions(d.Country);
+                foreach (CampaignTiles.Tile t in regionMap.Tiles)
+                {
+                    int r = CampaignTiles.RegionOf(regionMap, t, names);
+                    if (r < 0) { continue; }
+                    book.Anchors["region/tile/" + t.Id] = new SlipContent(t.Label).Add(names[r] == d.Region ? "Your constituency" : "A constituency to stand in");
+                }
             }
             foreach (UiPalette.SystemArea area in Issues) { book.Anchors["issue/" + area] = new SlipContent("ISSUE").Add(UiPalette.AreaName(area)).Add("Raised salience with the voters who care about it - not yet in the vote."); }
             foreach (PoliticalParty p in PartySystems.RealRoster(d.Country))
@@ -292,6 +376,19 @@ namespace PoliSim.UI
             book.Anchors["key"] = new SlipContent("KEY").Add("The party's key in saves and seats: the short name in ASCII capitals.");
             return book;
         }
+
+        /// <summary>S5: an office count as the slip reads it.</summary>
+        private static string Offices(int n) => n == 1 ? "1 office" : n.ToString(CultureInfo.InvariantCulture) + " offices";
+
+        /// <summary>S5 (answer 1): what a stat sets in the engine, in a fragment - the key's slip (the stat glyph alone at rest).</summary>
+        public static string StatSets(int stat) => stat switch
+        {
+            0 => "The opening war chest",
+            1 => "Offices at the start",
+            2 => "Name awareness at the start",
+            3 => "Volunteers at the doors",
+            _ => "Debate and appeal",
+        };
 
         /// <summary>The real parties nearest the draft on the vote model's two axes, nearest first, each with its distance.</summary>
         public static List<string> Nearest(CreatedParty d, int count)

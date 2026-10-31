@@ -201,6 +201,10 @@ namespace PoliSim.EditorTools
             // S7 (§964, Design's 7a): the ballot drive's § RULES verb, which pins the jurisdiction's statute - Design's own glyph for "the rule", the one
             // section sign the file draws (narrowed to the verb's words)
             ("GameController.CampaignBallot.cs", "§ RULES"),
+            // SP-5 (founding in Germany, Design's board 5c): the BWahlG's and the PartG's own paragraphs - "BWahlG §18", "§27 · 1 ‰", "PartG §18" - on the
+            // ballot-access block, its slips and the Desk's funding tile, and the § cell and the § RULES verb Design drew to open the country-rules slip;
+            // every section sign in this file is a statute's paragraph mark (F4-2's precedent), none a record's section
+            ("GameController.BallotAccess.cs", "§"),
             ("GameController.ImmigrationPoverty.cs", "SOURCED"),   // P5-C6 (2026-09-06)
             // P4-B1 (2026-09-04): the range-caption catalog is [AUTHORED] game fiction - the desk's own deadpan on every
             // dial's ten bands - and is exempt BY NAME so its satire is not read as meta-text; RangeCaptionCheck holds it
