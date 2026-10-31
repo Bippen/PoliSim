@@ -327,9 +327,20 @@ namespace PoliSim.UI
             });
 
             // The bill's own title: not in the composition, kept so the plate says what is signed (asked).
-            Text title = CanvasChrome.MakeTextRealWeight(parent, "Title", EnumNames.ShownTitle(record.Title), PoliSimTheme.Body, 26, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            // K322 S5 (K320 (2): a caption is at most 8 words): a title over the cap shows its head before the colon ("Annual budget"); what follows it - the
+            // frames adopted, the count, over whose alternative - is the division column's at rest, and the title's slip holds it whole
+            string shownTitle = EnumNames.ShownTitle(record.Title);
+            int colon = shownTitle.IndexOf(": ", StringComparison.Ordinal);
+            bool folded = colon > 0 && PoliSim.Testing.DeclutterRules.Words(shownTitle) > 8;
+            Text title = CanvasChrome.MakeTextRealWeight(parent, "Title", folded ? shownTitle.Substring(0, colon) : shownTitle, PoliSimTheme.Body, 26, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
             title.horizontalOverflow = HorizontalWrapMode.Wrap;
             title.gameObject.AddComponent<LayoutElement>().minHeight = 39f + TitleHeadroom;   // the minimum only: a wrapped title keeps its own preferred height
+            if (folded)
+            {
+                var titleLines = new List<string>();
+                foreach (string part in shownTitle.Substring(colon + 2).Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)) { titleLines.Add(part.ToUpperInvariant()); }
+                CanvasRows.Slip(title.gameObject, overlay, shownTitle.Substring(0, colon).ToUpperInvariant(), titleLines);
+            }
 
             Rule(parent, "HeadRule", 1.5f, PoliSimTheme.Hex(0x2B2620));
         }

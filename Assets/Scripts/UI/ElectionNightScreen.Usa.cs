@@ -459,7 +459,9 @@ namespace PoliSim.UI
             if (mismatch != null)
             {
                 Debug.LogError("CANVAS: the US tiles are refused - " + mismatch + ": the map is the 2024 apportionment's and tonight's count stands on another; the map is not drawn.");
-                PlWrapped(parent, "The map is not drawn: its tiles are the 2024 apportionment's, and tonight's count stands on another.", Px(14f), PoliSimTheme.TextMuted);
+                // K322 S6 (K320): a label at rest, the reason on its slip
+                CanvasRows.Slip(PlWrapped(parent, "map not drawn", Px(14f), PoliSimTheme.TextMuted).gameObject, overlay, "THE MAP · NOT DRAWN",
+                    new[] { "ITS TILES ARE THE 2024 APPORTIONMENT'S", "TONIGHT'S COUNT STANDS ON ANOTHER" });
                 return;
             }
             var fills = new UsTileView.BlockFill[UsTileCartogram.States.Length];
@@ -476,10 +478,6 @@ namespace PoliSim.UI
             keyColumn.childForceExpandWidth = true;
             keyColumn.childForceExpandHeight = false;
             keyColumn.spacing = 2f;
-            Text note = CanvasChrome.MakeTextRealWeight(parent, "LensNote", string.Empty, PoliSimTheme.Document, Px(14f), PoliSimTheme.TextMuted, TextAnchor.UpperLeft);
-            note.horizontalOverflow = HorizontalWrapMode.Wrap;
-            note.raycastTarget = false;
-            LayoutElement noteSize = note.gameObject.AddComponent<LayoutElement>();
 
             void Apply(UsTileView.Lens l)
             {
@@ -491,8 +489,7 @@ namespace PoliSim.UI
                 }
                 for (int i = keys.childCount - 1; i >= 0; i--) { UnityEngine.Object.Destroy(keys.GetChild(i).gameObject); }
                 BuildKeys(keys, l, s.Presidential, board.Independent != null ? board.IndependentInk : (Color?)null);
-                note.text = LensNote(l);
-                noteSize.minHeight = noteSize.preferredHeight = WrappedHeight(note.text, Px(14f), PoliSimTheme.Document, MapWidth);   // real904: measured, never the column's guess
+                LensNoteLine(keys, l, overlay, board.CountedOn);   // K322 S6: inside the keys, so a lens change rebuilds the line and its slip together
                 view.SetLens(l);
                 LayoutRebuilder.MarkLayoutForRebuild((RectTransform)parent);
             }
@@ -504,21 +501,34 @@ namespace PoliSim.UI
                 kv.Value.Words.color = on ? PoliSimTheme.Card : PoliSimTheme.TextPrimary;
             }
             BuildKeys(keys, lens, s.Presidential, board.Independent != null ? board.IndependentInk : (Color?)null);
-            note.text = LensNote(lens);
-            noteSize.minHeight = noteSize.preferredHeight = WrappedHeight(note.text, Px(14f), PoliSimTheme.Document, MapWidth);
+            LensNoteLine(keys, lens, overlay, board.CountedOn);
         }
 
         private static string LensWords(UsTileView.Lens l) => l == UsTileView.Lens.President ? "President" : l == UsTileView.Lens.Congress ? "Congress" : "Delegations";
 
+        /// <summary>A lens's slip - on its chip, so every lens's words are on the board whichever lens is drawn, and on the key line under the map. K322 S6
+        /// (K320): the note the key line once spelled out at rest, in fragments.</summary>
         private static string[] LensSlip(UsTileView.Lens l, DateTime countedOn) =>
-            l == UsTileView.Lens.President ? new[] { "ONE CELL PER ELECTOR, INKED BY THE CALL" }
-            : l == UsTileView.Lens.Congress ? new[] { "THE SAME CELLS: A STATE'S ELECTORS ARE", "ITS HOUSE SEATS PLUS ITS TWO SENATORS" }
-            : new[] { "HOW THE HOUSE WOULD VOTE ON " + (countedOn != DateTime.MinValue ? DeskDay(countedOn) : "THE COUNT'S DAY") + ":", "EACH STATE WHOLE, BY ITS DELEGATION'S MAJORITY" };
+            l == UsTileView.Lens.President ? new[] { "ONE CELL PER ELECTOR, INKED BY THE CALL", "A BLOCK IS ITS STATE'S ELECTORS", "ME AND NE: NUMBERED CELLS ARE DISTRICTS' ELECTORS", "DASHED IS NOT YET DECLARED" }
+            : l == UsTileView.Lens.Congress ? new[] { "THE SAME CELLS RE-INKED: A STATE'S ELECTORS ARE", "ITS HOUSE SEATS PLUS ITS TWO SENATORS", "FIRST TWO CELLS: ITS SENATORS, HATCHED WHEN NOT UP", "THEN ITS HOUSE DELEGATION, REP FIRST · DC HAS NO VOTE" }
+            : new[] { "HOW THE HOUSE WOULD VOTE ON " + (countedOn != DateTime.MinValue ? DeskDay(countedOn) : "THE COUNT'S DAY") + ":", "EACH STATE WHOLE, BY ITS DELEGATION'S MAJORITY", "IN THE HOUSE ELECTED TONIGHT", "A TIED DELEGATION CASTS NO VOTE · DC HAS NONE" };
 
+        /// <summary>K322 S6 (K320): the lens's key line at rest - one line, no sentence, the map's grammar ("1 cell = 1 deputy" on the Polish night); the
+        /// sentences it replaced are <see cref="LensSlip"/>.</summary>
         private static string LensNote(UsTileView.Lens l) =>
-            l == UsTileView.Lens.President ? "One cell, one elector: a block is its state's electors. In ME and NE the numbered cells are the districts' electors. Dashed is not yet declared."
-            : l == UsTileView.Lens.Congress ? "The same cells re-inked: a block's first two cells are its senators (hatched when not up), the rest its House delegation, REP first. DC has no vote."
-            : "Each state whole by its delegation's majority in the House elected tonight. A tied delegation casts no vote; DC has none.";
+            l == UsTileView.Lens.President ? "1 cell = 1 elector · dashed = not declared"
+            : l == UsTileView.Lens.Congress ? "senators first · then the House, REP first"
+            : "1 state = 1 vote · tied = none";
+
+        /// <summary>K322 S6: the key line under the map, the last row of the keys (rebuilt with them on a lens change), the lens's slip hung on it.</summary>
+        private static void LensNoteLine(Transform keys, UsTileView.Lens l, Transform overlay, DateTime countedOn)
+        {
+            Text note = CanvasChrome.MakeTextRealWeight(keys, "LensNote", LensNote(l), PoliSimTheme.Document, Px(14f), PoliSimTheme.TextMuted, TextAnchor.UpperLeft);
+            note.horizontalOverflow = HorizontalWrapMode.Wrap;
+            LayoutElement size = note.gameObject.AddComponent<LayoutElement>();
+            size.minHeight = size.preferredHeight = WrappedHeight(note.text, Px(14f), PoliSimTheme.Document, MapWidth);   // real904: measured, never the column's guess
+            CanvasRows.Slip(note.gameObject, overlay, "THE MAP · " + LensWords(l).ToUpperInvariant(), LensSlip(l, countedOn));
+        }
 
         /// <summary>The key under the map for a lens, in rows that fit the column (29a's keys; a key never wider than the map).</summary>
         private static void BuildKeys(Transform keys, UsTileView.Lens l, bool presidential, Color? independent = null)
@@ -834,9 +844,16 @@ namespace PoliSim.UI
             if (s.Complete) { BuildUntilTheOath(parent, board, overlay); }
             else
             {
-                PlWrapped(parent, "Each state declares its three verdicts at once: its electors, its delegation and its Senate seat. A call lands when a line is crossed. "
-                    + "The sitting President and Congress serve until " + ShortDay(board.TakesOffice != DateTime.MinValue ? board.TakesOffice : board.Convenes) + " and " + ShortDay(board.Convenes) + ".",
-                    Px(14f), PoliSimTheme.TextMuted);
+                // K322 S6 (K320): the paragraph that stood here is the caption's slip, in fragments; a midterm declares two verdicts, not three (no electors)
+                Text caption = PlWrapped(parent, (s.Presidential ? "3" : "2") + " verdicts a state · at once", Px(14f), PoliSimTheme.TextMuted);
+                CanvasRows.Slip(caption.gameObject, overlay, "THE COUNT BY STATE", new[]
+                {
+                    "EACH STATE DECLARES ITS " + (s.Presidential ? "THREE" : "TWO") + " VERDICTS AT ONCE",
+                    s.Presidential ? "ITS ELECTORS, ITS DELEGATION AND ITS SENATE SEAT" : "ITS DELEGATION AND ITS SENATE SEAT",
+                    "A CALL LANDS WHEN A LINE IS CROSSED",
+                    "THE SITTING PRESIDENT AND CONGRESS SERVE UNTIL " + ShortDay(board.TakesOffice != DateTime.MinValue ? board.TakesOffice : board.Convenes).ToUpperInvariant()
+                        + " AND " + ShortDay(board.Convenes).ToUpperInvariant(),
+                });
             }
         }
 
@@ -912,10 +929,22 @@ namespace PoliSim.UI
             {
                 Transform line = CanvasRows.HRow(parent, "Otherwise", Px(22f), 4f);
                 Edge(line, PoliSimTheme.Hairline, top: true);
-                PlText(line, "Words", otherwise.Count == 0 ? "called otherwise: none" : "otherwise: " + string.Join(" · ", otherwise.Count > 6 ? otherwise.GetRange(0, 6) : otherwise) + (otherwise.Count > 6 ? " …" : string.Empty),
-                    Px(14f), PoliSimTheme.TextPrimary, PoliSimTheme.Document);
+                PlText(line, "Words", OtherwiseWords(otherwise), Px(14f), PoliSimTheme.TextPrimary, PoliSimTheme.Document);
                 CanvasRows.Slip(line.gameObject, overlay, "CALLED OTHERWISE THAN THE RECORD", otherwise.Count == 0 ? new List<string> { "NONE: EVERY STATE AND DISTRICT AS IN THE RECORD" } : SlipLines(string.Join(" · ", otherwise)));
             }
+        }
+
+        /// <summary>K322 S6 (K320: a caption is never cut with "…"): the places called otherwise than the record, as many as the column holds and the rest
+        /// folded to "+N" - six and " …" ran past the 290 column; the slip names every one.</summary>
+        private static string OtherwiseWords(List<string> codes)
+        {
+            if (codes.Count == 0) { return "called otherwise: none"; }
+            for (int shown = codes.Count; shown >= 1; shown--)
+            {
+                string text = "otherwise: " + string.Join(" · ", codes.GetRange(0, shown)) + (shown < codes.Count ? " · +" + Count(codes.Count - shown) : string.Empty);
+                if (shown == 1 || Measure(text, Px(14f), PoliSimTheme.Document) <= ColumnWidth) { return text; }
+            }
+            return "otherwise: +" + Count(codes.Count);
         }
 
         /// <summary>"Until the oath" (29b's answer 8): the electors vote, the new Congress sits, Congress counts (or the House chooses, amber), the oath - on a
@@ -1015,8 +1044,16 @@ namespace PoliSim.UI
             Transform card = Card(right, "Choice", contest.Decided() ? UsInk(contest.WinnerParty) : PoliSimTheme.Hex(0xC9A23A), Px(2f));
             PlWrapped(card, contest.Decided() ? "THE HOUSE HAS CHOSEN" : "THE HOUSE CANNOT CHOOSE", Px(15f), PoliSimTheme.TextMuted);
             PlWrapped(card, contest.Decided() ? chosen + " · " + contest.WinnerParty : "No one has " + Count(majority) + " of " + Count(states), Px(17f), PoliSimTheme.TextPrimary, PoliSimTheme.Body);
-            PlWrapped(card, contest.Decided() ? "The oath " + DeskDay(contest.TakesOffice) + "." : contest.Acting != null ? contest.Acting + " acts from the oath." : "Who acts from the oath follows the Twentieth Amendment.", Px(14f), PoliSimTheme.TextMuted);
-            PlWrapped(right, "Each state casts one vote, by its delegation's majority in the House that sits from 3 January; a tied delegation casts none.", Px(14f), PoliSimTheme.TextMuted);
+            // K322 S6 (K320): no sentence at rest - who acts from the oath as a label, the sentence on the card's slip
+            PlWrapped(card, contest.Decided() ? "oath " + DeskDay(contest.TakesOffice) : contest.Acting != null ? "acting from the oath · " + contest.Acting : "Twentieth Amendment", Px(14f), PoliSimTheme.TextMuted);
+            var choiceSlip = new List<string> { contest.Decided() ? (chosen ?? contest.Winner ?? "-").ToUpperInvariant() + " · " + contest.WinnerParty : "NO ONE HAS " + Count(majority) + " OF " + Count(states) };
+            if (contest.Decided()) { choiceSlip.Add("THE OATH " + DeskDay(contest.TakesOffice)); }
+            else if (contest.Acting != null) { choiceSlip.Add(contest.Acting.ToUpperInvariant() + " ACTS FROM THE OATH"); }
+            else { choiceSlip.Add("WHO ACTS FROM THE OATH"); choiceSlip.Add("FOLLOWS THE TWENTIETH AMENDMENT"); }
+            CanvasRows.Slip(card.gameObject, overlay, contest.Decided() ? "THE HOUSE HAS CHOSEN" : "THE HOUSE CANNOT CHOOSE", choiceSlip);
+            // K322 S6 (K320): the rule's sentence is the caption's slip
+            CanvasRows.Slip(PlWrapped(right, "1 state = 1 vote · tied = none", Px(14f), PoliSimTheme.TextMuted).gameObject, overlay, "ONE VOTE A STATE",
+                new[] { "EACH STATE CASTS ONE VOTE", "BY ITS DELEGATION'S MAJORITY", "IN THE HOUSE THAT SITS FROM 3 JANUARY", "A TIED DELEGATION CASTS NONE" });
             BuildFooter(content, verdict, screen, null, null, overlay);
             Resolve(contentRect);
             PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";

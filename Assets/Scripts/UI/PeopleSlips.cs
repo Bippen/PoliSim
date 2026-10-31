@@ -102,10 +102,9 @@ namespace PoliSim.UI
             float working = total > 0f ? cohorts.InAgeRange(15, 64) / total * 100f : 0f;
 
             // Level 2: the terms.
+            // K322 S5 (K320 (3): level 2 is one plain sentence, the definition): the three lines it held as one
             book.Terms["WORKING AGE"] = new SlipContent("WORKING AGE · 15–64")
-                .Add("15 — WORKING AGE BEGINS · 65 — OLD AGE · THE DASHED LINES BOUND IT")
-                .Add("BOTH ARE THE MODEL'S · THE DEPENDENCY RATIOS DIVIDE BY IT")
-                .Add(P1(working) + "% OF ALL");
+                .Add("15 — WORKING AGE BEGINS · 65 — OLD AGE · THE DASHED LINES BOUND IT; BOTH ARE THE MODEL'S, AND THE DEPENDENCY RATIOS DIVIDE BY IT · " + P1(working) + "% OF ALL");
             AddKey(book);
             // §732: the voter groups' shares, which the electorate's bar carried at rest, as the eligible's level 2
             var voterGroups = new SlipContent("VOTER GROUPS · POPULATION SHARE OF THE ELIGIBLE");
@@ -141,13 +140,17 @@ namespace PoliSim.UI
             }
 
             // The turnout lane's head (◇).
+            // K322 S5 (K321 (f): a level-1 line is at most 10 counted words): each clause a line of its own
             book.Anchors["head:turnout"] = turnoutSourced
                 ? new SlipContent("TURNOUT BY AGE · [[DATED]]")
                     .Add("[[SOURCED]] · SCB 2014 · A PUBLISHED SERIES")
-                    .Add("DRAWN ONLY WHERE A BAND IS ELIGIBLE; NO LANE WHERE NOT")
+                    .Add("DRAWN ONLY WHERE A BAND IS ELIGIBLE")
+                    .Add("NO LANE WHERE NOT")
                     .Add($"VOTING AGE {votingAge} — INSIDE THE {votingBandFrom}–{votingBandFrom + 4} BAND, SPLIT PRO RATA")
                 : new SlipContent("TURNOUT BY AGE · NO SOURCE")
-                    .Add("NO SOURCE FOR THIS COUNTRY - NO LANE IS DRAWN RATHER THAN ONE DRAWN FROM A GUESS");
+                    .Add("NO SOURCE FOR THIS COUNTRY")
+                    .Add("NO LANE IS DRAWN")
+                    .Add("RATHER THAN ONE DRAWN FROM A GUESS");
 
             // Dependency: the head, the four figures and the age split.
             book.Anchors["head:dependency"] = new SlipContent("DEPENDENCY · AS THE SUBSTRATE DERIVES IT · [[DERIVED]]")
@@ -277,12 +280,26 @@ namespace PoliSim.UI
             book.Anchors["health:mortality"] = Reading("TREATABLE DEATHS · " + Figure(s.TreatableMortality, 0, " ⁄100k"), "QUALITY · TREATABLE MORTALITY · DEATHS / 100 000 · AGE-STD", "OECD HEALTH_STAT · TRTM" + Year(h.TreatableMortalityYear), "SOURCED",
                 Range(40f, 120f, true), Rank(s.TreatableMortality, Peers(world, country.Id, c => c.Health != null && c.Health.Seeded ? c.Health.TreatableMortality : -1f), true),
                 "HEALTH LINE — AGE-COST ▸ · EFFICIENCY ▸ · " + effectiveness, true);
-            book.Anchors["health:cataract"] = h.HasWaits
-                ? Reading("CATARACT WAIT · " + Figure(s.WaitCataractDays, 0, " d") + " ◇", "WAITING · CATARACT · MEAN DAYS · SPECIALIST TO TREATMENT", "OECD DF_WAITING · CM131_138" + Year(h.WaitYear), "SOURCED",
-                        Range(0f, 180f, true), Rank(s.WaitCataractDays, Peers(world, country.Id, c => c.Health != null && c.Health.Seeded ? c.Health.WaitCataract : -1f), true), "HEALTH LINE — AGE-COST ▸ · " + effectiveness, true)
-                    .Add("WAITING · KNEE REPLACEMENT · " + Figure(s.WaitKneeDays, 0, " d") + " · OECD DF_WAITING · CM8154" + Year(h.WaitYear))
-                : Gap(Symbol.Absent, "CATARACT WAIT · WAITING · KNEE REPLACEMENT", "NO COMPARABLE SERIES PUBLISHED · SE IT PL REPORT", "OECD DF_WAITING · NO ROWS FOR " + country.Id.ToString().ToUpperInvariant(),
+            if (h.HasWaits)
+            {
+                // K322 S5 (K320 (3), K321 (f): a level-1 slip is at most 4 lines - this one held 7): the definition, the source, the range and the rank at
+                // level 1; what reaches the wait, its draft coupling and the knee replacement's wait are the level-2 slip of the marked CATARACT
+                string waitRank = Rank(s.WaitCataractDays, Peers(world, country.Id, c => c.Health != null && c.Health.Seeded ? c.Health.WaitCataract : -1f), true);
+                var cataract = new SlipContent("CATARACT WAIT · " + Figure(s.WaitCataractDays, 0, " d") + " ◇")
+                    .Add("WAITING · [[CATARACT]] · MEAN DAYS · SPECIALIST TO TREATMENT")
+                    .Add("OECD DF_WAITING · CM131_138" + Year(h.WaitYear) + " · [[SOURCED]]")
+                    .Add(Range(0f, 180f, true));
+                if (waitRank != null) { cataract.Add(waitRank); }
+                book.Anchors["health:cataract"] = cataract;
+                book.Terms["CATARACT"] = new SlipContent("CATARACT · AND THE KNEE")
+                    .Add("REACHED BY · HEALTH LINE — AGE-COST ▸ · " + effectiveness + " · THE COUPLING IS A DRAFT UNTIL MEASURED · WAITING · KNEE REPLACEMENT · "
+                         + Figure(s.WaitKneeDays, 0, " d") + " · OECD DF_WAITING · CM8154" + Year(h.WaitYear));
+            }
+            else
+            {
+                book.Anchors["health:cataract"] = Gap(Symbol.Absent, "CATARACT WAIT · WAITING · KNEE REPLACEMENT", "NO COMPARABLE SERIES PUBLISHED · SE IT PL REPORT", "OECD DF_WAITING · NO ROWS FOR " + country.Id.ToString().ToUpperInvariant(),
                     "NOT SIMULATED — EFFECTIVENESS REACHES QUALITY DIRECTLY");
+            }
             for (int i = 0; i < HealthFamily.SupportingNames.Length; i++)
             {
                 book.Anchors["health:sup:" + i.ToString(CultureInfo.InvariantCulture)] = h.HasSupporting
@@ -307,7 +324,7 @@ namespace PoliSim.UI
                 .Add("SOURCED · OECD EAG · EUROSTAT · 2023–25")
                 .Add("STUDENTS PER TEACHER IS THE EDUCATION MINISTER'S CARD'S KEY, NOT A PAGE ROW")
                 .Add("COUPLINGS: THE EDUCATION SPINE'S TABLES, DRAFT UNTIL MEASURED");
-            book.Anchors["education:pisa"] = Gap(Symbol.Billed, "PISA SCORE · ACADEMIC SCORE · PISA · PISA MEAN · HIGHER IS BETTER", "THE TABLES SIT BEHIND THE WWW HOST, NOT ON THE SDMX API",
+            book.Anchors["education:pisa"] = Gap(Symbol.Billed, "PISA SCORE · ACADEMIC SCORE · PISA · PISA MEAN · HIGHER IS BETTER", "TABLES ON THE WWW HOST, NOT THE SDMX API",   // K322 S5: a line of at most 10 words
                 "OECD PISA 2022 · VOL. I · TABLES I.B1.2.1–3", "REACHED BY · STUDENTS PER TEACHER ▸ · EFFECTIVENESS (C7) ▸");
             book.Anchors["education:graduation"] = Gap(Symbol.Billed, "GRADUATION RATE · % AT TYPICAL AGE · UPPER SEC.", "NO OECD FLOW HOLDS THE RATE; THE FLOWS HOLD COUNTS",
                 "OECD EAG 2024 · TABLE B3.1", "REACHED BY · EARLY LEAVERS ▸");

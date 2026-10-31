@@ -1289,20 +1289,38 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
             }
 
+            // K322 S5: the menu's own slips - each row's when-saved and reason, and the help line's rules (anchors in the scroll's content kept in screen
+            // terms and brought back over the area after it, clipped to the list)
+            var savesBook = new PeopleSlips.Book();
+            var savesRowAnchors = new List<(string Id, Rect Screen)>();
+            if (Event.current.type == EventType.Repaint) { _slipAnchors.Clear(); }
             _savesScrollPosition = GUILayout.BeginScrollView(_savesScrollPosition);
             bool anySaves = _saveList.Count > 0;
             if (!anySaves)
             {
-                GUILayout.Label("No saved games yet. Name one above and Save, or press F5 in play for a quicksave (slot1).", _labelStyle);
+                GUILayout.Label("No saved games yet", _labelStyle);   // K322 S5: no sentence at rest - how to make one is its slip
+                if (Event.current.type == EventType.Repaint) { savesRowAnchors.Add(("saves:empty", GUIUtility.GUIToScreenRect(GUILayoutUtility.GetLastRect()))); }
+                savesBook.Anchors["saves:empty"] = new SlipContent("NO SAVED GAMES YET").Add("Name one above and Save").Add("Or press F5 in play for a quicksave (slot1)");
             }
 
+            int saveRow = 0;
             foreach (SaveGameService.SaveHeader header in _saveList)
             {
                 GUILayout.BeginHorizontal();
+                // K322 S5 (K320 (2): a caption is one line): the row is the save's name, its country and its game date on one line (folded at a dot where
+                // the column is narrow); when it was saved, and an incompatible save's reason, are the row's slip
                 string summary = header.Compatible
-                    ? $"{header.Name}   -   {DisplayName.Of(header.PlayerCountryId.ToString())}, Turn {header.Turn}, {header.Date:yyyy-MM-dd}   (saved {header.SavedAtUtc:yyyy-MM-dd HH:mm} UTC)"
-                    : $"{header.Name}   -   incompatible: {header.Error}";
-                GUILayout.Label(summary, _labelStyle, GUILayout.ExpandWidth(true));
+                    ? $"{header.Name} · {DisplayName.Of(header.PlayerCountryId.ToString())} · Turn {header.Turn} · {header.Date:yyyy-MM-dd}"
+                    : $"{header.Name} · incompatible";
+                GUIStyle rowFace = new GUIStyle(_labelStyle) { wordWrap = false, clipping = TextClipping.Clip };
+                float rowWidth = Mathf.Max(1f, width - width * 0.2f - width * 0.15f - _boxStyle.padding.horizontal - V35.Px(32f));
+                GUILayout.Label(DeskFoldClauses(summary, rowFace, rowWidth, out _, maxWords: 99), rowFace, GUILayout.ExpandWidth(true));
+                string rowKey = "saves:row:" + saveRow.ToString(CultureInfo.InvariantCulture);
+                if (Event.current.type == EventType.Repaint) { savesRowAnchors.Add((rowKey, GUIUtility.GUIToScreenRect(GUILayoutUtility.GetLastRect()))); }
+                savesBook.Anchors[rowKey] = header.Compatible
+                    ? new SlipContent(header.Name.ToUpperInvariant()).Add($"{DisplayName.Of(header.PlayerCountryId.ToString())} · Turn {header.Turn} · {header.Date:yyyy-MM-dd}").Add($"Saved {header.SavedAtUtc:yyyy-MM-dd HH:mm} UTC")
+                    : new SlipContent(header.Name.ToUpperInvariant()).Add("Incompatible").Add(header.Error ?? string.Empty);
+                saveRow++;
 
                 bool confirmingLoad = header.Path == _confirmLoadPath;
                 bool dirty = inGame && _simulationManager.CurrentDate != _lastPersistenceDate;
@@ -1349,9 +1367,26 @@ namespace PoliSim.UI
                 GUILayout.EndHorizontal();
             }
             GUILayout.EndScrollView();
+            Rect list = GUILayoutUtility.GetLastRect();
+            if (Event.current.type == EventType.Repaint)
+            {
+                foreach ((string id, Rect screen) in savesRowAnchors)
+                {
+                    Rect r = GUIUtility.ScreenToGUIRect(screen);
+                    float top = Mathf.Max(r.y, list.y), bottom = Mathf.Min(r.yMax, list.yMax);
+                    if (bottom > top) { SlipAnchor(new Rect(r.x, top, r.width, bottom - top), id); }
+                }
+            }
 
-            GUILayout.Label("Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F5 quicksaves to slot1, F9 loads it.", _labelStyle);
-            if (PoliSimWidgets.Button(inGame ? "Close" : "Back to the menu", _neutralActionButtonStyle))
+            // K322 S5 (K320 (2): no sentence at rest): the keys at rest; what loading, saving over and deleting do is the line's slip
+            GUILayout.Label("F5 quicksave · F9 load", _labelStyle);
+            SlipAnchor(GUILayoutUtility.GetLastRect(), "saves:help");
+            savesBook.Anchors["saves:help"] = new SlipContent("SAVED GAMES")
+                .Add("Loading replaces the running game · resumes PAUSED")
+                .Add("Saving over a name keeps the previous file as .bak")
+                .Add("Delete removes the save and its .bak")
+                .Add("F5 quicksaves to slot1 · F9 loads it");
+            if (PoliSimWidgets.Button(inGame ? "Close" : "Back to menu", _neutralActionButtonStyle))
             {
                 _savesMenuOpen = false;
                 _confirmDeletePath = null;
@@ -1360,6 +1395,7 @@ namespace PoliSim.UI
             }
 
             GUILayout.EndVertical();
+            DrawSlips(savesBook, new Rect(0f, 0f, area.width, area.height));
             GUILayout.EndArea();
         }
 
@@ -2103,8 +2139,19 @@ namespace PoliSim.UI
                     float marginY = UiScreen.Height * ScreenMarginFraction;
                     float areaWidth = UiScreen.Width - marginX * 2f;
                     GUILayout.BeginArea(new Rect(marginX, marginY, areaWidth, UiScreen.Height - marginY * 2f));
-                    if (_isGameOver) { DrawHoldBannerLabel($"GAME OVER - {_gameOverReason}"); }
+                    // K322 S5 (K320 (5)): the line's chips say the hold in two words; each opens its slip with the hold whole, over the Canvas - the
+                    // masthead's book, rebuilt here as the strip rebuilds it, its anchors the chips'
+                    if (Event.current.type == EventType.Repaint) { _mastheadAnchors.Clear(); }
+                    _mastheadSlipBook = new PeopleSlips.Book();
+                    if (_isGameOver)
+                    {
+                        DrawHoldBannerLabel(GameOverLine());
+                        _mastheadSlipBook.Anchors["strip:gameover"] = GameOverSlip();
+                        MastheadAnchor(GUILayoutUtility.GetLastRect(), "strip:gameover");
+                    }
                     else { DrawHoldChips(holds, areaWidth); }   // §648: the one line over the Canvas as on the frame
+                    BeginSlipAnchors();
+                    DrawSlips(new PeopleSlips.Book(), new Rect(0f, 0f, areaWidth, UiScreen.Height - marginY * 2f));
                     GUILayout.EndArea();
                 }
             }
@@ -6063,8 +6110,12 @@ namespace PoliSim.UI
             _topStripHeight = 0f;
             if (_isGameOver)
             {
-                string over = $"GAME OVER - {_gameOverReason}";
+                // K322 S5 (K320 (2)): GAME OVER and the reason's head at rest; the reason whole is the line's slip (the masthead's book, read on every page)
+                string over = GameOverLine();
                 DrawHoldBannerLabel(over);
+                _mastheadSlipBook = new PeopleSlips.Book();
+                _mastheadSlipBook.Anchors["strip:gameover"] = GameOverSlip();
+                if (Event.current.type == EventType.Repaint) { MastheadAnchor(GUILayoutUtility.GetLastRect(), "strip:gameover"); }
                 GUILayout.Space(4f);
                 return _holdBannerStyle.CalcHeight(new GUIContent(over), columnWidth - _holdBannerStyle.margin.horizontal) + _holdBannerStyle.margin.vertical + 4f;
             }
@@ -6145,7 +6196,7 @@ namespace PoliSim.UI
         /// <summary>The banner's text as one string, or null when nothing holds the clock - the same line the chips draw, for measurement and the log.</summary>
         private string BuildFoldedInterruptText(bool includeBudgetProcess)
         {
-            if (_isGameOver) { return $"GAME OVER - {_gameOverReason}"; }
+            if (_isGameOver) { return GameOverLine(); }
             List<(string Label, HoldCell Cell)> holds = CollectHolds(includeBudgetProcess);
             if (holds.Count == 0) { return null; }
             var parts = new List<string>(holds.Count);
@@ -6186,17 +6237,29 @@ namespace PoliSim.UI
                 int shown = 0;
                 for (int i = 0; i < holds.Count; i++)
                 {
+                    // K322 S5 (K320 (2), K321 (b) LABEL: a control's label is at most 3 words): the chip is the cell and the hold in two words; the hold
+                    // whole is the chip's slip, in the masthead's book (DrawCanvasSeamOverlay opens it over the Canvas)
                     string caption = HoldCellCaption(holds[i].Cell);
-                    string text = caption == null ? holds[i].Label : caption + " · " + holds[i].Label;
+                    string words = HoldChipWords(holds[i].Label);
+                    string text = caption == null ? words : caption + " · " + words;
                     float w = _holdChipStyle.CalcSize(new GUIContent(text)).x + _holdChipStyle.margin.horizontal;
                     bool last = i == holds.Count - 1;
                     if (used + w + (last ? 0f : moreWidth) > width) { break; }
                     if (holds[i].Cell == HoldCell.None) { GUILayout.Label(text, _holdChipStyle, GUILayout.Height(inner)); }
                     else if (PoliSimWidgets.Button(text, _holdChipStyle, GUILayout.Height(inner))) { GoToHoldCell(holds[i].Cell); }
+                    MastheadAnchor(GUILayoutUtility.GetLastRect(), "hold:" + i.ToString(CultureInfo.InvariantCulture));
+                    _mastheadSlipBook.Anchors["hold:" + i.ToString(CultureInfo.InvariantCulture)] = HoldSlip(holds[i].Label, holds[i].Cell);
                     used += w;
                     shown++;
                 }
-                if (shown < holds.Count) { GUILayout.Label($"+{holds.Count - shown} MORE", _holdChipStyle, GUILayout.Height(inner)); }
+                if (shown < holds.Count)
+                {
+                    GUILayout.Label($"+{holds.Count - shown} MORE", _holdChipStyle, GUILayout.Height(inner));
+                    var more = new SlipContent("ALSO WAITING");
+                    for (int i = shown; i < holds.Count; i++) { AddHoldLines(more, holds[i].Label, holds[i].Cell); }
+                    MastheadAnchor(GUILayoutUtility.GetLastRect(), "hold:more");
+                    _mastheadSlipBook.Anchors["hold:more"] = more;
+                }
             }
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
@@ -9204,7 +9267,7 @@ namespace PoliSim.UI
                 GUILayout.BeginVertical(_boxStyle);
             }
 
-            GUILayout.Label($"DECISION - {GetPortfolioName(portfolio)}: {decision.Name}", _eventBannerStyle);
+            GUILayout.Label(decision.Name, _eventBannerStyle);   // K322 S5: the decision's name - the card above it names the cabinet decision and its portfolio, and its slip both
             GUILayout.Label(decision.Description, _labelStyle);
 
             // P6-6 (board 8f, 2026-09-04): the option is ONE ROW, three cells - the brass button at left (one width for every
@@ -9233,7 +9296,13 @@ namespace PoliSim.UI
                 GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
                 GUILayout.Label(option.Label, _headerStyle);
                 DrawCabinetOptionCostLine(option);
-                GUILayout.Label(canEstimate ? EffectArrowsRenderer.ScopeLineOption : "The ministry cannot estimate this option - its knowledge is below the floor.", EffectArrowsRenderer.ScopeStyle(_labelStyle));
+                // K322 S5 (K320 (2): no sentence at rest): the scope line's head at rest, the scope whole its slip (the Docket's book; anchors in the scroll's
+                // content, moved with the docket's own)
+                GUILayout.Label(canEstimate ? "AUTHORED SHOCKS" : "NO MINISTRY ESTIMATE", EffectArrowsRenderer.ScopeStyle(_labelStyle));
+                SlipAnchor(GUILayoutUtility.GetLastRect(), canEstimate ? "docket:scope" : "docket:noestimate");
+                _docketSlipBook.Anchors[canEstimate ? "docket:scope" : "docket:noestimate"] = canEstimate
+                    ? new SlipContent("AUTHORED SHOCKS").Add("APPLIED WHEN THE OPTION IS TAKEN").Add("ONE POINT, NOT A RANGE").Add("ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE").Add("IN THIS PANEL ONLY")
+                    : new SlipContent("NO MINISTRY ESTIMATE").Add("THE MINISTRY CANNOT ESTIMATE THIS OPTION").Add("ITS KNOWLEDGE IS BELOW THE FLOOR");
                 GUILayout.EndVertical();
                 GUILayout.Space(8f);
                 GUILayout.BeginVertical(GUILayout.Width(plateWidth));
@@ -9242,7 +9311,7 @@ namespace PoliSim.UI
                 if (canEstimate)
                 {
                     var arrows = CabinetOptionArrows(option, portfolio);
-                    if (arrows.Count == 0) { GUI.Label(plate, "No modelled shock beyond the budget.", _labelStyle); }
+                    if (arrows.Count == 0) { GUI.Label(plate, "No modelled shock beyond the budget", _labelStyle); }
                     else { EffectArrowsRenderer.Draw(plate, arrows, _labelStyle); }
                 }
                 GUILayout.EndVertical();
@@ -9903,7 +9972,17 @@ namespace PoliSim.UI
             BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
             bool budgetProcessOpen = _simulationManager.GetPendingBudgetProcess(PlayerCountryId);
 
-            GUILayout.Label(BuildBudgetBillStatusText(), _labelStyle);
+            // K322 S5 (K320 (2): no sentence at rest): the Docket's body says the status in a few words; the status whole (the line the Budget page prints,
+            // BuildBudgetBillStatusText) is its slip, a sentence or clause a line
+            GUILayout.Label(DocketBudgetStatus(pendingBill, budgetProcessOpen), _labelStyle);
+            SlipAnchor(GUILayoutUtility.GetLastRect(), "docket:budgetstatus");
+            var statusSlip = new SlipContent("BUDGET PROCESS");
+            foreach (string part in System.Text.RegularExpressions.Regex.Split(BuildBudgetBillStatusText(), @"(?<=[.;])\s+|\s-\s"))
+            {
+                string clause = part.Trim().TrimEnd('.', ';');
+                if (clause.Length > 0) { statusSlip.Add(char.ToUpperInvariant(clause[0]) + clause.Substring(1)); }
+            }
+            _docketSlipBook.Anchors["docket:budgetstatus"] = statusSlip;
 
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && budgetProcessOpen;
@@ -9930,12 +10009,26 @@ namespace PoliSim.UI
             bool ambient = GUI.enabled; GUI.enabled = true;
             GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
             BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
+            // K322 S5 (K320 (2); K321 (b) LABEL: a control is at most 3 words): each state in three words at rest, its sentence the slip (the Docket's book)
             if (pending == null || !pending.GovernmentBill) { DrawLeverLock(kind: Congress.Kind.Budget); }
-            else if (tabled != null) { GUILayout.Label($"YOUR ALTERNATIVE IS TABLED · THE CHAMBER DECIDES IN {pending.DaysRemaining} DAY(S)", caption); }
-            else if (!PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId)) { GUILayout.Label("THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE", caption); }
-            else if (PoliSimWidgets.Button("Table an Alternative Budget", _implementButtonStyle, GUILayout.Width(CtaWidth())))
+            else if (tabled != null)
             {
-                if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { NoteBudgetRefusal(refused); Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
+                GUILayout.Label("ALTERNATIVE TABLED · " + pending.DaysRemaining.ToString(CultureInfo.InvariantCulture) + " D", caption);
+                SlipAnchor(GUILayoutUtility.GetLastRect(), "docket:alternative");
+                _docketSlipBook.Anchors["docket:alternative"] = new SlipContent("YOUR ALTERNATIVE").Add("YOUR ALTERNATIVE IS TABLED").Add($"THE CHAMBER DECIDES IN {pending.DaysRemaining} DAY(S)");
+            }
+            else if (!PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId))
+            {
+                GUILayout.Label("ALTERNATIVE NOT MODELLED", caption);
+                SlipAnchor(GUILayoutUtility.GetLastRect(), "docket:alternative");
+                _docketSlipBook.Anchors["docket:alternative"] = new SlipContent("NO ALTERNATIVE").Add("THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED").Add("THE GOVERNMENT'S BILL IS VOTED ALONE");
+            }
+            else
+            {
+                bool table = PoliSimWidgets.Button("Table Draft", _implementButtonStyle, GUILayout.Width(CtaWidth()));
+                SlipAnchor(GUILayoutUtility.GetLastRect(), "docket:alternative");
+                _docketSlipBook.Anchors["docket:alternative"] = new SlipContent("TABLE AN ALTERNATIVE BUDGET").Add("YOUR DRAFT, SET AGAINST THE GOVERNMENT'S BUDGET");
+                if (table && !_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { NoteBudgetRefusal(refused); Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
             }
             GUI.enabled = ambient;
         }
@@ -10088,6 +10181,28 @@ namespace PoliSim.UI
                 : "No budget bill currently before " + Legislature + ". The annual process opens on your country's own fiscal-year date.";
         }
 
+        /// <summary>
+        /// K322 S5 (K320 (2): a caption is one line of at most 8 words, no sentence at rest): the Docket body's status in a few words - the branches of
+        /// <see cref="BudgetBillStatusCore"/> and <see cref="UsBudgetStatusText"/>, each said short (who has the budget, where, the days left); the status whole
+        /// is the line's slip. A refusal given today leads it, as it leads the whole.
+        /// </summary>
+        private string DocketBudgetStatus(BudgetBill pendingBill, bool processOpen)
+        {
+            string days = pendingBill != null ? " · " + pendingBill.DaysRemaining.ToString(CultureInfo.InvariantCulture) + " d" : string.Empty;
+            string core;
+            bool us = UsBudgetProcedure.Applies(_playerCountry);
+            if (us && DeskOf(pendingBill) is DocketEntry desk) { core = "On the President's desk · law " + DeskLawDay(desk); }
+            else if (us && pendingBill != null && pendingBill.ContinuingResolution) { core = "Continuing resolution before Congress" + days; }
+            else if (pendingBill != null && pendingBill.GovernmentBill) { core = (us ? "The president's budget before Congress" : "The government's budget before the chamber") + days; }
+            else if (pendingBill != null) { core = (us ? "Your budget before Congress" : "A budget bill before " + Legislature) + days; }
+            else if (_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId)) { core = "Your first budget is open"; }
+            else if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _)) { core = Congress.Applies(_playerCountry) ? "The president proposes the budget" : "The government lays the budget"; }
+            else if (processOpen) { core = "The annual budget process is open"; }
+            else { core = "No budget bill before " + Legislature; }
+            bool refusedToday = _budgetRefusal != null && _simulationManager.CurrentDate.Date == _budgetRefusalOn;
+            return refusedToday ? "Refused today · " + core : core;
+        }
+
         /// <summary>PS-6 US-21b: a pending bill's countdown in a label's words - "resolves in N day(s)" while it is before the legislature (every country's
         /// words, unchanged); on the player-president's docket, the day it becomes law unless he answers.</summary>
         private string ResolvesIn(int daysRemaining, DocketEntry desk) => desk == null ? $"resolves in {daysRemaining} day(s)" : "on the President's desk - law on " + DeskLawDay(desk) + " unless answered";
@@ -10231,14 +10346,6 @@ namespace PoliSim.UI
                 default:
                     return caps ? "THE STATUTE WRITES NO MOVE" : "stands";
             }
-        }
-
-        /// <summary>AF-36: the passed carbon figure's line for a slip - its year and the day it yields - or null where none stands.</summary>
-        private string PassedCarbonFigureLine()
-        {
-            if (_simulationManager == null || !_simulationManager.TryPassedCarbonFigure(PlayerCountryId, out TaxLine line, out System.DateTime on)) { return null; }
-            return "PASSED · " + TaxRateText(line, line.Rate) + " STANDS UNTIL " + on.ToString("d MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture)
-                + ", THEN " + CarbonYieldWords(on, line.PassedForYear, caps: true);
         }
 
         /// <summary>

@@ -246,12 +246,13 @@ namespace PoliSim.UI
             }
 
             DrawDeskChipStrip(Board(0f, 627f, 1156f, 53f));
-            DrawSlips(_deskSlipBook, inner);
-
+            // K322 S5: game over's plate (its anchor registered as it draws) before the slip pass, so the reason's slip opens over it
             if (_isGameOver)
             {
+                _deskSlipBook.Anchors["gameover"] = GameOverSlip();
                 DrawDeskGameOver(inner);
             }
+            DrawSlips(_deskSlipBook, inner);
         }
 
         /// <summary>
@@ -1070,6 +1071,39 @@ namespace PoliSim.UI
             PoliSimTheme.Rule(new Rect(Mathf.Round(centre) - 0.5f, rect.y, 1f, rect.height), PoliSimTheme.HairlineStrong);
         }
 
+        /// <summary>K322 S5: a signed figure for a slip line ("+0.5", "−2.0", "±0.0").</summary>
+        private static string DeskSigned(float v, int decimals) => (v > 0f ? "+" : v < 0f ? "−" : "±") + UiFormat.Number(Mathf.Abs(v), decimals);
+
+        /// <summary>
+        /// K322 S5 (K320 (2), Elias 2026-10-30: a caption is one line, never cut with "…", and holds at most 8 counted words): <paramref name="text"/>
+        /// folded to the longest run of its WHOLE clauses - split at " - ", "; ", " · ", ": " and ", " - that fits <paramref name="width"/> and the
+        /// word cap, its trailing stop dropped. <paramref name="folded"/> says a clause left the line, so the caller hangs the whole text on the row's
+        /// slip (the words move, never vanish). Where not even the first clause fits, that clause is cut at a word as <see cref="V35Fit"/> cuts (the
+        /// film still names it).
+        /// </summary>
+        private static string DeskFoldClauses(string text, GUIStyle face, float width, out bool folded, int maxWords = 8)
+        {
+            folded = false;
+            if (string.IsNullOrEmpty(text)) { return text; }
+            bool Fits(string t) => face.CalcSize(new GUIContent(t)).x <= width && PoliSim.Testing.DeclutterRules.Words(t) <= maxWords;
+            string whole = text.TrimEnd();
+            if (whole.EndsWith(".", System.StringComparison.Ordinal) && !whole.EndsWith("..", System.StringComparison.Ordinal)) { whole = whole.Substring(0, whole.Length - 1); }   // K320: no sentence at rest
+            if (Fits(whole)) { folded = whole != text.TrimEnd(); return whole; }
+            var cuts = new List<int>();
+            foreach (string sep in new[] { " - ", "; ", " · ", ": ", ", " })
+            {
+                for (int at = whole.IndexOf(sep, System.StringComparison.Ordinal); at > 0; at = whole.IndexOf(sep, at + 1, System.StringComparison.Ordinal)) { cuts.Add(at); }
+            }
+            cuts.Sort();
+            folded = true;
+            for (int i = cuts.Count - 1; i >= 0; i--)
+            {
+                string head = whole.Substring(0, cuts[i]).TrimEnd(' ', ',', ';', ':');
+                if (head.Length > 0 && Fits(head)) { return head; }
+            }
+            return V35Fit(cuts.Count > 0 ? whole.Substring(0, cuts[0]) : whole, face, width, out _);
+        }
+
         /// <summary>
         /// The 1k calendar sheet (Annex B I5): the month page as built (DrawCalendarMonthGrid - C8's weekday row, C9's cells) inside a GUILayout
         /// island, on its v3.5 card since §726; the dated ledger that stood beneath it is This month's card (<see cref="DrawDeskMonthCard"/>).
@@ -1083,9 +1117,15 @@ namespace PoliSim.UI
             Dictionary<int, List<CalendarMarker>> markers = BuildCalendarMonthMarkers(monthStart, today);
 
             Rect inner = DrawV35Card(r);
-            var slip = new SlipContent("CALENDAR").Add("TODAY · " + today.ToString("d MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture))
-                .Add("A DOT IS AN ENTRY IN THIS MONTH'S LEDGER, IN ITS AREA'S INK · A STRUCK DAY HAS PASSED");
-            if (PassedCarbonFigureLine() is string passedCarbon) { slip.Add("CARBON TAX · " + passedCarbon); }   // AF-36 (q36): the date the passed rate reverts, whatever month it falls in
+            // K322 S5 (K320 (3), K321 (f): a level-1 slip is at most 4 lines of at most 10 counted words): the legend's two clauses and the passed carbon
+            // figure's date and statute each on a line of their own, the struck day beside today
+            var slip = new SlipContent("CALENDAR").Add("TODAY · " + today.ToString("d MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture) + " · A STRUCK DAY HAS PASSED")
+                .Add("A DOT · THIS MONTH'S ENTRY, IN ITS AREA'S INK");
+            if (_simulationManager.TryPassedCarbonFigure(PlayerCountryId, out TaxLine passedCarbon, out System.DateTime carbonYields))   // AF-36 (q36): the date the passed rate reverts, whatever month it falls in
+            {
+                slip.Add("CARBON TAX · PASSED · " + TaxRateText(passedCarbon, passedCarbon.Rate) + " UNTIL " + carbonYields.ToString("d MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture));
+                slip.Add(CarbonYieldWords(carbonYields, passedCarbon.PassedForYear, caps: true));
+            }
             _deskSlipBook.Anchors["card:calendar"] = slip;
             Rect head = DrawV35CardHead(inner, "cal", monthStart.ToString("MMMM yyyy", CultureInfo.CurrentCulture), PoliSimTheme.TextSecondary);
             DeskAnchor(head, "card:calendar");
@@ -1199,8 +1239,9 @@ namespace PoliSim.UI
                 float textX = dotX + glyph + V35.Px(8f);
                 float figureWidth = !string.IsNullOrEmpty(marker.Figure) ? Mathf.Ceil(figureFace.CalcSize(new GUIContent(marker.Figure)).x) + V35.Px(8f) : 0f;
                 float textWidth = Mathf.Max(1f, row.xMax - figureWidth - textX);
-                // §726: a long entry is cut at a word with an ellipsis (the floor forbids shrinking it), and the whole entry is the row's slip
-                string label = V35Fit(marker.Label, labelFace, textWidth, out bool cut);
+                // §726: a long entry is the row's slip whole. K322 S5 (K320 (2): a caption is one line, never cut with "…"): at rest it folds to its
+                // whole clauses that fit (the fiscal year's "credit rating reviewed" leaves the row), never a word cut mid-clause
+                string label = DeskFoldClauses(marker.Label, labelFace, textWidth, out bool cut);
                 string date = new System.DateTime(monthStart.Year, monthStart.Month, rowDays[i]).ToString("d MMM", CultureInfo.CurrentCulture);
                 if (abroad && marker.Slip != null)
                 {
@@ -1265,17 +1306,18 @@ namespace PoliSim.UI
             var chipRect = new Rect(inner.x, inner.y + Mathf.Round((headHeight - chipSize.y) * 0.5f), chipSize.x, chipSize.y);
             PoliSimWidgets.Stamp(chipRect, chipText, chipStyle, PoliSimTheme.Caution);
             float nameX = chipRect.xMax + V35.Px(12f);
-            PoliSimWidgets.MeasuredLabel(new Rect(nameX, inner.y, Mathf.Max(1f, inner.xMax - nameX), headHeight), activeEvent.Name, V35Serif(V35.Name, PoliSimTheme.TextPrimary));
+            GUIStyle nameFace = V35Serif(V35.Name, PoliSimTheme.TextPrimary);
+            var nameRect = new Rect(nameX, inner.y, Mathf.Max(1f, inner.xMax - nameX), headHeight);
+            PoliSimWidgets.MeasuredLabel(nameRect, activeEvent.Name, nameFace);
+            // K322 S5 (K320 (2), (3)): no sentence at rest - the description leaves the card for the head's slip: the three shocks in figures at level 1,
+            // the description itself the level-2 sentence (it runs past the 10-word line), opened from the slip's marked THE STORY
+            float headWidth = Mathf.Min(nameRect.width, Mathf.Ceil(nameFace.CalcSize(new GUIContent(activeEvent.Name)).x));
+            DeskAnchor(new Rect(chipRect.x, inner.y, nameX - chipRect.x + headWidth, headHeight), "card:event");
+            _deskSlipBook.Anchors["card:event"] = new SlipContent("BREAKING · " + activeEvent.Name.ToUpperInvariant())
+                .Add("GDP " + DeskSigned(activeEvent.GdpShockPercent, 1) + " % · INFLATION " + DeskSigned(activeEvent.InflationShockPoints, 1) + " PTS · APPROVAL " + DeskSigned(activeEvent.ApprovalEffect, 1))
+                .Add("[[THE STORY]]");
+            _deskSlipBook.Terms["THE STORY"] = new SlipContent("THE STORY").Add(activeEvent.Description);
             float y = inner.y + headHeight + V35.Px(V35.CardHeadGap);
-
-            GUIStyle description = V35SerifWrapped(V35.Floor, PoliSimTheme.TextSecondary);
-            float descriptionHeight = Mathf.Ceil(description.CalcHeight(new GUIContent(activeEvent.Description), inner.width));
-            if (Event.current.type == EventType.Repaint)
-            {
-                UiContainmentGuard.Check("Desk event description", new Rect(inner.x, y, inner.width, descriptionHeight), inner);
-            }
-            GUI.Label(new Rect(inner.x, y, inner.width, descriptionHeight), activeEvent.Description, description);
-            y += descriptionHeight + V35.Px(8f);
 
             var bars = new List<(string label, float value, bool higherIsBetter, float range)>
             {
@@ -1486,8 +1528,49 @@ namespace PoliSim.UI
         /// as the one caption beneath it. No new sprite. The stage beneath stays legible (the read-
         /// only instruments were never gated) while every control is disabled by the frame.
         /// </summary>
+        /// <summary>
+        /// K322 S5 (K320 (2): no sentence at rest): the game-over reason's head at rest - its first clause (before the colon), and where that runs past
+        /// four words, the words before its "after the election of …" or "at year …" (the date moves to the slip) - "Out of parliament", "Out of office".
+        /// The whole reason is <see cref="GameOverSlip"/>.
+        /// </summary>
+        private string GameOverHead()
+        {
+            string reason = (_gameOverReason ?? string.Empty).Trim();
+            int colon = reason.IndexOf(": ", System.StringComparison.Ordinal);
+            int stop = reason.IndexOf(". ", System.StringComparison.Ordinal);
+            int end = colon > 0 && (stop < 0 || colon < stop) ? colon : stop > 0 ? stop : reason.Length;
+            string head = reason.Substring(0, end).TrimEnd('.', ' ');
+            if (PoliSim.Testing.DeclutterRules.Words(head) > 4)
+            {
+                foreach (string tail in new[] { " after ", " at " })
+                {
+                    int at = head.IndexOf(tail, System.StringComparison.Ordinal);
+                    if (at > 0) { head = head.Substring(0, at); break; }
+                }
+            }
+            return head;
+        }
+
+        /// <summary>K322 S5: the frame's game-over line at rest - GAME OVER and the reason's head (<see cref="GameOverHead"/>); the reason whole is the
+        /// line's slip, and the stage plate's.</summary>
+        private string GameOverLine() => string.IsNullOrEmpty(GameOverHead()) ? "GAME OVER" : "GAME OVER · " + GameOverHead();
+
+        /// <summary>K322 S5 (K320 (3), (5)): the game-over reason whole, its clauses a line each (split at the colon, the semicolon, a sentence's stop and the
+        /// comma) - what the line and the plate no longer print at rest.</summary>
+        private SlipContent GameOverSlip()
+        {
+            var slip = new SlipContent("GAME OVER");
+            foreach (string clause in System.Text.RegularExpressions.Regex.Split((_gameOverReason ?? string.Empty).Trim(), @"(?<=[a-z0-9)])(?:: |; |\. |, )"))
+            {
+                string line = clause.Trim().TrimEnd('.');
+                if (line.Length > 0) { slip.Add(line.ToUpperInvariant()); }
+            }
+            return slip;
+        }
+
         private void DrawDeskGameOver(Rect stage)
         {
+            // K322 S5: the plate's reason line is the reason's head, and the plate its slip's anchor (the book holds the slip before the page's slip pass)
             if (Event.current.type != EventType.Repaint)
             {
                 return;
@@ -1503,13 +1586,14 @@ namespace PoliSim.UI
 
             GUIStyle reason = DeskCaptionWrapped(8.5f, PoliSimTheme.TextSecondary);
             reason.alignment = TextAnchor.UpperCenter;
-            string reasonText = (_gameOverReason ?? string.Empty).ToUpperInvariant();
+            string reasonText = GameOverHead().ToUpperInvariant();
             float plateWidth = Mathf.Min(stage.width, Mathf.Max(stampSize.x + Mathf.Round(48f * ux), Mathf.Round(360f * ux)));
             float reasonWidth = plateWidth - Mathf.Round(24f * ux);
             float reasonHeight = string.IsNullOrEmpty(reasonText) ? 0f : reason.CalcHeight(new GUIContent(reasonText), reasonWidth);
             float plateHeight = Mathf.Round(12f * uy) * 2f + stampSize.y + (reasonHeight > 0f ? Mathf.Round(6f * uy) + reasonHeight : 0f);
             var plate = new Rect(stage.center.x - plateWidth * 0.5f, stage.center.y - plateHeight * 0.5f, plateWidth, plateHeight);
             PoliSimTheme.RoundedCard(plate, PoliSimTheme.Tile, PoliSimTheme.Hairline, 0f);
+            SlipAnchor(plate, "gameover");   // K322 S5: the reason whole (DrawDeskStage puts GameOverSlip in the book before the slip pass)
 
             var stampRect = new Rect(plate.center.x - stampSize.x * 0.5f, plate.y + Mathf.Round(12f * uy), stampSize.x, stampSize.y);
             PoliSimWidgets.Stamp(stampRect, stampText, stampStyle, PoliSimTheme.Bad);

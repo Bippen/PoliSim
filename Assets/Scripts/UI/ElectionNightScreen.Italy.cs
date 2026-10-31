@@ -131,7 +131,7 @@ namespace PoliSim.UI
             screen._governsAtRest = ItalyGoverns(screen, governs, night, overlay, governsDense);
             screen._governsDense = DenseView(governs, governsDense);
             screen._governsDense.SetActive(false);   // the film's defect: DenseView builds its view active, and BuildGoverns hides it - this column must too
-            ItalyFooter(screen, content, verdict, overlay);
+            ItalyFooter(screen, content, verdict, night, overlay);
             screen.ApplyItalyViews();
 
             Resolve(contentRect);
@@ -265,21 +265,32 @@ namespace PoliSim.UI
             Rule(content, PoliSimTheme.HairlineStrong);
         }
 
-        /// <summary>The foot at the board's sizes: the verdict at the 14 px floor beside Continue (127 × 24 board px).</summary>
-        private static void ItalyFooter(ElectionNightScreen screen, Transform content, string verdict, Transform overlay)
+        /// <summary>The foot at the board's sizes: the verdict at the 14 px floor beside Continue (127 × 24 board px). K322 S6 (K320, the Sejm night's foot,
+        /// board 11b): outcome first, one line - ✓ or ✗, then the verdict's clauses in a fixed order (the outcome, your party's place, the first sitting), a clause
+        /// that does not fit the room or K320's 8 counted words dropped WHOLE from the end, never cut with an ellipsis (the old foot cut the procedure sentence
+        /// at a word, and the outcome fell under the cut). The whole verdict is the line's slip.</summary>
+        private static void ItalyFooter(ElectionNightScreen screen, Transform content, string verdict, ItalyNight night, Transform overlay)
         {
             Transform foot = CanvasRows.HRow(content, "Footer", Px(30f), Px(16f));
-            // the board's one line (the film's clip: wrapped, the sentence stood 67 units in a 45-unit foot): the verdict cut at a word to the room beside
-            // Continue, measured, with the whole sentence in its slip
             float room = Px(ItalyCountPx + ItalyMapPx + ItalyGovernsPx + 2f * ItalyGutterPx - 2f) - Px(127f) - Px(16f);
-            string shown = FitOneLine(verdict ?? string.Empty, Px(14f), room);
-            Text line = CanvasChrome.MakeTextRealWeight(foot, "Verdict", shown, PoliSimTheme.Document, Px(14f), PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            List<string> clauses = ItalyFootClauses(night, verdict, out bool? carried);
+            Transform verdictRow = CanvasRows.HRow(foot, "VerdictRow", Px(24f), Px(8f));
+            verdictRow.GetComponent<LayoutElement>().flexibleWidth = 1f;
+            if (carried.HasValue)
+            {
+                Verdict(verdictRow, carried.Value, Px(18f));
+                room -= Px(18f) + Px(8f);
+            }
+            string shown = FitClauses(clauses, Px(14f), room);
+            Text line = CanvasChrome.MakeTextRealWeight(verdictRow, "Verdict", shown, PoliSimTheme.Document, Px(14f), PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
             line.horizontalOverflow = HorizontalWrapMode.Overflow;
             line.verticalOverflow = VerticalWrapMode.Overflow;
             line.raycastTarget = false;
-            line.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
+            LayoutElement lineSize = line.gameObject.AddComponent<LayoutElement>();
+            lineSize.flexibleWidth = 1f;
+            lineSize.minWidth = 0f;
             screen.ItalyTexts.Add(line);
-            if (!string.IsNullOrEmpty(verdict)) { CanvasRows.Slip(line.gameObject, overlay, "The verdict", SlipWrap(verdict)); }
+            if (!string.IsNullOrEmpty(verdict)) { CanvasRows.Slip(verdictRow.gameObject, overlay, "The verdict", SlipWrap(verdict)); }
             Button control = CanvasChrome.FacedButton(foot, "ContinueButton", "Continue", PoliSimTheme.Display, Px(16f), PoliSimTheme.TextPrimary, new Vector2(Px(127f), Px(24f)), style: FontStyle.Normal);
             LayoutElement size = control.gameObject.AddComponent<LayoutElement>();
             size.minWidth = size.preferredWidth = Px(127f);
@@ -289,20 +300,68 @@ namespace PoliSim.UI
             CanvasRows.Slip(control.gameObject, overlay, "Continue", SlipWrap("The clock runs again; the mandates follow on the first sitting"));
         }
 
-        /// <summary>The longest run of whole words of <paramref name="text"/> that fits <paramref name="room"/> canvas units at <paramref name="size"/>, with an
-        /// ellipsis where it was cut - measured, never counted in characters.</summary>
-        private static string FitOneLine(string text, int size, float room)
+        /// <summary>K322 S6: the foot's clauses at rest, read from the verdict's own form (`GameController.ResolveItalianVerdict` writes one of four) and the
+        /// night's projection - the outcome, your party's place in it, the first sitting. <paramref name="carried"/>: ✓ where a government is expected, ✗ where
+        /// none is or your party left the chamber, null where the night projects nothing. None where there is no verdict (a staged frame).</summary>
+        private static List<string> ItalyFootClauses(ItalyNight night, string verdict, out bool? carried)
         {
-            if (string.IsNullOrEmpty(text) || Measure(text, size, PoliSimTheme.Document) <= room) { return text; }
-            string[] words = text.Split(' ');
-            string best = string.Empty;
-            for (int i = 1; i <= words.Length; i++)
+            var clauses = new List<string>();
+            carried = null;
+            if (string.IsNullOrEmpty(verdict) || night == null) { return clauses; }
+            string mine = string.IsNullOrEmpty(night.PlayerParty) ? null : Short(CountryId.Italy, night.PlayerParty);
+            string sitting = "first sitting " + night.FirstSitting.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
+            FormationProjection p = night.Projection;
+            if (verdict.StartsWith("Out of parliament", StringComparison.Ordinal))
             {
-                string candidate = string.Join(" ", words, 0, i) + " …";
-                if (Measure(candidate, size, PoliSimTheme.Document) > room) { break; }
-                best = candidate;
+                carried = false;
+                clauses.Add("Out of parliament");
+                if (mine != null) { clauses.Add("no seat for " + mine); }
+                return clauses;
             }
-            return best.Length > 0 ? best : "…";
+            if (verdict.IndexOf("Expected to form:", StringComparison.Ordinal) >= 0)
+            {
+                carried = true;
+                clauses.Add(p != null && p.Expected && p.Cabinet.Count > 0 ? "Expected: " + p.CabinetLine() : "Government expected");
+                if (mine != null && p != null && p.Expected)
+                {
+                    clauses.Add(night.PlayerParty == p.PmParty ? "led by " + mine : p.Cabinet.Contains(night.PlayerParty) ? mine + " in cabinet" : p.Support.Contains(night.PlayerParty) ? mine + " in support" : mine + " in opposition");
+                }
+                clauses.Add(sitting);
+                return clauses;
+            }
+            if (verdict.IndexOf("No government is expected", StringComparison.Ordinal) >= 0)
+            {
+                carried = false;
+                clauses.Add("No government expected");
+                clauses.Add("caretaker carries on");
+                clauses.Add(sitting);
+                return clauses;
+            }
+            if (verdict.IndexOf("cannot be projected", StringComparison.Ordinal) >= 0)
+            {
+                clauses.Add("Not projected tonight");
+                clauses.Add(sitting);
+                return clauses;
+            }
+            // a verdict of another form: its first sentence where it is a caption's length, else the slip's head alone - never a guessed outcome
+            int stop = verdict.IndexOf(". ", StringComparison.Ordinal);
+            string first = (stop > 0 ? verdict.Substring(0, stop) : verdict).TrimEnd('.');
+            clauses.Add(SejmNightSteps.CountedWords(first) <= SejmNightSteps.RestWords ? first : "The verdict");
+            return clauses;
+        }
+
+        /// <summary>K322 S6: the clauses joined by a middle dot, dropped WHOLE from the end until the line fits <paramref name="room"/> canvas units at
+        /// <paramref name="size"/> and holds at most <see cref="SejmNightSteps.RestWords"/> counted words; the first clause, the outcome, always stands.
+        /// Never cut at a word, never an ellipsis (K320).</summary>
+        private static string FitClauses(List<string> clauses, int size, float room)
+        {
+            if (clauses == null || clauses.Count == 0) { return string.Empty; }
+            for (int n = clauses.Count; n > 1; n--)
+            {
+                string text = string.Join(" · ", clauses.GetRange(0, n));
+                if (SejmNightSteps.CountedWords(text) <= SejmNightSteps.RestWords && Measure(text, size, PoliSimTheme.Document) <= room) { return text; }
+            }
+            return clauses[0];
         }
 
         // ---------------------------------------------------------------------------------------------------------------------------------------
@@ -875,24 +934,29 @@ namespace PoliSim.UI
             Transform outcome = CanvasRows.HRow(p, "Outcome", Px(30f), Px(8f));
             if (!projected)
             {
-                Hold(ItText(screen, outcome, "Waits", "When the count is complete", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document));
+                // K322 S6 (K320): the label at rest in three words; the clause it was is the row's slip
+                Hold(ItText(screen, outcome, "Waits", "After the count", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document));
                 HoldRight(ItText(screen, outcome, "Declared", s.Index.ToString(CultureInfo.InvariantCulture) + " of " + ItalianNight.Total.ToString(CultureInfo.InvariantCulture), Px(14f), PoliSimTheme.TextPrimary, PoliSimTheme.Document));
+                CanvasRows.Slip(outcome.gameObject, overlay, "Who governs · owed", SlipWrap("When the count is complete", "Projected once both chambers are called"));
             }
             else if (g == null)
             {
-                Hold(ItText(screen, outcome, "None", "No formation was run for this night", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document));
+                // K322 S6 (K320): no sentence at rest - the label, the sentence in the slip and the † view
+                Hold(ItText(screen, outcome, "None", "No formation run", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document));
+                CanvasRows.Slip(outcome.gameObject, overlay, "No formation", SlipWrap("No formation was run for this night"));
                 dense.Add(new DenseLine("No formation was run for this night", false));
             }
             else if (dissolution)
             {
                 Hold(ItText(screen, outcome, "Name", "Chambers dissolved", Px(16f), PoliSimTheme.Bad, PoliSimTheme.Body));
                 string polling = night.PollingAfter.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
-                foreach (string l in new[] { "Three mandates fail", "The government in office serves on", "Polling day " + polling + " (art. 61)" })
+                // K322 S6 (K320): no sentence at rest - the two reasons as their nouns; the sentences they were lead the outcome's slip
+                foreach (string l in new[] { "Three failed mandates", "Caretaker government", "Polling day " + polling + " (art. 61)" })
                 {
                     Transform reason = CanvasRows.HRow(p, "Reason", Px(20f), 0f);
                     Hold(ItText(screen, reason, "Line", l, Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document));
                 }
-                var lines = new List<string> { night.Projection?.Reason ?? "three mandates fail - the chambers are dissolved (art. 88)" };
+                var lines = new List<string> { "Three mandates fail · the government in office serves on", night.Projection?.Reason ?? "three mandates fail - the chambers are dissolved (art. 88)" };
                 if (night.DissolutionBarred) { lines.Add("The semestre bianco (art. 88 c. 2): the President may not dissolve in the last six months of the term - the chambers are dissolved on " + night.DissolvedOn.ToString("d MMM yyyy", CultureInfo.InvariantCulture) + ", the day the bar lifts"); }
                 lines.Add("Art. 61: the new chambers are elected within seventy days - the Sunday on or before the seventieth day");
                 CanvasRows.Slip(outcome.gameObject, overlay, "Chambers dissolved", SlipWrap(lines.ToArray()));

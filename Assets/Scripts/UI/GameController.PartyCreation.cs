@@ -125,7 +125,7 @@ namespace PoliSim.UI
                 default: DrawPcReview(body, d); break;
             }
 
-            string backLabel = _pcStep == 0 ? "BACK TO THE PARTIES" : "BACK";
+            string backLabel = _pcStep == 0 ? "BACK TO PARTIES" : "BACK";   // K322 S5: a control is at most 3 words (01k1r, the region map, sits outside the setup glob 01k?_create_*)
             float backW = Mathf.Ceil(_neutralActionButtonStyle.CalcSize(new GUIContent(backLabel)).x) + StatStep(24f);
             if (PoliSimWidgets.Button(new Rect(foot.x, foot.y, backW, footH), backLabel, _neutralActionButtonStyle))
             {

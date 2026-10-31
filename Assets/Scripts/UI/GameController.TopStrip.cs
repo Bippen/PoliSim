@@ -102,6 +102,57 @@ namespace PoliSim.UI
             return head.Length == 0 ? head : head.Substring(0, 1) + head.Substring(1).ToLowerInvariant();
         }
 
+        /// <summary>
+        /// K322 S5 (K320 (2); K321 (b) LABEL - a control's label is at most 3 words, its cell's word with it): a hold in two words on the HELD line's chip
+        /// ("CABINET DECISION", "FORM GOVERNMENT", "DEBT LIMIT"); a Continue's hold its words before the dash ("ELECTION NIGHT"). The hold whole is the chip's
+        /// slip (<see cref="HoldSlip"/>) and a line of the strip's WAITING ON YOU.
+        /// </summary>
+        private static string HoldChipWords(string label)
+        {
+            if (string.IsNullOrEmpty(label)) { return label; }
+            if (label.EndsWith(" ASKS YOUR PARTY TO FORM A GOVERNMENT", System.StringComparison.Ordinal)) { return "FORM GOVERNMENT"; }
+            if (label.StartsWith("AN OFFER FROM THE PARTY ", System.StringComparison.Ordinal)) { return "COALITION OFFER"; }
+            if (label.StartsWith("THE DEBT LIMIT BINDS", System.StringComparison.Ordinal)) { return "DEBT LIMIT"; }
+            if (label.StartsWith("THE ", System.StringComparison.Ordinal) && label.EndsWith(" TO APPOINT", System.StringComparison.Ordinal))
+            {
+                string title = label.Substring(4, label.Length - 4 - " TO APPOINT".Length);
+                return title.IndexOf(' ') < 0 ? "APPOINT " + title : "AN APPOINTMENT";
+            }
+            switch (label)
+            {
+                case "A CABINET DECISION": return "CABINET DECISION";
+                case "A FOREIGN POLICY MEETING": return "FOREIGN MEETING";
+                case "NO CONFIDENCE DECLARED IN YOUR GOVERNMENT": return "NO CONFIDENCE";
+                case "THE CAMPAIGN'S OPENING": return "THE OPENING";
+                case "A STORY ABOUT YOUR PARTY": return "A STORY";
+                case "YOUR INCOMING GOVERNMENT'S FIRST BUDGET": return "FIRST BUDGET";
+                case "THE ANNUAL BUDGET BILL": return "ANNUAL BUDGET";
+            }
+            int dash = label.IndexOf(" - ", System.StringComparison.Ordinal);
+            return dash > 0 ? label.Substring(0, dash) : label;
+        }
+
+        /// <summary>K322 S5 (K320 (3), K321 (f): a slip line is at most 10 counted words): a hold's line on a slip - its cell's word and the hold whole, and a
+        /// hold that runs past the cap split at its dash ("BUDGET · THE DEBT LIMIT BINDS", "PROPOSE A RAISE OR A SUSPENSION, OR LET IT BIND").</summary>
+        private static void AddHoldLines(SlipContent slip, string label, HoldCell cell)
+        {
+            string caption = HoldCellCaption(cell);
+            string line = caption == null ? label : caption + " · " + label;
+            int dash = line.IndexOf(" - ", System.StringComparison.Ordinal);
+            if (PoliSim.Testing.DeclutterRules.Words(line) > 10 && dash > 0) { slip.Add(line.Substring(0, dash)); slip.Add(line.Substring(dash + 3)); }
+            else { slip.Add(line); }
+        }
+
+        /// <summary>K322 S5: the HELD line's chip's slip - its cell's word as the head, the hold whole under it.</summary>
+        private static SlipContent HoldSlip(string label, HoldCell cell)
+        {
+            var slip = new SlipContent(HoldCellCaption(cell) ?? "THE CLOCK WAITS");
+            int dash = label.IndexOf(" - ", System.StringComparison.Ordinal);
+            if (PoliSim.Testing.DeclutterRules.Words(label) > 10 && dash > 0) { slip.Add(label.Substring(0, dash)); slip.Add(label.Substring(dash + 3)); }
+            else { slip.Add(label); }
+            return slip;
+        }
+
         /// <summary>N8: every Continue hold named on the chip ("Market access lost · Election night"), not only the first.</summary>
         private static string ContinueWords(List<(string Label, HoldCell Cell)> holds)
         {
@@ -184,7 +235,7 @@ namespace PoliSim.UI
                 DrawStripChip(r, TopStrip.Face.Paper, clockWords, null, dot: paused);
                 MastheadAnchor(r, "strip:clock");
                 SlipContent clockSlip = paused ? new SlipContent("PAUSED").Add("The clock waits") : new SlipContent("THE CLOCK · " + clockWords).Add("The days run at this speed");
-                foreach ((string label, HoldCell cell) in allHolds) { clockSlip.Add(HoldCellCaption(cell) == null ? label : HoldCellCaption(cell) + " · " + label); }
+                foreach ((string label, HoldCell cell) in allHolds) { AddHoldLines(clockSlip, label, cell); }
                 _mastheadSlipBook.Anchors["strip:clock"] = clockSlip;
                 x += w + gap;
             }
@@ -199,7 +250,7 @@ namespace PoliSim.UI
                 foreach ((string label, HoldCell cell) in holds)
                 {
                     if (first == HoldCell.None && cell != HoldCell.None) { first = cell; }
-                    slip.Add(HoldCellCaption(cell) == null ? label : HoldCellCaption(cell) + " · " + label);
+                    AddHoldLines(slip, label, cell);
                 }
                 float w = StripChipWidth(words, true, false);
                 Rect r = At(x, w);

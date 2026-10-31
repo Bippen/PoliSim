@@ -6,10 +6,10 @@
 # It prints a verdict line; UNREACHED or LONG SLIP LINE rows are failures. The mapping below is the sweep's, kept beside EnergySlips by hand.
 use strict; use warnings; use utf8;
 binmode STDOUT, ':encoding(UTF-8)';
-# RETIRED at §968 (K334): moved_s1en.tsv is a prose file now (its K334 marker) and 131 of its rows moved to moved_k334s1.tsv in machine form.
+# RETIRED at §968 (K334): its output was converted to machine rows - moved_k334s1.tsv (§968) and moved_k334s1b.tsv (§971, scoped by country) - and moved_s1en.tsv is gone.
 # Run again, this would write all 290 rows back without the marker - undoing the conversion and making the reader refuse the file. Kept for its
 # record (§957); both files are maintained by hand from here, converted as the readers allow.
-die "declutter_moved_s1en.pl is RETIRED (K334, \x{a7}968): moved_s1en.tsv and moved_k334s1.tsv are maintained by hand - see the file's header.\n";
+die "declutter_moved_s1en.pl is RETIRED (K334, \x{a7}968): moved_k334s1.tsv and moved_k334s1b.tsv are maintained by hand - see this file's header.\n";
 my ($out, $captions, @tables) = @ARGV;
 my $sep = ' | ';
 # ---- the five Energy dials' bands, read off RangeCaptions.cs ----

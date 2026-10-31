@@ -793,10 +793,15 @@ namespace PoliSim.UI
             }
             else
             {
-                Country shared = mineIndependent ? them : _playerCountry;
+                // K322 S5 (K320 (2)): the omitted row in three words at rest; which side has no currency of its own, and why the row is not drawn, is its
+                // slip (StatsSlips' readings:currency)
                 GUILayout.Space(StatsUnit(3f));
-                GUILayout.Label("CURRENCY STRENGTH OMITTED: " + shared.Name.ToUpperInvariant() + " HAS NO INDEPENDENT CURRENCY, SO THE ROW HAS ONE SIDE AND IS NOT DRAWN",
-                    DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter));
+                const string omitted = "CURRENCY STRENGTH · OMITTED";
+                GUIStyle omittedFace = DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter);
+                GUILayout.Label(omitted, omittedFace);
+                Rect line = GUILayoutUtility.GetLastRect();
+                float w = Mathf.Min(line.width, Mathf.Ceil(omittedFace.CalcSize(new GUIContent(omitted)).x));
+                StatsAnchor(new Rect(line.center.x - w * 0.5f, line.y, w, line.height), "readings:currency");
             }
         }
 

@@ -255,6 +255,20 @@ namespace PoliSim.UI
             GUIStyle rightFace = V35Mono(V35.Floor, PoliSimTheme.TextMuted, bold: false, TextAnchor.MiddleRight);
             if (!string.IsNullOrEmpty(titleRight)) { rightW = Mathf.Min(tw * 0.4f, Mathf.Ceil(rightFace.CalcSize(new GUIContent(titleRight)).x)); }
             float titleW = Mathf.Max(1f, tw - (rightW > 0f ? rightW + V35.Px(12f) : 0f));
+            // K322 S5 (K320 (2): a caption is one line of at most 8 words, never cut with "…"): the item's line folds to its whole clauses ("Nominate who
+            // sets the policy rate"), and the line whole joins the item's slip - its own where it has one, else one made for it
+            string lineAtRest = line;
+            string anchorKey = key != null ? "docket:" + key : null;
+            if (!string.IsNullOrEmpty(line) && lineDrawer == null)
+            {
+                lineAtRest = DeskFoldClauses(line, lineFace, tw, out bool lineFolded);
+                if (lineFolded)
+                {
+                    anchorKey ??= "docket:line:" + title;
+                    if (!_docketSlipBook.Anchors.TryGetValue(anchorKey, out SlipContent itemSlip)) { _docketSlipBook.Anchors[anchorKey] = itemSlip = new SlipContent(title.ToUpperInvariant()); }
+                    itemSlip.Add(line.ToUpperInvariant());
+                }
+            }
             if (repaint)
             {
                 PoliSimWidgets.MeasuredLabel(new Rect(tx, ty, titleW, th), V35Fit(title, titleFace, titleW, out _), titleFace);
@@ -264,10 +278,10 @@ namespace PoliSim.UI
                     float rh = Mathf.Max(th, Mathf.Ceil(rightFace.CalcSize(new GUIContent("Ag")).y));
                     PoliSimWidgets.MeasuredLabel(new Rect(tx + tw - rightW, ty + Mathf.Round((th - rh) * 0.5f), rightW, rh), titleRight, rightFace);
                 }
-                if (lh > 0f && lineDrawer == null) { PoliSimWidgets.MeasuredLabel(new Rect(tx, ty + th, tw, lh), V35Fit(line, lineFace, tw, out _), lineFace); }
+                if (lh > 0f && lineDrawer == null) { PoliSimWidgets.MeasuredLabel(new Rect(tx, ty + th, tw, lh), lineAtRest, lineFace); }
             }
             lineDrawer?.Invoke(new Rect(tx, ty + th, tw, lh));
-            if (key != null && _docketSlipBook.Anchors.ContainsKey("docket:" + key)) { SlipAnchor(new Rect(tx, ty, tw, th + lh), "docket:" + key); }
+            if (anchorKey != null && _docketSlipBook.Anchors.ContainsKey(anchorKey)) { SlipAnchor(new Rect(tx, ty, tw, th + lh), anchorKey); }
             V35.FloorGuarded = false;
             GUILayout.Space(V35.Px(V35.Gutter));
             return open;

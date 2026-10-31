@@ -43011,3 +43011,53 @@ Energy's slips from before S1 still hold lines over 10 words. They carry no move
 - Party names use whole forms only. Division titles keep their head clause. "+N" folds the breakdown's reasons, verbatim on the slip.
 - Law descriptions stay at rest as a law's text. Each status line keeps its draft's figure. A slip_text leaves out "Parliament" / "Congress", so one row reads the same on every legislature.
 - Every moved row's countries name exactly the films whose book holds it.
+
+## 971. K322 SWEEPS S5 (THE DESK, THE DOCKET, STATISTICS, PEOPLE, THE CRISIS PLATE, SIGNING, SAVES) AND S6 (THE ELECTION NIGHTS), WITH THE ENERGY RECORD'S SCOPED ROWS; THE PROSE CEILING 294 -> 102 (K320, K321, K322, K334) (2026-10-31)
+
+**What was owed:** the rest of K322's order. The Desk family (`01*`-`04*`, `89*`, `90*`, `92*`) and the election nights (`e7*`, Canvas) held the remaining sweepable breaches. The Energy record's 159 country-specific prose rows could convert once §969's countries column existed.
+
+**Built:**
+- **S5** (wave/k322s5 0ec08462):
+  - **The Desk:** This month's rows drop whole clauses instead of cutting with "…" (`DeskFoldClauses`, the 8-word cap), with the whole entry on the row's slip. An event's description becomes THE STORY, a level-2 slip, with its shocks as figures at level 1. The CALENDAR slip is cut to the caps. Game over reads "GAME OVER · Out of office", with the reason as a slip.
+  - **The crisis plate:** one-line sub-captions, each row with its own slip; the rule and foot on slips; the sources at level 2. The plate records its slip book for the film.
+  - **The Docket:** "AUTHORED SHOCKS"; the decision's name as the body head; the budget body's short status (`DocketBudgetStatus`); the alternative's states with their slips.
+  - **Statistics:** the OTHER slip re-cut; CURRENCY STRENGTH · OMITTED with its slip.
+  - **People:** the turnout, working-age, PISA and cataract slips within the caps.
+  - **Signing (Canvas):** the held line's chips read the cell plus the hold in two words, with the whole hold as the chip's slip over the Canvas.
+  - **The US Docket's `90h`/`90i` rows:** clause-folded.
+  - **The saves menu:** one line a row, with the help on a slip.
+- **S6** (wave/k322s6 15cabc34, less its own chip wording; see below):
+  - **The Polish presidential nights:** call cards at rest as a head and one caption ("No majority · run-off 1 JUN 2025"), the lead, the first-round head, and the split method, each with a slip.
+  - **The Sejm night's crowded tick figures** (231/276) sit on either side of their ticks, and a bar word a tick crosses moves to its block's right end.
+  - **The Swedish, German, US and Italian nights,** read from the code: headings, keys and verdicts are one line, with their sentences on slips. Italy's live foot leads with the outcome and is no longer cut.
+  - **`DryGuiPass.RecordCanvas`** now records every live Canvas slip as a level-1 book entry (`canvas:<anchor>`), so a word moved onto a night's slip can be judged. The Sejm plate's slips reach the capture's book.
+  - **`Tools/declutter_rules.tsv`** exempts `*night_dagger*`, the nights' † views, as dense views under K320 (4).
+- **The Energy record** (wave/k334s1b fb108049): all 159 remaining rows scoped by country into `moved_k334s1b.tsv`. `moved_s1en.tsv` is deleted, and its retired generator and `EnergySlips` name the two machine files.
+- **Moved words in machine form:**
+  - `moved_k322s5.tsv`, 86 rows;
+  - `moved_k322s6.tsv`, 65 rows;
+  - `moved_k334s1b.tsv`, 159 rows.
+- **K334:** S6 converted 21 of S11's 24 rows; the 3 left are Docket refusals no frame films. S5 converted 8 (S10's 1 and 7 of S6's). It retired S5's 4, whose frames are exempt setup screens and kept verbatim as comments, and left 7 of S6's that no capture reaches.
+- **`ProseRowCeiling` 294 -> 102.** What stands: the Campaign HQ's 92 rows (S4's 88, S7's 4; no sweep scheduled) and 10 no film reaches.
+
+**At integration:**
+- S5 and S6 each rewrote the held line's chips: S5 in `GameController.TopStrip.cs` (the chips' slips over the Canvas, recorded), and S6 in a new `GameController.HoldChipWords.cs` with a hunk in `GameController.cs`. Merged, they would define the same member. S5's is kept, as the fuller of the two. S6's file, its hunk and its five chip rows were left out.
+
+- **The first cheap bar failed DeadStateCheck:** `PassedCarbonFigureLine` had no caller left. The Desk sweep composed its own carbon lines, leaving it to the Budget page, and the Budget sweep's carbon slip stopped calling it. Deleted.
+- **The first German night filmed under K323's general containment rule** (no German night had been filmed since it landed) ran every right-aligned figure in WHO GOVERNS 5.6 px past its column. The column's flexible weight gave it less than the design width its rows are planned to (`GovernsWidth`). On the German night it now holds that width as its minimum, and the Länder map yields the 5.6 px.
+- **One moved row read UNREACHABLE on Poland's film:** `e7e5`'s "The Sejm first sits on # November #", whose words the night's `SlipWrap` split across two slip lines. `DryGuiPass` now records a Canvas slip's lines joined as well, so a sentence the wrap split reads whole.
+
+**The baseline, regenerated** from this tree's fifteen tables: the six `drys971` dry sweeps, the two real sources (`reals971se`, `reals971pl`), and seven first films of their modes (Sweden's, Germany's, the USA's and Italy's interrupts, Sweden's night `-shotelectionnight`, and Sweden's and Italy's `-shotabroad`).
+- 144 breach rows: 317 shrunk, and 37 grown with `--grow`, every one on a frame the baseline had never taken (the dry run listed 0 new breaches on a known frame).
+- Every table 0 new, 0 stale, PASS. At rest: the six sweeps 16, 16, 16, 24, 16, 18; Sweden real 16; Poland's interrupts 0 (all 36 night breaches gone); the first films 18, 4, 14, 0, 1, 0, 0.
+
+**Measured (this tree):** cheap bar 154 of 154 clean on the final tree (cheaps971b; the first, cheaps971, failed DeadStateCheck on PassedCarbonFigureLine), K334 102 prose rows within the ceiling of 102; dry films of the six countries at 1280 (drys971, scope row drys971): 0 failed, 0 overflow, 0 canvas text, declutter 0 new, only the sweeps' stale rows (37-64 a country), moved words judged with 0 unreachable; real films at 1280, each 0 overflow: Sweden's sweep (reals971se) 0 new, 65 stale, 317 moved words judged, 0 unreachable, 7 Canvas asserts 0 violations; Poland -shotinterrupts (reals971pl, re-run) 0 new, 36 stale, 43 judged, 0 unreachable, 0 Canvas escapes; Germany -shotinterrupts (reals971dei, re-run) 0 Canvas escapes; Sweden, the USA and Italy -shotinterrupts (reals971sei, reals971usi, reals971iti), Sweden -shotelectionnight (reals971sen), Sweden and Italy -shotabroad (reals971sea, reals971ita, 0 missing, 4 Canvas asserts 0 violations each) - first films of their modes, judged once grown; the baseline regenerated from the fifteen tables (144 rows; 317 shrunk, 37 grown on never-taken frames, 0 new on known frames; every table PASS; selftest PASS); after it, Germany's dry film (drys971b, scope row drys971b) 16 at rest, 0 new, 0 stale, 287 moved words judged, 0 unreachable - PASS; frames read by eye (the Sejm night's ticks apart, the foot outcome first): no collision; UI tier, review skipped; doc bar (docs971)
+
+**Declared** (the implementers' readings, listed back to Design):
+- Clause folding replaces the ellipsis everywhere it stood; where even the first clause does not fit, it still cuts, and the film names it.
+- An event's description is "the story", at level 2. Game over's head is the reason's first clause.
+- The chips' short forms: CABINET DECISION, FOREIGN MEETING, FORM GOVERNMENT, COALITION OFFER, DEBT LIMIT, APPOINT <title>, NO CONFIDENCE, THE OPENING, A STORY, FIRST BUDGET, ANNUAL BUDGET.
+- The opened Docket body is K320 (4) content and stays.
+- On the nights: the Polish call card's sentences go to one card slip; the ABSENT line is the stamp plus "turnout · votes"; crowded ticks sit beside their own ticks; "If you answer as the model would" stays as a caveat.
+- Some Energy scopes follow today's films' state (a dial's band after the drag, the player's role) and need re-scoping if a film's choreography changes.
+- **FILED:** People's tile slips, the family slips and the crisis Desk card's slip lines can still exceed the caps on frames no film pins.

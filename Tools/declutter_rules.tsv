@@ -21,6 +21,7 @@ exempt	01k?_create_*	all	setup: party creation, its five steps (SP-4) - K320 (4)
 exempt	01n[1-4]_*	all	setup: the US nominee's creation, its four steps (US-33) - K321 (e); 01n5 (the Desk after START) and 01n6 (Parliament) are read
 exempt	*_dense*	all	the dense views (19c), opened on purpose: every number and source - K320 (4), K321 (e)
 exempt	*_provenance*	all	the dagger views: the global dagger (DeskProvenance) opened on the energy page, and on the policy web's node pane (06l, the same dagger) - K321 (e)
+exempt	*night_dagger*	all	the election nights' dagger views (the † view: every line in full, opened on purpose - e6_election_night_dagger, e7i_italy_night_dagger_staged), the dense view of K320 (4) - K322 S6
 exempt	*pinned*	rest	the pinned slips: the page under them is read on its own frame; the slip caps are read here - K321 (e), (f)
 exempt	*_slips*	rest	the pinned slips (Statistics' frames) - K321 (e), (f)
 cap	label_words	3	K320 (2): a label is at most 3 words - a CONTROL draw over this many counted words is LABEL

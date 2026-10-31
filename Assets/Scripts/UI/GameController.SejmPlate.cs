@@ -319,7 +319,15 @@ namespace PoliSim.UI
         {
             Event e = Event.current;
             if (e.type != EventType.Repaint) { return; }
-            if (PoliSim.Testing.CaptureIdentity.Armed) { return; }
+            // K322 S6 (K321 (g)): the plate's slips are its own list, never the page's book, so the film recorded none of them on e7e6 and the words S11 moved
+            // onto them could not be judged reachable - the capture's book is handed them (inert outside a capture)
+            if (PoliSim.Testing.CaptureIdentity.Armed)
+            {
+                var book = new PeopleSlips.Book();
+                foreach ((Rect _, SlipContent slip, string id) in _sejmSlips) { if (slip != null && id != null) { book.Anchors[id] = slip; } }
+                PoliSim.Testing.DryGuiPass.NoteSlipBook(book);
+                return;
+            }
             string hovered = null;
             SlipContent open = null;
             Rect anchor = default;

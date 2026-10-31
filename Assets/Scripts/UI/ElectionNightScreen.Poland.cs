@@ -807,34 +807,41 @@ namespace PoliSim.UI
             if (forSeats > 0) { blocks.Add(("For", forSeats, PoliSimTheme.Good, PoliSimTheme.ModalBackground, Fit(forSeats, "for " + forSeats.ToString(CultureInfo.InvariantCulture), "for"))); }
             if (abstain > 0) { blocks.Add(("Abstain", abstain, PoliSimTheme.Hairline, PoliSimTheme.TextPrimary, Fit(abstain, "abstain " + abstain.ToString(CultureInfo.InvariantCulture), "abst."))); }
             if (against > 0) { blocks.Add(("Against", against, PoliSimTheme.Bad, PoliSimTheme.ModalBackground, Fit(against, "against " + against.ToString(CultureInfo.InvariantCulture), "against"))); }
-            double x = 0.0;
-            for (int i = 0; i < blocks.Count; i++)
-            {
-                BarSegment(lane, blocks[i].Name, x / m, (x + blocks[i].Seats) / m, blocks[i].Ink, false, blocks[i].Word, blocks[i].Label, i == blocks.Count - 1);
-                x += blocks[i].Seats;
-            }
             var figures = new List<(double At, string Text, Color Ink)>();
             if (!simple)
             {
-                LaneTick(lane, need / m, PoliSimTheme.TextPrimary);
                 figures.Add((need / m, need.ToString(CultureInfo.InvariantCulture), PoliSimTheme.TextPrimary));
-                if (steps.Expected)
-                {
-                    DashedTick(lane, threeFifths / m);
-                    figures.Add((threeFifths / m, threeFifths.ToString(CultureInfo.InvariantCulture), PoliSimTheme.TextMuted));
-                }
+                if (steps.Expected) { figures.Add((threeFifths / m, threeFifths.ToString(CultureInfo.InvariantCulture), PoliSimTheme.TextMuted)); }
             }
-            else if (againstKnown)
+            else if (againstKnown) { figures.Add((d.Against / m, d.Against.ToString(CultureInfo.InvariantCulture), PoliSimTheme.TextPrimary)); }
+            double x = 0.0;
+            for (int i = 0; i < blocks.Count; i++)
             {
-                LaneTick(lane, d.Against / m, PoliSimTheme.TextPrimary);
-                figures.Add((d.Against / m, d.Against.ToString(CultureInfo.InvariantCulture), PoliSimTheme.TextPrimary));
+                double from = x / m, to = (x + blocks[i].Seats) / m;
+                // K322 S6: a block's word sits at its left - unless a tick crosses it there (the 276 dash ran through "against 209"), when it sits at the
+                // block's right where no tick does
+                bool right = false;
+                if (blocks[i].Label != null)
+                {
+                    double span = (Measure(blocks[i].Label, Px(14f), PoliSimTheme.Document) + Px(10f)) / PolandWidth;
+                    bool Crosses(double a, double b) { foreach (var f in figures) { if (f.At > a && f.At < b) { return true; } } return false; }
+                    right = Crosses(from, from + span) && !Crosses(to - span, to);
+                }
+                BarSegment(lane, blocks[i].Name, from, to, blocks[i].Ink, false, blocks[i].Word, blocks[i].Label, i == blocks.Count - 1, right);
+                x += blocks[i].Seats;
             }
+            if (!simple)
+            {
+                LaneTick(lane, need / m, PoliSimTheme.TextPrimary);
+                if (steps.Expected) { DashedTick(lane, threeFifths / m); }
+            }
+            else if (againstKnown) { LaneTick(lane, d.Against / m, PoliSimTheme.TextPrimary); }
             var figRow = new GameObject("TickFigures");
             figRow.transform.SetParent(block.transform, false);
             figRow.AddComponent<RectTransform>();
             LayoutElement fl = figRow.AddComponent<LayoutElement>();
             fl.minHeight = fl.preferredHeight = Px(18f);
-            foreach ((double at, string text, Color ink) in figures) { TickFigure(figRow.transform, at, text, ink); }
+            TickFigures(figRow.transform, figures, PolandWidth);
 
             // the long wording, kept whole: the slip and the † view
             List<string> forList, abstainList, againstList;
@@ -900,17 +907,35 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>A tick's figure under the lane, centred on its fraction of the width.</summary>
-        private static void TickFigure(Transform row, double at, string text, Color ink)
+        /// <summary>A tick's figure under the lane, centred on its fraction of the width - or, with <paramref name="side"/> -1 / +1, set against its tick
+        /// on the left / right (K322 S6: two ticks a figure's width apart, 231 and 276 of 460, drew their figures over each other and under the dash).</summary>
+        private static void TickFigure(Transform row, double at, string text, Color ink, int side = 0)
         {
-            Text t = CanvasChrome.MakeTextRealWeight(row, "Figure " + text, text, PoliSimTheme.Document, Px(14f), ink, TextAnchor.UpperCenter);
+            Text t = CanvasChrome.MakeTextRealWeight(row, "Figure " + text, text, PoliSimTheme.Document, Px(14f), ink, side < 0 ? TextAnchor.UpperRight : side > 0 ? TextAnchor.UpperLeft : TextAnchor.UpperCenter);
             t.horizontalOverflow = HorizontalWrapMode.Overflow;
             t.raycastTarget = false;
             RectTransform r = t.rectTransform;
             r.anchorMin = r.anchorMax = new Vector2((float)Math.Min(1.0, Math.Max(0.0, at)), 1f);
-            r.pivot = new Vector2(0.5f, 1f);
-            r.sizeDelta = new Vector2(Measure(text, Px(14f), PoliSimTheme.Document) + 8f, Px(18f));
-            r.anchoredPosition = new Vector2(0f, -Px(2f));
+            r.pivot = new Vector2(side < 0 ? 1f : side > 0 ? 0f : 0.5f, 1f);
+            r.sizeDelta = new Vector2(TickFigureWidth(text), Px(18f));
+            r.anchoredPosition = new Vector2(side * Px(4f), -Px(2f));
+        }
+
+        private static float TickFigureWidth(string text) => Measure(text, Px(14f), PoliSimTheme.Document) + 8f;
+
+        /// <summary>K322 S6: the tick figures laid along the lane so no two overlap - centred on their ticks where they clear each other, else a crowded pair set
+        /// apart, the left figure against its tick's left and the right against its tick's right (a figure keeps its own tick; nothing moves off the lane).</summary>
+        private static void TickFigures(Transform row, List<(double At, string Text, Color Ink)> figures, float laneWidth)
+        {
+            var sorted = new List<(double At, string Text, Color Ink)>(figures);
+            sorted.Sort((p, q) => p.At.CompareTo(q.At));
+            var side = new int[sorted.Count];
+            for (int i = 0; i + 1 < sorted.Count; i++)
+            {
+                double x1 = sorted[i].At * laneWidth, x2 = sorted[i + 1].At * laneWidth;
+                if (x1 + TickFigureWidth(sorted[i].Text) / 2.0 + Px(4f) > x2 - TickFigureWidth(sorted[i + 1].Text) / 2.0) { side[i] = -1; side[i + 1] = 1; }
+            }
+            for (int i = 0; i < sorted.Count; i++) { TickFigure(row, sorted[i].At, sorted[i].Text, sorted[i].Ink, side[i]); }
         }
 
         /// <summary>The President's row: who designates first, the mark and the surname, and the stamp by the step - DESIGNATES at Art. 154's steps, APPOINTS AGAIN at
@@ -1185,10 +1210,17 @@ namespace PoliSim.UI
             Tick(bar.transform, 0.5, null, Px(56f));
             CanvasRows.Slip(bar, overlay, "RUN-OFF · " + DeskDay(contest.RunOffOn), new[] { (left?.Name ?? "-").ToUpperInvariant() + " " + leftShare.ToString("0.00", CultureInfo.InvariantCulture) + "\u00A0% OF THE TWO", (right?.Name ?? "-").ToUpperInvariant() + " " + rightShare.ToString("0.00", CultureInfo.InvariantCulture) + "\u00A0% OF THE TWO", "MORE THAN HALF ELECTS (ART. 127)" });
             Transform fifty = CanvasRows.HRow(parent, "Fifty", Px(22f), 8f);
-            PlText(fifty, "Note", "the tick is 50\u00A0% · more than half elects", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document);
-            PlWrapped(parent, string.Format(CultureInfo.InvariantCulture, "{0} leads by {1:0.0} points of the two.", left?.Name ?? contest.RunOffA, leftShare - rightShare), Px(17f), PoliSimTheme.TextPrimary);
+            PlText(fifty, "Note", "tick = 50" + Nbsp + "% · more than half elects", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document);
+            // K322 S6 (K320's caps): the lead, the first round's head and the split's method at rest are captions of one line, no sentence; the sentences
+            // they stood in before are their slips (the real film realk321pl found the lead STOP, the head LONG and the method LONG, STOP and wrapped)
+            string leader = left?.Name ?? contest.RunOffA;
+            double lead = leftShare - rightShare;
+            Transform leadRow = CanvasRows.HRow(parent, "Lead", Px(26f), 8f);
+            PlText(leadRow, "Lead", string.Format(CultureInfo.InvariantCulture, "{0} by {1:0.0} points", leader, lead), Px(17f), PoliSimTheme.TextPrimary, PoliSimTheme.Document);
+            CanvasRows.Slip(leadRow.gameObject, overlay, "THE LEAD", new[] { string.Format(CultureInfo.InvariantCulture, "{0} leads by {1:0.0} points of the two", leader, lead) });
 
-            PlWrapped(parent, "THE FIRST ROUND, " + DeskDay(contest.FirstVote) + " · WHERE EACH FINALIST AND EACH ELIMINATED ELECTORATE STOOD", Px(15f), PoliSimTheme.TextMuted);
+            Transform firstHead = CanvasRows.HRow(parent, "FirstRoundHead", Px(24f), 8f);
+            PlText(firstHead, "Heading", "THE FIRST ROUND · " + DeskDay(contest.FirstVote), Px(15f), PoliSimTheme.TextMuted, PoliSimTheme.Body);
             var stack = new GameObject("FirstRoundStack");
             stack.transform.SetParent(parent, false);
             stack.AddComponent<RectTransform>();
@@ -1205,9 +1237,19 @@ namespace PoliSim.UI
                 Block(stack.transform, "Share " + c.Name, at / total, (at + c.Share) / total, ink, null, Px(22f));
                 at += c.Share;
             }
-            PlWrapped(parent, string.Format(CultureInfo.InvariantCulture, "{0} {1:0.0} · {2} {3:0.0} · eliminated {4:0.0}", a?.Name ?? contest.RunOffA, a?.Share ?? 0.0, b?.Name ?? contest.RunOffB, b?.Share ?? 0.0, eliminated), Px(14f), PoliSimTheme.TextMuted);
-            PlWrapped(parent, "Each eliminated electorate splits between the two by its distance to each, fitted to the 2025 exit poll; a share of the first round's voters stays home - a drafted figure no source measures. "
-                + "Neither is shown: the night holds shares, not votes.", Px(14f), PoliSimTheme.TextMuted);
+            string stood = string.Format(CultureInfo.InvariantCulture, "{0} {1:0.0} · {2} {3:0.0} · eliminated {4:0.0}", a?.Name ?? contest.RunOffA, a?.Share ?? 0.0, b?.Name ?? contest.RunOffB, b?.Share ?? 0.0, eliminated);
+            CanvasRows.Slip(firstHead.gameObject, overlay, "THE FIRST ROUND · " + DeskDay(contest.FirstVote), new[] { "where each finalist and each eliminated electorate stood", stood, "the eliminated at reduced presence" });
+            CanvasRows.Slip(stack, overlay, "THE FIRST ROUND · " + DeskDay(contest.FirstVote), new[] { "where each finalist and each eliminated electorate stood", stood, "the eliminated at reduced presence" });
+            PlWrapped(parent, stood, Px(14f), PoliSimTheme.TextMuted);
+            Transform splitRow = CanvasRows.HRow(parent, "Split", Px(22f), 8f);
+            PlText(splitRow, "Note", "the eliminated split by distance · drafted", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document);
+            CanvasRows.Slip(splitRow.gameObject, overlay, "HOW THE ELIMINATED SPLIT", new[]
+            {
+                "each eliminated electorate splits by its distance to each",
+                "fitted to the 2025 exit poll",
+                "a share of first-round voters stays home: drafted, no source",
+                "neither is shown: the night holds shares, not votes",
+            });
 
             if (elected && contest.Elected != null) { ElectRow(parent, contest, overlay); }
         }
@@ -1236,38 +1278,57 @@ namespace PoliSim.UI
         private static void BuildPresidentCall(Transform parent, PresidentialElection.Contest contest, PresidentStage stage, string sitting, Transform overlay, DateTime asOf)
         {
             PresidentialElection.Candidate a = Find(contest, contest.RunOffA), b = Find(contest, contest.RunOffB);
-            string headLine, bodyLine;
+            // K322 S6 (K320's caps): the call card at rest is a head line and a one-line caption, no sentence; the sentences the card stood in before
+            // are the card's slip, whole (the real film realk321pl found every body line LONG, STOP and wrapped in the 320-pixel column)
+            string headLine, bodyLine, slipHead;
+            var slip = new List<string>();
             Color edge;
+            float room = Px(296f);   // the card's inner width at the call column's weight (the film's 292 px at 1280)
             if (stage == PresidentStage.FirstRound && contest.RunOffA != null)
             {
-                headLine = "No one is over 50\u00A0% · the two with the most votes meet on " + DeskDay(contest.RunOffOn);
-                bodyLine = string.Format(CultureInfo.InvariantCulture, "{0} {1:0.0} and {2} {3:0.0}. More than half of the valid vote elects outright (art. 127).", contest.RunOffA, a?.Share ?? 0.0, contest.RunOffB, b?.Share ?? 0.0);
+                headLine = FitWords(Px(17f), PoliSimTheme.Body, room, "No majority · run-off " + DeskDay(contest.RunOffOn), "Run-off · " + DeskDay(contest.RunOffOn));
+                bodyLine = "over 50" + Nbsp + "% elects · art. 127";
+                slipHead = "THE CALL · A RUN-OFF";
+                slip.Add("no one is over 50" + Nbsp + "% of the valid vote");
+                slip.Add("the two with the most votes meet on " + DeskDay(contest.RunOffOn));
+                slip.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1:0.0} · {2} {3:0.0}", contest.RunOffA, a?.Share ?? 0.0, contest.RunOffB, b?.Share ?? 0.0));
+                slip.Add("more than half of the valid vote elects outright (art. 127)");
                 edge = PoliSimTheme.Caution;
             }
             else if (stage == PresidentStage.Between)
             {
                 headLine = "Run-off on " + DeskDay(contest.RunOffOn) + ", " + ((int)Math.Round((contest.RunOffOn - contest.FirstVote).TotalDays)).ToString(CultureInfo.InvariantCulture) + " days on";
-                bodyLine = "The first round is settled and does not move. The President in office" + (string.IsNullOrEmpty(sitting) ? string.Empty : ", " + sitting + ",") + " holds the veto until the oath.";
+                bool named = !string.IsNullOrEmpty(sitting) && sitting.IndexOf('(') < 0;
+                bodyLine = named ? FitWords(Px(14f), PoliSimTheme.Document, room, "first round settled · veto: " + Surname(sitting), "first round settled") : "first round settled";
+                slipHead = "THE CALL · BETWEEN THE ROUNDS";
+                slip.Add("the first round is settled and does not move");
+                if (!string.IsNullOrEmpty(sitting)) { slip.Add("the President in office: " + sitting); }
+                slip.Add("the President in office holds the veto until the oath");
                 edge = PoliSimTheme.Hairline;
             }
             else if (contest.Elected != null)
             {
                 headLine = contest.Elected + " elected";
-                bodyLine = contest.RunOffHeld
-                    ? "More than half of the two. The count is certain: the model counts the nation at once."
-                    : "More than half of the valid vote in the first round (art. 127). The count is certain: the model counts the nation at once.";
+                bodyLine = contest.RunOffHeld ? "over half of the two" : "over half in the first round";
+                slipHead = "THE CALL · " + contest.Elected.ToUpperInvariant() + " ELECTED";
+                slip.Add(contest.RunOffHeld ? "more than half of the two" : "more than half of the valid vote in the first round (art. 127)");
+                slip.Add("the count is certain");
+                slip.Add("the model counts the nation at once");
                 edge = PoliSimTheme.Good;
             }
             else
             {
                 headLine = "Nothing is decided";
-                bodyLine = contest.Line ?? string.Empty;
+                bodyLine = null;
+                slipHead = "THE CALL · NOTHING IS DECIDED";
+                slip.AddRange(SlipLines(contest.Line));
                 edge = PoliSimTheme.Hairline;
             }
             Transform card = Card(parent, "CallCard", edge, Px(2f));
             PlWrapped(card, "THE CALL", Px(15f), PoliSimTheme.TextMuted);
             PlWrapped(card, headLine, Px(17f), PoliSimTheme.TextPrimary, PoliSimTheme.Body);
-            PlWrapped(card, bodyLine, Px(14f), PoliSimTheme.TextMuted);
+            if (!string.IsNullOrEmpty(bodyLine)) { PlWrapped(card, bodyLine, Px(14f), PoliSimTheme.TextMuted); }
+            if (slip.Count > 0) { CanvasRows.Slip(card.gameObject, overlay, slipHead, slip); }
 
             if (stage == PresidentStage.Between)
             {
@@ -1297,11 +1358,15 @@ namespace PoliSim.UI
                     el.minHeight = el.preferredHeight = Px(14f);
                     CanvasRows.Edges(empty.transform, PoliSimTheme.HairlineStrong, 1f);
                 }
-                PlWrapped(owed, "Owed until the night. Nothing is guessed: no figure and no poll.", Px(14f), PoliSimTheme.TextMuted);
+                PlWrapped(owed, "owed · nothing guessed", Px(14f), PoliSimTheme.TextMuted);
+                CanvasRows.Slip(owed.gameObject, overlay, "THE RUN-OFF · " + DeskDay(contest.RunOffOn), new[] { "owed until the night", "nothing is guessed: no figure and no poll" });
             }
 
-            // the ABSENT frame's line (28c's foot): wrapped in the column, which is narrower than the line at the 14 px floor
-            PlWrapped(parent, "Turnout and votes · not modelled. Shares only.", Px(14f), PoliSimTheme.TextPrimary);
+            // the ABSENT frame's line (28c's foot) - K322 S6: the honesty stamp and its two words at rest, one line in the column; the sentence is its slip
+            Transform absent = CanvasRows.HRow(parent, "Absent", Px(24f), Px(8f));
+            CanvasRows.Stamp(absent, "ABSENT", Px(14f), PoliSimTheme.TextPrimary);
+            Hold(PlText(absent, "Words", "turnout · votes", Px(14f), PoliSimTheme.TextPrimary, PoliSimTheme.Document));
+            CanvasRows.Slip(absent.gameObject, overlay, "ABSENT · TURNOUT AND VOTES", new[] { "turnout and votes · not modelled", "shares only: the night holds shares, not votes" });
         }
 
         private static PresidentialElection.Candidate Find(PresidentialElection.Contest contest, string name)
@@ -1393,11 +1458,32 @@ namespace PoliSim.UI
                 LayoutElement le = line.gameObject.AddComponent<LayoutElement>();
                 le.flexibleWidth = 1f;
                 le.minWidth = 0f;
-                CanvasRows.Slip(verdict.gameObject, overlay, "The verdict", SlipWrap(foot.Whole ?? string.Join(" · ", foot.Clauses)));
+                CanvasRows.Slip(verdict.gameObject, overlay, "The verdict", SlipWrap(Sentences(foot.Whole ?? string.Join(" · ", foot.Clauses))));   // K322 S6: each sentence opens its own line, so the outcome and the first sitting each lead a line
             }
             else { CanvasRows.Spacer(row.transform); }
             BuildContinueButton(row.transform, screen.Dismiss);
             return line;
+        }
+
+        /// <summary>K322 S6: a verdict cut into its sentences (at a full stop before a capital - never inside "Art. 154" or "ust. 1"), each opening its own slip line
+        /// in <see cref="SlipWrap"/>, so the outcome and the procedure each lead a line rather than running on from wherever the last one broke.</summary>
+        private static string[] Sentences(string whole)
+        {
+            if (string.IsNullOrEmpty(whole)) { return new string[0]; }
+            var parts = new List<string>();
+            int from = 0;
+            for (int i = 0; i + 2 < whole.Length; i++)
+            {
+                if (whole[i] != '.' || whole[i + 1] != ' ' || !char.IsUpper(whole[i + 2])) { continue; }
+                int w = i - 1;
+                while (w >= from && char.IsLetter(whole[w])) { w--; }
+                string word = whole.Substring(w + 1, i - w - 1);
+                if (word == "Art" || word == "art" || word == "ust" || word == "No") { continue; }
+                parts.Add(whole.Substring(from, i + 1 - from).Trim());
+                from = i + 2;
+            }
+            if (from < whole.Length) { parts.Add(whole.Substring(from).Trim()); }
+            return parts.ToArray();
         }
 
         /// <summary>A verdict handed in as one sentence (a caller with no clauses): one clause, its sentence the slip.</summary>
@@ -1459,12 +1545,13 @@ namespace PoliSim.UI
         }
 
         /// <summary>A wrapped line in a column, its floor the face's own line (PF-13: a wrapped Canvas caption needs a floor of its own).</summary>
-        private static void PlWrapped(Transform parent, string text, int size, Color ink, Font font = null)
+        private static Text PlWrapped(Transform parent, string text, int size, Color ink, Font font = null)
         {
             Text t = CanvasChrome.MakeTextRealWeight(parent, "Note", text, font ?? PoliSimTheme.Document, size, ink, TextAnchor.UpperLeft);
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.raycastTarget = false;
             t.gameObject.AddComponent<LayoutElement>().minHeight = size * 1.35f;
+            return t;
         }
 
         /// <summary>D-PL2 (the real films real902/real902w: the exempt cell's caption and stamp compressed below their text by the row's layout): a text

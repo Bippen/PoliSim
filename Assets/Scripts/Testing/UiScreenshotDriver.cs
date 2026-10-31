@@ -3273,7 +3273,7 @@ namespace PoliSim.Testing
             };
             // PF-14 (§591): a cost is NEGATIVE - the model adds the figure to the budget; until §591 the pilot was staged at +4 and filmed as a cost, one inversion hiding the other. A revenue option beside it puts both inks on film.
             decision.Options.Add(new CabinetDecisionOption("Fund the visible-policing pilot", crimeIndexShock: -1.5f, budgetImpact: -4f, approvalEffect: 1f));
-            decision.Options.Add(new CabinetDecisionOption("Pay for it by selling the old patrol fleet", crimeIndexShock: -1f, budgetImpact: 2f, approvalEffect: -0.5f));
+            decision.Options.Add(new CabinetDecisionOption("Sell the old patrol fleet", crimeIndexShock: -1f, budgetImpact: 2f, approvalEffect: -0.5f));
             decision.Options.Add(new CabinetDecisionOption("Decline the pilot", approvalEffect: -0.5f));
             sim.StagePendingCabinetDecision(player.Id, CabinetPortfolio.InteriorJustice, decision);
             Debug.Log($"SHOT: staged a cabinet decision on {CabinetPortfolio.InteriorJustice} with {player.CabinetMinisters[CabinetPortfolio.InteriorJustice].Name} seated (the harness's own figures, for the Docket film).");

@@ -14,7 +14,7 @@ namespace PoliSim.UI
     /// the head - and the † view still prints the whole text where it stood. The page starts each pass from this book (`GameController.EnergyV35.cs`
     /// DrawEnergyTab) and draws the fragment each <see cref="Moved"/> keeps at rest, so what the page opens is what a reachability check reads: a check
     /// builds the same book from a country with <see cref="Build(Country, World)"/>. The words each anchor took are listed in
-    /// `docs/declutter/moved_k334s1.tsv` (machine rows, the films judge them) and `docs/declutter/moved_s1en.tsv` (the country-specific rest, prose, K334).
+    /// `docs/declutter/moved_k334s1.tsv` (every country) and `docs/declutter/moved_k334s1b.tsv` (scoped by country, §969) - machine rows the films judge (§968, §971).
     /// <para>The slips the page writes as it draws (the prices, the plants, the grid, the dials' census) are the page's own and stay where they are
     /// built; this book holds the ones the declutter moved, and the section heads whose titles it shortened.</para>
     /// </summary>

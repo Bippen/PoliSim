@@ -1,0 +1,162 @@
+# k334s1b (K334, on K321 (g) and the countries column of §969): the Energy sweep's moved words (S1, §957) that only some countries' films draw, converted from the prose of moved_s1en.tsv - 159 rows
+# now_in is the capture's own slip book (two levels), as each named country's films recorded it (dryk321_<country>_1280 and realk321se, 2026-10-31); slip_text is the slip's lines joined at the middle dot; countries are the films whose books hold the words
+capture_stem	text_before	now_in	slip_text	countries
+08_energy	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	slip:08_energy	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	sweden
+08_energy	Billed · reached only through secondary…	slip:08_energy	BILLED · REACHED ONLY THROUGH SECONDARY REPORTS	poland
+08_energy	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	slip:08_energy	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	sweden
+08_energy	Fossil-free electricity by 2040	slip:08_energy	FOSSIL-FREE ELECTRICITY BY 2040	sweden
+08_energy	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	slip:08_energy	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	sweden
+08_energy	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	slip:08_energy	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	germany
+08_energy	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	slip:08_energy	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	italy
+08_energy	None · nothing to answer	slip:08_energy	NONE · NOTHING TO ANSWER	usa
+08_energy	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	slip:08_energy	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	germany,france,poland
+08_energy	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS: EASTERN · WESTERN · ERCOT	slip:08_energy	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS · EASTERN · WESTERN · ERCOT	usa
+08_energy	ONE ZONE · THE REAL MARKET HAS SEVEN: NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	slip:08_energy	ONE ZONE · THE REAL MARKET HAS SEVEN · NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	italy
+08_energy	Renewables 40 % of production in 2030	slip:08_energy	RENEWABLES 40 % OF PRODUCTION IN 2030	france
+08_energy	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	slip:08_energy	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	france
+08_energy	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	slip:08_energy	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	poland
+08_energy	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	slip:08_energy	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	usa
+08_energy	Water value and reservoirs	slip:08_energy	WATER VALUE AND RESERVOIRS	germany,france,usa,poland,italy
+08_energy	Wind 145 gw · solar 215 gw in 2030 · coal…	slip:08_energy	WIND 145 GW · SOLAR 215 GW IN 2030 · COAL OUT BY 2038	germany
+08_energy	Wind 28.1 gw · solar 79.2 gw in 2030	slip:08_energy	WIND 28.1 GW · SOLAR 79.2 GW IN 2030	italy
+08_energy_decisions	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	slip:08_energy_decisions	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	sweden
+08_energy_decisions	Billed · reached only through secondary…	slip:08_energy_decisions	BILLED · REACHED ONLY THROUGH SECONDARY REPORTS	poland
+08_energy_decisions	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	slip:08_energy_decisions	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	sweden
+08_energy_decisions	Fossil-free electricity by 2040	slip:08_energy_decisions	FOSSIL-FREE ELECTRICITY BY 2040	sweden
+08_energy_decisions	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	slip:08_energy_decisions	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	sweden
+08_energy_decisions	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	slip:08_energy_decisions	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	germany
+08_energy_decisions	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	slip:08_energy_decisions	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	italy
+08_energy_decisions	None · nothing to answer	slip:08_energy_decisions	NONE · NOTHING TO ANSWER	usa
+08_energy_decisions	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	slip:08_energy_decisions	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	germany,france,poland
+08_energy_decisions	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS: EASTERN · WESTERN · ERCOT	slip:08_energy_decisions	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS · EASTERN · WESTERN · ERCOT	usa
+08_energy_decisions	ONE ZONE · THE REAL MARKET HAS SEVEN: NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	slip:08_energy_decisions	ONE ZONE · THE REAL MARKET HAS SEVEN · NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	italy
+08_energy_decisions	Renewables 40 % of production in 2030	slip:08_energy_decisions	RENEWABLES 40 % OF PRODUCTION IN 2030	france
+08_energy_decisions	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	slip:08_energy_decisions	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	france
+08_energy_decisions	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	slip:08_energy_decisions	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	poland
+08_energy_decisions	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	slip:08_energy_decisions	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	usa
+08_energy_decisions	Water value and reservoirs	slip:08_energy_decisions	WATER VALUE AND RESERVOIRS	germany,france,usa,poland,italy
+08_energy_decisions	Wind 145 gw · solar 215 gw in 2030 · coal…	slip:08_energy_decisions	WIND 145 GW · SOLAR 215 GW IN 2030 · COAL OUT BY 2038	germany
+08_energy_decisions	Wind 28.1 gw · solar 79.2 gw in 2030	slip:08_energy_decisions	WIND 28.1 GW · SOLAR 79.2 GW IN 2030	italy
+08_energy_decisions_ordered	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	slip:08_energy_decisions_ordered	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	sweden
+08_energy_decisions_ordered	Billed · reached only through secondary…	slip:08_energy_decisions_ordered	BILLED · REACHED ONLY THROUGH SECONDARY REPORTS	poland
+08_energy_decisions_ordered	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	slip:08_energy_decisions_ordered	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	sweden
+08_energy_decisions_ordered	Fossil-free electricity by 2040	slip:08_energy_decisions_ordered	FOSSIL-FREE ELECTRICITY BY 2040	sweden
+08_energy_decisions_ordered	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	slip:08_energy_decisions_ordered	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	sweden
+08_energy_decisions_ordered	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	slip:08_energy_decisions_ordered	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	germany
+08_energy_decisions_ordered	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	slip:08_energy_decisions_ordered	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	italy
+08_energy_decisions_ordered	None · nothing to answer	slip:08_energy_decisions_ordered	NONE · NOTHING TO ANSWER	usa
+08_energy_decisions_ordered	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	slip:08_energy_decisions_ordered	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	germany,france,poland
+08_energy_decisions_ordered	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS: EASTERN · WESTERN · ERCOT	slip:08_energy_decisions_ordered	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS · EASTERN · WESTERN · ERCOT	usa
+08_energy_decisions_ordered	ONE ZONE · THE REAL MARKET HAS SEVEN: NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	slip:08_energy_decisions_ordered	ONE ZONE · THE REAL MARKET HAS SEVEN · NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	italy
+08_energy_decisions_ordered	Renewables 40 % of production in 2030	slip:08_energy_decisions_ordered	RENEWABLES 40 % OF PRODUCTION IN 2030	france
+08_energy_decisions_ordered	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	slip:08_energy_decisions_ordered	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	france
+08_energy_decisions_ordered	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	slip:08_energy_decisions_ordered	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	poland
+08_energy_decisions_ordered	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	slip:08_energy_decisions_ordered	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	usa
+08_energy_decisions_ordered	Water value and reservoirs	slip:08_energy_decisions_ordered	WATER VALUE AND RESERVOIRS	germany,france,usa,poland,italy
+08_energy_decisions_ordered	Wind 145 gw · solar 215 gw in 2030 · coal…	slip:08_energy_decisions_ordered	WIND 145 GW · SOLAR 215 GW IN 2030 · COAL OUT BY 2038	germany
+08_energy_decisions_ordered	Wind 28.1 gw · solar 79.2 gw in 2030	slip:08_energy_decisions_ordered	WIND 28.1 GW · SOLAR 79.2 GW IN 2030	italy
+08_energy_decisions_queue_full	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	slip:08_energy_decisions_queue_full	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	sweden
+08_energy_decisions_queue_full	Billed · reached only through secondary…	slip:08_energy_decisions_queue_full	BILLED · REACHED ONLY THROUGH SECONDARY REPORTS	poland
+08_energy_decisions_queue_full	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	slip:08_energy_decisions_queue_full	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	sweden
+08_energy_decisions_queue_full	Fossil-free electricity by 2040	slip:08_energy_decisions_queue_full	FOSSIL-FREE ELECTRICITY BY 2040	sweden
+08_energy_decisions_queue_full	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	slip:08_energy_decisions_queue_full	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	sweden
+08_energy_decisions_queue_full	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	slip:08_energy_decisions_queue_full	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	germany
+08_energy_decisions_queue_full	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	slip:08_energy_decisions_queue_full	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	italy
+08_energy_decisions_queue_full	None · nothing to answer	slip:08_energy_decisions_queue_full	NONE · NOTHING TO ANSWER	usa
+08_energy_decisions_queue_full	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	slip:08_energy_decisions_queue_full	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	germany,france,poland
+08_energy_decisions_queue_full	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS: EASTERN · WESTERN · ERCOT	slip:08_energy_decisions_queue_full	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS · EASTERN · WESTERN · ERCOT	usa
+08_energy_decisions_queue_full	ONE ZONE · THE REAL MARKET HAS SEVEN: NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	slip:08_energy_decisions_queue_full	ONE ZONE · THE REAL MARKET HAS SEVEN · NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	italy
+08_energy_decisions_queue_full	Renewables 40 % of production in 2030	slip:08_energy_decisions_queue_full	RENEWABLES 40 % OF PRODUCTION IN 2030	france
+08_energy_decisions_queue_full	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	slip:08_energy_decisions_queue_full	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	france
+08_energy_decisions_queue_full	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	slip:08_energy_decisions_queue_full	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	poland
+08_energy_decisions_queue_full	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	slip:08_energy_decisions_queue_full	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	usa
+08_energy_decisions_queue_full	Water value and reservoirs	slip:08_energy_decisions_queue_full	WATER VALUE AND RESERVOIRS	germany,france,usa,poland,italy
+08_energy_decisions_queue_full	Wind 145 gw · solar 215 gw in 2030 · coal…	slip:08_energy_decisions_queue_full	WIND 145 GW · SOLAR 215 GW IN 2030 · COAL OUT BY 2038	germany
+08_energy_decisions_queue_full	Wind 28.1 gw · solar 79.2 gw in 2030	slip:08_energy_decisions_queue_full	WIND 28.1 GW · SOLAR 79.2 GW IN 2030	italy
+08_energy_instrument_dials	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:08_energy_instrument_dials	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	sweden,poland,italy
+08_energy_instrument_dials	NO NATIONAL ELECTRICITY EXCISE FOR UNITED STATES · THE LAWS ARE NOT OFFERED	slip:08_energy_instrument_dials	NO NATIONAL ELECTRICITY EXCISE FOR UNITED STATES · THE LAWS ARE NOT OFFERED	usa
+08_energy_instrument_dials	No Economic Sectors bill before Congress - these dials travel in it, one draft with the Sectors page.	slip:08_energy_instrument_dials	NO ECONOMIC SECTORS BILL BEFORE CONGRESS · THESE DIALS TRAVEL IN IT · ONE DRAFT WITH THE SECTORS PAGE	usa
+08_energy_instrument_dials	No Economic Sectors bill before Parliament - these dials travel in it, one draft with the Sectors page.	slip:08_energy_instrument_dials	NO ECONOMIC SECTORS BILL BEFORE PARLIAMENT · THESE DIALS TRAVEL IN IT · ONE DRAFT WITH THE SECTORS PAGE	sweden,germany,france,poland,italy
+08_energy_instrument_dials	OPENS LAWS ON THIS CATEGORY · 10 OFFERED · 0 ENACTED · 0 BEFORE PARLIAMENT · THE ONE CATEGORY THAT REACHES THE ENERGY LAYER	slip:08_energy_instrument_dials	OPENS LAWS ON THIS CATEGORY · 10 OFFERED · 0 ENACTED · 0 BEFORE PARLIAMENT · THE ONE CATEGORY THAT REACHES THE ENERGY LAYER	sweden,germany,france,poland,italy
+08_energy_instrument_dials	THE CLIMATE FUND SITS OFF THE BUDGET · THE SUBSIDY DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT	slip:08_energy_instrument_dials	THE CLIMATE FUND SITS OFF THE BUDGET · THE SUBSIDY DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT	germany
+08_energy_instrument_dials	THE RETAIL COMPONENTS ARE BILLED · THE SUBSIDY'S COST LANDS ON THE ENERGY LINE WITH NO RETAIL EFFECT	slip:08_energy_instrument_dials	THE RETAIL COMPONENTS ARE BILLED · THE SUBSIDY'S COST LANDS ON THE ENERGY LINE · WITH NO RETAIL EFFECT	usa
+08_energy_instrument_dials	THE ROW IS ZERO BY THE CATALOG · A FEDERAL CARBON PRICE DOES NOT EXIST	slip:08_energy_instrument_dials	THE ROW IS ZERO BY THE CATALOG · A FEDERAL CARBON PRICE DOES NOT EXIST	usa
+08_energy_instrument_dials	THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE	slip:08_energy_instrument_dials	THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE	usa
+08_energy_instrument_dials_dragged	A little competition at the top. Industry notices first.	slip:08_energy_instrument_dials_dragged	LOOSENED · A LITTLE COMPETITION AT THE TOP · INDUSTRY NOTICES FIRST	poland
+08_energy_instrument_dials_dragged	Below the seeded rulebook. Industry pays a little less.	slip:08_energy_instrument_dials_dragged	LIBERAL · BELOW THE SEEDED RULEBOOK · INDUSTRY PAYS A LITTLE LESS	sweden,usa
+08_energy_instrument_dials_dragged	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:08_energy_instrument_dials_dragged	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	sweden,poland,italy
+08_energy_instrument_dials_dragged	Industry shops around. Households carry the margin.	slip:08_energy_instrument_dials_dragged	UNBUNDLED · INDUSTRY SHOPS AROUND · HOUSEHOLDS CARRY THE MARGIN	germany
+08_energy_instrument_dials_dragged	Large users bargain and win. Industry's price eases.	slip:08_energy_instrument_dials_dragged	OPEN · LARGE USERS BARGAIN AND WIN · INDUSTRY'S PRICE EASES	france,italy
+08_energy_instrument_dials_dragged	NO NATIONAL ELECTRICITY EXCISE FOR UNITED STATES · THE LAWS ARE NOT OFFERED	slip:08_energy_instrument_dials_dragged	NO NATIONAL ELECTRICITY EXCISE FOR UNITED STATES · THE LAWS ARE NOT OFFERED	usa
+08_energy_instrument_dials_dragged	No Economic Sectors bill before Congress - these dials travel in it, one draft with the Sectors page.	slip:08_energy_instrument_dials_dragged	NO ECONOMIC SECTORS BILL BEFORE CONGRESS · THESE DIALS TRAVEL IN IT · ONE DRAFT WITH THE SECTORS PAGE	usa
+08_energy_instrument_dials_dragged	No Economic Sectors bill before Parliament - these dials travel in it, one draft with the Sectors page.	slip:08_energy_instrument_dials_dragged	NO ECONOMIC SECTORS BILL BEFORE PARLIAMENT · THESE DIALS TRAVEL IN IT · ONE DRAFT WITH THE SECTORS PAGE	sweden,germany,france,poland,italy
+08_energy_instrument_dials_dragged	OPENS LAWS ON THIS CATEGORY · 10 OFFERED · 0 ENACTED · 0 BEFORE PARLIAMENT · THE ONE CATEGORY THAT REACHES THE ENERGY LAYER	slip:08_energy_instrument_dials_dragged	OPENS LAWS ON THIS CATEGORY · 10 OFFERED · 0 ENACTED · 0 BEFORE PARLIAMENT · THE ONE CATEGORY THAT REACHES THE ENERGY LAYER	sweden,germany,france,poland,italy
+08_energy_instrument_dials_dragged	THE CLIMATE FUND SITS OFF THE BUDGET · THE SUBSIDY DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT	slip:08_energy_instrument_dials_dragged	THE CLIMATE FUND SITS OFF THE BUDGET · THE SUBSIDY DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT	germany
+08_energy_instrument_dials_dragged	THE RETAIL COMPONENTS ARE BILLED · THE SUBSIDY'S COST LANDS ON THE ENERGY LINE WITH NO RETAIL EFFECT	slip:08_energy_instrument_dials_dragged	THE RETAIL COMPONENTS ARE BILLED · THE SUBSIDY'S COST LANDS ON THE ENERGY LINE · WITH NO RETAIL EFFECT	usa
+08_energy_instrument_dials_dragged	THE ROW IS ZERO BY THE CATALOG · A FEDERAL CARBON PRICE DOES NOT EXIST	slip:08_energy_instrument_dials_dragged	THE ROW IS ZERO BY THE CATALOG · A FEDERAL CARBON PRICE DOES NOT EXIST	usa
+08_energy_instrument_dials_dragged	THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE	slip:08_energy_instrument_dials_dragged	THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE	usa
+08_energy_instrument_dials_dragged	The budget takes it over. The levy falls, or is gone.	slip:08_energy_instrument_dials_dragged	SUBSIDISED · THE BUDGET TAKES IT OVER · THE LEVY FALLS, OR IS GONE	sweden,france,poland,italy
+08_energy_instrument_dials_dragged	The sector grows on the treasury's account.	slip:08_energy_instrument_dials_dragged	GENEROUS · THE SECTOR GROWS ON THE TREASURY'S ACCOUNT	germany,usa
+08_energy_laws_link	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	slip:08_energy_laws_link	IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM	sweden,poland,italy
+08_energy_laws_link	NO NATIONAL ELECTRICITY EXCISE FOR UNITED STATES · THE LAWS ARE NOT OFFERED	slip:08_energy_laws_link	NO NATIONAL ELECTRICITY EXCISE FOR UNITED STATES · THE LAWS ARE NOT OFFERED	usa
+08_energy_laws_link	No Economic Sectors bill before Congress - these dials travel in it, one draft with the Sectors page.	slip:08_energy_laws_link	NO ECONOMIC SECTORS BILL BEFORE CONGRESS · THESE DIALS TRAVEL IN IT · ONE DRAFT WITH THE SECTORS PAGE	usa
+08_energy_laws_link	No Economic Sectors bill before Parliament - these dials travel in it, one draft with the Sectors page.	slip:08_energy_laws_link	NO ECONOMIC SECTORS BILL BEFORE PARLIAMENT · THESE DIALS TRAVEL IN IT · ONE DRAFT WITH THE SECTORS PAGE	sweden,germany,france,poland,italy
+08_energy_laws_link	OPENS LAWS ON THIS CATEGORY · 10 OFFERED · 0 ENACTED · 0 BEFORE PARLIAMENT · THE ONE CATEGORY THAT REACHES THE ENERGY LAYER	slip:08_energy_laws_link	OPENS LAWS ON THIS CATEGORY · 10 OFFERED · 0 ENACTED · 0 BEFORE PARLIAMENT · THE ONE CATEGORY THAT REACHES THE ENERGY LAYER	sweden,germany,france,poland,italy
+08_energy_laws_link	THE CLIMATE FUND SITS OFF THE BUDGET · THE SUBSIDY DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT	slip:08_energy_laws_link	THE CLIMATE FUND SITS OFF THE BUDGET · THE SUBSIDY DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT	germany
+08_energy_laws_link	THE RETAIL COMPONENTS ARE BILLED · THE SUBSIDY'S COST LANDS ON THE ENERGY LINE WITH NO RETAIL EFFECT	slip:08_energy_laws_link	THE RETAIL COMPONENTS ARE BILLED · THE SUBSIDY'S COST LANDS ON THE ENERGY LINE · WITH NO RETAIL EFFECT	usa
+08_energy_laws_link	THE ROW IS ZERO BY THE CATALOG · A FEDERAL CARBON PRICE DOES NOT EXIST	slip:08_energy_laws_link	THE ROW IS ZERO BY THE CATALOG · A FEDERAL CARBON PRICE DOES NOT EXIST	usa
+08_energy_laws_link	THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE	slip:08_energy_laws_link	THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE	usa
+08_energy_lower	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	slip:08_energy_lower	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	sweden
+08_energy_lower	Billed · reached only through secondary…	slip:08_energy_lower	BILLED · REACHED ONLY THROUGH SECONDARY REPORTS	poland
+08_energy_lower	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	slip:08_energy_lower	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	sweden
+08_energy_lower	Fossil-free electricity by 2040	slip:08_energy_lower	FOSSIL-FREE ELECTRICITY BY 2040	sweden
+08_energy_lower	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	slip:08_energy_lower	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	sweden
+08_energy_lower	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	slip:08_energy_lower	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	germany
+08_energy_lower	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	slip:08_energy_lower	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	italy
+08_energy_lower	None · nothing to answer	slip:08_energy_lower	NONE · NOTHING TO ANSWER	usa
+08_energy_lower	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	slip:08_energy_lower	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	germany,france,poland
+08_energy_lower	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS: EASTERN · WESTERN · ERCOT	slip:08_energy_lower	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS · EASTERN · WESTERN · ERCOT	usa
+08_energy_lower	ONE ZONE · THE REAL MARKET HAS SEVEN: NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	slip:08_energy_lower	ONE ZONE · THE REAL MARKET HAS SEVEN · NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	italy
+08_energy_lower	Renewables 40 % of production in 2030	slip:08_energy_lower	RENEWABLES 40 % OF PRODUCTION IN 2030	france
+08_energy_lower	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	slip:08_energy_lower	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	france
+08_energy_lower	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	slip:08_energy_lower	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	poland
+08_energy_lower	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	slip:08_energy_lower	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	usa
+08_energy_lower	Water value and reservoirs	slip:08_energy_lower	WATER VALUE AND RESERVOIRS	germany,france,usa,poland,italy
+08_energy_lower	Wind 145 gw · solar 215 gw in 2030 · coal…	slip:08_energy_lower	WIND 145 GW · SOLAR 215 GW IN 2030 · COAL OUT BY 2038	germany
+08_energy_lower	Wind 28.1 gw · solar 79.2 gw in 2030	slip:08_energy_lower	WIND 28.1 GW · SOLAR 79.2 GW IN 2030	italy
+08_energy_mid	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	slip:08_energy_mid	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	sweden
+08_energy_mid	Billed · reached only through secondary…	slip:08_energy_mid	BILLED · REACHED ONLY THROUGH SECONDARY REPORTS	poland
+08_energy_mid	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	slip:08_energy_mid	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	sweden
+08_energy_mid	Fossil-free electricity by 2040	slip:08_energy_mid	FOSSIL-FREE ELECTRICITY BY 2040	sweden
+08_energy_mid	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	slip:08_energy_mid	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	sweden
+08_energy_mid	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	slip:08_energy_mid	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	germany
+08_energy_mid	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	slip:08_energy_mid	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	italy
+08_energy_mid	None · nothing to answer	slip:08_energy_mid	NONE · NOTHING TO ANSWER	usa
+08_energy_mid	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	slip:08_energy_mid	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	germany,france,poland
+08_energy_mid	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS: EASTERN · WESTERN · ERCOT	slip:08_energy_mid	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS · EASTERN · WESTERN · ERCOT	usa
+08_energy_mid	ONE ZONE · THE REAL MARKET HAS SEVEN: NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	slip:08_energy_mid	ONE ZONE · THE REAL MARKET HAS SEVEN · NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	italy
+08_energy_mid	Renewables 40 % of production in 2030	slip:08_energy_mid	RENEWABLES 40 % OF PRODUCTION IN 2030	france
+08_energy_mid	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	slip:08_energy_mid	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	france
+08_energy_mid	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	slip:08_energy_mid	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	poland
+08_energy_mid	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	slip:08_energy_mid	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	usa
+08_energy_mid	Water value and reservoirs	slip:08_energy_mid	WATER VALUE AND RESERVOIRS	germany,france,usa,poland,italy
+08_energy_mid	Wind 145 gw · solar 215 gw in 2030 · coal…	slip:08_energy_mid	WIND 145 GW · SOLAR 215 GW IN 2030 · COAL OUT BY 2038	germany
+08_energy_mid	Wind 28.1 gw · solar 79.2 gw in 2030	slip:08_energy_mid	WIND 28.1 GW · SOLAR 79.2 GW IN 2030	italy
+08_energy_plate	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	slip:08_energy_plate	57.6 = Σ PRICE × ENERGY ⁄ Σ ENERGY, TWELVE BLOCKS · ENERGY = SEED MW × HOURS PER BLOCK · THE PEAK BLOCK FILLS ITS LANE	sweden
+08_energy_plate	Billed · reached only through secondary…	slip:08_energy_plate	BILLED · REACHED ONLY THROUGH SECONDARY REPORTS	poland
+08_energy_plate	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	slip:08_energy_plate	EUR PER MWh · PER BLOCK · UNDER THE RULE ROW'S THREE BLOCKS	sweden
+08_energy_plate	Fossil-free electricity by 2040	slip:08_energy_plate	FOSSIL-FREE ELECTRICITY BY 2040	sweden
+08_energy_plate	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	slip:08_energy_plate	LINKS IN THE GUTTERS THEY JOIN · PEAK FLOW ⁄ NTC	sweden
+08_energy_plate	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	slip:08_energy_plate	NO RESERVOIR MODELLED FOR GERMANY · SWEDEN'S IS THE ONE	germany
+08_energy_plate	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	slip:08_energy_plate	NO RESERVOIR MODELLED FOR ITALY · SWEDEN'S IS THE ONE	italy
+08_energy_plate	None · nothing to answer	slip:08_energy_plate	NONE · NOTHING TO ANSWER	usa
+08_energy_plate	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	slip:08_energy_plate	ONE ZONE · THE NEIGHBOURS ARE EXOGENOUS	germany,france,poland
+08_energy_plate	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS: EASTERN · WESTERN · ERCOT	slip:08_energy_plate	ONE ZONE · THE REAL GRID IS THREE INTERCONNECTIONS · EASTERN · WESTERN · ERCOT	usa
+08_energy_plate	ONE ZONE · THE REAL MARKET HAS SEVEN: NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	slip:08_energy_plate	ONE ZONE · THE REAL MARKET HAS SEVEN · NORD · CNOR · CSUD · SUD · CALA · SICI · SARD	italy
+08_energy_plate	Renewables 40 % of production in 2030	slip:08_energy_plate	RENEWABLES 40 % OF PRODUCTION IN 2030	france
+08_energy_plate	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	slip:08_energy_plate	THE HYDRO SHIFT'S FOLD IS BILLED FOR FRANCE · NO RESERVOIR MODELLED	france
+08_energy_plate	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	slip:08_energy_plate	THE HYDRO SHIFT'S FOLD IS BILLED FOR POLAND · NO RESERVOIR MODELLED	poland
+08_energy_plate	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	slip:08_energy_plate	THE HYDRO SHIFT'S FOLD IS BILLED FOR USA · NO RESERVOIR MODELLED	usa
+08_energy_plate	Water value and reservoirs	slip:08_energy_plate	WATER VALUE AND RESERVOIRS	germany,france,usa,poland,italy
+08_energy_plate	Wind 145 gw · solar 215 gw in 2030 · coal…	slip:08_energy_plate	WIND 145 GW · SOLAR 215 GW IN 2030 · COAL OUT BY 2038	germany
+08_energy_plate	Wind 28.1 gw · solar 79.2 gw in 2030	slip:08_energy_plate	WIND 28.1 GW · SOLAR 79.2 GW IN 2030	italy

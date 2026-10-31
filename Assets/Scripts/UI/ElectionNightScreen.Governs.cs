@@ -325,15 +325,16 @@ namespace PoliSim.UI
             Transform row = CanvasRows.HRow(parent, "Outcome", Px(30f), Px(8f));
             if (counting)
             {
-                Hold(PlText(row, "Waits", "When the count is complete", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document));
+                Hold(PlText(row, "Waits", "After the count", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document));
                 string declared = n.State.DeclaredCount.ToString(CultureInfo.InvariantCulture) + " of " + n.State.TotalConstituencies.ToString(CultureInfo.InvariantCulture);
                 HoldRight(PlText(row, "Declared", declared, Px(14f), PoliSimTheme.TextPrimary, PoliSimTheme.Document));
-                CanvasRows.Slip(row.gameObject, n.Overlay, "When the count is complete", SlipWrap(declared + " declared", "Nothing is projected on a partial chamber"));
+                CanvasRows.Slip(row.gameObject, n.Overlay, "When the count is complete", SlipWrap(declared + " declared", "Nothing is projected on a partial chamber"));   // K322 S6: "After the count" at rest, Italy's words (K320: no clause at rest)
                 return;
             }
             if (g == null)
             {
-                Hold(PlText(row, "None", "No formation was run for this night", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document));
+                Hold(PlText(row, "None", "No formation run", Px(14f), PoliSimTheme.TextMuted, PoliSimTheme.Document));   // K322 S6: the sentence is the slip, as on the Italian night
+                CanvasRows.Slip(row.gameObject, n.Overlay, "No formation", SlipWrap("No formation was run for this night"));
                 dense.Add(new DenseLine("no formation was run for this night", false));
                 return;
             }
@@ -797,8 +798,8 @@ namespace PoliSim.UI
             if (!ok && fault != null)
             {
                 Transform h1 = CanvasRows.HRow(parent, "WhyHead", Px(26f), Px(10f));
-                Hold(PlText(h1, "Heading", "Why · the lines do not sum to the move", Px(18f), PoliSimTheme.Bad, PoliSimTheme.Body));
-                CanvasRows.Slip(h1.gameObject, n.Overlay, "Why", SlipWrap(fault));
+                Hold(PlText(h1, "Heading", "Why · sum mismatch", Px(18f), PoliSimTheme.Bad, PoliSimTheme.Body));   // K322 S6: the heading was 9 words (LONG); its words are the slip's first line
+                CanvasRows.Slip(h1.gameObject, n.Overlay, "Why", SlipWrap("The lines do not sum to the move", fault));
                 dense.Add(new DenseLine($"WHY — {party.ToUpperInvariant()}: THE LINES DO NOT SUM TO THE MOVE", true));
                 dense.Add(new DenseLine(fault, false));
                 return;
@@ -1289,8 +1290,9 @@ namespace PoliSim.UI
             le.flexibleWidth = 0f;
         }
 
-        /// <summary>One block of the vote bar by fraction of its width; a 1 px paper gap after it unless it is the last; its word inside where it fits.</summary>
-        private static void BarSegment(Transform bar, string name, double from, double to, Color ink, bool hatched, Color wordInk, string word, bool last)
+        /// <summary>One block of the vote bar by fraction of its width; a 1 px paper gap after it unless it is the last; its word inside where it fits - at the block's left, or
+        /// with <paramref name="wordRight"/> at its right (K322 S6: where a tick crosses the left).</summary>
+        private static void BarSegment(Transform bar, string name, double from, double to, Color ink, bool hatched, Color wordInk, string word, bool last, bool wordRight = false)
         {
             var go = new GameObject(name);
             go.transform.SetParent(bar, false);
@@ -1310,12 +1312,12 @@ namespace PoliSim.UI
             r.offsetMin = Vector2.zero;
             r.offsetMax = new Vector2(last ? 0f : -BoardPx, 0f);
             if (string.IsNullOrEmpty(word)) { return; }
-            Text t = CanvasChrome.MakeTextRealWeight(go.transform, "Word", word, PoliSimTheme.Document, Px(14f), wordInk, TextAnchor.MiddleLeft);
+            Text t = CanvasChrome.MakeTextRealWeight(go.transform, "Word", word, PoliSimTheme.Document, Px(14f), wordInk, wordRight ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft);
             t.horizontalOverflow = HorizontalWrapMode.Overflow;
             t.raycastTarget = false;
             RectTransform tr = t.rectTransform;
             tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one;
-            tr.offsetMin = new Vector2(Px(6f), 0f); tr.offsetMax = Vector2.zero;
+            tr.offsetMin = new Vector2(wordRight ? 0f : Px(6f), 0f); tr.offsetMax = new Vector2(wordRight ? -Px(6f) : 0f, 0f);
             t.gameObject.AddComponent<WordFit>().Word = word;   // measured against the board's width; the block as laid decides
         }
 

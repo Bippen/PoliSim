@@ -456,6 +456,14 @@ namespace PoliSim.Testing
                             under.Add(row);
                         }
                     }
+                    // K322 S6: THE CANVAS SLIPS' BOOK. A night's slips are `CanvasSlip` components (CanvasRows.Slip), which no IMGUI draw hands to
+                    // NoteSlipBook, so a night's frame recorded no book and every word a sweep moved onto a night's slip read UNREACHABLE. Each live
+                    // slip on the frame is its level-1 book entry, keyed canvas:<its anchor's name> (Canvas has no level 2: CanvasRows' summary).
+                    foreach (PoliSim.UI.CanvasSlip slip in canvas.GetComponentsInChildren<PoliSim.UI.CanvasSlip>(false))
+                    {
+                        if (slip == null || !slip.isActiveAndEnabled || string.IsNullOrEmpty(slip.Head)) { continue; }
+                        NoteCanvasSlip("canvas:" + slip.gameObject.name, slip.Head, slip.Lines);
+                    }
                 }
                 foreach (List<TableRow> under in byControl.Values) { if (under.Count == 1) { under[0].Flags.Add("CONTROL"); } }
             }
@@ -515,6 +523,22 @@ namespace PoliSim.Testing
             }
             Add("head", PoliSim.UI.SlipContent.Plain(slip.Head));
             foreach (string line in slip.Lines) { Add("line", PoliSim.UI.SlipContent.Plain(line)); }
+        }
+
+        /// <summary>K322 S6: a Canvas slip (plain head and lines, one level) as a level-1 book entry of the capture, as NoteSlip writes an IMGUI one.</summary>
+        private static void NoteCanvasSlip(string key, string head, List<string> lines)
+        {
+            void Add(string role, string text)
+            {
+                string row = string.Join("\t", _capture, "1", Escape(key), role, Escape(text ?? string.Empty));
+                if (SlipRowKeys.Add(row)) { SlipRows.Add(row); }
+            }
+            Add("head", head);
+            if (lines == null) { return; }
+            foreach (string line in lines) { Add("line", line); }
+            // §971: a night's slip lines are SlipWrap's wrap of whole sentences, and the judge reads a book line by line - a phrase the wrap split
+            // ("The Sejm / first sits on", the Polish film's e7e5) read UNREACHABLE. The slip's lines joined are recorded too, so the sentences read whole.
+            if (lines.Count > 1) { Add("line", string.Join(" ", lines)); }
         }
 #endif
 

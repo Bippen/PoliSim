@@ -378,6 +378,9 @@ namespace PoliSim.UI
                 Transform centreDe = Column(body.transform, "MapColumn", 1.8f);
                 laender = BuildLaenderMap(centreDe, state, partyNames, previous, inkCountry);
                 Transform rightDe = Column(body.transform, "Governs", 1.2f);
+                // §971: WHO GOVERNS holds its design width (GovernsWidth, the rows are planned to it) - the weights alone gave Germany's column 5.6 px
+                // less, and every right-aligned figure ran past it (K323's containment, the first German night filmed under it); the Länder map yields
+                rightDe.GetComponent<LayoutElement>().minWidth = GovernsWidth;
                 // D-NIGHT (31a-31c): the column in v3.5 - the first ballot projected (GATE-18 q20) as the round's first cell and the vote, WHY as Sweden's
                 BuildGoverns(screen, rightDe, new GovernsNight { State = state, PartyNames = partyNames, Government = government, Country = inkCountry, TotalSeats = totalSeats,
                     Ledger = ledger, LedgerParty = ledgerParty, BudgetBlock = false, Overlay = screen.Root.transform });
@@ -430,9 +433,14 @@ namespace PoliSim.UI
         /// </summary>
         private static void BuildTallyGermany(Transform parent, NightState state, string[] partyNames, int totalSeats, Previous previous)
         {
-            Heading(parent, state.Complete
-                ? "THE COUNT — COMPLETE"
-                : string.Format(CultureInfo.InvariantCulture, "THE COUNT SO FAR — {0} OF {1} LÄNDER · SEATS OWED UNTIL {1} OF {1}", state.DeclaredCount, state.TotalConstituencies));
+            // K322 S6 (K320's caps): the heading in its short words at rest, the seats' clause on its slip
+            if (state.Complete) { Heading(parent, "THE COUNT — COMPLETE"); }
+            else
+            {
+                Heading(parent, string.Format(CultureInfo.InvariantCulture, "THE COUNT SO FAR — {0} OF {1} LÄNDER", state.DeclaredCount, state.TotalConstituencies),
+                    "THE COUNT SO FAR", string.Format(CultureInfo.InvariantCulture, "{0} OF {1} LÄNDER DECLARED", state.DeclaredCount, state.TotalConstituencies),
+                    string.Format(CultureInfo.InvariantCulture, "SEATS OWED UNTIL {0} OF {0}", state.TotalConstituencies));
+            }
             if (state.CountedValid <= 0)
             {
                 Row(parent, "NOTHING HAS DECLARED", "—", 13, PoliSimTheme.TextMuted);
@@ -471,7 +479,8 @@ namespace PoliSim.UI
                 bool exempt = NationalElection.ExemptFromThreshold(CountryId.Germany, partyNames[p]);
                 if (!ruled && share < 0.05)   // §707's real film (24a ⑤): the rule above every list under it - the SSW below it, seated as exempt
                 {
-                    Row(parent, "5 %", "the line - a list below it is seated only if exempt", 10, PoliSimTheme.TextMuted);
+                    GameObject line = Row(parent, "5 %", "the line · below: exempt only", 10, PoliSimTheme.TextMuted);   // K322 S6: the rule's sentence is its slip
+                    CanvasRows.Slip(line, null, "5 % · THE LINE", new[] { "a list below it is seated only if exempt" });
                     ruled = true;
                 }
                 // 24a's "IN SH · EXEMPT" wrapped beside the SSW's figures in the 1280 column; the rule above it says what the exemption is
@@ -486,9 +495,16 @@ namespace PoliSim.UI
             Row(parent, "COUNTED", state.Complete
                 ? string.Format(CultureInfo.InvariantCulture, "{0:N0} votes    {1} of {2} seats", state.CountedValid, seatsShown, totalSeats)
                 : string.Format(CultureInfo.InvariantCulture, "{0:N0} votes    seats owed until {1} of {1}", state.CountedValid, state.TotalConstituencies), 12, PoliSimTheme.TextSecondary, bold: true);
-            Wrapped(parent, swing != null
-                ? "SWING (the last column), against " + (previous.Label ?? "GERMANY 2021") + (state.Complete ? ", every Land" : string.Format(CultureInfo.InvariantCulture, ", the same {0} Länder", state.DeclaredCount)) + " · ABSENT: no list in 2021 to compare"
-                : "SWING - no previous election is on hand to compare against", 11, PoliSimTheme.TextSecondary);
+            // K322 S6 (K320's caps): the swing's key in its short words at rest, its sentence on the slip
+            string basisDe = previous.Label ?? "GERMANY 2021";
+            if (swing != null)
+            {
+                Note(parent, "SWING · vs " + basisDe, 11, PoliSimTheme.TextSecondary, "SWING",
+                    "the last column",
+                    "against " + basisDe + (state.Complete ? ", every Land" : string.Format(CultureInfo.InvariantCulture, ", the same {0} Länder", state.DeclaredCount)),
+                    "ABSENT: no list in 2021 to compare");
+            }
+            else { Note(parent, "SWING · none on hand", 11, PoliSimTheme.TextSecondary, "SWING", "no previous election is on hand to compare against"); }
         }
 
         /// <summary>§707 (24a ②③, 24b A): the Länder map - each declared Land in its leader's ink, the lead in points and VS 2021 (the leader's
@@ -501,7 +517,7 @@ namespace PoliSim.UI
                 Row(parent, "the map draws the sixteen Länder; this count has " + (state?.TotalConstituencies ?? 0), "—", 11, PoliSimTheme.TextMuted);
                 return null;
             }
-            Heading(parent, "THE LÄNDER · TILE AREA = REGISTERED ELECTORATE · EACH IN ITS LEADER'S INK");
+            Heading(parent, "THE LÄNDER · AREA = ELECTORATE", "THE LÄNDER", "tile area = registered electorate", "each in its leader's ink");   // K322 S6
             var results = new LaenderTileView.TileResult[state.TotalConstituencies];
             for (int r = 0; r < results.Length; r++)
             {
@@ -542,7 +558,9 @@ namespace PoliSim.UI
                 };
             }
             LaenderTileView view = LaenderTileView.Create(parent, results);
-            Wrapped(parent, "FOUR BANDS NORTH TO SOUTH · A TILE'S FIGURE IS THE LEADER'S LEAD IN POINTS · VS 2021 IS THE LEADER'S CHANGE THERE · DASHED = NOT DECLARED", 10, PoliSimTheme.TextMuted);
+            // K322 S6 (K320's caps): the key in its short words at rest (the Polish map's grammar), its sentences on the slip THE MAP
+            Note(parent, "figure = lead in points · dashed = not declared", 10, PoliSimTheme.TextMuted, "THE MAP",
+                "four bands north to south", "a tile's figure: the leader's lead in points", "VS 2021: the leader's change there", "dashed: not declared");
             return view;
         }
 
@@ -615,16 +633,21 @@ namespace PoliSim.UI
                 results[r] = tile;
             }
 
-            Heading(parent, string.Format(CultureInfo.InvariantCulture,
-                "THE VALKRETSAR - TILE AREA = FIXED SEATS, {0} OF THE CHAMBER'S 349 - EACH IN ITS WINNER'S INK", Sum(mandates)));
+            // K322 S6 (K320's caps): the heading and the key in their short words at rest (the Polish map's grammar); their sentences on the slips
+            Heading(parent, "THE VALKRETSAR · AREA = SEATS", "THE VALKRETSAR",
+                string.Format(CultureInfo.InvariantCulture, "tile area = fixed seats, {0} of the chamber's 349", Sum(mandates)), "each in its winner's ink");
             ValkretsCartogramView view = ValkretsCartogramView.Create(parent, mandates, results);
-            Text key = CanvasChrome.MakeTextRealWeight(parent, "MapKey",
-                "ELEVEN BANDS NORTH TO SOUTH, WEST TO EAST INSIDE EACH · THE FIGURE AT A BAND'S LEFT IS THE SEATS IT RETURNS · "
-                + "A TILE'S FIGURE IS THE WINNER'S LEAD IN POINTS" + (previous.ByConstituency != null ? " · 'VS LAST' IS THE WINNER'S CHANGE THERE" : string.Empty)
-                + " · — HAS NOT DECLARED",
+            Text key = CanvasChrome.MakeTextRealWeight(parent, "MapKey", "figure = lead in points · — = not declared",
                 PoliSimTheme.Document, 10, PoliSimTheme.TextSecondary, TextAnchor.UpperLeft);
             key.horizontalOverflow = HorizontalWrapMode.Wrap;
             key.gameObject.AddComponent<LayoutElement>().minHeight = 28f;
+            CanvasRows.Slip(key.gameObject, null, "THE MAP", new[]
+            {
+                "eleven bands north to south, west to east inside each",
+                "a band's left figure: the seats it returns",
+                "a tile's figure: the winner's lead in points",
+                (previous.ByConstituency != null ? "'vs last': the winner's change there · " : string.Empty) + "— has not declared",
+            });
             return view;
         }
 
@@ -635,23 +658,33 @@ namespace PoliSim.UI
             return s;
         }
 
-        private static void Wrapped(Transform parent, string text, int size, Color ink)
+        private static Text Wrapped(Transform parent, string text, int size, Color ink)
         {
             Text t = CanvasChrome.MakeTextRealWeight(parent, "Note", text, PoliSimTheme.Document, size, ink, TextAnchor.UpperLeft);
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.gameObject.AddComponent<LayoutElement>().minHeight = size + 6f;
+            return t;
         }
 
-        private static void Heading(Transform parent, string text)
+        private static Text Heading(Transform parent, string text)
         {
             Text t = CanvasChrome.MakeTextRealWeight(parent, "Heading", text, PoliSimTheme.Display, 11,
                 PoliSimTheme.Hex(0x6B6250), TextAnchor.MiddleLeft, FontStyle.Bold);
             t.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 20f);
             t.gameObject.AddComponent<LayoutElement>().minHeight = 20f;
+            return t;
+        }
+
+        /// <summary>K322 S6 (K320's caps): a heading at rest in its short words, the words it stood in before on its slip (head and lines).</summary>
+        private static Text Heading(Transform parent, string text, string slipHead, params string[] slipLines)
+        {
+            Text t = Heading(parent, text);
+            if (slipLines != null && slipLines.Length > 0) { CanvasRows.Slip(t.gameObject, null, slipHead, slipLines); }
+            return t;
         }
 
         /// <summary>One row: name at the left, figures at the right. Absence is an em dash, never a zero.</summary>
-        private static void Row(Transform parent, string name, string figure, int size, Color ink, bool bold = false, float nameWidth = -1f)
+        private static GameObject Row(Transform parent, string name, string figure, int size, Color ink, bool bold = false, float nameWidth = -1f)
         {
             var row = new GameObject("Row");
             row.transform.SetParent(parent, false);
@@ -674,6 +707,15 @@ namespace PoliSim.UI
                 LayoutElement rest = figureText.gameObject.AddComponent<LayoutElement>();
                 rest.flexibleWidth = 1f;
             }
+            return row;
+        }
+
+        /// <summary>K322 S6 (K320's caps): a one-line note at rest in its short words, the words it stood in before on its slip (head and lines).</summary>
+        private static Text Note(Transform parent, string text, int size, Color ink, string slipHead, params string[] slipLines)
+        {
+            Text t = Wrapped(parent, text, size, ink);
+            if (slipLines != null && slipLines.Length > 0) { CanvasRows.Slip(t.gameObject, null, slipHead, slipLines); }
+            return t;
         }
 
         /// <summary>
@@ -684,10 +726,14 @@ namespace PoliSim.UI
         /// </summary>
         private static void BuildTally(Transform parent, NightState state, string[] partyNames, int totalSeats, Previous previous)
         {
-            Heading(parent, state.Complete
-                ? "THE COUNT — COMPLETE"
-                : string.Format(CultureInfo.InvariantCulture, "THE COUNT SO FAR — {0} OF {1} CONSTITUENCIES, SEATS PROJECTED ON WHAT IS IN",
-                    state.DeclaredCount, state.TotalConstituencies));
+            // K322 S6 (K320's caps): the heading in its short words at rest; that the seats are a projection stays at rest as PROJECTED, the clause on the slip
+            if (state.Complete) { Heading(parent, "THE COUNT — COMPLETE"); }
+            else
+            {
+                Heading(parent, string.Format(CultureInfo.InvariantCulture, "THE COUNT SO FAR — {0} OF {1} · PROJECTED", state.DeclaredCount, state.TotalConstituencies),
+                    "THE COUNT SO FAR", string.Format(CultureInfo.InvariantCulture, "{0} OF {1} CONSTITUENCIES DECLARED", state.DeclaredCount, state.TotalConstituencies),
+                    "SEATS PROJECTED ON WHAT IS IN");
+            }
 
             if (state.CountedValid <= 0)
             {
@@ -767,18 +813,21 @@ namespace PoliSim.UI
             Row(parent, "COUNTED", string.Format(CultureInfo.InvariantCulture, "{0:N0} votes    {1} of {2} seats",
                 state.CountedValid, seatsShown, totalSeats), 12, PoliSimTheme.TextSecondary, bold: true);
 
+            // K322 S6 (K320's caps): the swing's key in its short words at rest, its sentence on the slip
             if (swing != null)
             {
-                Wrapped(parent, "SWING (the last column), " + swingBasis + (seatChange ? " · seats in brackets against its chamber" : string.Empty), 11, PoliSimTheme.TextSecondary);
+                var swingSlip = new List<string> { "the last column", swingBasis };
+                if (seatChange) { swingSlip.Add("seats in brackets: against its chamber"); }
+                Note(parent, "SWING · vs " + (previous.Label ?? "the last"), 11, PoliSimTheme.TextSecondary, "SWING", swingSlip.ToArray());
             }
             else if (previous.Shares != null)
             {
-                Wrapped(parent, "SWING held back until every constituency is in - only a national previous result is on hand, and a partial count compares different places",
-                    11, PoliSimTheme.TextMuted);
+                Note(parent, "SWING · held back", 11, PoliSimTheme.TextMuted, "SWING · HELD BACK",
+                    "held back until every constituency is in", "only a national previous result is on hand", "a partial count compares different places");
             }
             else
             {
-                Wrapped(parent, "SWING - no previous election is on hand to compare against", 11, PoliSimTheme.TextMuted);
+                Note(parent, "SWING · none on hand", 11, PoliSimTheme.TextMuted, "SWING", "no previous election is on hand to compare against");
             }
         }
 
@@ -883,7 +932,7 @@ namespace PoliSim.UI
                     CanvasRows.Slip(chosen.gameObject, null, "CHAMBER HAD NOT CHOSEN", new[] { "THE CHAMBER HAD NOT CHOSEN A HEAD OF GOVERNMENT", "BY THE RECORD'S DATE, " + DeskDay(reference.RecordDate) });
                 }
             }
-            else if (!string.IsNullOrEmpty(reference.GovernmentLine)) { Wrapped(parent, reference.GovernmentLine, 11, PoliSimTheme.TextSecondary); }
+            else if (!string.IsNullOrEmpty(reference.GovernmentLine)) { Note(parent, "THE GOVERNMENT OF RECORD", 11, PoliSimTheme.TextSecondary, "THE GOVERNMENT OF RECORD", SlipLines(reference.GovernmentLine).ToArray()); }   // K322 S6: the sentence is the slip
         }
 
         private static string DeskDay(DateTime d) => d.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant();
@@ -953,14 +1002,17 @@ namespace PoliSim.UI
             string head = members.Count == 1
                 ? partyNames[members[0].Party] + " " + (kind == CallKind.ThresholdCleared ? "HOLDS SEATS" : "IS SHUT OUT BY THE THRESHOLD")
                 : string.Format(CultureInfo.InvariantCulture, "{0} PARTIES {1}", members.Count, verb);
-            Row(parent, head,
+            GameObject row = Row(parent, head,
                 first == last
                     ? string.Format(CultureInfo.InvariantCulture, "called at {0} of {1}", first, state.TotalConstituencies)
                     : string.Format(CultureInfo.InvariantCulture, "called from {0} to {1} of {2}", first, last, state.TotalConstituencies),
                 12, PoliSimTheme.TextPrimary, bold: true);
             if (members.Count > 1)
             {
-                Wrapped(parent, "each at the " + unit + " count it was called:  " + string.Join(" · ", landed), 11, PoliSimTheme.TextSecondary);
+                // K322 S6 (K320's caps): each party's call count was a wrapped line at rest (LONG on the real film); it is the group row's slip, four calls a line
+                var lines = new List<string> { "each at the " + unit + " count it was called" };
+                for (int i = 0; i < landed.Count; i += 4) { lines.Add(string.Join(" · ", landed.GetRange(i, Math.Min(4, landed.Count - i)))); }
+                CanvasRows.Slip(row, null, head, lines);
             }
         }
 
@@ -1035,12 +1087,35 @@ namespace PoliSim.UI
             row.spacing = 24f;
             foot.AddComponent<LayoutElement>().minHeight = 56f;
 
-            Text line = CanvasChrome.MakeTextRealWeight(foot.transform, "Verdict", string.IsNullOrEmpty(verdict) ? string.Empty : verdict.ToUpperInvariant(),
+            // K322 S6 (K320's caps): the verdict at rest is its first clause where that is a caption of at most 8 counted words, else THE VERDICT - never
+            // the paragraph; the whole verdict is the line's slip
+            Text line = CanvasChrome.MakeTextRealWeight(foot.transform, "Verdict", string.IsNullOrEmpty(verdict) ? string.Empty : VerdictAtRest(verdict),
                 PoliSimTheme.Display, 12, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft, FontStyle.Bold);
             line.horizontalOverflow = HorizontalWrapMode.Wrap;
             line.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
+            if (!string.IsNullOrEmpty(verdict)) { CanvasRows.Slip(line.gameObject, overlay, "THE VERDICT", SlipLines(verdict)); }
 
             BuildContinueButton(foot.transform, screen.Dismiss, continueLabel);
+        }
+
+        /// <summary>K322 S6: the verdict's words at rest - its first clause (to the first colon, full stop, semicolon or spaced dash), upper case and without
+        /// its stop, where that clause holds at most 8 counted words; else "THE VERDICT". The whole verdict is the foot's slip.</summary>
+        private static string VerdictAtRest(string verdict)
+        {
+            string v = verdict.Trim();
+            int cut = v.Length;
+            foreach (string mark in new[] { ": ", ". ", "; ", " - " })
+            {
+                int at = v.IndexOf(mark, StringComparison.Ordinal);
+                if (at > 0 && at < cut) { cut = at; }
+            }
+            string clause = v.Substring(0, cut).TrimEnd('.', ';', ':', ' ');
+            int words = 0;
+            foreach (string token in clause.Split(new[] { ' ', '·', '/' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                foreach (char ch in token) { if (char.IsLetter(ch)) { words++; break; } }
+            }
+            return words > 0 && words <= 8 ? clause.ToUpperInvariant() : "THE VERDICT";
         }
 
         /// <summary>The canvas brass button, through the ONE definition of it since P6-A2 (2026-09-17):

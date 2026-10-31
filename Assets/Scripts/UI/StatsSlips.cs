@@ -137,8 +137,9 @@ namespace PoliSim.UI
             foreach (Sector s in home.Sectors) { shares.Add(s.OutputShareOfGdp); }
             float other = StatsReadings.SectorRemainderPercent(shares);
             book.Anchors["sector:head"] = new SlipContent("SECTOR SHARES").Add("SECTOR SHARES OF GDP — ONE DISTRIBUTION").Add("EACH SEGMENT'S LENGTH IS ITS SHARE OF GDP");
-            book.Anchors["sector:other"] = new SlipContent("OTHER").Add(P1(other) + " % OF GDP IN NO SECTOR").Add("100 − THE EIGHT")
-                .Add("SECTOR SHARES OF GDP — ONE DISTRIBUTION").Add("THE PUBLIC SECTOR, PROPERTY, HEALTH, EDUCATION, SERVICES - NO SECTOR OF THEIR OWN HERE");
+            // K322 S5 (K320 (3), K321 (f): four lines of at most 10 counted words): the remainder and its rule on one line, what it holds on two
+            book.Anchors["sector:other"] = new SlipContent("OTHER").Add(P1(other) + " % OF GDP IN NO SECTOR · 100 − THE EIGHT")
+                .Add("SECTOR SHARES OF GDP — ONE DISTRIBUTION").Add("THE PUBLIC SECTOR, PROPERTY, HEALTH, EDUCATION, SERVICES").Add("NO SECTOR OF THEIR OWN HERE");
 
             // ---- the live series (23a ⑨-⑭) ------------------------------------------------------------------------------------------------
             book.Anchors["series:head"] = new SlipContent("LIVE SERIES").Add("DASHED = NEXT-YEAR ESTIMATE WHERE ONE EXISTS").Add("TICKS ABOVE = LAWS ENACTED")
@@ -199,6 +200,14 @@ namespace PoliSim.UI
             book.Anchors["pair:home"] = new SlipContent(home.Name.ToUpperInvariant()).Add("HOME").Add("THE LEFT SIDE OF EVERY ROW");
             if (partner != null) { book.Anchors["pair:partner"] = new SlipContent(partner.Name.ToUpperInvariant()).Add("PARTNER").Add("THE RIGHT SIDE OF EVERY ROW"); }
             book.Anchors["readings:head"] = new SlipContent("READINGS").Add("THE HEADLINE READINGS · THE SAME ROWS EACH SIDE").Add("BOTH SIDES · LIVE");
+            // K322 S5 (K320 (2), (5)): the omitted currency row's sentence left the page (CURRENCY STRENGTH · OMITTED at rest) for this slip - the rule always,
+            // and the side with no currency of its own where one has none (the page's own test: the home side first)
+            var currency = new SlipContent("CURRENCY STRENGTH").Add("OMITTED WHERE A SIDE HAS NO INDEPENDENT CURRENCY").Add("THE ROW HAS ONE SIDE AND IS NOT DRAWN");
+            if (partner != null)
+            {
+                foreach (Country side in new[] { home, partner }) { if (CurrencySystem.SharesCurrencyZoneWithOthers(side, world)) { currency.Add(side.Name.ToUpperInvariant() + " HAS NO INDEPENDENT CURRENCY"); break; } }
+            }
+            book.Anchors["readings:currency"] = currency;
             book.Anchors["links:head"] = new SlipContent("LINKS").Add("THE PAIR · TRADE FROM THE MAP'S OWN LINKS").Add("EACH SIDE'S FACT ON ITS OWN SIDE");
             if (partner != null)
             {

@@ -5,68 +5,51 @@
 # says the generating films took that capture. The key: the capture stem and the drawn text with every run of digits folded to '#',
 # plus the kind; scoped by country, width, film mode (one stem shows other words in another mode) and source (imgui, or canvas: a
 # real film's Canvas text). Regenerate: perl Tools/declutter_scan.pl baseline <the films' label tables> - each film's facts beside it.
-# generated from: ../PoliSim-captures/labels/drys970_sweden_1280_labels.tsv (sweden, 1280, dry, mode sweep)
-# generated from: ../PoliSim-captures/labels/drys970_germany_1280_labels.tsv (germany, 1280, dry, mode sweep)
-# generated from: ../PoliSim-captures/labels/drys970_france_1280_labels.tsv (france, 1280, dry, mode sweep)
-# generated from: ../PoliSim-captures/labels/drys970_usa_1280_labels.tsv (usa, 1280, dry, mode sweep)
-# generated from: ../PoliSim-captures/labels/drys970_poland_1280_labels.tsv (poland, 1280, dry, mode sweep)
-# generated from: ../PoliSim-captures/labels/drys970_italy_1280_labels.tsv (italy, 1280, dry, mode sweep)
-# generated from: ../PoliSim-captures/labels/reals970se_labels.tsv (sweden, 1280, real, mode sweep)
-# generated from: ../PoliSim-captures/labels/reals970pl_labels.tsv (poland, 1280, real, mode interrupts)
+# generated from: ../PoliSim-captures/labels/drys971_sweden_1280_labels.tsv (sweden, 1280, dry, mode sweep)
+# generated from: ../PoliSim-captures/labels/drys971_germany_1280_labels.tsv (germany, 1280, dry, mode sweep)
+# generated from: ../PoliSim-captures/labels/drys971_france_1280_labels.tsv (france, 1280, dry, mode sweep)
+# generated from: ../PoliSim-captures/labels/drys971_usa_1280_labels.tsv (usa, 1280, dry, mode sweep)
+# generated from: ../PoliSim-captures/labels/drys971_poland_1280_labels.tsv (poland, 1280, dry, mode sweep)
+# generated from: ../PoliSim-captures/labels/drys971_italy_1280_labels.tsv (italy, 1280, dry, mode sweep)
+# generated from: ../PoliSim-captures/labels/reals971se_labels.tsv (sweden, 1280, real, mode sweep)
+# generated from: ../PoliSim-captures/labels/reals971pl_labels.tsv (poland, 1280, real, mode interrupts)
+# generated from: ../PoliSim-captures/labels/reals971sei_labels.tsv (sweden, 1280, real, mode interrupts)
+# generated from: ../PoliSim-captures/labels/reals971dei_labels.tsv (germany, 1280, real, mode interrupts)
+# generated from: ../PoliSim-captures/labels/reals971usi_labels.tsv (usa, 1280, real, mode interrupts)
+# generated from: ../PoliSim-captures/labels/reals971iti_labels.tsv (italy, 1280, real, mode interrupts)
+# generated from: ../PoliSim-captures/labels/reals971sen_labels.tsv (sweden, 1280, real, mode electionnight)
+# generated from: ../PoliSim-captures/labels/reals971sea_labels.tsv (sweden, 1280, real, mode abroad)
+# generated from: ../PoliSim-captures/labels/reals971ita_labels.tsv (italy, 1280, real, mode abroad)
 country	width	mode	source	capture	kind	text
 france	1280	sweep	imgui	00a_settings	TAKEN	-
 france	1280	sweep	imgui	01b_running_strip	TAKEN	-
 france	1280	sweep	imgui	01c_desk	TAKEN	-
 france	1280	sweep	imgui	01d_desk_held	TAKEN	-
-france	1280	sweep	imgui	01e_desk_event	LONG	A major trading partner has slipped into recession, softening demand for our exports.
-france	1280	sweep	imgui	01e_desk_event	STOP	A major trading partner has slipped into recession, softening demand for our exports.
 france	1280	sweep	imgui	01e_desk_event	TAKEN	-
-france	1280	sweep	imgui	01f_desk_gameover	LONG	GAME OVER - Out of office at year #: the chamber formed a government without UG.
-france	1280	sweep	imgui	01f_desk_gameover	LONG	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT UG.
-france	1280	sweep	imgui	01f_desk_gameover	STOP	GAME OVER - Out of office at year #: the chamber formed a government without UG.
-france	1280	sweep	imgui	01f_desk_gameover	STOP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT UG.
 france	1280	sweep	imgui	01f_desk_gameover	TAKEN	-
-france	1280	sweep	imgui	01f_desk_gameover	WRAP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT UG.
-france	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # JUL # » Source: the Portugal Memorandum of Understanding of #, the three years and the # % end
-france	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # JUL # » The scheduled review of # Jul # left the rating at CCC, and the market closed
-france	1280	sweep	imgui	01g1_crisis_moment_sources	STOP	The clock waits until you continue.
 france	1280	sweep	imgui	01g1_crisis_moment_sources	TAKEN	-
-france	1280	sweep	imgui	01g1_crisis_moment_sources	WRAP	at the zone's rate, without the market's premium
 france	1280	sweep	imgui	01g2_crisis_desk	TAKEN	-
 france	1280	sweep	imgui	01g3_crisis_desk_withheld	TAKEN	-
 france	1280	sweep	imgui	01g4_crisis_restored	TAKEN	-
-france	1280	sweep	imgui	01g_crisis_moment	STOP	The clock waits until you continue.
 france	1280	sweep	imgui	01g_crisis_moment	TAKEN	-
-france	1280	sweep	imgui	01g_crisis_moment	WRAP	at the zone's rate, without the market's premium
 france	1280	sweep	imgui	02_statistics	TAKEN	-
 france	1280	sweep	imgui	02a_statistics_domestic	TAKEN	-
 france	1280	sweep	imgui	02a_statistics_domestic_deep	TAKEN	-
 france	1280	sweep	imgui	02a_statistics_domestic_rows	TAKEN	-
-france	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	SLIP	OTHER » THE PUBLIC SECTOR, PROPERTY, HEALTH, EDUCATION, SERVICES - NO SECTOR OF THEIR OWN HERE
 france	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	TAKEN	-
 france	1280	sweep	imgui	02b_statistics_international	TAKEN	-
-france	1280	sweep	imgui	02b_statistics_international_deep	LONG	CURRENCY STRENGTH OMITTED: FRANCE HAS NO INDEPENDENT CURRENCY, SO THE ROW HAS ONE SIDE AND IS NOT DRAWN
 france	1280	sweep	imgui	02b_statistics_international_deep	TAKEN	-
-france	1280	sweep	imgui	02b_statistics_international_rows	LONG	CURRENCY STRENGTH OMITTED: FRANCE HAS NO INDEPENDENT CURRENCY, SO THE ROW HAS ONE SIDE AND IS NOT DRAWN
 france	1280	sweep	imgui	02b_statistics_international_rows	TAKEN	-
 france	1280	sweep	imgui	02b_statistics_international_slips_pinned	TAKEN	-
 france	1280	sweep	imgui	03_decisions	TAKEN	-
-france	1280	sweep	imgui	03a_decisions_options	LONG	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
-france	1280	sweep	imgui	03a_decisions_options	LONG	Pay for it by selling the old patrol fleet
-france	1280	sweep	imgui	03a_decisions_options	STOP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 france	1280	sweep	imgui	03a_decisions_options	TAKEN	-
-france	1280	sweep	imgui	03a_decisions_options	WRAP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 france	1280	sweep	imgui	03b_decisions_budget_process	TAKEN	-
-france	1280	sweep	imgui	03c_decisions_budget_process_scrolled	LONG	Your incoming government's first budget is open - introduce your current draft as a bill below. After this one, the annual process opens on your country's own fiscal-year date.
-france	1280	sweep	imgui	03c_decisions_budget_process_scrolled	STOP	Your incoming government's first budget is open - introduce your current draft as a bill below. After this one, the annual process opens on your country's own fiscal-year date.
 france	1280	sweep	imgui	03c_decisions_budget_process_scrolled	TAKEN	-
-france	1280	sweep	imgui	03c_decisions_budget_process_scrolled	WRAP	Your incoming government's first budget is open - introduce your current draft as a bill below. After this one, the annual process opens on your country's own fiscal-year date.
 france	1280	sweep	imgui	03d_budget_process_open	TAKEN	-
 france	1280	sweep	imgui	04_demographics	TAKEN	-
 france	1280	sweep	imgui	04a_people_dependency_electorate	TAKEN	-
 france	1280	sweep	imgui	04b2_people_health_wait_pinned	TAKEN	-
 france	1280	sweep	imgui	04b_people_health	TAKEN	-
-france	1280	sweep	imgui	04c2_people_education_billed_pinned	SLIP	BILLED » THE TABLES SIT BEHIND THE WWW HOST, NOT ON THE SDMX API
 france	1280	sweep	imgui	04c2_people_education_billed_pinned	TAKEN	-
 france	1280	sweep	imgui	04c_people_education	TAKEN	-
 france	1280	sweep	imgui	04d_people_infrastructure	TAKEN	-
@@ -77,8 +60,6 @@ france	1280	sweep	imgui	04g3_people_infrastructure_dense	TAKEN	-
 france	1280	sweep	imgui	04g4_people_environment_dense	TAKEN	-
 france	1280	sweep	imgui	04g_people_health_dense	TAKEN	-
 france	1280	sweep	imgui	04h_people_dense	TAKEN	-
-france	1280	sweep	imgui	04i_people_slips_pinned	SLIP	TURNOUT BY AGE · NO SOURCE » NO SOURCE FOR THIS COUNTRY - NO LANE IS DRAWN RATHER THAN ONE DRAWN FROM A GUESS
-france	1280	sweep	imgui	04i_people_slips_pinned	SLIP	WORKING AGE · #–#
 france	1280	sweep	imgui	04i_people_slips_pinned	TAKEN	-
 france	1280	sweep	imgui	05_budget	TAKEN	-
 france	1280	sweep	imgui	05a_budget_tax	TAKEN	-
@@ -195,49 +176,85 @@ france	1280	sweep	imgui	08_energy_laws_link_arrived	TAKEN	-
 france	1280	sweep	imgui	08_energy_lower	TAKEN	-
 france	1280	sweep	imgui	08_energy_mid	TAKEN	-
 france	1280	sweep	imgui	08_energy_plate	TAKEN	-
-france	1280	sweep	imgui	89d_signing_entrance	LABEL	DOCKET · A CABINET DECISION
 france	1280	sweep	imgui	89d_signing_entrance	TAKEN	-
-france	1280	sweep	imgui	89e_signing_settled	LABEL	DOCKET · A CABINET DECISION
 france	1280	sweep	imgui	89e_signing_settled	TAKEN	-
-france	1280	sweep	imgui	92_saves_menu	LONG	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-france	1280	sweep	imgui	92_saves_menu	STOP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
 france	1280	sweep	imgui	92_saves_menu	TAKEN	-
-france	1280	sweep	imgui	92_saves_menu	WRAP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-france	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_precampaign_day#   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-france	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_riksbank_rate_decision   -   incompatible: format # - this build reads #
-france	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_trade_bill_costs   -   incompatible: format # - this build reads #
-france	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#b_precampaign_day#_m   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-france	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_a   -   France, Turn #, #-#-#   (saved #-#-# #:# UTC)
-france	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_b   -   France, Turn #, #-#-#   (saved #-#-# #:# UTC)
+germany	1280	interrupts	canvas	00_main_menu	TAKEN	-
+germany	1280	interrupts	canvas	00a_settings	TAKEN	-
+germany	1280	interrupts	canvas	01_country_selector	TAKEN	-
+germany	1280	interrupts	canvas	01a_selector_yielding	TAKEN	-
+germany	1280	interrupts	canvas	01b_running_strip	TAKEN	-
+germany	1280	interrupts	canvas	01c_desk	TAKEN	-
+germany	1280	interrupts	canvas	01f2_start_points	TAKEN	-
+germany	1280	interrupts	canvas	01g_party_picker	TAKEN	-
+germany	1280	interrupts	canvas	01k1_create_profile	TAKEN	-
+germany	1280	interrupts	canvas	01k2_create_placement	TAKEN	-
+germany	1280	interrupts	canvas	01k3_create_declarations	TAKEN	-
+germany	1280	interrupts	canvas	01k4_create_leader	TAKEN	-
+germany	1280	interrupts	canvas	01k5_create_review	TAKEN	-
+germany	1280	interrupts	canvas	05t_budget_turn0	TAKEN	-
+germany	1280	interrupts	canvas	cl1_runup_hq_opened	TAKEN	-
+germany	1280	interrupts	canvas	cl1_runup_hq_queued	TAKEN	-
+germany	1280	interrupts	canvas	cl1_runup_hq_stepped	TAKEN	-
+germany	1280	interrupts	canvas	cl2_campaign_hq_rally_picked	TAKEN	-
+germany	1280	interrupts	canvas	cl2_campaign_hq_scandal	TAKEN	-
+germany	1280	interrupts	canvas	cl2_campaign_hq_scandal_answered	TAKEN	-
+germany	1280	interrupts	canvas	cl2_campaign_hq_scandal_stepped	TAKEN	-
+germany	1280	interrupts	canvas	cl2_campaign_map_live	TAKEN	-
+germany	1280	interrupts	canvas	cl2_campaign_map_picked	TAKEN	-
+germany	1280	interrupts	canvas	e7a_campaign_opening_hq	TAKEN	-
+germany	1280	interrupts	canvas	e7b_campaign_opening_acknowledged	TAKEN	-
+germany	1280	interrupts	canvas	e7c_election_night_takeover	TAKEN	-
+germany	1280	interrupts	canvas	e7c_election_night_takeover	WRAP	CDU IS THE LARGEST PARTY
+germany	1280	interrupts	canvas	e7c_election_night_takeover	WRAP	FDP IS SHUT OUT BY THE THRESHOLD
+germany	1280	interrupts	canvas	e7c_election_night_takeover	WRAP	called from # to # of #
+germany	1280	interrupts	canvas	e7d_after_election_night	TAKEN	-
+germany	1280	interrupts	canvas	e7e_election_night_partial_staged	TAKEN	-
+germany	1280	interrupts	canvas	e7e_election_night_partial_staged	WRAP	# votes    seats owed until # of #
+germany	1280	interrupts	canvas	ps3d_campaign_declared	TAKEN	-
+germany	1280	interrupts	canvas	ps3d_runup_declared	TAKEN	-
+germany	1280	interrupts	imgui	00_main_menu	TAKEN	-
+germany	1280	interrupts	imgui	00a_settings	TAKEN	-
+germany	1280	interrupts	imgui	01_country_selector	TAKEN	-
+germany	1280	interrupts	imgui	01a_selector_yielding	TAKEN	-
+germany	1280	interrupts	imgui	01b_running_strip	TAKEN	-
+germany	1280	interrupts	imgui	01c_desk	TAKEN	-
+germany	1280	interrupts	imgui	01f2_start_points	TAKEN	-
+germany	1280	interrupts	imgui	01g_party_picker	TAKEN	-
+germany	1280	interrupts	imgui	01k1_create_profile	TAKEN	-
+germany	1280	interrupts	imgui	01k2_create_placement	TAKEN	-
+germany	1280	interrupts	imgui	01k3_create_declarations	TAKEN	-
+germany	1280	interrupts	imgui	01k4_create_leader	TAKEN	-
+germany	1280	interrupts	imgui	01k5_create_review	TAKEN	-
+germany	1280	interrupts	imgui	05t_budget_turn0	TAKEN	-
+germany	1280	interrupts	imgui	cl1_runup_hq_opened	TAKEN	-
+germany	1280	interrupts	imgui	cl1_runup_hq_queued	TAKEN	-
+germany	1280	interrupts	imgui	cl1_runup_hq_stepped	TAKEN	-
+germany	1280	interrupts	imgui	cl2_campaign_hq_rally_picked	TAKEN	-
+germany	1280	interrupts	imgui	cl2_campaign_hq_scandal	TAKEN	-
+germany	1280	interrupts	imgui	cl2_campaign_hq_scandal_answered	TAKEN	-
+germany	1280	interrupts	imgui	cl2_campaign_hq_scandal_stepped	TAKEN	-
+germany	1280	interrupts	imgui	cl2_campaign_map_live	TAKEN	-
+germany	1280	interrupts	imgui	cl2_campaign_map_picked	TAKEN	-
+germany	1280	interrupts	imgui	e7a_campaign_opening_hq	TAKEN	-
+germany	1280	interrupts	imgui	e7b_campaign_opening_acknowledged	TAKEN	-
+germany	1280	interrupts	imgui	e7c_election_night_takeover	TAKEN	-
+germany	1280	interrupts	imgui	e7d_after_election_night	TAKEN	-
+germany	1280	interrupts	imgui	e7e_election_night_partial_staged	TAKEN	-
+germany	1280	interrupts	imgui	ps3d_campaign_declared	TAKEN	-
+germany	1280	interrupts	imgui	ps3d_runup_declared	TAKEN	-
 germany	1280	sweep	imgui	00a_settings	TAKEN	-
 germany	1280	sweep	imgui	01b_running_strip	TAKEN	-
 germany	1280	sweep	imgui	01c_desk	TAKEN	-
-germany	1280	sweep	imgui	01d_desk_carbon_passed	LONG	A strong rally in domestic markets is lifting investor and consumer confidence.
-germany	1280	sweep	imgui	01d_desk_carbon_passed	SLIP	CALENDAR » A DOT IS AN ENTRY IN THIS MONTH'S LEDGER, IN ITS AREA'S INK · A STRUCK DAY HAS PASSED
-germany	1280	sweep	imgui	01d_desk_carbon_passed	SLIP	CALENDAR » CARBON TAX · PASSED · # EUR/t STANDS UNTIL # NOVEMBER #, THEN THE STATUTE CARRIES IT WITH THE PRICE LEVEL FROM THEN
-germany	1280	sweep	imgui	01d_desk_carbon_passed	STOP	A strong rally in domestic markets is lifting investor and consumer confidence.
 germany	1280	sweep	imgui	01d_desk_carbon_passed	TAKEN	-
 germany	1280	sweep	imgui	01d_desk_held	TAKEN	-
-germany	1280	sweep	imgui	01e_desk_event	LONG	A major trading partner has slipped into recession, softening demand for our exports.
-germany	1280	sweep	imgui	01e_desk_event	STOP	A major trading partner has slipped into recession, softening demand for our exports.
 germany	1280	sweep	imgui	01e_desk_event	TAKEN	-
-germany	1280	sweep	imgui	01f_desk_gameover	LONG	GAME OVER - Out of office at year #: the chamber formed a government without SPD.
-germany	1280	sweep	imgui	01f_desk_gameover	LONG	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT SPD.
-germany	1280	sweep	imgui	01f_desk_gameover	STOP	GAME OVER - Out of office at year #: the chamber formed a government without SPD.
-germany	1280	sweep	imgui	01f_desk_gameover	STOP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT SPD.
 germany	1280	sweep	imgui	01f_desk_gameover	TAKEN	-
-germany	1280	sweep	imgui	01f_desk_gameover	WRAP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT SPD.
-germany	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # NOV # » Source: the Portugal Memorandum of Understanding of #, the three years and the # % end
-germany	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # NOV # » The scheduled review of # Nov # left the rating at CCC, and the market closed
-germany	1280	sweep	imgui	01g1_crisis_moment_sources	STOP	The clock waits until you continue.
 germany	1280	sweep	imgui	01g1_crisis_moment_sources	TAKEN	-
-germany	1280	sweep	imgui	01g1_crisis_moment_sources	WRAP	at the zone's rate, without the market's premium
 germany	1280	sweep	imgui	01g2_crisis_desk	TAKEN	-
 germany	1280	sweep	imgui	01g3_crisis_desk_withheld	TAKEN	-
 germany	1280	sweep	imgui	01g4_crisis_restored	TAKEN	-
-germany	1280	sweep	imgui	01g_crisis_moment	STOP	The clock waits until you continue.
 germany	1280	sweep	imgui	01g_crisis_moment	TAKEN	-
-germany	1280	sweep	imgui	01g_crisis_moment	WRAP	at the zone's rate, without the market's premium
 germany	1280	sweep	imgui	01k1_create_profile	TAKEN	-
 germany	1280	sweep	imgui	01k2_create_placement	TAKEN	-
 germany	1280	sweep	imgui	01k3_create_declarations	TAKEN	-
@@ -247,31 +264,20 @@ germany	1280	sweep	imgui	02_statistics	TAKEN	-
 germany	1280	sweep	imgui	02a_statistics_domestic	TAKEN	-
 germany	1280	sweep	imgui	02a_statistics_domestic_deep	TAKEN	-
 germany	1280	sweep	imgui	02a_statistics_domestic_rows	TAKEN	-
-germany	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	SLIP	OTHER » THE PUBLIC SECTOR, PROPERTY, HEALTH, EDUCATION, SERVICES - NO SECTOR OF THEIR OWN HERE
 germany	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	TAKEN	-
 germany	1280	sweep	imgui	02b_statistics_international	TAKEN	-
-germany	1280	sweep	imgui	02b_statistics_international_deep	LONG	CURRENCY STRENGTH OMITTED: GERMANY HAS NO INDEPENDENT CURRENCY, SO THE ROW HAS ONE SIDE AND IS NOT DRAWN
 germany	1280	sweep	imgui	02b_statistics_international_deep	TAKEN	-
-germany	1280	sweep	imgui	02b_statistics_international_rows	LONG	CURRENCY STRENGTH OMITTED: GERMANY HAS NO INDEPENDENT CURRENCY, SO THE ROW HAS ONE SIDE AND IS NOT DRAWN
 germany	1280	sweep	imgui	02b_statistics_international_rows	TAKEN	-
 germany	1280	sweep	imgui	02b_statistics_international_slips_pinned	TAKEN	-
 germany	1280	sweep	imgui	03_decisions	TAKEN	-
-germany	1280	sweep	imgui	03a_decisions_options	LONG	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
-germany	1280	sweep	imgui	03a_decisions_options	LONG	Pay for it by selling the old patrol fleet
-germany	1280	sweep	imgui	03a_decisions_options	STOP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 germany	1280	sweep	imgui	03a_decisions_options	TAKEN	-
-germany	1280	sweep	imgui	03a_decisions_options	WRAP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 germany	1280	sweep	imgui	03b_decisions_budget_process	TAKEN	-
-germany	1280	sweep	imgui	03c_decisions_budget_process_scrolled	LONG	Your incoming government's first budget is open - introduce your current draft as a bill below. After this one, the annual process opens on your country's own fiscal-year date.
-germany	1280	sweep	imgui	03c_decisions_budget_process_scrolled	STOP	Your incoming government's first budget is open - introduce your current draft as a bill below. After this one, the annual process opens on your country's own fiscal-year date.
 germany	1280	sweep	imgui	03c_decisions_budget_process_scrolled	TAKEN	-
-germany	1280	sweep	imgui	03c_decisions_budget_process_scrolled	WRAP	Your incoming government's first budget is open - introduce your current draft as a bill below. After this one, the annual process opens on your country's own fiscal-year date.
 germany	1280	sweep	imgui	03d_budget_process_open	TAKEN	-
 germany	1280	sweep	imgui	04_demographics	TAKEN	-
 germany	1280	sweep	imgui	04a_people_dependency_electorate	TAKEN	-
 germany	1280	sweep	imgui	04b2_people_health_wait_pinned	TAKEN	-
 germany	1280	sweep	imgui	04b_people_health	TAKEN	-
-germany	1280	sweep	imgui	04c2_people_education_billed_pinned	SLIP	BILLED » THE TABLES SIT BEHIND THE WWW HOST, NOT ON THE SDMX API
 germany	1280	sweep	imgui	04c2_people_education_billed_pinned	TAKEN	-
 germany	1280	sweep	imgui	04c_people_education	TAKEN	-
 germany	1280	sweep	imgui	04d_people_infrastructure	TAKEN	-
@@ -282,8 +288,6 @@ germany	1280	sweep	imgui	04g3_people_infrastructure_dense	TAKEN	-
 germany	1280	sweep	imgui	04g4_people_environment_dense	TAKEN	-
 germany	1280	sweep	imgui	04g_people_health_dense	TAKEN	-
 germany	1280	sweep	imgui	04h_people_dense	TAKEN	-
-germany	1280	sweep	imgui	04i_people_slips_pinned	SLIP	TURNOUT BY AGE · NO SOURCE » NO SOURCE FOR THIS COUNTRY - NO LANE IS DRAWN RATHER THAN ONE DRAWN FROM A GUESS
-germany	1280	sweep	imgui	04i_people_slips_pinned	SLIP	WORKING AGE · #–#
 germany	1280	sweep	imgui	04i_people_slips_pinned	TAKEN	-
 germany	1280	sweep	imgui	05_budget	TAKEN	-
 germany	1280	sweep	imgui	05a_budget_tax	TAKEN	-
@@ -405,20 +409,9 @@ germany	1280	sweep	imgui	08_energy_laws_link_arrived	TAKEN	-
 germany	1280	sweep	imgui	08_energy_lower	TAKEN	-
 germany	1280	sweep	imgui	08_energy_mid	TAKEN	-
 germany	1280	sweep	imgui	08_energy_plate	TAKEN	-
-germany	1280	sweep	imgui	89d_signing_entrance	LABEL	DOCKET · A CABINET DECISION
 germany	1280	sweep	imgui	89d_signing_entrance	TAKEN	-
-germany	1280	sweep	imgui	89e_signing_settled	LABEL	DOCKET · A CABINET DECISION
 germany	1280	sweep	imgui	89e_signing_settled	TAKEN	-
-germany	1280	sweep	imgui	92_saves_menu	LONG	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-germany	1280	sweep	imgui	92_saves_menu	STOP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
 germany	1280	sweep	imgui	92_saves_menu	TAKEN	-
-germany	1280	sweep	imgui	92_saves_menu	WRAP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-germany	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_precampaign_day#   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-germany	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_riksbank_rate_decision   -   incompatible: format # - this build reads #
-germany	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_trade_bill_costs   -   incompatible: format # - this build reads #
-germany	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#b_precampaign_day#_m   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-germany	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_a   -   Germany, Turn #, #-#-#   (saved #-#-# #:# UTC)
-germany	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_b   -   Germany, Turn #, #-#-#   (saved #-#-# #:# UTC)
 germany	1280	sweep	imgui	co01_cabinet_junior	TAKEN	-
 germany	1280	sweep	imgui	co02_cabinet_threat_compose	TAKEN	-
 germany	1280	sweep	imgui	co03_cabinet_threatened	TAKEN	-
@@ -435,65 +428,111 @@ germany	1280	sweep	imgui	co13_cabinet_redeclare	TAKEN	-
 germany	1280	sweep	imgui	co14_docket_sides	TAKEN	-
 germany	1280	sweep	imgui	co15_cabinet_junior_refused	SLIP	LEAVE » YOUR PARTY SITS IN ONE FRAKTION WITH CDU - IT DOES NOT LEAVE THE
 germany	1280	sweep	imgui	co15_cabinet_junior_refused	TAKEN	-
+italy	1280	abroad	canvas	00_main_menu	TAKEN	-
+italy	1280	abroad	canvas	00a_settings	TAKEN	-
+italy	1280	abroad	canvas	01_country_selector	TAKEN	-
+italy	1280	abroad	canvas	01a_selector_yielding	TAKEN	-
+italy	1280	abroad	canvas	01b_running_strip	TAKEN	-
+italy	1280	abroad	canvas	01c_desk	TAKEN	-
+italy	1280	abroad	canvas	01f2_start_points	TAKEN	-
+italy	1280	abroad	canvas	01g_party_picker	TAKEN	-
+italy	1280	abroad	canvas	05t_budget_turn0	TAKEN	-
+italy	1280	abroad	canvas	abroad00_docket_upcoming	TAKEN	-
+italy	1280	abroad	canvas	abroad01_docket	TAKEN	-
+italy	1280	abroad	canvas	abroad02_docket_results	TAKEN	-
+italy	1280	abroad	canvas	abroad02p_docket_results_slip	TAKEN	-
+italy	1280	abroad	canvas	abroad03_docket_forming	TAKEN	-
+italy	1280	abroad	canvas	abroad04_docket_settled	TAKEN	-
+italy	1280	abroad	canvas	abroad05_desk_month	TAKEN	-
+italy	1280	abroad	canvas	abroad06_stats_polling_days	TAKEN	-
+italy	1280	abroad	imgui	00_main_menu	TAKEN	-
+italy	1280	abroad	imgui	00a_settings	TAKEN	-
+italy	1280	abroad	imgui	01_country_selector	TAKEN	-
+italy	1280	abroad	imgui	01a_selector_yielding	TAKEN	-
+italy	1280	abroad	imgui	01b_running_strip	TAKEN	-
+italy	1280	abroad	imgui	01c_desk	TAKEN	-
+italy	1280	abroad	imgui	01f2_start_points	TAKEN	-
+italy	1280	abroad	imgui	01g_party_picker	TAKEN	-
+italy	1280	abroad	imgui	05t_budget_turn0	TAKEN	-
+italy	1280	abroad	imgui	abroad00_docket_upcoming	TAKEN	-
+italy	1280	abroad	imgui	abroad01_docket	TAKEN	-
+italy	1280	abroad	imgui	abroad02_docket_results	TAKEN	-
+italy	1280	abroad	imgui	abroad02p_docket_results_slip	TAKEN	-
+italy	1280	abroad	imgui	abroad03_docket_forming	TAKEN	-
+italy	1280	abroad	imgui	abroad04_docket_settled	TAKEN	-
+italy	1280	abroad	imgui	abroad05_desk_month	TAKEN	-
+italy	1280	abroad	imgui	abroad06_stats_polling_days	TAKEN	-
+italy	1280	interrupts	canvas	00_main_menu	TAKEN	-
+italy	1280	interrupts	canvas	00a_settings	TAKEN	-
+italy	1280	interrupts	canvas	01_country_selector	TAKEN	-
+italy	1280	interrupts	canvas	01a_selector_yielding	TAKEN	-
+italy	1280	interrupts	canvas	01b_running_strip	TAKEN	-
+italy	1280	interrupts	canvas	01c_desk	TAKEN	-
+italy	1280	interrupts	canvas	01f2_start_points	TAKEN	-
+italy	1280	interrupts	canvas	01g_party_picker	TAKEN	-
+italy	1280	interrupts	canvas	05t_budget_turn0	TAKEN	-
+italy	1280	interrupts	canvas	e7c_election_night_takeover	TAKEN	-
+italy	1280	interrupts	canvas	e7d_after_election_night	TAKEN	-
+italy	1280	interrupts	canvas	e7i_italy_night_before_staged	TAKEN	-
+italy	1280	interrupts	canvas	e7i_italy_night_called_senato_staged	TAKEN	-
+italy	1280	interrupts	canvas	e7i_italy_night_called_staged	TAKEN	-
+italy	1280	interrupts	canvas	e7i_italy_night_counting_senato_staged	TAKEN	-
+italy	1280	interrupts	canvas	e7i_italy_night_counting_staged	TAKEN	-
+italy	1280	interrupts	canvas	e7i_italy_night_dagger_staged	TAKEN	-
+italy	1280	interrupts	canvas	e7i_italy_night_dissolution_staged	TAKEN	-
+italy	1280	interrupts	canvas	e7i_italy_night_final_senato_staged	TAKEN	-
+italy	1280	interrupts	imgui	00_main_menu	TAKEN	-
+italy	1280	interrupts	imgui	00a_settings	TAKEN	-
+italy	1280	interrupts	imgui	01_country_selector	TAKEN	-
+italy	1280	interrupts	imgui	01a_selector_yielding	TAKEN	-
+italy	1280	interrupts	imgui	01b_running_strip	TAKEN	-
+italy	1280	interrupts	imgui	01c_desk	TAKEN	-
+italy	1280	interrupts	imgui	01f2_start_points	TAKEN	-
+italy	1280	interrupts	imgui	01g_party_picker	TAKEN	-
+italy	1280	interrupts	imgui	05t_budget_turn0	TAKEN	-
+italy	1280	interrupts	imgui	e7c_election_night_takeover	TAKEN	-
+italy	1280	interrupts	imgui	e7d_after_election_night	TAKEN	-
+italy	1280	interrupts	imgui	e7i_italy_night_before_staged	TAKEN	-
+italy	1280	interrupts	imgui	e7i_italy_night_called_senato_staged	TAKEN	-
+italy	1280	interrupts	imgui	e7i_italy_night_called_staged	TAKEN	-
+italy	1280	interrupts	imgui	e7i_italy_night_counting_senato_staged	TAKEN	-
+italy	1280	interrupts	imgui	e7i_italy_night_counting_staged	TAKEN	-
+italy	1280	interrupts	imgui	e7i_italy_night_dagger_staged	TAKEN	-
+italy	1280	interrupts	imgui	e7i_italy_night_dissolution_staged	TAKEN	-
+italy	1280	interrupts	imgui	e7i_italy_night_final_senato_staged	TAKEN	-
 italy	1280	sweep	imgui	00a_settings	TAKEN	-
 italy	1280	sweep	imgui	01b_running_strip	TAKEN	-
 italy	1280	sweep	imgui	01c_desk	TAKEN	-
 italy	1280	sweep	imgui	01d_desk_held	TAKEN	-
-italy	1280	sweep	imgui	01e_desk_event	LONG	A major trading partner has slipped into recession, softening demand for our exports.
-italy	1280	sweep	imgui	01e_desk_event	STOP	A major trading partner has slipped into recession, softening demand for our exports.
 italy	1280	sweep	imgui	01e_desk_event	TAKEN	-
-italy	1280	sweep	imgui	01f_desk_gameover	LONG	GAME OVER - Out of office at year #: the chamber formed a government without M#S.
-italy	1280	sweep	imgui	01f_desk_gameover	LONG	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT M#S.
-italy	1280	sweep	imgui	01f_desk_gameover	STOP	GAME OVER - Out of office at year #: the chamber formed a government without M#S.
-italy	1280	sweep	imgui	01f_desk_gameover	STOP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT M#S.
 italy	1280	sweep	imgui	01f_desk_gameover	TAKEN	-
-italy	1280	sweep	imgui	01f_desk_gameover	WRAP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT M#S.
-italy	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # JUL # » Source: the Portugal Memorandum of Understanding of #, the three years and the # % end
-italy	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # JUL # » The scheduled review of # Jul # left the rating at CCC, and the market closed
-italy	1280	sweep	imgui	01g1_crisis_moment_sources	STOP	The clock waits until you continue.
 italy	1280	sweep	imgui	01g1_crisis_moment_sources	TAKEN	-
-italy	1280	sweep	imgui	01g1_crisis_moment_sources	WRAP	at the zone's rate, without the market's premium
 italy	1280	sweep	imgui	01g2_crisis_desk	TAKEN	-
 italy	1280	sweep	imgui	01g3_crisis_desk_withheld	TAKEN	-
 italy	1280	sweep	imgui	01g4_crisis_restored	TAKEN	-
-italy	1280	sweep	imgui	01g_crisis_moment	STOP	The clock waits until you continue.
 italy	1280	sweep	imgui	01g_crisis_moment	TAKEN	-
-italy	1280	sweep	imgui	01g_crisis_moment	WRAP	at the zone's rate, without the market's premium
 italy	1280	sweep	imgui	02_statistics	TAKEN	-
 italy	1280	sweep	imgui	02a2_statistics_debt_line	TAKEN	-
 italy	1280	sweep	imgui	02a2_statistics_debt_line_slips_pinned	TAKEN	-
 italy	1280	sweep	imgui	02a_statistics_domestic	TAKEN	-
 italy	1280	sweep	imgui	02a_statistics_domestic_deep	TAKEN	-
 italy	1280	sweep	imgui	02a_statistics_domestic_rows	TAKEN	-
-italy	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	SLIP	OTHER » THE PUBLIC SECTOR, PROPERTY, HEALTH, EDUCATION, SERVICES - NO SECTOR OF THEIR OWN HERE
 italy	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	TAKEN	-
 italy	1280	sweep	imgui	02b_statistics_international	TAKEN	-
-italy	1280	sweep	imgui	02b_statistics_international_deep	LONG	CURRENCY STRENGTH OMITTED: ITALY HAS NO INDEPENDENT CURRENCY, SO THE ROW HAS ONE SIDE AND IS NOT DRAWN
 italy	1280	sweep	imgui	02b_statistics_international_deep	TAKEN	-
-italy	1280	sweep	imgui	02b_statistics_international_rows	LONG	CURRENCY STRENGTH OMITTED: ITALY HAS NO INDEPENDENT CURRENCY, SO THE ROW HAS ONE SIDE AND IS NOT DRAWN
 italy	1280	sweep	imgui	02b_statistics_international_rows	TAKEN	-
 italy	1280	sweep	imgui	02b_statistics_international_slips_pinned	TAKEN	-
 italy	1280	sweep	imgui	03_decisions	TAKEN	-
-italy	1280	sweep	imgui	03a_decisions_options	LONG	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
-italy	1280	sweep	imgui	03a_decisions_options	LONG	DECISION - Interior & Justice: Harness: a staged decision for the Docket film
-italy	1280	sweep	imgui	03a_decisions_options	LONG	Pay for it by selling the old patrol fleet
 italy	1280	sweep	imgui	03a_decisions_options	LONG	Staged by the screenshot harness so the minister alerts and an option's cost and impact are on film; the figures are the harness's own.
-italy	1280	sweep	imgui	03a_decisions_options	STOP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 italy	1280	sweep	imgui	03a_decisions_options	STOP	Staged by the screenshot harness so the minister alerts and an option's cost and impact are on film; the figures are the harness's own.
 italy	1280	sweep	imgui	03a_decisions_options	TAKEN	-
-italy	1280	sweep	imgui	03a_decisions_options	WRAP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 italy	1280	sweep	imgui	03b_decisions_budget_process	TAKEN	-
-italy	1280	sweep	imgui	03c_decisions_budget_process_scrolled	LONG	THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE
-italy	1280	sweep	imgui	03c_decisions_budget_process_scrolled	LONG	The government's budget is before the chamber (# line(s) cut); the chamber decides in # day(s). Your draft below can be tabled as the alternative.
-italy	1280	sweep	imgui	03c_decisions_budget_process_scrolled	STOP	The government's budget is before the chamber (# line(s) cut); the chamber decides in # day(s). Your draft below can be tabled as the alternative.
 italy	1280	sweep	imgui	03c_decisions_budget_process_scrolled	TAKEN	-
 italy	1280	sweep	imgui	03d_budget_process_open	TAKEN	-
 italy	1280	sweep	imgui	04_demographics	TAKEN	-
 italy	1280	sweep	imgui	04a_people_dependency_electorate	TAKEN	-
-italy	1280	sweep	imgui	04b2_people_health_wait_pinned	SLIP	CATARACT WAIT · # d ◇
 italy	1280	sweep	imgui	04b2_people_health_wait_pinned	TAKEN	-
 italy	1280	sweep	imgui	04b_people_health	TAKEN	-
-italy	1280	sweep	imgui	04c2_people_education_billed_pinned	SLIP	BILLED » THE TABLES SIT BEHIND THE WWW HOST, NOT ON THE SDMX API
 italy	1280	sweep	imgui	04c2_people_education_billed_pinned	TAKEN	-
 italy	1280	sweep	imgui	04c_people_education	TAKEN	-
 italy	1280	sweep	imgui	04d_people_infrastructure	TAKEN	-
@@ -504,8 +543,6 @@ italy	1280	sweep	imgui	04g3_people_infrastructure_dense	TAKEN	-
 italy	1280	sweep	imgui	04g4_people_environment_dense	TAKEN	-
 italy	1280	sweep	imgui	04g_people_health_dense	TAKEN	-
 italy	1280	sweep	imgui	04h_people_dense	TAKEN	-
-italy	1280	sweep	imgui	04i_people_slips_pinned	SLIP	TURNOUT BY AGE · NO SOURCE » NO SOURCE FOR THIS COUNTRY - NO LANE IS DRAWN RATHER THAN ONE DRAWN FROM A GUESS
-italy	1280	sweep	imgui	04i_people_slips_pinned	SLIP	WORKING AGE · #–#
 italy	1280	sweep	imgui	04i_people_slips_pinned	TAKEN	-
 italy	1280	sweep	imgui	05_budget	TAKEN	-
 italy	1280	sweep	imgui	05a_budget_tax	TAKEN	-
@@ -622,20 +659,9 @@ italy	1280	sweep	imgui	08_energy_laws_link_arrived	TAKEN	-
 italy	1280	sweep	imgui	08_energy_lower	TAKEN	-
 italy	1280	sweep	imgui	08_energy_mid	TAKEN	-
 italy	1280	sweep	imgui	08_energy_plate	TAKEN	-
-italy	1280	sweep	imgui	89d_signing_entrance	LABEL	DOCKET · A CABINET DECISION
 italy	1280	sweep	imgui	89d_signing_entrance	TAKEN	-
-italy	1280	sweep	imgui	89e_signing_settled	LABEL	DOCKET · A CABINET DECISION
 italy	1280	sweep	imgui	89e_signing_settled	TAKEN	-
-italy	1280	sweep	imgui	92_saves_menu	LONG	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-italy	1280	sweep	imgui	92_saves_menu	STOP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
 italy	1280	sweep	imgui	92_saves_menu	TAKEN	-
-italy	1280	sweep	imgui	92_saves_menu	WRAP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-italy	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_precampaign_day#   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-italy	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_riksbank_rate_decision   -   incompatible: format # - this build reads #
-italy	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_trade_bill_costs   -   incompatible: format # - this build reads #
-italy	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#b_precampaign_day#_m   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-italy	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_a   -   Italy, Turn #, #-#-#   (saved #-#-# #:# UTC)
-italy	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_b   -   Italy, Turn #, #-#-#   (saved #-#-# #:# UTC)
 italy	1280	sweep	imgui	93a_desk_government_budget	TAKEN	-
 poland	1280	interrupts	canvas	00_main_menu	TAKEN	-
 poland	1280	interrupts	canvas	00a_settings	TAKEN	-
@@ -656,35 +682,10 @@ poland	1280	interrupts	canvas	e7e4_election_night_sejm_step_staged	TAKEN	-
 poland	1280	interrupts	canvas	e7e5_election_night_second_step_staged	TAKEN	-
 poland	1280	interrupts	canvas	e7e6_snap_election_plate_staged	TAKEN	-
 poland	1280	interrupts	canvas	e7e_election_night_partial_staged	TAKEN	-
-poland	1280	interrupts	canvas	e7p_presidential_election_night_first_round	LONG	Karol Nawrocki # and Rafał Trzaskowski #. More than half of the valid vote elects outright (art. #).
-poland	1280	interrupts	canvas	e7p_presidential_election_night_first_round	LONG	No one is over # % · the two with the most votes meet on # JUN #
-poland	1280	interrupts	canvas	e7p_presidential_election_night_first_round	STOP	Karol Nawrocki # and Rafał Trzaskowski #. More than half of the valid vote elects outright (art. #).
-poland	1280	interrupts	canvas	e7p_presidential_election_night_first_round	STOP	Turnout and votes · not modelled. Shares only.
 poland	1280	interrupts	canvas	e7p_presidential_election_night_first_round	TAKEN	-
-poland	1280	interrupts	canvas	e7p_presidential_election_night_first_round	WRAP	Karol Nawrocki # and Rafał Trzaskowski #. More than half of the valid vote elects outright (art. #).
-poland	1280	interrupts	canvas	e7p_presidential_election_night_first_round	WRAP	No one is over # % · the two with the most votes meet on # JUN #
-poland	1280	interrupts	canvas	e7p_presidential_election_night_first_round	WRAP	Turnout and votes · not modelled. Shares only.
 poland	1280	interrupts	canvas	e7q_docket_between_the_rounds	TAKEN	-
-poland	1280	interrupts	canvas	e7q_presidential_election_night_between	LONG	Owed until the night. Nothing is guessed: no figure and no poll.
-poland	1280	interrupts	canvas	e7q_presidential_election_night_between	LONG	The first round is settled and does not move. The President in office, Andrzej Duda, holds the veto until the oath.
-poland	1280	interrupts	canvas	e7q_presidential_election_night_between	STOP	Owed until the night. Nothing is guessed: no figure and no poll.
-poland	1280	interrupts	canvas	e7q_presidential_election_night_between	STOP	The first round is settled and does not move. The President in office, Andrzej Duda, holds the veto until the oath.
-poland	1280	interrupts	canvas	e7q_presidential_election_night_between	STOP	Turnout and votes · not modelled. Shares only.
 poland	1280	interrupts	canvas	e7q_presidential_election_night_between	TAKEN	-
-poland	1280	interrupts	canvas	e7q_presidential_election_night_between	WRAP	Owed until the night. Nothing is guessed: no figure and no poll.
-poland	1280	interrupts	canvas	e7q_presidential_election_night_between	WRAP	The first round is settled and does not move. The President in office, Andrzej Duda, holds the veto until the oath.
-poland	1280	interrupts	canvas	e7q_presidential_election_night_between	WRAP	Turnout and votes · not modelled. Shares only.
-poland	1280	interrupts	canvas	e7r_presidential_election_night_elected	LONG	Each eliminated electorate splits between the two by its distance to each, fitted to the # exit poll; a share of the first round's voters stays home - a drafted figure no source measures. Neither is shown: the night holds shares, not votes.
-poland	1280	interrupts	canvas	e7r_presidential_election_night_elected	LONG	More than half of the two. The count is certain: the model counts the nation at once.
-poland	1280	interrupts	canvas	e7r_presidential_election_night_elected	LONG	THE FIRST ROUND, # MAY # · WHERE EACH FINALIST AND EACH ELIMINATED ELECTORATE STOOD
-poland	1280	interrupts	canvas	e7r_presidential_election_night_elected	STOP	Each eliminated electorate splits between the two by its distance to each, fitted to the # exit poll; a share of the first round's voters stays home - a drafted figure no source measures. Neither is shown: the night holds shares, not votes.
-poland	1280	interrupts	canvas	e7r_presidential_election_night_elected	STOP	Karol Nawrocki leads by # points of the two.
-poland	1280	interrupts	canvas	e7r_presidential_election_night_elected	STOP	More than half of the two. The count is certain: the model counts the nation at once.
-poland	1280	interrupts	canvas	e7r_presidential_election_night_elected	STOP	Turnout and votes · not modelled. Shares only.
 poland	1280	interrupts	canvas	e7r_presidential_election_night_elected	TAKEN	-
-poland	1280	interrupts	canvas	e7r_presidential_election_night_elected	WRAP	Each eliminated electorate splits between the two by its distance to each, fitted to the # exit poll; a share of the first round's voters stays home - a drafted figure no source measures. Neither is shown: the night holds shares, not votes.
-poland	1280	interrupts	canvas	e7r_presidential_election_night_elected	WRAP	More than half of the two. The count is certain: the model counts the nation at once.
-poland	1280	interrupts	canvas	e7r_presidential_election_night_elected	WRAP	Turnout and votes · not modelled. Shares only.
 poland	1280	interrupts	canvas	e7s_docket_sejm_first_sitting	TAKEN	-
 poland	1280	interrupts	canvas	e7t_docket_sejm_steps_concluded	TAKEN	-
 poland	1280	interrupts	canvas	plc01_sejm_runup_hq	TAKEN	-
@@ -707,28 +708,17 @@ poland	1280	interrupts	imgui	01f3_start_presidential	TAKEN	-
 poland	1280	interrupts	imgui	01g3_candidate_picker	TAKEN	-
 poland	1280	interrupts	imgui	01g_party_picker	TAKEN	-
 poland	1280	interrupts	imgui	05t_budget_turn0	TAKEN	-
-poland	1280	interrupts	imgui	e7c_election_night_takeover	LABEL	DOCKET · A FOREIGN POLICY MEETING
 poland	1280	interrupts	imgui	e7c_election_night_takeover	TAKEN	-
 poland	1280	interrupts	imgui	e7d_after_election_night	TAKEN	-
-poland	1280	interrupts	imgui	e7e2_election_night_art155_refusal_staged	LABEL	DOCKET · A FOREIGN POLICY MEETING
 poland	1280	interrupts	imgui	e7e2_election_night_art155_refusal_staged	TAKEN	-
-poland	1280	interrupts	imgui	e7e3_election_night_president_step_staged	LABEL	DOCKET · A FOREIGN POLICY MEETING
 poland	1280	interrupts	imgui	e7e3_election_night_president_step_staged	TAKEN	-
-poland	1280	interrupts	imgui	e7e4_election_night_sejm_step_staged	LABEL	DOCKET · A FOREIGN POLICY MEETING
 poland	1280	interrupts	imgui	e7e4_election_night_sejm_step_staged	TAKEN	-
-poland	1280	interrupts	imgui	e7e5_election_night_second_step_staged	LABEL	DOCKET · A FOREIGN POLICY MEETING
 poland	1280	interrupts	imgui	e7e5_election_night_second_step_staged	TAKEN	-
 poland	1280	interrupts	imgui	e7e6_snap_election_plate_staged	TAKEN	-
-poland	1280	interrupts	imgui	e7e_election_night_partial_staged	LABEL	DOCKET · A FOREIGN POLICY MEETING
 poland	1280	interrupts	imgui	e7e_election_night_partial_staged	TAKEN	-
-poland	1280	interrupts	imgui	e7p_presidential_election_night_first_round	LABEL	CAMPAIGN · THE CAMPAIGN'S OPENING
-poland	1280	interrupts	imgui	e7p_presidential_election_night_first_round	LABEL	DOCKET · A FOREIGN POLICY MEETING
 poland	1280	interrupts	imgui	e7p_presidential_election_night_first_round	TAKEN	-
 poland	1280	interrupts	imgui	e7q_docket_between_the_rounds	TAKEN	-
-poland	1280	interrupts	imgui	e7q_presidential_election_night_between	LABEL	CAMPAIGN · THE CAMPAIGN'S OPENING
-poland	1280	interrupts	imgui	e7q_presidential_election_night_between	LABEL	DOCKET · A FOREIGN POLICY MEETING
 poland	1280	interrupts	imgui	e7q_presidential_election_night_between	TAKEN	-
-poland	1280	interrupts	imgui	e7r_presidential_election_night_elected	LABEL	DOCKET · A FOREIGN POLICY MEETING
 poland	1280	interrupts	imgui	e7r_presidential_election_night_elected	TAKEN	-
 poland	1280	interrupts	imgui	e7s_docket_sejm_first_sitting	TAKEN	-
 poland	1280	interrupts	imgui	e7t_docket_sejm_steps_concluded	TAKEN	-
@@ -745,57 +735,31 @@ poland	1280	sweep	imgui	00a_settings	TAKEN	-
 poland	1280	sweep	imgui	01b_running_strip	TAKEN	-
 poland	1280	sweep	imgui	01c_desk	TAKEN	-
 poland	1280	sweep	imgui	01d_desk_held	TAKEN	-
-poland	1280	sweep	imgui	01e_desk_event	LONG	A major trading partner has slipped into recession, softening demand for our exports.
-poland	1280	sweep	imgui	01e_desk_event	STOP	A major trading partner has slipped into recession, softening demand for our exports.
 poland	1280	sweep	imgui	01e_desk_event	TAKEN	-
-poland	1280	sweep	imgui	01f_desk_gameover	LONG	GAME OVER - Out of office at year #: the chamber formed a government without PiS.
-poland	1280	sweep	imgui	01f_desk_gameover	LONG	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT PIS.
-poland	1280	sweep	imgui	01f_desk_gameover	STOP	GAME OVER - Out of office at year #: the chamber formed a government without PiS.
-poland	1280	sweep	imgui	01f_desk_gameover	STOP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT PIS.
 poland	1280	sweep	imgui	01f_desk_gameover	TAKEN	-
-poland	1280	sweep	imgui	01f_desk_gameover	WRAP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT PIS.
-poland	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # FEB # » Poland enters a programme with the EU's balance-of-payments facility with the IMF
-poland	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # FEB # » Sources: Regulation (EC) No #/#, the facility · the Portugal Memorandum of Understanding of #, the three years and the # % end
-poland	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # FEB # » The scheduled review of # Feb # left the rating at CCC, and the market closed
-poland	1280	sweep	imgui	01g1_crisis_moment_sources	STOP	The clock waits until you continue.
 poland	1280	sweep	imgui	01g1_crisis_moment_sources	TAKEN	-
-poland	1280	sweep	imgui	01g1_crisis_moment_sources	WRAP	at the zone's rate, without the market's premium
-poland	1280	sweep	imgui	01g1_crisis_moment_sources	WRAP	the EU's balance-of-payments facility with the IMF
 poland	1280	sweep	imgui	01g2_crisis_desk	TAKEN	-
 poland	1280	sweep	imgui	01g3_crisis_desk_withheld	TAKEN	-
 poland	1280	sweep	imgui	01g4_crisis_restored	TAKEN	-
-poland	1280	sweep	imgui	01g_crisis_moment	STOP	The clock waits until you continue.
 poland	1280	sweep	imgui	01g_crisis_moment	TAKEN	-
-poland	1280	sweep	imgui	01g_crisis_moment	WRAP	at the zone's rate, without the market's premium
-poland	1280	sweep	imgui	01g_crisis_moment	WRAP	the EU's balance-of-payments facility with the IMF
 poland	1280	sweep	imgui	02_statistics	TAKEN	-
 poland	1280	sweep	imgui	02a_statistics_domestic	TAKEN	-
 poland	1280	sweep	imgui	02a_statistics_domestic_deep	TAKEN	-
 poland	1280	sweep	imgui	02a_statistics_domestic_rows	TAKEN	-
-poland	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	SLIP	OTHER » THE PUBLIC SECTOR, PROPERTY, HEALTH, EDUCATION, SERVICES - NO SECTOR OF THEIR OWN HERE
 poland	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	TAKEN	-
 poland	1280	sweep	imgui	02b_statistics_international	TAKEN	-
 poland	1280	sweep	imgui	02b_statistics_international_deep	TAKEN	-
 poland	1280	sweep	imgui	02b_statistics_international_rows	TAKEN	-
 poland	1280	sweep	imgui	02b_statistics_international_slips_pinned	TAKEN	-
 poland	1280	sweep	imgui	03_decisions	TAKEN	-
-poland	1280	sweep	imgui	03a_decisions_options	LONG	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
-poland	1280	sweep	imgui	03a_decisions_options	LONG	Pay for it by selling the old patrol fleet
-poland	1280	sweep	imgui	03a_decisions_options	STOP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 poland	1280	sweep	imgui	03a_decisions_options	TAKEN	-
-poland	1280	sweep	imgui	03a_decisions_options	WRAP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 poland	1280	sweep	imgui	03b_decisions_budget_process	TAKEN	-
-poland	1280	sweep	imgui	03c_decisions_budget_process_scrolled	LONG	THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE
-poland	1280	sweep	imgui	03c_decisions_budget_process_scrolled	LONG	The government's budget is before the chamber (# line(s) cut); the chamber decides in # day(s). Your draft below can be tabled as the alternative.
-poland	1280	sweep	imgui	03c_decisions_budget_process_scrolled	STOP	The government's budget is before the chamber (# line(s) cut); the chamber decides in # day(s). Your draft below can be tabled as the alternative.
 poland	1280	sweep	imgui	03c_decisions_budget_process_scrolled	TAKEN	-
 poland	1280	sweep	imgui	03d_budget_process_open	TAKEN	-
 poland	1280	sweep	imgui	04_demographics	TAKEN	-
 poland	1280	sweep	imgui	04a_people_dependency_electorate	TAKEN	-
-poland	1280	sweep	imgui	04b2_people_health_wait_pinned	SLIP	CATARACT WAIT · # d ◇
 poland	1280	sweep	imgui	04b2_people_health_wait_pinned	TAKEN	-
 poland	1280	sweep	imgui	04b_people_health	TAKEN	-
-poland	1280	sweep	imgui	04c2_people_education_billed_pinned	SLIP	BILLED » THE TABLES SIT BEHIND THE WWW HOST, NOT ON THE SDMX API
 poland	1280	sweep	imgui	04c2_people_education_billed_pinned	TAKEN	-
 poland	1280	sweep	imgui	04c_people_education	TAKEN	-
 poland	1280	sweep	imgui	04d_people_infrastructure	TAKEN	-
@@ -806,8 +770,6 @@ poland	1280	sweep	imgui	04g3_people_infrastructure_dense	TAKEN	-
 poland	1280	sweep	imgui	04g4_people_environment_dense	TAKEN	-
 poland	1280	sweep	imgui	04g_people_health_dense	TAKEN	-
 poland	1280	sweep	imgui	04h_people_dense	TAKEN	-
-poland	1280	sweep	imgui	04i_people_slips_pinned	SLIP	TURNOUT BY AGE · NO SOURCE » NO SOURCE FOR THIS COUNTRY - NO LANE IS DRAWN RATHER THAN ONE DRAWN FROM A GUESS
-poland	1280	sweep	imgui	04i_people_slips_pinned	SLIP	WORKING AGE · #–#
 poland	1280	sweep	imgui	04i_people_slips_pinned	TAKEN	-
 poland	1280	sweep	imgui	05_budget	TAKEN	-
 poland	1280	sweep	imgui	05a_budget_tax	TAKEN	-
@@ -927,32 +889,189 @@ poland	1280	sweep	imgui	08_energy_laws_link_arrived	TAKEN	-
 poland	1280	sweep	imgui	08_energy_lower	TAKEN	-
 poland	1280	sweep	imgui	08_energy_mid	TAKEN	-
 poland	1280	sweep	imgui	08_energy_plate	TAKEN	-
-poland	1280	sweep	imgui	89d_signing_entrance	LABEL	DOCKET · A CABINET DECISION
 poland	1280	sweep	imgui	89d_signing_entrance	TAKEN	-
-poland	1280	sweep	imgui	89e_signing_settled	LABEL	DOCKET · A CABINET DECISION
 poland	1280	sweep	imgui	89e_signing_settled	TAKEN	-
-poland	1280	sweep	imgui	89g_signing_veto	LABEL	DOCKET · A CABINET DECISION
 poland	1280	sweep	imgui	89g_signing_veto	TAKEN	-
-poland	1280	sweep	imgui	89j_signing_answer	LABEL	DOCKET · A CABINET DECISION
 poland	1280	sweep	imgui	89j_signing_answer	TAKEN	-
-poland	1280	sweep	imgui	92_saves_menu	LONG	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-poland	1280	sweep	imgui	92_saves_menu	STOP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
 poland	1280	sweep	imgui	92_saves_menu	TAKEN	-
-poland	1280	sweep	imgui	92_saves_menu	WRAP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-poland	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_precampaign_day#   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-poland	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_riksbank_rate_decision   -   incompatible: format # - this build reads #
-poland	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_trade_bill_costs   -   incompatible: format # - this build reads #
-poland	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#b_precampaign_day#_m   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-poland	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_a   -   Poland, Turn #, #-#-#   (saved #-#-# #:# UTC)
-poland	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_b   -   Poland, Turn #, #-#-#   (saved #-#-# #:# UTC)
-poland	1280	sweep	imgui	93a_desk_government_budget	LONG	A market lurch has torn a hole in pension balance sheets; savers are alarmed and the regulator is on the phone.
-poland	1280	sweep	imgui	93a_desk_government_budget	STOP	A market lurch has torn a hole in pension balance sheets; savers are alarmed and the regulator is on the phone.
 poland	1280	sweep	imgui	93a_desk_government_budget	TAKEN	-
 poland	1280	sweep	imgui	pl1_politics_leave	TAKEN	-
 poland	1280	sweep	imgui	pl2_docket_left	TAKEN	-
 poland	1280	sweep	imgui	pl3_politics_art158	TAKEN	-
-poland	1280	sweep	imgui	pl4_docket_art158	LONG	# of # deputies for, # needed of the statutory # · KO+TD govern on # of # seats, a minority
 poland	1280	sweep	imgui	pl4_docket_art158	TAKEN	-
+sweden	1280	abroad	canvas	00_main_menu	TAKEN	-
+sweden	1280	abroad	canvas	00a_settings	TAKEN	-
+sweden	1280	abroad	canvas	01_country_selector	TAKEN	-
+sweden	1280	abroad	canvas	01a_selector_yielding	TAKEN	-
+sweden	1280	abroad	canvas	01b_running_strip	TAKEN	-
+sweden	1280	abroad	canvas	01c_desk	TAKEN	-
+sweden	1280	abroad	canvas	01f2_start_points	TAKEN	-
+sweden	1280	abroad	canvas	01g_party_picker	TAKEN	-
+sweden	1280	abroad	canvas	01k1_create_profile	TAKEN	-
+sweden	1280	abroad	canvas	01k1r_create_region_map	TAKEN	-
+sweden	1280	abroad	canvas	01k2_create_placement	TAKEN	-
+sweden	1280	abroad	canvas	01k3_create_declarations	TAKEN	-
+sweden	1280	abroad	canvas	01k4_create_leader	TAKEN	-
+sweden	1280	abroad	canvas	01k5_create_review	TAKEN	-
+sweden	1280	abroad	canvas	05t_budget_turn0	TAKEN	-
+sweden	1280	abroad	canvas	abroad00_docket_upcoming	TAKEN	-
+sweden	1280	abroad	canvas	abroad01_docket	TAKEN	-
+sweden	1280	abroad	canvas	abroad02_docket_results	TAKEN	-
+sweden	1280	abroad	canvas	abroad02p_docket_results_slip	TAKEN	-
+sweden	1280	abroad	canvas	abroad05_desk_month	TAKEN	-
+sweden	1280	abroad	canvas	abroad06_stats_polling_days	TAKEN	-
+sweden	1280	abroad	imgui	00_main_menu	TAKEN	-
+sweden	1280	abroad	imgui	00a_settings	TAKEN	-
+sweden	1280	abroad	imgui	01_country_selector	TAKEN	-
+sweden	1280	abroad	imgui	01a_selector_yielding	TAKEN	-
+sweden	1280	abroad	imgui	01b_running_strip	TAKEN	-
+sweden	1280	abroad	imgui	01c_desk	TAKEN	-
+sweden	1280	abroad	imgui	01f2_start_points	TAKEN	-
+sweden	1280	abroad	imgui	01g_party_picker	TAKEN	-
+sweden	1280	abroad	imgui	01k1_create_profile	TAKEN	-
+sweden	1280	abroad	imgui	01k1r_create_region_map	TAKEN	-
+sweden	1280	abroad	imgui	01k2_create_placement	TAKEN	-
+sweden	1280	abroad	imgui	01k3_create_declarations	TAKEN	-
+sweden	1280	abroad	imgui	01k4_create_leader	TAKEN	-
+sweden	1280	abroad	imgui	01k5_create_review	TAKEN	-
+sweden	1280	abroad	imgui	05t_budget_turn0	TAKEN	-
+sweden	1280	abroad	imgui	abroad00_docket_upcoming	TAKEN	-
+sweden	1280	abroad	imgui	abroad01_docket	TAKEN	-
+sweden	1280	abroad	imgui	abroad02_docket_results	TAKEN	-
+sweden	1280	abroad	imgui	abroad02p_docket_results_slip	TAKEN	-
+sweden	1280	abroad	imgui	abroad05_desk_month	TAKEN	-
+sweden	1280	abroad	imgui	abroad06_stats_polling_days	TAKEN	-
+sweden	1280	electionnight	canvas	00_main_menu	TAKEN	-
+sweden	1280	electionnight	canvas	00a_settings	TAKEN	-
+sweden	1280	electionnight	canvas	01_country_selector	TAKEN	-
+sweden	1280	electionnight	canvas	01a_selector_yielding	TAKEN	-
+sweden	1280	electionnight	canvas	01b_running_strip	TAKEN	-
+sweden	1280	electionnight	canvas	01c_desk	TAKEN	-
+sweden	1280	electionnight	canvas	01f2_start_points	TAKEN	-
+sweden	1280	electionnight	canvas	01g_party_picker	TAKEN	-
+sweden	1280	electionnight	canvas	01k1_create_profile	TAKEN	-
+sweden	1280	electionnight	canvas	01k1r_create_region_map	TAKEN	-
+sweden	1280	electionnight	canvas	01k2_create_placement	TAKEN	-
+sweden	1280	electionnight	canvas	01k3_create_declarations	TAKEN	-
+sweden	1280	electionnight	canvas	01k4_create_leader	TAKEN	-
+sweden	1280	electionnight	canvas	01k5_create_review	TAKEN	-
+sweden	1280	electionnight	canvas	05t_budget_turn0	TAKEN	-
+sweden	1280	electionnight	canvas	e6_election_night_called	TAKEN	-
+sweden	1280	electionnight	canvas	e6_election_night_dagger	TAKEN	-
+sweden	1280	electionnight	canvas	e6_election_night_early	TAKEN	-
+sweden	1280	electionnight	canvas	e6_election_night_final	TAKEN	-
+sweden	1280	electionnight	canvas	e6_election_night_italy_none_staged	TAKEN	-
+sweden	1280	electionnight	canvas	e6_election_night_italy_support_staged	TAKEN	-
+sweden	1280	electionnight	canvas	e6_election_night_model	TAKEN	-
+sweden	1280	electionnight	canvas	e6_election_night_partial	TAKEN	-
+sweden	1280	electionnight	canvas	e6_election_night_player_first	LABEL	CONTINUE · FORM A GOVERNMENT
+sweden	1280	electionnight	canvas	e6_election_night_player_first	TAKEN	-
+sweden	1280	electionnight	canvas	e6_election_night_projected	TAKEN	-
+sweden	1280	electionnight	imgui	00_main_menu	TAKEN	-
+sweden	1280	electionnight	imgui	00a_settings	TAKEN	-
+sweden	1280	electionnight	imgui	01_country_selector	TAKEN	-
+sweden	1280	electionnight	imgui	01a_selector_yielding	TAKEN	-
+sweden	1280	electionnight	imgui	01b_running_strip	TAKEN	-
+sweden	1280	electionnight	imgui	01c_desk	TAKEN	-
+sweden	1280	electionnight	imgui	01f2_start_points	TAKEN	-
+sweden	1280	electionnight	imgui	01g_party_picker	TAKEN	-
+sweden	1280	electionnight	imgui	01k1_create_profile	TAKEN	-
+sweden	1280	electionnight	imgui	01k1r_create_region_map	TAKEN	-
+sweden	1280	electionnight	imgui	01k2_create_placement	TAKEN	-
+sweden	1280	electionnight	imgui	01k3_create_declarations	TAKEN	-
+sweden	1280	electionnight	imgui	01k4_create_leader	TAKEN	-
+sweden	1280	electionnight	imgui	01k5_create_review	TAKEN	-
+sweden	1280	electionnight	imgui	05t_budget_turn0	TAKEN	-
+sweden	1280	electionnight	imgui	e6_election_night_called	TAKEN	-
+sweden	1280	electionnight	imgui	e6_election_night_dagger	TAKEN	-
+sweden	1280	electionnight	imgui	e6_election_night_early	TAKEN	-
+sweden	1280	electionnight	imgui	e6_election_night_final	TAKEN	-
+sweden	1280	electionnight	imgui	e6_election_night_italy_none_staged	TAKEN	-
+sweden	1280	electionnight	imgui	e6_election_night_italy_support_staged	TAKEN	-
+sweden	1280	electionnight	imgui	e6_election_night_model	TAKEN	-
+sweden	1280	electionnight	imgui	e6_election_night_partial	TAKEN	-
+sweden	1280	electionnight	imgui	e6_election_night_player_first	TAKEN	-
+sweden	1280	electionnight	imgui	e6_election_night_projected	TAKEN	-
+sweden	1280	interrupts	canvas	00_main_menu	TAKEN	-
+sweden	1280	interrupts	canvas	00a_settings	TAKEN	-
+sweden	1280	interrupts	canvas	01_country_selector	TAKEN	-
+sweden	1280	interrupts	canvas	01a_selector_yielding	TAKEN	-
+sweden	1280	interrupts	canvas	01b_running_strip	TAKEN	-
+sweden	1280	interrupts	canvas	01c_desk	TAKEN	-
+sweden	1280	interrupts	canvas	01f2_start_points	TAKEN	-
+sweden	1280	interrupts	canvas	01g_party_picker	TAKEN	-
+sweden	1280	interrupts	canvas	01k1_create_profile	TAKEN	-
+sweden	1280	interrupts	canvas	01k1r_create_region_map	TAKEN	-
+sweden	1280	interrupts	canvas	01k2_create_placement	TAKEN	-
+sweden	1280	interrupts	canvas	01k3_create_declarations	TAKEN	-
+sweden	1280	interrupts	canvas	01k4_create_leader	TAKEN	-
+sweden	1280	interrupts	canvas	01k5_create_review	TAKEN	-
+sweden	1280	interrupts	canvas	05t_budget_turn0	TAKEN	-
+sweden	1280	interrupts	canvas	cl1_runup_hq_opened	TAKEN	-
+sweden	1280	interrupts	canvas	cl1_runup_hq_queued	TAKEN	-
+sweden	1280	interrupts	canvas	cl1_runup_hq_stepped	TAKEN	-
+sweden	1280	interrupts	canvas	cl1_signing_government_budget	TAKEN	-
+sweden	1280	interrupts	canvas	cl1_signing_government_budget	WRAP	No sides recorded - this division predates the count
+sweden	1280	interrupts	canvas	cl2_campaign_hq_rally_picked	TAKEN	-
+sweden	1280	interrupts	canvas	cl2_campaign_hq_scandal	TAKEN	-
+sweden	1280	interrupts	canvas	cl2_campaign_hq_scandal_answered	TAKEN	-
+sweden	1280	interrupts	canvas	cl2_campaign_hq_scandal_stepped	TAKEN	-
+sweden	1280	interrupts	canvas	cl2_campaign_map_live	TAKEN	-
+sweden	1280	interrupts	canvas	cl2_campaign_map_picked	TAKEN	-
+sweden	1280	interrupts	canvas	e7a_campaign_opening_hq	TAKEN	-
+sweden	1280	interrupts	canvas	e7b_campaign_opening_acknowledged	TAKEN	-
+sweden	1280	interrupts	canvas	e7c_election_night_takeover	LABEL	CONTINUE · FORM A GOVERNMENT
+sweden	1280	interrupts	canvas	e7c_election_night_takeover	TAKEN	-
+sweden	1280	interrupts	canvas	e7d_after_election_night	TAKEN	-
+sweden	1280	interrupts	canvas	ps3d_campaign_declared	TAKEN	-
+sweden	1280	interrupts	canvas	ps3d_runup_declared	TAKEN	-
+sweden	1280	interrupts	imgui	00_main_menu	TAKEN	-
+sweden	1280	interrupts	imgui	00a_settings	TAKEN	-
+sweden	1280	interrupts	imgui	01_country_selector	TAKEN	-
+sweden	1280	interrupts	imgui	01a_selector_yielding	TAKEN	-
+sweden	1280	interrupts	imgui	01b_running_strip	TAKEN	-
+sweden	1280	interrupts	imgui	01c_desk	TAKEN	-
+sweden	1280	interrupts	imgui	01f2_start_points	TAKEN	-
+sweden	1280	interrupts	imgui	01g_party_picker	TAKEN	-
+sweden	1280	interrupts	imgui	01k1_create_profile	TAKEN	-
+sweden	1280	interrupts	imgui	01k1r_create_region_map	TAKEN	-
+sweden	1280	interrupts	imgui	01k2_create_placement	TAKEN	-
+sweden	1280	interrupts	imgui	01k3_create_declarations	TAKEN	-
+sweden	1280	interrupts	imgui	01k4_create_leader	TAKEN	-
+sweden	1280	interrupts	imgui	01k5_create_review	TAKEN	-
+sweden	1280	interrupts	imgui	05t_budget_turn0	TAKEN	-
+sweden	1280	interrupts	imgui	cl1_runup_hq_opened	TAKEN	-
+sweden	1280	interrupts	imgui	cl1_runup_hq_queued	TAKEN	-
+sweden	1280	interrupts	imgui	cl1_runup_hq_stepped	TAKEN	-
+sweden	1280	interrupts	imgui	cl1_signing_government_budget	TAKEN	-
+sweden	1280	interrupts	imgui	cl2_campaign_hq_rally_picked	TAKEN	-
+sweden	1280	interrupts	imgui	cl2_campaign_hq_scandal	TAKEN	-
+sweden	1280	interrupts	imgui	cl2_campaign_hq_scandal_answered	TAKEN	-
+sweden	1280	interrupts	imgui	cl2_campaign_hq_scandal_stepped	TAKEN	-
+sweden	1280	interrupts	imgui	cl2_campaign_map_live	LONG	A RALLY, A TOWN HALL OR A DAY OF DOORS QUEUED NOW GOES HERE
+sweden	1280	interrupts	imgui	cl2_campaign_map_live	LONG	A REGIONAL POLL: # INTERVIEWS IN ONE REGION FOR # KR, ±# PP AT A SHARE OF ONE HALF - THE NATIONAL COMMISSION HOLDS SOME # OF ITS INTERVIEWS THERE (±# PP). THE MAP IS YOUR PICKER: A TILE SETS WHERE THE NEXT LOCAL ACT AND THE NEXT REGIONAL POLL GO; A REGION NOT POLLED READS AS UNKNOWN.
+sweden	1280	interrupts	imgui	cl2_campaign_map_live	LONG	DEBATE IN # DAYS · # AUG · THE TWO LEADING THE PUBLISHED POLL STAND
+sweden	1280	interrupts	imgui	cl2_campaign_map_live	LONG	SHADE = YOUR POLLED SHARE, DARKER IS HIGHER · BOLD FRAME = SWING REGION (INDEX # OR MORE) · DASHED FRAME = THE LEAD IS INSIDE ITS OWN ± · HATCHED = NOT POLLED, NOTHING IS KNOWN HERE · INK FRAME = YOUR OFFICE (ITS VOLUNTEERS IN THE CORNER) · HEAVY INK FRAME = WHERE THE NEXT LOCAL ACT GOES · CLICK A TILE TO PICK
+sweden	1280	interrupts	imgui	cl2_campaign_map_live	STOP	A REGIONAL POLL: # INTERVIEWS IN ONE REGION FOR # KR, ±# PP AT A SHARE OF ONE HALF - THE NATIONAL COMMISSION HOLDS SOME # OF ITS INTERVIEWS THERE (±# PP). THE MAP IS YOUR PICKER: A TILE SETS WHERE THE NEXT LOCAL ACT AND THE NEXT REGIONAL POLL GO; A REGION NOT POLLED READS AS UNKNOWN.
+sweden	1280	interrupts	imgui	cl2_campaign_map_live	TAKEN	-
+sweden	1280	interrupts	imgui	cl2_campaign_map_live	WRAP	A REGIONAL POLL: # INTERVIEWS IN ONE REGION FOR # KR, ±# PP AT A SHARE OF ONE HALF - THE NATIONAL COMMISSION HOLDS SOME # OF ITS INTERVIEWS THERE (±# PP). THE MAP IS YOUR PICKER: A TILE SETS WHERE THE NEXT LOCAL ACT AND THE NEXT REGIONAL POLL GO; A REGION NOT POLLED READS AS UNKNOWN.
+sweden	1280	interrupts	imgui	cl2_campaign_map_live	WRAP	SHADE = YOUR POLLED SHARE, DARKER IS HIGHER · BOLD FRAME = SWING REGION (INDEX # OR MORE) · DASHED FRAME = THE LEAD IS INSIDE ITS OWN ± · HATCHED = NOT POLLED, NOTHING IS KNOWN HERE · INK FRAME = YOUR OFFICE (ITS VOLUNTEERS IN THE CORNER) · HEAVY INK FRAME = WHERE THE NEXT LOCAL ACT GOES · CLICK A TILE TO PICK
+sweden	1280	interrupts	imgui	cl2_campaign_map_picked	LONG	A RALLY, A TOWN HALL OR A DAY OF DOORS QUEUED NOW GOES HERE
+sweden	1280	interrupts	imgui	cl2_campaign_map_picked	LONG	A REGIONAL POLL: # INTERVIEWS IN ONE REGION FOR # KR, ±# PP AT A SHARE OF ONE HALF - THE NATIONAL COMMISSION HOLDS SOME # OF ITS INTERVIEWS THERE (±# PP). THE MAP IS YOUR PICKER: A TILE SETS WHERE THE NEXT LOCAL ACT AND THE NEXT REGIONAL POLL GO; A REGION NOT POLLED READS AS UNKNOWN.
+sweden	1280	interrupts	imgui	cl2_campaign_map_picked	LONG	DEBATE IN # DAYS · # AUG · THE TWO LEADING THE PUBLISHED POLL STAND
+sweden	1280	interrupts	imgui	cl2_campaign_map_picked	LONG	SHADE = YOUR POLLED SHARE, DARKER IS HIGHER · BOLD FRAME = SWING REGION (INDEX # OR MORE) · DASHED FRAME = THE LEAD IS INSIDE ITS OWN ± · HATCHED = NOT POLLED, NOTHING IS KNOWN HERE · INK FRAME = YOUR OFFICE (ITS VOLUNTEERS IN THE CORNER) · HEAVY INK FRAME = WHERE THE NEXT LOCAL ACT GOES · CLICK A TILE TO PICK
+sweden	1280	interrupts	imgui	cl2_campaign_map_picked	STOP	A REGIONAL POLL: # INTERVIEWS IN ONE REGION FOR # KR, ±# PP AT A SHARE OF ONE HALF - THE NATIONAL COMMISSION HOLDS SOME # OF ITS INTERVIEWS THERE (±# PP). THE MAP IS YOUR PICKER: A TILE SETS WHERE THE NEXT LOCAL ACT AND THE NEXT REGIONAL POLL GO; A REGION NOT POLLED READS AS UNKNOWN.
+sweden	1280	interrupts	imgui	cl2_campaign_map_picked	TAKEN	-
+sweden	1280	interrupts	imgui	cl2_campaign_map_picked	WRAP	A REGIONAL POLL: # INTERVIEWS IN ONE REGION FOR # KR, ±# PP AT A SHARE OF ONE HALF - THE NATIONAL COMMISSION HOLDS SOME # OF ITS INTERVIEWS THERE (±# PP). THE MAP IS YOUR PICKER: A TILE SETS WHERE THE NEXT LOCAL ACT AND THE NEXT REGIONAL POLL GO; A REGION NOT POLLED READS AS UNKNOWN.
+sweden	1280	interrupts	imgui	cl2_campaign_map_picked	WRAP	SHADE = YOUR POLLED SHARE, DARKER IS HIGHER · BOLD FRAME = SWING REGION (INDEX # OR MORE) · DASHED FRAME = THE LEAD IS INSIDE ITS OWN ± · HATCHED = NOT POLLED, NOTHING IS KNOWN HERE · INK FRAME = YOUR OFFICE (ITS VOLUNTEERS IN THE CORNER) · HEAVY INK FRAME = WHERE THE NEXT LOCAL ACT GOES · CLICK A TILE TO PICK
+sweden	1280	interrupts	imgui	e7a_campaign_opening_hq	TAKEN	-
+sweden	1280	interrupts	imgui	e7b_campaign_opening_acknowledged	TAKEN	-
+sweden	1280	interrupts	imgui	e7c_election_night_takeover	TAKEN	-
+sweden	1280	interrupts	imgui	e7d_after_election_night	TAKEN	-
+sweden	1280	interrupts	imgui	ps3d_campaign_declared	LONG	will be in the government or vote against it
+sweden	1280	interrupts	imgui	ps3d_campaign_declared	LONG	will not sit in or back a cabinet with
+sweden	1280	interrupts	imgui	ps3d_campaign_declared	TAKEN	-
+sweden	1280	interrupts	imgui	ps3d_runup_declared	TAKEN	-
 sweden	1280	sweep	canvas	00_main_menu	TAKEN	-
 sweden	1280	sweep	canvas	00a_settings	TAKEN	-
 sweden	1280	sweep	canvas	01_country_selector	TAKEN	-
@@ -1113,7 +1232,6 @@ sweden	1280	sweep	canvas	08_energy_mid	TAKEN	-
 sweden	1280	sweep	canvas	08_energy_plate	TAKEN	-
 sweden	1280	sweep	canvas	89d_signing_entrance	TAKEN	-
 sweden	1280	sweep	canvas	89e_signing_settled	TAKEN	-
-sweden	1280	sweep	canvas	89f_signing_budget_contest	LONG	Annual budget: the government's frames adopted, # to #, over S's alternative
 sweden	1280	sweep	canvas	89f_signing_budget_contest	TAKEN	-
 sweden	1280	sweep	canvas	92_saves_menu	TAKEN	-
 sweden	1280	sweep	canvas	93a_desk_government_budget	TAKEN	-
@@ -1136,50 +1254,20 @@ sweden	1280	sweep	imgui	00_main_menu	TAKEN	-
 sweden	1280	sweep	imgui	00a_settings	TAKEN	-
 sweden	1280	sweep	imgui	01_country_selector	TAKEN	-
 sweden	1280	sweep	imgui	01a_selector_yielding	TAKEN	-
-sweden	1280	sweep	imgui	01b_running_strip	CUT	Fiscal year starts - budget process opens; credit…
 sweden	1280	sweep	imgui	01b_running_strip	TAKEN	-
-sweden	1280	sweep	imgui	01c_desk	CUT	Fiscal year starts - budget process opens; credit…
 sweden	1280	sweep	imgui	01c_desk	TAKEN	-
-sweden	1280	sweep	imgui	01d_desk_carbon_passed	LONG	A market lurch has torn a hole in pension balance sheets; savers are alarmed and the regulator is on the phone.
-sweden	1280	sweep	imgui	01d_desk_carbon_passed	SLIP	CALENDAR » A DOT IS AN ENTRY IN THIS MONTH'S LEDGER, IN ITS AREA'S INK · A STRUCK DAY HAS PASSED
-sweden	1280	sweep	imgui	01d_desk_carbon_passed	SLIP	CALENDAR » CARBON TAX · PASSED · # SEK/t STANDS UNTIL # JANUARY #, THEN THE STATUTE INDEXES IT BY THE PRICE LEVEL FROM THEN
-sweden	1280	sweep	imgui	01d_desk_carbon_passed	STOP	A market lurch has torn a hole in pension balance sheets; savers are alarmed and the regulator is on the phone.
 sweden	1280	sweep	imgui	01d_desk_carbon_passed	TAKEN	-
-sweden	1280	sweep	imgui	01d_desk_held	CUT	Fiscal year starts - budget process opens; credit…
 sweden	1280	sweep	imgui	01d_desk_held	TAKEN	-
-sweden	1280	sweep	imgui	01e_desk_event	LONG	A major trading partner has slipped into recession, softening demand for our exports.
-sweden	1280	sweep	imgui	01e_desk_event	STOP	A major trading partner has slipped into recession, softening demand for our exports.
 sweden	1280	sweep	imgui	01e_desk_event	TAKEN	-
 sweden	1280	sweep	imgui	01f2_start_points	TAKEN	-
-sweden	1280	sweep	imgui	01f_desk_gameover	CUT	Fiscal year starts - budget process opens; credit…
-sweden	1280	sweep	imgui	01f_desk_gameover	LONG	GAME OVER - Out of office at year #: the chamber formed a government without S.
-sweden	1280	sweep	imgui	01f_desk_gameover	LONG	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT S.
-sweden	1280	sweep	imgui	01f_desk_gameover	STOP	GAME OVER - Out of office at year #: the chamber formed a government without S.
-sweden	1280	sweep	imgui	01f_desk_gameover	STOP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT S.
 sweden	1280	sweep	imgui	01f_desk_gameover	TAKEN	-
-sweden	1280	sweep	imgui	01f_desk_gameover	WRAP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT S.
-sweden	1280	sweep	imgui	01g1_crisis_moment_sources	CUT	Fiscal year starts - budget process opens; credit…
-sweden	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # JAN # » Sources: Regulation (EC) No #/#, the facility · the Portugal Memorandum of Understanding of #, the three years and the # % end
-sweden	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # JAN # » Sweden enters a programme with the EU's balance-of-payments facility with the IMF
-sweden	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # JAN # » The scheduled review of # Jan # left the rating at CCC, and the market closed
-sweden	1280	sweep	imgui	01g1_crisis_moment_sources	STOP	The clock waits until you continue.
 sweden	1280	sweep	imgui	01g1_crisis_moment_sources	TAKEN	-
-sweden	1280	sweep	imgui	01g1_crisis_moment_sources	WRAP	at the zone's rate, without the market's premium
-sweden	1280	sweep	imgui	01g1_crisis_moment_sources	WRAP	the EU's balance-of-payments facility with the IMF
-sweden	1280	sweep	imgui	01g2_crisis_desk	CUT	Fiscal year starts - budget process opens; credit…
 sweden	1280	sweep	imgui	01g2_crisis_desk	TAKEN	-
-sweden	1280	sweep	imgui	01g3_crisis_desk_withheld	CUT	Fiscal year starts - budget process opens; credit…
 sweden	1280	sweep	imgui	01g3_crisis_desk_withheld	TAKEN	-
-sweden	1280	sweep	imgui	01g4_crisis_restored	CUT	Fiscal year starts - budget process opens; credit…
 sweden	1280	sweep	imgui	01g4_crisis_restored	TAKEN	-
-sweden	1280	sweep	imgui	01g_crisis_moment	CUT	Fiscal year starts - budget process opens; credit…
-sweden	1280	sweep	imgui	01g_crisis_moment	STOP	The clock waits until you continue.
 sweden	1280	sweep	imgui	01g_crisis_moment	TAKEN	-
-sweden	1280	sweep	imgui	01g_crisis_moment	WRAP	at the zone's rate, without the market's premium
-sweden	1280	sweep	imgui	01g_crisis_moment	WRAP	the EU's balance-of-payments facility with the IMF
 sweden	1280	sweep	imgui	01g_party_picker	TAKEN	-
 sweden	1280	sweep	imgui	01k1_create_profile	TAKEN	-
-sweden	1280	sweep	imgui	01k1r_create_region_map	LABEL	BACK TO THE PARTIES
 sweden	1280	sweep	imgui	01k1r_create_region_map	TAKEN	-
 sweden	1280	sweep	imgui	01k2_create_placement	TAKEN	-
 sweden	1280	sweep	imgui	01k3_create_declarations	TAKEN	-
@@ -1191,30 +1279,20 @@ sweden	1280	sweep	imgui	02a2_statistics_debt_line_slips_pinned	TAKEN	-
 sweden	1280	sweep	imgui	02a_statistics_domestic	TAKEN	-
 sweden	1280	sweep	imgui	02a_statistics_domestic_deep	TAKEN	-
 sweden	1280	sweep	imgui	02a_statistics_domestic_rows	TAKEN	-
-sweden	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	SLIP	OTHER » THE PUBLIC SECTOR, PROPERTY, HEALTH, EDUCATION, SERVICES - NO SECTOR OF THEIR OWN HERE
 sweden	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	TAKEN	-
 sweden	1280	sweep	imgui	02b_statistics_international	TAKEN	-
 sweden	1280	sweep	imgui	02b_statistics_international_deep	TAKEN	-
 sweden	1280	sweep	imgui	02b_statistics_international_rows	TAKEN	-
 sweden	1280	sweep	imgui	02b_statistics_international_slips_pinned	TAKEN	-
 sweden	1280	sweep	imgui	03_decisions	TAKEN	-
-sweden	1280	sweep	imgui	03a_decisions_options	LONG	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
-sweden	1280	sweep	imgui	03a_decisions_options	LONG	Pay for it by selling the old patrol fleet
-sweden	1280	sweep	imgui	03a_decisions_options	STOP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 sweden	1280	sweep	imgui	03a_decisions_options	TAKEN	-
-sweden	1280	sweep	imgui	03a_decisions_options	WRAP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 sweden	1280	sweep	imgui	03b_decisions_budget_process	TAKEN	-
-sweden	1280	sweep	imgui	03c_decisions_budget_process_scrolled	LABEL	Table an Alternative Budget
-sweden	1280	sweep	imgui	03c_decisions_budget_process_scrolled	LONG	The government's budget is before the chamber (# line(s) raised); the chamber decides in # day(s). Your draft below can be tabled as the alternative.
-sweden	1280	sweep	imgui	03c_decisions_budget_process_scrolled	STOP	The government's budget is before the chamber (# line(s) raised); the chamber decides in # day(s). Your draft below can be tabled as the alternative.
 sweden	1280	sweep	imgui	03c_decisions_budget_process_scrolled	TAKEN	-
 sweden	1280	sweep	imgui	03d_budget_process_open	TAKEN	-
 sweden	1280	sweep	imgui	04_demographics	TAKEN	-
 sweden	1280	sweep	imgui	04a_people_dependency_electorate	TAKEN	-
-sweden	1280	sweep	imgui	04b2_people_health_wait_pinned	SLIP	CATARACT WAIT · # d ◇
 sweden	1280	sweep	imgui	04b2_people_health_wait_pinned	TAKEN	-
 sweden	1280	sweep	imgui	04b_people_health	TAKEN	-
-sweden	1280	sweep	imgui	04c2_people_education_billed_pinned	SLIP	BILLED » THE TABLES SIT BEHIND THE WWW HOST, NOT ON THE SDMX API
 sweden	1280	sweep	imgui	04c2_people_education_billed_pinned	TAKEN	-
 sweden	1280	sweep	imgui	04c_people_education	TAKEN	-
 sweden	1280	sweep	imgui	04d_people_infrastructure	TAKEN	-
@@ -1225,8 +1303,6 @@ sweden	1280	sweep	imgui	04g3_people_infrastructure_dense	TAKEN	-
 sweden	1280	sweep	imgui	04g4_people_environment_dense	TAKEN	-
 sweden	1280	sweep	imgui	04g_people_health_dense	TAKEN	-
 sweden	1280	sweep	imgui	04h_people_dense	TAKEN	-
-sweden	1280	sweep	imgui	04i_people_slips_pinned	SLIP	TURNOUT BY AGE · DATED » DRAWN ONLY WHERE A BAND IS ELIGIBLE; NO LANE WHERE NOT
-sweden	1280	sweep	imgui	04i_people_slips_pinned	SLIP	WORKING AGE · #–#
 sweden	1280	sweep	imgui	04i_people_slips_pinned	TAKEN	-
 sweden	1280	sweep	imgui	05_budget	TAKEN	-
 sweden	1280	sweep	imgui	05a_budget_tax	TAKEN	-
@@ -1348,33 +1424,11 @@ sweden	1280	sweep	imgui	08_energy_laws_link_arrived	TAKEN	-
 sweden	1280	sweep	imgui	08_energy_lower	TAKEN	-
 sweden	1280	sweep	imgui	08_energy_mid	TAKEN	-
 sweden	1280	sweep	imgui	08_energy_plate	TAKEN	-
-sweden	1280	sweep	imgui	89d_signing_entrance	LABEL	DOCKET · A CABINET DECISION
-sweden	1280	sweep	imgui	89d_signing_entrance	LABEL	POLITICS · THE SPEAKER ASKS YOUR PARTY TO FORM A GOVERNMENT
-sweden	1280	sweep	imgui	89d_signing_entrance	LONG	POLITICS · THE SPEAKER ASKS YOUR PARTY TO FORM A GOVERNMENT
 sweden	1280	sweep	imgui	89d_signing_entrance	TAKEN	-
-sweden	1280	sweep	imgui	89e_signing_settled	LABEL	DOCKET · A CABINET DECISION
-sweden	1280	sweep	imgui	89e_signing_settled	LABEL	POLITICS · THE SPEAKER ASKS YOUR PARTY TO FORM A GOVERNMENT
-sweden	1280	sweep	imgui	89e_signing_settled	LONG	POLITICS · THE SPEAKER ASKS YOUR PARTY TO FORM A GOVERNMENT
 sweden	1280	sweep	imgui	89e_signing_settled	TAKEN	-
-sweden	1280	sweep	imgui	89f_signing_budget_contest	LABEL	DOCKET · A CABINET DECISION
-sweden	1280	sweep	imgui	89f_signing_budget_contest	LABEL	POLITICS · THE SPEAKER ASKS YOUR PARTY TO FORM A GOVERNMENT
-sweden	1280	sweep	imgui	89f_signing_budget_contest	LONG	POLITICS · THE SPEAKER ASKS YOUR PARTY TO FORM A GOVERNMENT
 sweden	1280	sweep	imgui	89f_signing_budget_contest	TAKEN	-
-sweden	1280	sweep	imgui	92_saves_menu	LONG	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-sweden	1280	sweep	imgui	92_saves_menu	STOP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
 sweden	1280	sweep	imgui	92_saves_menu	TAKEN	-
-sweden	1280	sweep	imgui	92_saves_menu	WRAP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-sweden	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_precampaign_day#   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-sweden	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_riksbank_rate_decision   -   incompatible: format # - this build reads #
-sweden	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_trade_bill_costs   -   incompatible: format # - this build reads #
-sweden	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#b_precampaign_day#_m   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-sweden	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_a   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-sweden	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_b   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-sweden	1280	sweep	imgui	93a_desk_government_budget	LONG	A newly discovered domestic resource deposit is drawing investment.
-sweden	1280	sweep	imgui	93a_desk_government_budget	STOP	A newly discovered domestic resource deposit is drawing investment.
 sweden	1280	sweep	imgui	93a_desk_government_budget	TAKEN	-
-sweden	1280	sweep	imgui	93b_desk_alternative_tabled	LONG	A newly discovered domestic resource deposit is drawing investment.
-sweden	1280	sweep	imgui	93b_desk_alternative_tabled	STOP	A newly discovered domestic resource deposit is drawing investment.
 sweden	1280	sweep	imgui	93b_desk_alternative_tabled	TAKEN	-
 sweden	1280	sweep	imgui	co01_cabinet_junior	TAKEN	-
 sweden	1280	sweep	imgui	co02_cabinet_threat_compose	TAKEN	-
@@ -1390,6 +1444,98 @@ sweden	1280	sweep	imgui	co11_cabinet_enforced	TAKEN	-
 sweden	1280	sweep	imgui	co12_cabinet_enforce_refused	TAKEN	-
 sweden	1280	sweep	imgui	co13_cabinet_redeclare	TAKEN	-
 sweden	1280	sweep	imgui	co14_docket_sides	TAKEN	-
+usa	1280	interrupts	canvas	00_main_menu	TAKEN	-
+usa	1280	interrupts	canvas	00a_settings	TAKEN	-
+usa	1280	interrupts	canvas	01_country_selector	TAKEN	-
+usa	1280	interrupts	canvas	01a_selector_yielding	TAKEN	-
+usa	1280	interrupts	canvas	01b_running_strip	TAKEN	-
+usa	1280	interrupts	canvas	01c_desk	TAKEN	-
+usa	1280	interrupts	canvas	01f2_start_points	TAKEN	-
+usa	1280	interrupts	canvas	01g_party_picker	TAKEN	-
+usa	1280	interrupts	canvas	01n1_nominee_ticket	TAKEN	-
+usa	1280	interrupts	canvas	01n2_nominee_placement	TAKEN	-
+usa	1280	interrupts	canvas	01n3_nominee_name	TAKEN	-
+usa	1280	interrupts	canvas	01n4_nominee_review	TAKEN	-
+usa	1280	interrupts	canvas	05t_budget_turn0	TAKEN	-
+usa	1280	interrupts	canvas	cl1_runup_hq_opened	TAKEN	-
+usa	1280	interrupts	canvas	cl1_runup_hq_queued	TAKEN	-
+usa	1280	interrupts	canvas	cl1_runup_hq_stepped	TAKEN	-
+usa	1280	interrupts	canvas	cl1_signing_government_budget	LONG	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	cl1_signing_government_budget	STOP	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	cl1_signing_government_budget	TAKEN	-
+usa	1280	interrupts	canvas	cl2_campaign_hq_rally_picked	TAKEN	-
+usa	1280	interrupts	canvas	cl2_campaign_hq_scandal	TAKEN	-
+usa	1280	interrupts	canvas	cl2_campaign_hq_scandal_answered	TAKEN	-
+usa	1280	interrupts	canvas	cl2_campaign_hq_scandal_stepped	TAKEN	-
+usa	1280	interrupts	canvas	cl2_campaign_map_live	TAKEN	-
+usa	1280	interrupts	canvas	cl2_campaign_map_picked	TAKEN	-
+usa	1280	interrupts	canvas	e7a_campaign_opening_hq	TAKEN	-
+usa	1280	interrupts	canvas	e7b_campaign_opening_acknowledged	TAKEN	-
+usa	1280	interrupts	canvas	e7c_election_night_takeover	TAKEN	-
+usa	1280	interrupts	canvas	e7d_after_election_night	TAKEN	-
+usa	1280	interrupts	canvas	e7e_election_night_partial_staged	LONG	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	e7e_election_night_partial_staged	STOP	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	e7e_election_night_partial_staged	TAKEN	-
+usa	1280	interrupts	canvas	e7f_election_night_congress_lens_staged	LONG	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	e7f_election_night_congress_lens_staged	STOP	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	e7f_election_night_congress_lens_staged	TAKEN	-
+usa	1280	interrupts	canvas	e7g_election_night_no_majority_staged	LONG	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	e7g_election_night_no_majority_staged	STOP	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	e7g_election_night_no_majority_staged	TAKEN	-
+usa	1280	interrupts	canvas	e7h_house_choice_staged	LONG	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	e7h_house_choice_staged	STOP	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	e7h_house_choice_staged	TAKEN	-
+usa	1280	interrupts	canvas	s7a_us_ballot_hq_staged	TAKEN	-
+usa	1280	interrupts	canvas	s7b_us_night_ind_one_staged	LONG	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	s7b_us_night_ind_one_staged	STOP	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	s7b_us_night_ind_one_staged	TAKEN	-
+usa	1280	interrupts	canvas	s7b_us_night_ind_zero_staged	LONG	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	s7b_us_night_ind_zero_staged	STOP	Pocket veto · not modelled. Congress is held in session, so a bill left unanswered for ten days becomes law.
+usa	1280	interrupts	canvas	s7b_us_night_ind_zero_staged	TAKEN	-
+usa	1280	interrupts	canvas	s7c_us_ballot_billed_slip	TAKEN	-
+usa	1280	interrupts	canvas	s7c_us_ballot_collecting_slip	TAKEN	-
+usa	1280	interrupts	canvas	s7c_us_ballot_lost_slip	TAKEN	-
+usa	1280	interrupts	canvas	s7c_us_ballot_off_slip	TAKEN	-
+usa	1280	interrupts	canvas	s7c_us_ballot_on_slip	TAKEN	-
+usa	1280	interrupts	imgui	00_main_menu	TAKEN	-
+usa	1280	interrupts	imgui	00a_settings	TAKEN	-
+usa	1280	interrupts	imgui	01_country_selector	TAKEN	-
+usa	1280	interrupts	imgui	01a_selector_yielding	TAKEN	-
+usa	1280	interrupts	imgui	01b_running_strip	TAKEN	-
+usa	1280	interrupts	imgui	01c_desk	TAKEN	-
+usa	1280	interrupts	imgui	01f2_start_points	TAKEN	-
+usa	1280	interrupts	imgui	01g_party_picker	TAKEN	-
+usa	1280	interrupts	imgui	01n1_nominee_ticket	TAKEN	-
+usa	1280	interrupts	imgui	01n2_nominee_placement	TAKEN	-
+usa	1280	interrupts	imgui	01n3_nominee_name	TAKEN	-
+usa	1280	interrupts	imgui	01n4_nominee_review	TAKEN	-
+usa	1280	interrupts	imgui	05t_budget_turn0	TAKEN	-
+usa	1280	interrupts	imgui	cl1_runup_hq_opened	TAKEN	-
+usa	1280	interrupts	imgui	cl1_runup_hq_queued	TAKEN	-
+usa	1280	interrupts	imgui	cl1_runup_hq_stepped	TAKEN	-
+usa	1280	interrupts	imgui	cl1_signing_government_budget	TAKEN	-
+usa	1280	interrupts	imgui	cl2_campaign_hq_rally_picked	TAKEN	-
+usa	1280	interrupts	imgui	cl2_campaign_hq_scandal	TAKEN	-
+usa	1280	interrupts	imgui	cl2_campaign_hq_scandal_answered	TAKEN	-
+usa	1280	interrupts	imgui	cl2_campaign_hq_scandal_stepped	TAKEN	-
+usa	1280	interrupts	imgui	cl2_campaign_map_live	TAKEN	-
+usa	1280	interrupts	imgui	cl2_campaign_map_picked	TAKEN	-
+usa	1280	interrupts	imgui	e7a_campaign_opening_hq	TAKEN	-
+usa	1280	interrupts	imgui	e7b_campaign_opening_acknowledged	TAKEN	-
+usa	1280	interrupts	imgui	e7c_election_night_takeover	TAKEN	-
+usa	1280	interrupts	imgui	e7d_after_election_night	TAKEN	-
+usa	1280	interrupts	imgui	e7e_election_night_partial_staged	TAKEN	-
+usa	1280	interrupts	imgui	e7f_election_night_congress_lens_staged	TAKEN	-
+usa	1280	interrupts	imgui	e7g_election_night_no_majority_staged	TAKEN	-
+usa	1280	interrupts	imgui	e7h_house_choice_staged	TAKEN	-
+usa	1280	interrupts	imgui	s7a_us_ballot_hq_staged	TAKEN	-
+usa	1280	interrupts	imgui	s7b_us_night_ind_one_staged	TAKEN	-
+usa	1280	interrupts	imgui	s7b_us_night_ind_zero_staged	TAKEN	-
+usa	1280	interrupts	imgui	s7c_us_ballot_billed_slip	TAKEN	-
+usa	1280	interrupts	imgui	s7c_us_ballot_collecting_slip	TAKEN	-
+usa	1280	interrupts	imgui	s7c_us_ballot_lost_slip	TAKEN	-
+usa	1280	interrupts	imgui	s7c_us_ballot_off_slip	TAKEN	-
+usa	1280	interrupts	imgui	s7c_us_ballot_on_slip	TAKEN	-
 usa	1280	sweep	imgui	00a_settings	TAKEN	-
 usa	1280	sweep	imgui	01b_running_strip	TAKEN	-
 usa	1280	sweep	imgui	01c_desk	TAKEN	-
@@ -1397,38 +1543,12 @@ usa	1280	sweep	imgui	01d2_desk_role_record	TAKEN	-
 usa	1280	sweep	imgui	01d3_desk_role_other	TAKEN	-
 usa	1280	sweep	imgui	01d4_desk_role_house	TAKEN	-
 usa	1280	sweep	imgui	01d_desk_held	TAKEN	-
-usa	1280	sweep	imgui	01e_desk_event	LONG	A major trading partner has slipped into recession, softening demand for our exports.
-usa	1280	sweep	imgui	01e_desk_event	STOP	A major trading partner has slipped into recession, softening demand for our exports.
 usa	1280	sweep	imgui	01e_desk_event	TAKEN	-
-usa	1280	sweep	imgui	01f_desk_gameover	LONG	GAME OVER - Out of office at year #: the chamber formed a government without REP.
-usa	1280	sweep	imgui	01f_desk_gameover	LONG	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT REP.
-usa	1280	sweep	imgui	01f_desk_gameover	STOP	GAME OVER - Out of office at year #: the chamber formed a government without REP.
-usa	1280	sweep	imgui	01f_desk_gameover	STOP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT REP.
 usa	1280	sweep	imgui	01f_desk_gameover	TAKEN	-
-usa	1280	sweep	imgui	01f_desk_gameover	WRAP	OUT OF OFFICE AT YEAR #: THE CHAMBER FORMED A GOVERNMENT WITHOUT REP.
-usa	1280	sweep	imgui	01g1_crisis_moment_sources	CUT	Standing AA; CCC without the…
-usa	1280	sweep	imgui	01g1_crisis_moment_sources	LONG	Interest US$#T. At the last closed year's book. Interest is always paid; the rest is cut to fit revenue.
-usa	1280	sweep	imgui	01g1_crisis_moment_sources	LONG	spending other than interest is cut to revenue less interest
-usa	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # APR # » Sources: Cruces and Trebesch #, the # % haircut, and Gelos, Sahay and Sandleris #, the years shut out, as Tomz and Wright # report them · Borensztein and Panizza #, the output cost
-usa	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # APR # » The United States defaults: its rating is read without the dollar's discount
-usa	1280	sweep	imgui	01g1_crisis_moment_sources	SLIP	MARKET ACCESS LOST · # APR # » The scheduled review of # Apr # left the rating at CCC, and the market closed
-usa	1280	sweep	imgui	01g1_crisis_moment_sources	STOP	Interest US$#T. At the last closed year's book. Interest is always paid; the rest is cut to fit revenue.
-usa	1280	sweep	imgui	01g1_crisis_moment_sources	STOP	The clock waits until you continue.
 usa	1280	sweep	imgui	01g1_crisis_moment_sources	TAKEN	-
-usa	1280	sweep	imgui	01g1_crisis_moment_sources	WRAP	Interest US$#T. At the last closed year's book. Interest is always paid; the rest is cut to fit revenue.
-usa	1280	sweep	imgui	01g1_crisis_moment_sources	WRAP	US$#T off the debt · US$#T → US$#T
-usa	1280	sweep	imgui	01g1_crisis_moment_sources	WRAP	spending other than interest is cut to revenue less interest
 usa	1280	sweep	imgui	01g2_crisis_desk	TAKEN	-
 usa	1280	sweep	imgui	01g4_crisis_restored	TAKEN	-
-usa	1280	sweep	imgui	01g_crisis_moment	CUT	Standing AA; CCC without the…
-usa	1280	sweep	imgui	01g_crisis_moment	LONG	Interest US$#T. At the last closed year's book. Interest is always paid; the rest is cut to fit revenue.
-usa	1280	sweep	imgui	01g_crisis_moment	LONG	spending other than interest is cut to revenue less interest
-usa	1280	sweep	imgui	01g_crisis_moment	STOP	Interest US$#T. At the last closed year's book. Interest is always paid; the rest is cut to fit revenue.
-usa	1280	sweep	imgui	01g_crisis_moment	STOP	The clock waits until you continue.
 usa	1280	sweep	imgui	01g_crisis_moment	TAKEN	-
-usa	1280	sweep	imgui	01g_crisis_moment	WRAP	Interest US$#T. At the last closed year's book. Interest is always paid; the rest is cut to fit revenue.
-usa	1280	sweep	imgui	01g_crisis_moment	WRAP	US$#T off the debt · US$#T → US$#T
-usa	1280	sweep	imgui	01g_crisis_moment	WRAP	spending other than interest is cut to revenue less interest
 usa	1280	sweep	imgui	01n1_nominee_ticket	TAKEN	-
 usa	1280	sweep	imgui	01n2_nominee_placement	TAKEN	-
 usa	1280	sweep	imgui	01n3_nominee_name	TAKEN	-
@@ -1439,31 +1559,22 @@ usa	1280	sweep	imgui	02a2_statistics_debt_line_slips_pinned	TAKEN	-
 usa	1280	sweep	imgui	02a_statistics_domestic	TAKEN	-
 usa	1280	sweep	imgui	02a_statistics_domestic_deep	TAKEN	-
 usa	1280	sweep	imgui	02a_statistics_domestic_rows	TAKEN	-
-usa	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	SLIP	OTHER » THE PUBLIC SECTOR, PROPERTY, HEALTH, EDUCATION, SERVICES - NO SECTOR OF THEIR OWN HERE
 usa	1280	sweep	imgui	02a_statistics_domestic_slips_pinned	TAKEN	-
 usa	1280	sweep	imgui	02b_statistics_international	TAKEN	-
 usa	1280	sweep	imgui	02b_statistics_international_deep	TAKEN	-
 usa	1280	sweep	imgui	02b_statistics_international_rows	TAKEN	-
 usa	1280	sweep	imgui	02b_statistics_international_slips_pinned	TAKEN	-
 usa	1280	sweep	imgui	03_decisions	TAKEN	-
-usa	1280	sweep	imgui	03a_decisions_options	LONG	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
-usa	1280	sweep	imgui	03a_decisions_options	LONG	DECISION - Interior & Justice: Harness: a staged decision for the Docket film
-usa	1280	sweep	imgui	03a_decisions_options	LONG	Pay for it by selling the old patrol fleet
 usa	1280	sweep	imgui	03a_decisions_options	LONG	Staged by the screenshot harness so the minister alerts and an option's cost and impact are on film; the figures are the harness's own.
-usa	1280	sweep	imgui	03a_decisions_options	STOP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 usa	1280	sweep	imgui	03a_decisions_options	STOP	Staged by the screenshot harness so the minister alerts and an option's cost and impact are on film; the figures are the harness's own.
 usa	1280	sweep	imgui	03a_decisions_options	TAKEN	-
-usa	1280	sweep	imgui	03a_decisions_options	WRAP	AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.
 usa	1280	sweep	imgui	03b_decisions_budget_process	TAKEN	-
-usa	1280	sweep	imgui	03c_decisions_budget_process_scrolled	LONG	The annual budget process is open - introduce your current draft as a bill below to continue. The government is funded through # Sep #.
-usa	1280	sweep	imgui	03c_decisions_budget_process_scrolled	STOP	The annual budget process is open - introduce your current draft as a bill below to continue. The government is funded through # Sep #.
 usa	1280	sweep	imgui	03c_decisions_budget_process_scrolled	TAKEN	-
 usa	1280	sweep	imgui	03d_budget_process_open	TAKEN	-
 usa	1280	sweep	imgui	04_demographics	TAKEN	-
 usa	1280	sweep	imgui	04a_people_dependency_electorate	TAKEN	-
 usa	1280	sweep	imgui	04b2_people_health_wait_pinned	TAKEN	-
 usa	1280	sweep	imgui	04b_people_health	TAKEN	-
-usa	1280	sweep	imgui	04c2_people_education_billed_pinned	SLIP	BILLED » THE TABLES SIT BEHIND THE WWW HOST, NOT ON THE SDMX API
 usa	1280	sweep	imgui	04c2_people_education_billed_pinned	TAKEN	-
 usa	1280	sweep	imgui	04c_people_education	TAKEN	-
 usa	1280	sweep	imgui	04d_people_infrastructure	TAKEN	-
@@ -1474,8 +1585,6 @@ usa	1280	sweep	imgui	04g3_people_infrastructure_dense	TAKEN	-
 usa	1280	sweep	imgui	04g4_people_environment_dense	TAKEN	-
 usa	1280	sweep	imgui	04g_people_health_dense	TAKEN	-
 usa	1280	sweep	imgui	04h_people_dense	TAKEN	-
-usa	1280	sweep	imgui	04i_people_slips_pinned	SLIP	TURNOUT BY AGE · NO SOURCE » NO SOURCE FOR THIS COUNTRY - NO LANE IS DRAWN RATHER THAN ONE DRAWN FROM A GUESS
-usa	1280	sweep	imgui	04i_people_slips_pinned	SLIP	WORKING AGE · #–#
 usa	1280	sweep	imgui	04i_people_slips_pinned	TAKEN	-
 usa	1280	sweep	imgui	05_budget	TAKEN	-
 usa	1280	sweep	imgui	05a_budget_tax	TAKEN	-
@@ -1600,39 +1709,21 @@ usa	1280	sweep	imgui	08_energy_laws_link_arrived	TAKEN	-
 usa	1280	sweep	imgui	08_energy_lower	TAKEN	-
 usa	1280	sweep	imgui	08_energy_mid	TAKEN	-
 usa	1280	sweep	imgui	08_energy_plate	TAKEN	-
-usa	1280	sweep	imgui	89d_signing_entrance	LABEL	DOCKET · A CABINET DECISION
 usa	1280	sweep	imgui	89d_signing_entrance	TAKEN	-
-usa	1280	sweep	imgui	89e_signing_settled	LABEL	DOCKET · A CABINET DECISION
 usa	1280	sweep	imgui	89e_signing_settled	TAKEN	-
-usa	1280	sweep	imgui	89h_signing_us_veto	LABEL	DOCKET · A CABINET DECISION
 usa	1280	sweep	imgui	89h_signing_us_veto	TAKEN	-
-usa	1280	sweep	imgui	89i_signing_us_override	LABEL	DOCKET · A CABINET DECISION
 usa	1280	sweep	imgui	89i_signing_us_override	TAKEN	-
-usa	1280	sweep	imgui	89k_signing_us_desk	LABEL	DOCKET · A CABINET DECISION
 usa	1280	sweep	imgui	89k_signing_us_desk	TAKEN	-
-usa	1280	sweep	imgui	89l_signing_us_desk_veto	LABEL	DOCKET · A CABINET DECISION
 usa	1280	sweep	imgui	89l_signing_us_desk_veto	TAKEN	-
 usa	1280	sweep	imgui	90_interrupt_held	TAKEN	-
 usa	1280	sweep	imgui	90h_bank_acting	TAKEN	-
 usa	1280	sweep	imgui	90h_bank_acting_lever	TAKEN	-
 usa	1280	sweep	imgui	90h_congress_before_senate	TAKEN	-
-usa	1280	sweep	imgui	90h_docket_before_senate	LONG	The vote on # Jun #; the Vice Chair acts meanwhile
 usa	1280	sweep	imgui	90h_docket_before_senate	TAKEN	-
 usa	1280	sweep	imgui	90i_bank_refused	TAKEN	-
-usa	1280	sweep	imgui	90i_docket_refused	LONG	Nominate who sets the policy rate - the Senate confirms
 usa	1280	sweep	imgui	90i_docket_refused	TAKEN	-
 usa	1280	sweep	imgui	91_interrupt_held_budget	TAKEN	-
-usa	1280	sweep	imgui	92_saves_menu	LONG	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-usa	1280	sweep	imgui	92_saves_menu	STOP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
 usa	1280	sweep	imgui	92_saves_menu	TAKEN	-
-usa	1280	sweep	imgui	92_saves_menu	WRAP	Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F# quicksaves to slot#, F# loads it.
-usa	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_precampaign_day#   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-usa	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_riksbank_rate_decision   -   incompatible: format # - this build reads #
-usa	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#_trade_bill_costs   -   incompatible: format # - this build reads #
-usa	1280	sweep	imgui	92_saves_menu	WRAP	playtest_#b_precampaign_day#_m   -   Sweden, Turn #, #-#-#   (saved #-#-# #:# UTC)
-usa	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_a   -   USA, Turn #, #-#-#   (saved #-#-# #:# UTC)
-usa	1280	sweep	imgui	92_saves_menu	WRAP	zz_driver_capture_b   -   USA, Turn #, #-#-#   (saved #-#-# #:# UTC)
 usa	1280	sweep	imgui	93a_desk_government_budget	TAKEN	-
 usa	1280	sweep	imgui	93b_desk_us_budget_acts	TAKEN	-
-usa	1280	sweep	imgui	93c_desk_us_shutdown	CUT	No. # - Appropriation: the standing figures…
 usa	1280	sweep	imgui	93c_desk_us_shutdown	TAKEN	-
