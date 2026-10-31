@@ -567,8 +567,9 @@ namespace PoliSim.Testing
         public const string ProseMarker = "# format: prose (pre-K321)";
 
         /// <summary>K334: the prose rows standing when the reader landed (eight files, §957-§966). A ratchet - lowered as files convert, never raised:
-        /// DeclutterReachabilityCheck fails above it, so no new prose file and no added prose row passes.</summary>
-        public const int ProseRowCeiling = 439;
+        /// DeclutterReachabilityCheck fails above it, so no new prose file and no added prose row passes. 439 -> 308 at §968: 131 of the Energy
+        /// sweep's rows converted (moved_k334s1.tsv); its other 159 are on some countries' books only, and a moved row has no country scope yet.</summary>
+        public const int ProseRowCeiling = 308;
 
         /// <summary>The <see cref="MovedRow.Where"/> of a prose file's row.</summary>
         public const string ProseWhere = "prose";

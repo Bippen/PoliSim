@@ -42917,3 +42917,34 @@ Energy's slips from before S1 still hold lines over 10 words. They carry no move
 - Moved files are written by hand under `docs/declutter/`. "Only shrinks" is the GROW refusal: a frame never measured before is added once with `--grow`, recorded.
 - A Canvas rect a RectMask2D clips partly is read whole.
 - **What this means for every later film:** a new film mode or geometry (2560, the election nights, the campaign HQ) fails once with "holds nothing of <country> at <width> px in the film mode '<mode>'" until its rows are added with `baseline --grow` and recorded. The K322 sweeps (S2-S6) each write their moved file and shrink the baseline.
+
+## 968. K334 - THE ENERGY SWEEP'S MOVED WORDS CONVERTED TO MACHINE ROWS: 131 OF 290, THE PROSE CEILING 439 -> 308 (K321 (G), K334) (2026-10-31)
+
+**What was owed:** K334's first conversion. `docs/declutter/moved_s1en.tsv`, the Energy sweep's record (§957), held 290 rows in prose. Each named the `08*` capture a string left and, in words, the slip that now holds it.
+
+**Built** (wave/k334s1 fa1ac96d, applied on main; no drawing code changed):
+- **`docs/declutter/moved_k334s1.tsv`, 131 machine rows:**
+  - 17 texts on each of the seven Energy page captures (`08_energy`, `_decisions`, `_decisions_ordered`, `_decisions_queue_full`, `_lower`, `_mid`, `_plate`);
+  - 4 on each of the three dial captures.
+  - Each row's `now_in` is `slip:<its own capture>`: every `08_energy*` frame draws the whole Energy book, so the words sit on the frame they left. `slip_text` is the old slip text, each piece matching one line of the book.
+- **`moved_s1en.tsv` keeps the other 159 rows in prose**, with a comment saying why. Each sits on some countries' books only, for one of three reasons:
+  - the country's own grid and rules (Sweden's twelve blocks, Germany's and Italy's unmodelled reservoirs, the US interconnections, France's renewables target);
+  - the hydro fold;
+  - where each country's dials sit.
+
+  A moved row has no country scope, and the reader judges a row on every film that takes its capture, so each would fail as unreachable on the other countries' films (tried: 113-123 failures a film).
+- **`DeclutterRules.ProseRowCeiling` 439 -> 308.**
+- **`Tools/declutter_moved_s1en.pl` RETIRED:** run again, it would write all 290 rows back without the K334 marker and undo the conversion, so it now refuses to run. It is kept for §957's record. `EnergySlips.cs` names both files.
+
+**Checked before integration:** the film's own judge (`DeclutterRules.Judge`), compiled out of the engine, and a perl copy, run on today's tables (the six `dryk321` films, `realk321se`, `realk321pl`, `realk321bpl`):
+- each of the seven films that take the `08` captures judged all 131 rows: 0 unreachable, 0 still at rest, 0 malformed;
+- the two Polish interrupts films leave them to the others;
+- none of the 290 still draws at rest on its capture.
+
+**Measured (this tree):** cheap bar 154 of 154 clean (cheaps968b; the first, cheaps968, failed DryFilmScopeCheck because §967's proof re-run had filmed Sweden alone under the six-country label dryk321 and overwritten its log - the six were filmed again under that label, and the trap is in the quirks), K334: 308 prose rows within the ceiling of 308; dry films with the 131 machine rows judged: Sweden and Germany at 1280 (drys968, scope row drys968) and the six countries at 1280 (dryk321, refilmed), every session moved words 131 judged, 0 unreachable, 0 still at rest, declutter 0 new 0 stale - PASS; doc bar (docs968)
+
+**Declared:**
+- One machine row for each prose row, even where the folded figures make rows identical to the judge.
+- A row converts only if every film that takes its capture reaches it.
+- Five derivation rows reach Sweden's book through its water line "UNDER THE RULE ROW'S THREE BLOCKS": if that line changes, those 35 rows fail on Sweden's films.
+- **FILED (the reader's gap):** a moved row needs a country scope (for example `slip:<stem>@<country>`) before any country-specific moved string can be written in machine form. The 159 Energy rows, and every later K334 conversion with country-specific words, wait on it.
