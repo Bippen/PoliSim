@@ -167,6 +167,7 @@ single electoral vote.
   rule — a real hurdle, and real play.
 - **Formation, campaigns, reactivity, election night, the hemicycle, polling and media** treat the new
   party as any other; its declarations and positions are what the formation reads.
+- **SP-5 Germany: the count's rule for a refused created party, declared before any measurement (S5, Design's return of 2026-10-30).** A created party whose Land lists are refused (BWahlG §19/§27) is counted with the national share s × W_s / W, where W_s is the seated election's valid Zweitstimmen in the Länder where its list stands (`GermanRegions.ValidAt`, on the polling day) and W the national total. Every share is then renormalised to the original sum, so its lost share goes to the other parties in proportion. Support is read as uniform across Länder (a newcomer has no regional record), and the regional derivation marks the party unavailable in refused Länder. Before the lists' deadline the party stands everywhere. With no refused created party, the count is unchanged (the same array).
 
 ### 2.8 Mark and ink
 
